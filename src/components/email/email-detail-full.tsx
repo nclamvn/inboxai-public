@@ -258,10 +258,18 @@ export function EmailDetailFull({
             className="prose prose-sm max-w-none text-[#1A1A1A]"
             dangerouslySetInnerHTML={{ __html: email.body_html }}
           />
-        ) : (
+        ) : email.body_text ? (
+          <pre className="whitespace-pre-wrap font-sans text-[15px] text-[#1A1A1A] leading-relaxed bg-transparent p-0 m-0">
+            {email.body_text}
+          </pre>
+        ) : email.snippet ? (
           <div className="text-[15px] text-[#1A1A1A] leading-relaxed whitespace-pre-wrap">
-            {email.body_text || email.snippet}
+            {email.snippet}
           </div>
+        ) : (
+          <p className="text-[14px] text-[#9B9B9B] italic">
+            (Không có nội dung)
+          </p>
         )}
       </div>
 

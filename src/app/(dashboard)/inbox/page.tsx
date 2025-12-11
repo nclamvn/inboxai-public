@@ -29,10 +29,8 @@ function InboxContent() {
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
   const [classifying, setClassifying] = useState(false)
 
-  // Fetch single email when selectedId is set but email not in list
-  const { email: fetchedEmail, loading: fetchingEmail } = useEmail(
-    selectedId && !emails.find(e => e.id === selectedId) ? selectedId : null
-  )
+  // ALWAYS fetch full email when selectedId is set (list only has preview, not body)
+  const { email: fetchedEmail, loading: fetchingEmail } = useEmail(selectedId)
 
   // Update viewMode when URL changes
   const effectiveViewMode = selectedId ? (viewMode === 'list' ? 'split' : viewMode) : 'list'
@@ -143,8 +141,8 @@ function InboxContent() {
     setActiveFilter(category)
   }
 
-  // Get selected email from list or from fetched single email
-  const selectedEmail = emails.find(e => e.id === selectedId) || fetchedEmail
+  // Use fetchedEmail (full data with body) instead of list email (preview only)
+  const selectedEmail = fetchedEmail
 
   // Show skeleton while loading initial data
   if (loading) {
