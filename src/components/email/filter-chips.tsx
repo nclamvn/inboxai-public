@@ -1,6 +1,6 @@
 'use client'
 
-import { X, Zap } from 'lucide-react'
+import { X, Zap, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface FilterOption {
@@ -24,9 +24,11 @@ interface Props {
     social: number
     needsAction: number
   }
+  onClassify?: () => void
+  classifying?: boolean
 }
 
-export function FilterChips({ activeFilter, onFilterChange, counts }: Props) {
+export function FilterChips({ activeFilter, onFilterChange, counts, onClassify, classifying }: Props) {
   const filters: FilterOption[] = [
     { id: 'all', label: 'Tất cả', count: counts.all },
     { id: 'needsAction', label: 'Cần xử lý', count: counts.needsAction, icon: Zap, color: 'urgent' },
@@ -61,6 +63,27 @@ export function FilterChips({ activeFilter, onFilterChange, counts }: Props) {
 
   return (
     <div className="flex items-center gap-1.5 px-4 py-2 overflow-x-auto scrollbar-hide">
+      {/* AI Classify Button - First position */}
+      {onClassify && (
+        <button
+          onClick={onClassify}
+          disabled={classifying}
+          className={cn(
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors whitespace-nowrap',
+            'bg-[#F5F5F5] text-[#6B6B6B] hover:bg-[#EBEBEB] hover:text-[#1A1A1A]',
+            classifying && 'opacity-50 cursor-not-allowed'
+          )}
+        >
+          <Sparkles className={cn('w-3.5 h-3.5', classifying && 'animate-pulse')} strokeWidth={1.5} />
+          <span>{classifying ? 'Đang phân loại...' : 'Phân loại AI'}</span>
+        </button>
+      )}
+
+      {/* Divider */}
+      {onClassify && (
+        <div className="w-px h-5 bg-[#EBEBEB] mx-1" />
+      )}
+
       {visibleFilters.map((filter) => {
         const isActive = activeFilter === filter.id || (filter.id === 'all' && !activeFilter)
         const Icon = filter.icon

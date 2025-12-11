@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import {
   RefreshCw, MoreHorizontal, Inbox,
-  ChevronLeft, Maximize2, Minimize2, Loader2, Sparkles
+  ChevronLeft, Maximize2, Minimize2, Loader2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useEmails } from '@/hooks/use-emails'
@@ -177,15 +177,6 @@ export default function InboxPage() {
           <button className="p-2 rounded-lg text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors">
             <MoreHorizontal className="w-5 h-5" strokeWidth={1.5} />
           </button>
-          <button
-            onClick={handleClassify}
-            disabled={classifying}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1A1A1A] text-white text-[13px] font-medium hover:bg-[#333] transition-colors disabled:opacity-50"
-            title="Phân loại email bằng AI"
-          >
-            <Sparkles className={cn('w-4 h-4', classifying && 'animate-pulse')} strokeWidth={1.5} />
-            {classifying ? 'Đang phân loại...' : 'Phân loại AI'}
-          </button>
         </div>
 
         <div className="flex items-center gap-2 text-[13px] text-[#6B6B6B]">
@@ -216,6 +207,8 @@ export default function InboxPage() {
             activeFilter={activeFilter}
             onFilterChange={setActiveFilter}
             counts={filterCounts}
+            onClassify={handleClassify}
+            classifying={classifying}
           />
         </div>
       )}
