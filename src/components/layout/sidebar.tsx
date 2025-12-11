@@ -33,7 +33,8 @@ export function Sidebar({ defaultCollapsed = true }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'h-full border-r border-[#EBEBEB] bg-white flex flex-col transition-all duration-200',
+        'h-full border-r border-[#EBEBEB] bg-white flex-col transition-all duration-200',
+        'hidden md:flex', // Hidden on mobile, visible on tablet and up
         collapsed ? 'w-[56px]' : 'w-[200px]'
       )}
     >

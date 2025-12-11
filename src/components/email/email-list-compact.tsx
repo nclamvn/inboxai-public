@@ -191,12 +191,20 @@ export function EmailListCompact({
     return (
       <div
         key={email.id}
+        onClick={() => onSelect(email.id)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            onSelect(email.id)
+          }
+        }}
         className={cn(
-          'w-full transition-colors',
+          'w-full transition-colors cursor-pointer',
           compact ? 'px-3 py-2.5' : 'px-4 py-3',
           selectedId === email.id
             ? 'bg-[#F5F5F5]'
-            : 'hover:bg-[#FAFAFA]',
+            : 'hover:bg-[#FAFAFA] active:bg-[#F0F0F0]',
           !email.is_read && 'bg-white'
         )}
       >
@@ -219,18 +227,8 @@ export function EmailListCompact({
             />
           </button>
 
-          {/* Content - Clickable to select email */}
-          <div
-            onClick={() => onSelect(email.id)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                onSelect(email.id)
-              }
-            }}
-            className="flex-1 min-w-0 cursor-pointer"
-          >
+          {/* Content */}
+          <div className="flex-1 min-w-0">
             {/* Row 1: Sender + Time */}
             <div className="flex items-center justify-between gap-2">
               <span className={cn(

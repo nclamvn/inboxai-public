@@ -268,11 +268,11 @@ export default function InboxPage() {
 
       {/* Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Email List */}
+        {/* Email List - Hidden on mobile when viewing email detail */}
         {viewMode !== 'full' && (
           <div className={cn(
             'border-r border-[#EBEBEB] overflow-y-auto transition-all duration-200 bg-white',
-            viewMode === 'list' ? 'flex-1' : 'w-[360px]'
+            viewMode === 'list' ? 'flex-1' : 'hidden lg:block lg:w-[360px]'
           )}>
             {filteredEmails.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-32 text-[#9B9B9B]">
