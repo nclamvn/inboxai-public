@@ -1,5 +1,6 @@
 'use client'
 
+import { memo, useMemo, useCallback } from 'react'
 import { X, Zap, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -28,8 +29,9 @@ interface Props {
   classifying?: boolean
 }
 
-export function FilterChips({ activeFilter, onFilterChange, counts, onClassify, classifying }: Props) {
-  const filters: FilterOption[] = [
+export const FilterChips = memo(function FilterChips({ activeFilter, onFilterChange, counts, onClassify, classifying }: Props) {
+  // Memoize filters array
+  const filters: FilterOption[] = useMemo(() => [
     { id: 'all', label: 'Tất cả', count: counts.all },
     { id: 'needsAction', label: 'Cần xử lý', count: counts.needsAction, icon: Zap, color: 'urgent' },
     { id: 'work', label: 'Công việc', count: counts.work, color: 'blue' },
@@ -38,10 +40,16 @@ export function FilterChips({ activeFilter, onFilterChange, counts, onClassify, 
     { id: 'newsletter', label: 'Newsletter', count: counts.newsletter },
     { id: 'promotion', label: 'Khuyến mãi', count: counts.promotion, color: 'amber' },
     { id: 'social', label: 'Mạng XH', count: counts.social, color: 'violet' },
-  ]
+  ], [counts])
 
-  // Only show filters with emails
-  const visibleFilters = filters.filter(f => f.id === 'all' || f.count > 0)
+  // Memoize visible filters
+  const visibleFilters = useMemo(() =>
+    filters.filter(f => f.id === 'all' || f.count > 0),
+    [filters]
+  )
+
+  // Memoize handlers
+  const handleClearFilter = useCallback(() => onFilterChange(null), [onFilterChange])
 
   const getChipStyle = (filter: FilterOption, isActive: boolean) => {
     if (isActive) {
@@ -114,7 +122,7 @@ export function FilterChips({ activeFilter, onFilterChange, counts, onClassify, 
       {/* Clear filter button */}
       {activeFilter && activeFilter !== 'all' && (
         <button
-          onClick={() => onFilterChange(null)}
+          onClick={handleClearFilter}
           className="p-1.5 rounded-full text-[#9B9B9B] hover:text-[#6B6B6B] hover:bg-[#F5F5F5] transition-colors ml-1"
         >
           <X className="w-4 h-4" strokeWidth={1.5} />
@@ -122,4 +130,4 @@ export function FilterChips({ activeFilter, onFilterChange, counts, onClassify, 
       )}
     </div>
   )
-}
+})

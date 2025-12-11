@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { QueryProvider } from '@/providers/query-provider'
 
 export const metadata: Metadata = {
   title: 'InboxAI - Smart Email Hub',
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="vi" className="scroll-smooth">
       <body className="antialiased">
-        {children}
+        <QueryProvider>
+          {children}
+        </QueryProvider>
       </body>
     </html>
   )
