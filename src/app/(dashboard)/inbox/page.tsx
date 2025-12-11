@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 import { useEmails } from '@/hooks/use-emails'
 import { FilterChips } from '@/components/email/filter-chips'
 import { EmailListCompact } from '@/components/email/email-list-compact'
+import { EmailListSkeleton } from '@/components/email/email-list-skeleton'
 import { EmailDetailFull } from '@/components/email/email-detail-full'
 import type { Email } from '@/types'
 
@@ -17,7 +18,7 @@ type ViewMode = 'list' | 'split' | 'full'
 
 export default function InboxPage() {
   const searchParams = useSearchParams()
-  const { emails, loading, toggleStar, archiveEmail, deleteEmail, markAsRead, refetch } = useEmails({ folder: 'inbox' })
+  const { emails, loading, loadingMore, hasMore, toggleStar, archiveEmail, deleteEmail, markAsRead, refetch, loadMore } = useEmails({ folder: 'inbox' })
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
@@ -147,10 +148,32 @@ export default function InboxPage() {
 
   const selectedEmail = emails.find(e => e.id === selectedId)
 
+  // Show skeleton while loading initial data
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center bg-white">
-        <Loader2 className="w-6 h-6 animate-spin text-[#9B9B9B]" strokeWidth={1.5} />
+      <div className="flex-1 flex flex-col h-full overflow-hidden bg-white">
+        {/* Toolbar skeleton */}
+        <div className="h-12 border-b border-[#EBEBEB] bg-white flex items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-lg bg-[#F5F5F5]" />
+            <div className="w-9 h-9 rounded-lg bg-[#F5F5F5]" />
+          </div>
+          <div className="w-20 h-4 rounded bg-[#F5F5F5]" />
+        </div>
+
+        {/* Filter chips skeleton */}
+        <div className="border-b border-[#EBEBEB] bg-[#FAFAFA] px-4 py-2">
+          <div className="flex gap-1.5">
+            {[80, 70, 65, 60, 70, 65].map((w, i) => (
+              <div key={i} className="h-7 rounded-full bg-[#EBEBEB]" style={{ width: w }} />
+            ))}
+          </div>
+        </div>
+
+        {/* Email list skeleton */}
+        <div className="flex-1 overflow-y-auto">
+          <EmailListSkeleton count={10} />
+        </div>
       </div>
     )
   }
@@ -259,6 +282,9 @@ export default function InboxPage() {
                 onCategoryClick={handleCategoryClick}
                 compact={viewMode === 'split'}
                 smartSort={!activeFilter}
+                hasMore={hasMore}
+                loadingMore={loadingMore}
+                onLoadMore={loadMore}
               />
             )}
           </div>

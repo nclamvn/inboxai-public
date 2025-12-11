@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Star, Zap, Inbox, Newspaper, ChevronDown, ChevronRight } from 'lucide-react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Star, Zap, Inbox, Newspaper, ChevronDown, ChevronRight, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Email } from '@/types'
 
@@ -13,6 +13,9 @@ interface Props {
   onCategoryClick?: (category: string) => void
   compact?: boolean
   smartSort?: boolean
+  hasMore?: boolean
+  loadingMore?: boolean
+  onLoadMore?: () => void
 }
 
 interface EmailSection {
@@ -30,11 +33,35 @@ export function EmailListCompact({
   onStar,
   onCategoryClick,
   compact = false,
-  smartSort = false
+  smartSort = false,
+  hasMore = false,
+  loadingMore = false,
+  onLoadMore
 }: Props) {
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
     readLater: true // Collapsed by default
   })
+  const loadMoreRef = useRef<HTMLDivElement>(null)
+
+  // Infinite scroll: observe the load more sentinel
+  useEffect(() => {
+    if (!onLoadMore || !hasMore) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          onLoadMore()
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [hasMore, loadingMore, onLoadMore])
 
   const formatTime = (date: string | null) => {
     if (!date) return ''
@@ -269,6 +296,27 @@ export function EmailListCompact({
     )
   }
 
+  // Load more indicator component
+  const LoadMoreIndicator = () => (
+    <div ref={loadMoreRef} className="py-4 flex justify-center">
+      {loadingMore ? (
+        <div className="flex items-center gap-2 text-[#9B9B9B]">
+          <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} />
+          <span className="text-[13px]">Đang tải...</span>
+        </div>
+      ) : hasMore ? (
+        <button
+          onClick={onLoadMore}
+          className="text-[13px] text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors"
+        >
+          Tải thêm
+        </button>
+      ) : emails.length > 0 ? (
+        <span className="text-[12px] text-[#9B9B9B]">Đã hiển thị tất cả</span>
+      ) : null}
+    </div>
+  )
+
   // Smart sort mode: render with sections
   if (smartSort) {
     const sections = groupEmailsIntoSections(emails)
@@ -318,14 +366,18 @@ export function EmailListCompact({
             </div>
           )
         })}
+        {onLoadMore && <LoadMoreIndicator />}
       </div>
     )
   }
 
   // Default mode: flat list
   return (
-    <div className="divide-y divide-[#EBEBEB]">
-      {emails.map(renderEmailItem)}
+    <div>
+      <div className="divide-y divide-[#EBEBEB]">
+        {emails.map(renderEmailItem)}
+      </div>
+      {onLoadMore && <LoadMoreIndicator />}
     </div>
   )
 }
