@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useEmails } from '@/hooks/use-emails'
+import { useEmail } from '@/hooks/use-email'
 import { FilterChips } from '@/components/email/filter-chips'
 import { EmailListCompact } from '@/components/email/email-list-compact'
 import { EmailListSkeleton } from '@/components/email/email-list-skeleton'
@@ -24,20 +25,31 @@ export default function InboxPage() {
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
   const [classifying, setClassifying] = useState(false)
 
+  // Fetch single email when selectedId is set but email not in list (e.g., from URL param)
+  const { email: fetchedEmail, loading: fetchingEmail } = useEmail(
+    selectedId && !emails.find(e => e.id === selectedId) ? selectedId : null
+  )
+
   // Handle URL query param for email selection
   useEffect(() => {
     const emailId = searchParams.get('email')
-    if (emailId && emails.length > 0) {
+    if (emailId && !loading) {
       const email = emails.find(e => e.id === emailId)
       if (email) {
+        // Email found in current list
         setSelectedId(emailId)
         setViewMode('split')
         if (!email.is_read) {
           markAsRead(emailId)
         }
+      } else if (emails.length > 0) {
+        // Email not in list (may be older) - still select it, EmailDetailFull will fetch it
+        setSelectedId(emailId)
+        setViewMode('split')
+        markAsRead(emailId)
       }
     }
-  }, [searchParams, emails, markAsRead])
+  }, [searchParams, emails, loading, markAsRead])
 
   const handleClassify = async () => {
     setClassifying(true)
@@ -146,7 +158,8 @@ export default function InboxPage() {
     setActiveFilter(category)
   }
 
-  const selectedEmail = emails.find(e => e.id === selectedId)
+  // Get selected email from list or from fetched single email
+  const selectedEmail = emails.find(e => e.id === selectedId) || fetchedEmail
 
   // Show skeleton while loading initial data
   if (loading) {
@@ -305,8 +318,15 @@ export default function InboxPage() {
           </div>
         )}
 
+        {/* Loading state when fetching single email */}
+        {(viewMode === 'split' || viewMode === 'full') && selectedId && !selectedEmail && fetchingEmail && (
+          <div className="flex-1 flex items-center justify-center bg-white">
+            <Loader2 className="w-6 h-6 animate-spin text-[#9B9B9B]" strokeWidth={1.5} />
+          </div>
+        )}
+
         {/* Empty State when split but no selection */}
-        {viewMode === 'split' && !selectedEmail && (
+        {viewMode === 'split' && !selectedId && (
           <div className="flex-1 flex items-center justify-center bg-[#FAFAFA]">
             <p className="text-[14px] text-[#9B9B9B]">Chọn email để xem</p>
           </div>
