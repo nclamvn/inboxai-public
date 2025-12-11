@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, RefreshCw, Trash2, Mail, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
+import { Plus, RefreshCw, Trash2, Mail, AlertCircle, CheckCircle, Loader2, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AddAccountModal } from './add-account-modal'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
@@ -25,6 +25,7 @@ export function SourceAccountsSection() {
   const [syncingId, setSyncingId] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<{ show: boolean; account?: SourceAccount }>({ show: false })
   const [deleting, setDeleting] = useState(false)
+  const [classifying, setClassifying] = useState(false)
 
   const fetchAccounts = useCallback(async () => {
     try {
@@ -64,6 +65,27 @@ export function SourceAccountsSection() {
       alert('Đồng bộ thất bại')
     } finally {
       setSyncingId(null)
+    }
+  }
+
+  const handleClassify = async () => {
+    setClassifying(true)
+    try {
+      const res = await fetch('/api/ai/classify-batch', {
+        method: 'POST'
+      })
+      const data = await res.json()
+
+      if (res.ok) {
+        alert(data.message || `Đã phân loại ${data.classified}/${data.total} email`)
+      } else {
+        alert(data.error || 'Phân loại thất bại')
+      }
+    } catch (error) {
+      console.error('Classify error:', error)
+      alert('Phân loại thất bại')
+    } finally {
+      setClassifying(false)
     }
   }
 
@@ -121,10 +143,21 @@ export function SourceAccountsSection() {
             Kết nối các tài khoản email để đồng bộ vào InboxAI
           </p>
         </div>
-        <Button onClick={() => setShowAddModal(true)} size="sm">
-          <Plus className="w-4 h-4 mr-1" />
-          Thêm
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleClassify}
+            size="sm"
+            variant="secondary"
+            disabled={classifying}
+          >
+            <Sparkles className={`w-4 h-4 mr-1 ${classifying ? 'animate-pulse' : ''}`} />
+            {classifying ? 'Đang phân loại...' : 'Phân loại AI'}
+          </Button>
+          <Button onClick={() => setShowAddModal(true)} size="sm">
+            <Plus className="w-4 h-4 mr-1" />
+            Thêm
+          </Button>
+        </div>
       </div>
 
       <div className="divide-y divide-[#EBEBEB]">
