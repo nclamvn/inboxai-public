@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   RefreshCw, MoreHorizontal, Inbox,
   ChevronLeft, Maximize2, Minimize2, Loader2
@@ -15,11 +16,27 @@ import type { Email } from '@/types'
 type ViewMode = 'list' | 'split' | 'full'
 
 export default function InboxPage() {
+  const searchParams = useSearchParams()
   const { emails, loading, toggleStar, archiveEmail, deleteEmail, markAsRead, refetch } = useEmails({ folder: 'inbox' })
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
   const [classifying, setClassifying] = useState(false)
+
+  // Handle URL query param for email selection
+  useEffect(() => {
+    const emailId = searchParams.get('email')
+    if (emailId && emails.length > 0) {
+      const email = emails.find(e => e.id === emailId)
+      if (email) {
+        setSelectedId(emailId)
+        setViewMode('split')
+        if (!email.is_read) {
+          markAsRead(emailId)
+        }
+      }
+    }
+  }, [searchParams, emails, markAsRead])
 
   const handleClassify = async () => {
     setClassifying(true)
