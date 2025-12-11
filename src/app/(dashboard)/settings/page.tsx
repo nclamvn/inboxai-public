@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { User, Shield, Bell, Zap } from 'lucide-react'
+import { User, Shield, Bell, Zap, Mail } from 'lucide-react'
 import { AISection } from '@/components/settings/ai-section'
 import { MailboxSection } from '@/components/settings/mailbox-section'
 import { RulesList } from '@/components/automation/rules-list'
+import { SourceAccountsSection } from '@/components/settings/source-accounts-section'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -65,6 +66,20 @@ export default async function SettingsPage() {
               </div>
             </div>
           </div>
+        </section>
+
+        {/* Source Email Accounts Section */}
+        <section className="mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-[#EFF6FF] rounded-lg flex items-center justify-center">
+              <Mail className="w-5 h-5 text-[#2563EB]" strokeWidth={1.5} />
+            </div>
+            <div>
+              <h2 className="text-[18px] font-semibold text-[#1A1A1A]">Tai khoan email</h2>
+              <p className="text-[14px] text-[#6B6B6B]">Ket noi Gmail, Outlook de dong bo email</p>
+            </div>
+          </div>
+          <SourceAccountsSection />
         </section>
 
         {/* Mailbox Section */}
