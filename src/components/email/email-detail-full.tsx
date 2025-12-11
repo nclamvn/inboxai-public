@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Star, Archive, Trash2, Reply, Forward, MoreHorizontal,
-  Sparkles, ChevronDown, ChevronUp, Loader2
+  Sparkles, ChevronDown, ChevronUp, Loader2, X
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
@@ -142,18 +142,27 @@ export function EmailDetailFull({
           </button>
         </div>
 
-        <button
-          onClick={() => setShowAIAssistant(!showAIAssistant)}
-          className={cn(
-            'flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors',
-            showAIAssistant
-              ? 'bg-[#1A1A1A] text-white'
-              : 'text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5]'
-          )}
-        >
-          <Sparkles className="w-4 h-4" strokeWidth={1.5} />
-          AI Trả lời
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowAIAssistant(!showAIAssistant)}
+            className={cn(
+              'flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors',
+              showAIAssistant
+                ? 'bg-[#1A1A1A] text-white'
+                : 'text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5]'
+            )}
+          >
+            <Sparkles className="w-4 h-4" strokeWidth={1.5} />
+            AI Trả lời
+          </button>
+          <button
+            onClick={onBack}
+            className="p-2 rounded-lg text-[#9B9B9B] hover:text-[#6B6B6B] hover:bg-[#F5F5F5] transition-colors"
+            title="Đóng"
+          >
+            <X className="w-5 h-5" strokeWidth={1.5} />
+          </button>
+        </div>
       </div>
 
       {/* Email Header */}
