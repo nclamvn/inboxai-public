@@ -1,0 +1,47 @@
+services:
+  # Main Web Service
+  - type: web
+    name: inboxai
+    runtime: node
+    region: singapore
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false
+      - key: RESEND_WEBHOOK_SECRET
+        sync: false
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: CRON_SECRET
+        sync: false
+
+  # Background Worker for Email Sync
+  - type: worker
+    name: inboxai-sync
+    runtime: node
+    region: singapore
+    plan: free
+    buildCommand: npm install
+    startCommand: node scripts/sync-worker.js
+    envVars:
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+      - key: CRON_SECRET
+        sync: false
