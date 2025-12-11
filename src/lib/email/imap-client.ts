@@ -43,6 +43,11 @@ interface SyncResult {
   lastUid?: string
 }
 
+interface SyncOptions {
+  limit?: number
+  fullSync?: boolean  // Sync all emails, not just new ones
+}
+
 export async function testImapConnection(config: {
   host: string
   port: number
@@ -74,7 +79,9 @@ export async function testImapConnection(config: {
   }
 }
 
-export async function syncEmails(account: SourceAccount, limit: number = 50): Promise<SyncResult> {
+export async function syncEmails(account: SourceAccount, options: SyncOptions = {}): Promise<SyncResult> {
+  const { limit = 200, fullSync = false } = options
+
   const { createClient } = await import('@supabase/supabase-js')
 
   const supabase = createClient(
@@ -90,6 +97,10 @@ export async function syncEmails(account: SourceAccount, limit: number = 50): Pr
 
   const password = decryptPassword(account.password_encrypted)
 
+  console.log(`[SYNC] Starting sync for: ${account.email_address}`)
+  console.log(`[SYNC] Options: limit=${limit}, fullSync=${fullSync}`)
+  console.log(`[SYNC] Last sync UID: ${account.last_sync_uid || 'none'}`)
+
   try {
     const { ImapFlow } = await import('imapflow')
     const { simpleParser } = await import('mailparser')
@@ -102,20 +113,43 @@ export async function syncEmails(account: SourceAccount, limit: number = 50): Pr
         user: account.username,
         pass: password
       },
-      logger: false
+      logger: false,
+      emitLogs: false
     })
 
     await client.connect()
+    console.log(`[SYNC] Connected to ${account.imap_host}`)
 
     // Select INBOX
     const mailbox = await client.getMailboxLock('INBOX')
 
     try {
+      // Get mailbox status to know total messages
+      const status = await client.status('INBOX', { messages: true, uidNext: true })
+      const totalMessages = status.messages || 0
+      console.log(`[SYNC] Total messages in INBOX: ${totalMessages}`)
+
+      // Determine fetch range
+      let fetchRange: string
+
+      if (fullSync) {
+        // Full sync: fetch all (newest first by using reverse order later)
+        fetchRange = '1:*'
+        console.log(`[SYNC] Full sync mode - fetching all messages`)
+      } else if (account.last_sync_uid) {
+        // Incremental sync: only new emails since last sync
+        const lastUid = parseInt(account.last_sync_uid)
+        fetchRange = `${lastUid + 1}:*`
+        console.log(`[SYNC] Incremental sync - fetching UID > ${lastUid}`)
+      } else {
+        // First sync: fetch most recent emails (last N based on sequence number)
+        const startSeq = Math.max(1, totalMessages - limit + 1)
+        fetchRange = `${startSeq}:*`
+        console.log(`[SYNC] First sync - fetching sequences ${startSeq} to ${totalMessages}`)
+      }
+
       // Fetch messages
       const messages: Array<{ uid: number; source: Buffer }> = []
-      const fetchRange = account.last_sync_uid
-        ? `${parseInt(account.last_sync_uid) + 1}:*`
-        : '1:*'
 
       for await (const message of client.fetch(fetchRange, { source: true, uid: true }, { uid: true })) {
         if (message.source) {
@@ -125,10 +159,23 @@ export async function syncEmails(account: SourceAccount, limit: number = 50): Pr
           })
         }
 
-        if (messages.length >= limit) break
+        if (messages.length >= limit) {
+          console.log(`[SYNC] Reached limit: ${limit}`)
+          break
+        }
+
+        // Log progress every 50 messages
+        if (messages.length % 50 === 0) {
+          console.log(`[SYNC] Fetched ${messages.length} messages...`)
+        }
       }
 
+      console.log(`[SYNC] Total fetched: ${messages.length} messages`)
+
       // Process messages
+      let processedCount = 0
+      let skippedCount = 0
+
       for (const msg of messages) {
         try {
           const parsed = await simpleParser(msg.source)
@@ -141,7 +188,10 @@ export async function syncEmails(account: SourceAccount, limit: number = 50): Pr
             .eq('original_uid', String(msg.uid))
             .single()
 
-          if (existing) continue
+          if (existing) {
+            skippedCount++
+            continue
+          }
 
           // Extract from address
           const fromAddress = parsed.from?.value?.[0]?.address || ''
@@ -154,7 +204,7 @@ export async function syncEmails(account: SourceAccount, limit: number = 50): Pr
             : []
 
           // Insert email
-          await supabase.from('emails').insert({
+          const { error: insertError } = await supabase.from('emails').insert({
             user_id: account.user_id,
             source_account_id: account.id,
             original_uid: String(msg.uid),
@@ -177,25 +227,57 @@ export async function syncEmails(account: SourceAccount, limit: number = 50): Pr
             direction: 'inbound'
           })
 
+          if (insertError) {
+            // Handle duplicate key error gracefully
+            if (insertError.code === '23505') {
+              skippedCount++
+              continue
+            }
+            throw insertError
+          }
+
           result.synced++
           result.lastUid = String(msg.uid)
+          processedCount++
+
+          // Log progress every 20 emails saved
+          if (processedCount % 20 === 0) {
+            console.log(`[SYNC] Saved ${processedCount} emails...`)
+          }
         } catch (parseError) {
           const errorMsg = parseError instanceof Error ? parseError.message : 'Parse error'
           result.errors.push(`UID ${msg.uid}: ${errorMsg}`)
+          console.error(`[SYNC] Error processing UID ${msg.uid}:`, errorMsg)
         }
       }
 
-      // Update last sync UID
-      if (result.lastUid) {
-        await supabase
-          .from('source_accounts')
-          .update({
-            last_sync_uid: result.lastUid,
-            last_sync_at: new Date().toISOString(),
-            sync_error: null
-          })
-          .eq('id', account.id)
+      console.log(`[SYNC] Completed: ${result.synced} saved, ${skippedCount} skipped (duplicates)`)
+
+      // Update last sync UID and stats
+      const updateData: Record<string, unknown> = {
+        last_sync_at: new Date().toISOString(),
+        sync_error: result.errors.length > 0 ? result.errors.slice(0, 3).join('; ') : null
       }
+
+      if (result.lastUid) {
+        updateData.last_sync_uid = result.lastUid
+      }
+
+      // Update total_emails_synced
+      if (result.synced > 0) {
+        const { data: currentAccount } = await supabase
+          .from('source_accounts')
+          .select('total_emails_synced')
+          .eq('id', account.id)
+          .single()
+
+        updateData.total_emails_synced = (currentAccount?.total_emails_synced || 0) + result.synced
+      }
+
+      await supabase
+        .from('source_accounts')
+        .update(updateData)
+        .eq('id', account.id)
 
       result.success = true
     } finally {
@@ -203,9 +285,11 @@ export async function syncEmails(account: SourceAccount, limit: number = 50): Pr
     }
 
     await client.logout()
+    console.log(`[SYNC] Disconnected from ${account.imap_host}`)
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'Sync failed'
     result.errors.push(errorMsg)
+    console.error(`[SYNC] Fatal error:`, errorMsg)
 
     // Update sync error
     const { createClient } = await import('@supabase/supabase-js')

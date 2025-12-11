@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { Plus, RefreshCw, Trash2, Mail, AlertCircle, CheckCircle, Loader2, Sparkles } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Plus, RefreshCw, Trash2, Mail, AlertCircle, CheckCircle, Loader2, Sparkles, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AddAccountModal } from './add-account-modal'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { cn } from '@/lib/utils'
 
 interface SourceAccount {
   id: string
@@ -26,6 +27,8 @@ export function SourceAccountsSection() {
   const [deleteConfirm, setDeleteConfirm] = useState<{ show: boolean; account?: SourceAccount }>({ show: false })
   const [deleting, setDeleting] = useState(false)
   const [classifying, setClassifying] = useState(false)
+  const [syncDropdownId, setSyncDropdownId] = useState<string | null>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const fetchAccounts = useCallback(async () => {
     try {
@@ -45,18 +48,34 @@ export function SourceAccountsSection() {
     fetchAccounts()
   }, [fetchAccounts])
 
-  const handleSync = async (accountId: string) => {
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setSyncDropdownId(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleSync = async (accountId: string, fullSync = false) => {
     setSyncingId(accountId)
     try {
       const res = await fetch(`/api/source-accounts/${accountId}/sync`, {
-        method: 'POST'
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullSync,
+          limit: fullSync ? 500 : 200
+        })
       })
       const data = await res.json()
 
       if (res.ok) {
         // Refresh accounts to show updated sync info
         fetchAccounts()
-        alert(`Đã đồng bộ ${data.synced} email`)
+        alert(data.message || `Đã đồng bộ ${data.synced} email`)
       } else {
         alert(data.error || 'Đồng bộ thất bại')
       }
@@ -214,14 +233,48 @@ export function SourceAccountsSection() {
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleSync(account.id)}
-                  disabled={syncingId === account.id}
-                  className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] rounded-lg transition-colors disabled:opacity-50"
-                  title="Đồng bộ ngay"
-                >
-                  <RefreshCw className={`w-4 h-4 ${syncingId === account.id ? 'animate-spin' : ''}`} strokeWidth={1.5} />
-                </button>
+                {/* Sync dropdown */}
+                <div className="relative" ref={syncDropdownId === account.id ? dropdownRef : undefined}>
+                  <button
+                    onClick={() => setSyncDropdownId(syncDropdownId === account.id ? null : account.id)}
+                    disabled={syncingId === account.id}
+                    className={cn(
+                      "flex items-center gap-1 px-2 py-1.5 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] rounded-lg transition-colors disabled:opacity-50",
+                      syncDropdownId === account.id && "bg-[#F5F5F5] text-[#1A1A1A]"
+                    )}
+                    title="Đồng bộ email"
+                  >
+                    <RefreshCw className={cn("w-4 h-4", syncingId === account.id && "animate-spin")} strokeWidth={1.5} />
+                    <ChevronDown className={cn("w-3 h-3 transition-transform", syncDropdownId === account.id && "rotate-180")} strokeWidth={1.5} />
+                  </button>
+
+                  {/* Dropdown menu */}
+                  {syncDropdownId === account.id && (
+                    <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-[#EBEBEB] rounded-lg shadow-lg py-1 z-10">
+                      <button
+                        onClick={() => {
+                          setSyncDropdownId(null)
+                          handleSync(account.id, false)
+                        }}
+                        className="w-full px-3 py-2 text-left text-[13px] text-[#1A1A1A] hover:bg-[#F5F5F5] transition-colors"
+                      >
+                        <div className="font-medium">Sync mới</div>
+                        <div className="text-[11px] text-[#6B6B6B]">Chỉ email mới (nhanh)</div>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSyncDropdownId(null)
+                          handleSync(account.id, true)
+                        }}
+                        className="w-full px-3 py-2 text-left text-[13px] text-[#1A1A1A] hover:bg-[#F5F5F5] transition-colors"
+                      >
+                        <div className="font-medium">Sync tất cả</div>
+                        <div className="text-[11px] text-[#6B6B6B]">Tối đa 500 email gần nhất</div>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 <button
                   onClick={() => setDeleteConfirm({ show: true, account })}
                   className="p-2 text-[#6B6B6B] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"

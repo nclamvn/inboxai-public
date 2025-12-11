@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { syncEmails } from '@/lib/email/imap-client'
 import { classifyEmail } from '@/lib/ai/classifier'
 
+// Allow longer execution time for sync
+export const maxDuration = 60
+
 // POST - Trigger sync for account
 export async function POST(
   request: NextRequest,
@@ -33,39 +36,40 @@ export async function POST(
   }
 
   // Parse request body for options
-  let limit = 50
+  let limit = 200  // Increased default
+  let fullSync = false
   try {
     const body = await request.json()
-    if (body.limit) limit = Math.min(body.limit, 200)
+    if (body.limit) limit = Math.min(body.limit, 500)  // Allow up to 500
+    if (body.fullSync) fullSync = true
   } catch {
     // No body provided, use defaults
   }
 
-  // Perform sync
-  const result = await syncEmails(account, limit)
+  console.log(`[API] Starting sync for ${account.email_address}`)
+  console.log(`[API] Options: limit=${limit}, fullSync=${fullSync}`)
+  console.log(`[API] Current last_sync_uid: ${account.last_sync_uid || 'none'}`)
 
-  // Update sync count
+  // Perform sync with options
+  const result = await syncEmails(account, { limit, fullSync })
+
+  // Auto-classify new emails (async, non-blocking)
   if (result.synced > 0) {
-    await supabase
-      .from('source_accounts')
-      .update({
-        total_emails_synced: account.total_emails_synced + result.synced
-      })
-      .eq('id', accountId)
-
-    // Auto-classify new emails (async, non-blocking)
     classifyNewEmails(supabase, user.id).catch(err => {
       console.error('Auto-classify error:', err)
     })
   }
 
+  console.log(`[API] Sync completed: ${result.synced} emails synced`)
+
   return NextResponse.json({
     success: result.success,
     synced: result.synced,
-    errors: result.errors,
-    message: result.success
-      ? `Synced ${result.synced} emails`
-      : 'Sync failed'
+    lastUid: result.lastUid,
+    errors: result.errors.slice(0, 5),  // Limit errors returned
+    message: result.synced > 0
+      ? `Đã đồng bộ ${result.synced} email mới`
+      : 'Không có email mới'
   })
 }
 
