@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import {
   Bell, Sparkles, ChevronDown, LogOut,
@@ -33,6 +33,8 @@ export function Header() {
   const [briefing, setBriefing] = useState<BriefingData | null>(null)
   const router = useRouter()
   const supabase = createClient()
+  const aiPopoverRef = useRef<HTMLDivElement>(null)
+  const userMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const getUser = async () => {
@@ -67,9 +69,34 @@ export function Header() {
     fetchBriefing()
   }, [supabase])
 
+  // Close popovers when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (aiPopoverRef.current && !aiPopoverRef.current.contains(event.target as Node)) {
+        setShowAIPopover(false)
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push('/login')
+  }
+
+  const handleNavigateToInbox = () => {
+    setShowAIPopover(false)
+    router.push('/inbox')
+  }
+
+  const handleNavigateToInsights = () => {
+    setShowAIPopover(false)
+    router.push('/insights')
   }
 
   const initials = user?.profile?.full_name
@@ -89,8 +116,9 @@ export function Header() {
       {/* Right Actions */}
       <div className="flex items-center gap-1 ml-4">
         {/* AI Assistant Badge */}
-        <div className="relative">
+        <div className="relative" ref={aiPopoverRef}>
           <button
+            type="button"
             onClick={() => setShowAIPopover(!showAIPopover)}
             className={cn(
               'flex items-center gap-2 h-9 px-3 rounded-lg transition-colors',
@@ -109,107 +137,86 @@ export function Header() {
 
           {/* AI Popover */}
           {showAIPopover && (
-            <>
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowAIPopover(false)}
-              />
-              <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl border border-[#EBEBEB] shadow-lg z-50 overflow-hidden">
-                <div className="p-4 border-b border-[#EBEBEB] bg-[#FAFAFA]">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-[#1A1A1A]" strokeWidth={1.5} />
-                      <span className="text-[14px] font-medium text-[#1A1A1A]">
-                        AI Thư Ký
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        setShowAIPopover(false)
-                      }}
-                      className="p-1 rounded text-[#9B9B9B] hover:text-[#6B6B6B]"
-                    >
-                      <X className="w-4 h-4" strokeWidth={1.5} />
-                    </button>
+            <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl border border-[#EBEBEB] shadow-lg z-50 overflow-hidden">
+              <div className="p-4 border-b border-[#EBEBEB] bg-[#FAFAFA]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-[#1A1A1A]" strokeWidth={1.5} />
+                    <span className="text-[14px] font-medium text-[#1A1A1A]">
+                      AI Thư Ký
+                    </span>
                   </div>
-                  {briefing && (
-                    <p className="text-[13px] text-[#6B6B6B] mt-1">
-                      {briefing.unread} chưa đọc · {briefing.needsAttention} cần chú ý
-                    </p>
-                  )}
-                </div>
-                <div className="max-h-64 overflow-y-auto">
-                  {briefing?.items && briefing.items.length > 0 ? (
-                    <div className="p-2">
-                      {briefing.items.map((item, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            setShowAIPopover(false)
-                            // Small delay to ensure popover closes before navigation
-                            setTimeout(() => {
-                              router.push('/inbox')
-                            }, 50)
-                          }}
-                          className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[#F5F5F5] transition-colors text-left"
-                        >
-                          <div className={cn(
-                            'w-8 h-8 rounded-lg flex items-center justify-center text-[13px] font-medium',
-                            item.type === 'urgent' && 'bg-[#FEF2F2] text-[#DC2626]',
-                            item.type === 'deadline' && 'bg-[#FFFBEB] text-[#D97706]',
-                            item.type === 'waiting' && 'bg-[#EFF6FF] text-[#2563EB]',
-                            item.type === 'vip' && 'bg-[#F5F3FF] text-[#7C3AED]',
-                            !['urgent', 'deadline', 'waiting', 'vip'].includes(item.type) && 'bg-[#F5F5F5] text-[#6B6B6B]'
-                          )}>
-                            {item.count}
-                          </div>
-                          <span className="text-[14px] text-[#1A1A1A]">
-                            {item.title}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-6 text-center text-[#6B6B6B]">
-                      <p className="text-[14px]">Không có gì cần chú ý</p>
-                    </div>
-                  )}
-                </div>
-                <div className="p-2 border-t border-[#EBEBEB]">
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      setShowAIPopover(false)
-                      setTimeout(() => {
-                        router.push('/insights')
-                      }, 50)
-                    }}
-                    className="block w-full text-center py-2 text-[13px] text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors"
+                    onClick={() => setShowAIPopover(false)}
+                    className="p-1 rounded text-[#9B9B9B] hover:text-[#6B6B6B]"
                   >
-                    Xem Insights →
+                    <X className="w-4 h-4" strokeWidth={1.5} />
                   </button>
                 </div>
+                {briefing && (
+                  <p className="text-[13px] text-[#6B6B6B] mt-1">
+                    {briefing.unread} chưa đọc · {briefing.needsAttention} cần chú ý
+                  </p>
+                )}
               </div>
-            </>
+              <div className="max-h-64 overflow-y-auto">
+                {briefing?.items && briefing.items.length > 0 ? (
+                  <div className="p-2">
+                    {briefing.items.map((item, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={handleNavigateToInbox}
+                        className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[#F5F5F5] transition-colors text-left"
+                      >
+                        <div className={cn(
+                          'w-8 h-8 rounded-lg flex items-center justify-center text-[13px] font-medium',
+                          item.type === 'urgent' && 'bg-[#FEF2F2] text-[#DC2626]',
+                          item.type === 'deadline' && 'bg-[#FFFBEB] text-[#D97706]',
+                          item.type === 'waiting' && 'bg-[#EFF6FF] text-[#2563EB]',
+                          item.type === 'vip' && 'bg-[#F5F3FF] text-[#7C3AED]',
+                          !['urgent', 'deadline', 'waiting', 'vip'].includes(item.type) && 'bg-[#F5F5F5] text-[#6B6B6B]'
+                        )}>
+                          {item.count}
+                        </div>
+                        <span className="text-[14px] text-[#1A1A1A]">
+                          {item.title}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-6 text-center text-[#6B6B6B]">
+                    <p className="text-[14px]">Không có gì cần chú ý</p>
+                  </div>
+                )}
+              </div>
+              <div className="p-2 border-t border-[#EBEBEB]">
+                <button
+                  type="button"
+                  onClick={handleNavigateToInsights}
+                  className="block w-full text-center py-2 text-[13px] text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors"
+                >
+                  Xem Insights →
+                </button>
+              </div>
+            </div>
           )}
         </div>
 
         {/* Notifications */}
-        <button className="p-2 rounded-lg text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors">
+        <button
+          type="button"
+          className="p-2 rounded-lg text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors"
+        >
           <Bell className="w-5 h-5" strokeWidth={1.5} />
         </button>
 
         {/* User Menu */}
-        <div className="relative ml-2">
+        <div className="relative ml-2" ref={userMenuRef}>
           <button
+            type="button"
             onClick={() => setShowUserMenu(!showUserMenu)}
             className="flex items-center gap-2 h-9 pl-1 pr-2 rounded-lg hover:bg-[#F5F5F5] transition-colors"
           >
@@ -220,39 +227,34 @@ export function Header() {
           </button>
 
           {showUserMenu && (
-            <>
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowUserMenu(false)}
-              />
-              <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl border border-[#EBEBEB] shadow-lg z-50 overflow-hidden">
-                <div className="p-3 border-b border-[#EBEBEB]">
-                  <p className="text-[14px] font-medium text-[#1A1A1A]">
-                    {user?.profile?.full_name || 'User'}
-                  </p>
-                  <p className="text-[12px] text-[#6B6B6B] truncate">
-                    {user?.email}
-                  </p>
-                </div>
-                <div className="p-1">
-                  <Link
-                    href="/settings"
-                    onClick={() => setShowUserMenu(false)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors"
-                  >
-                    <Settings className="w-4 h-4" strokeWidth={1.5} />
-                    Cài đặt
-                  </Link>
-                  <button
-                    onClick={handleSignOut}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors"
-                  >
-                    <LogOut className="w-4 h-4" strokeWidth={1.5} />
-                    Đăng xuất
-                  </button>
-                </div>
+            <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl border border-[#EBEBEB] shadow-lg z-50 overflow-hidden">
+              <div className="p-3 border-b border-[#EBEBEB]">
+                <p className="text-[14px] font-medium text-[#1A1A1A]">
+                  {user?.profile?.full_name || 'User'}
+                </p>
+                <p className="text-[12px] text-[#6B6B6B] truncate">
+                  {user?.email}
+                </p>
               </div>
-            </>
+              <div className="p-1">
+                <Link
+                  href="/settings"
+                  onClick={() => setShowUserMenu(false)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors"
+                >
+                  <Settings className="w-4 h-4" strokeWidth={1.5} />
+                  Cài đặt
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors"
+                >
+                  <LogOut className="w-4 h-4" strokeWidth={1.5} />
+                  Đăng xuất
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

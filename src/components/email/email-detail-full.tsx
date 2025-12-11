@@ -34,22 +34,22 @@ export function EmailDetailFull({
   const [showAIAnalysis, setShowAIAnalysis] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
-  const handleAction = async (action: 'archive' | 'delete' | 'star') => {
-    setActionLoading(action)
-    try {
-      if (action === 'star') {
-        onStar?.(email.id)
-      } else if (action === 'archive') {
-        onArchive?.(email.id)
-        onBack()
-      } else if (action === 'delete') {
-        onDelete?.(email.id)
-        onBack()
-      }
-      onRefresh()
-    } finally {
-      setActionLoading(null)
-    }
+  const handleStar = () => {
+    onStar?.(email.id)
+  }
+
+  const handleArchive = () => {
+    setActionLoading('archive')
+    onArchive?.(email.id)
+  }
+
+  const handleDelete = () => {
+    setActionLoading('delete')
+    onDelete?.(email.id)
+  }
+
+  const handleClose = () => {
+    onBack()
   }
 
   const handleUseDraft = (subject: string, body: string) => {
@@ -100,8 +100,8 @@ export function EmailDetailFull({
       <div className="flex items-center justify-between px-6 py-3 border-b border-[#EBEBEB]">
         <div className="flex items-center gap-1">
           <button
-            onClick={() => handleAction('star')}
-            disabled={actionLoading === 'star'}
+            type="button"
+            onClick={handleStar}
             className={cn(
               'p-2 rounded-lg transition-colors',
               email.is_starred
@@ -116,7 +116,8 @@ export function EmailDetailFull({
             />
           </button>
           <button
-            onClick={() => handleAction('archive')}
+            type="button"
+            onClick={handleArchive}
             disabled={actionLoading === 'archive'}
             className="p-2 rounded-lg text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] transition-colors"
           >
@@ -127,7 +128,8 @@ export function EmailDetailFull({
             )}
           </button>
           <button
-            onClick={() => handleAction('delete')}
+            type="button"
+            onClick={handleDelete}
             disabled={actionLoading === 'delete'}
             className="p-2 rounded-lg text-[#6B6B6B] hover:text-[#DC2626] hover:bg-[#FEF2F2] transition-colors"
           >
@@ -137,13 +139,17 @@ export function EmailDetailFull({
               <Trash2 className="w-5 h-5" strokeWidth={1.5} />
             )}
           </button>
-          <button className="p-2 rounded-lg text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] transition-colors">
+          <button
+            type="button"
+            className="p-2 rounded-lg text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] transition-colors"
+          >
             <MoreHorizontal className="w-5 h-5" strokeWidth={1.5} />
           </button>
         </div>
 
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={() => setShowAIAssistant(!showAIAssistant)}
             className={cn(
               'flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors',
@@ -157,12 +163,7 @@ export function EmailDetailFull({
           </button>
           <button
             type="button"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              console.log('Close button clicked, calling onBack')
-              onBack()
-            }}
+            onClick={handleClose}
             className="p-2 rounded-lg text-[#9B9B9B] hover:text-[#6B6B6B] hover:bg-[#F5F5F5] transition-colors"
             title="Đóng"
           >
@@ -212,6 +213,7 @@ export function EmailDetailFull({
         {(email.category || email.priority || email.summary) && (
           <div className="mt-4">
             <button
+              type="button"
               onClick={() => setShowAIAnalysis(!showAIAnalysis)}
               className="flex items-center gap-2 text-[13px] text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors"
             >
@@ -268,13 +270,17 @@ export function EmailDetailFull({
         <div className="px-6 py-4 border-t border-[#EBEBEB] bg-[#FAFAFA]">
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={() => handleUseDraft(`Re: ${email.subject}`, '')}
               className="flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] text-white rounded-lg text-[14px] font-medium hover:bg-[#2D2D2D] transition-colors"
             >
               <Reply className="w-4 h-4" strokeWidth={1.5} />
               Trả lời
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 border border-[#EBEBEB] rounded-lg text-[14px] text-[#6B6B6B] hover:bg-[#F5F5F5] transition-colors">
+            <button
+              type="button"
+              className="flex items-center gap-2 px-4 py-2 border border-[#EBEBEB] rounded-lg text-[14px] text-[#6B6B6B] hover:bg-[#F5F5F5] transition-colors"
+            >
               <Forward className="w-4 h-4" strokeWidth={1.5} />
               Chuyển tiếp
             </button>
