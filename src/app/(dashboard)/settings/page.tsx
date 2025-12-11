@@ -75,8 +75,8 @@ export default async function SettingsPage() {
               <Mail className="w-5 h-5 text-[#2563EB]" strokeWidth={1.5} />
             </div>
             <div>
-              <h2 className="text-[18px] font-semibold text-[#1A1A1A]">Tai khoan email</h2>
-              <p className="text-[14px] text-[#6B6B6B]">Ket noi Gmail, Outlook de dong bo email</p>
+              <h2 className="text-[18px] font-semibold text-[#1A1A1A]">Tài khoản email</h2>
+              <p className="text-[14px] text-[#6B6B6B]">Kết nối Gmail, Outlook để đồng bộ email</p>
             </div>
           </div>
           <SourceAccountsSection />

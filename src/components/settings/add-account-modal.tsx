@@ -16,28 +16,28 @@ const PROVIDERS = [
     name: 'Gmail',
     icon: '📧',
     color: 'bg-red-50 border-red-200',
-    instructions: 'Dung App Password tu Google Account > Security > 2-Step Verification > App passwords'
+    instructions: 'Dùng App Password từ Google Account > Security > 2-Step Verification > App passwords'
   },
   {
     id: 'outlook',
     name: 'Outlook / Hotmail',
     icon: '📨',
     color: 'bg-blue-50 border-blue-200',
-    instructions: 'Dung mat khau thuong hoac App Password'
+    instructions: 'Dùng mật khẩu thường hoặc App Password'
   },
   {
     id: 'yahoo',
     name: 'Yahoo Mail',
     icon: '📩',
     color: 'bg-purple-50 border-purple-200',
-    instructions: 'Dung App Password tu Yahoo Account > Security'
+    instructions: 'Dùng App Password từ Yahoo Account > Security'
   },
   {
     id: 'custom',
-    name: 'IMAP/SMTP khac',
+    name: 'IMAP/SMTP khác',
     icon: '⚙️',
     color: 'bg-gray-50 border-gray-200',
-    instructions: 'Nhap thong tin server thu cong'
+    instructions: 'Nhập thông tin server thủ công'
   }
 ]
 
@@ -81,7 +81,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
 
   const handleConnect = async () => {
     if (!email || !password) {
-      setError('Vui long nhap email va mat khau')
+      setError('Vui lòng nhập email và mật khẩu')
       return
     }
 
@@ -113,7 +113,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.details || result.error || 'Ket noi that bai')
+        throw new Error(result.details || result.error || 'Kết nối thất bại')
       }
 
       setStep('success')
@@ -122,7 +122,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
         handleClose()
       }, 1500)
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Ket noi that bai'
+      const errorMsg = err instanceof Error ? err.message : 'Kết nối thất bại'
       setError(errorMsg)
       setStep('error')
     }
@@ -139,7 +139,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[#EBEBEB]">
           <h2 className="text-[16px] font-semibold text-[#1A1A1A]">
-            Ket noi tai khoan email
+            Kết nối tài khoản email
           </h2>
           <button
             onClick={handleClose}
@@ -155,7 +155,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
           {step === 'select-provider' && (
             <div className="space-y-3">
               <p className="text-[14px] text-[#6B6B6B] mb-4">
-                Chon nha cung cap email:
+                Chọn nhà cung cấp email:
               </p>
               {PROVIDERS.map(p => (
                 <button
@@ -177,7 +177,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
                 onClick={() => setStep('select-provider')}
                 className="text-[14px] text-[#6B6B6B] hover:text-[#1A1A1A]"
               >
-                ← Quay lai
+                ← Quay lại
               </button>
 
               <div className={`flex items-center gap-3 p-3 rounded-lg ${selectedProvider.color}`}>
@@ -205,7 +205,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
 
                 <div>
                   <label className="block text-[13px] font-medium text-[#6B6B6B] mb-1">
-                    Mat khau / App Password
+                    Mật khẩu / App Password
                   </label>
                   <div className="relative">
                     <input
@@ -297,7 +297,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
                 disabled={!email || !password}
               >
                 <Mail className="w-4 h-4 mr-2" />
-                Ket noi
+                Kết nối
               </Button>
             </div>
           )}
@@ -307,10 +307,10 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
             <div className="py-8 text-center">
               <Loader2 className="w-12 h-12 mx-auto text-[#1A1A1A] animate-spin mb-4" />
               <p className="text-[15px] text-[#6B6B6B]">
-                Dang ket noi va xac thuc...
+                Đang kết nối và xác thực...
               </p>
               <p className="text-[13px] text-[#9B9B9B] mt-1">
-                Vui long doi trong giay lat
+                Vui lòng đợi trong giây lát
               </p>
             </div>
           )}
@@ -320,10 +320,10 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
             <div className="py-8 text-center">
               <CheckCircle className="w-12 h-12 mx-auto text-green-500 mb-4" />
               <p className="text-[15px] font-medium text-[#1A1A1A]">
-                Ket noi thanh cong!
+                Kết nối thành công!
               </p>
               <p className="text-[13px] text-[#6B6B6B] mt-1">
-                Email da duoc them vao InboxAI
+                Email đã được thêm vào InboxAI
               </p>
             </div>
           )}
@@ -333,7 +333,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
             <div className="py-6 text-center">
               <AlertCircle className="w-12 h-12 mx-auto text-red-500 mb-4" />
               <p className="text-[15px] font-medium text-[#1A1A1A] mb-2">
-                Ket noi that bai
+                Kết nối thất bại
               </p>
               {error && (
                 <p className="text-[13px] text-[#DC2626] mb-4 px-4">
@@ -342,10 +342,10 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
               )}
               <div className="flex gap-3 justify-center">
                 <Button variant="secondary" onClick={() => setStep('enter-credentials')}>
-                  Thu lai
+                  Thử lại
                 </Button>
                 <Button variant="secondary" onClick={handleClose}>
-                  Dong
+                  Đóng
                 </Button>
               </div>
             </div>
