@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import {
   RefreshCw, MoreHorizontal, Inbox,
-  ChevronLeft, Maximize2, Minimize2, Loader2
+  ChevronLeft, Maximize2, Minimize2, Loader2, Sparkles
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useEmails } from '@/hooks/use-emails'
@@ -19,6 +19,29 @@ export default function InboxPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
+  const [classifying, setClassifying] = useState(false)
+
+  const handleClassify = async () => {
+    setClassifying(true)
+    try {
+      const res = await fetch('/api/ai/classify-batch', {
+        method: 'POST'
+      })
+      const data = await res.json()
+
+      if (res.ok) {
+        alert(data.message || `Đã phân loại ${data.classified}/${data.total} email`)
+        refetch() // Reload emails to show new categories
+      } else {
+        alert(data.error || 'Phân loại thất bại')
+      }
+    } catch (error) {
+      console.error('Classify error:', error)
+      alert('Phân loại thất bại')
+    } finally {
+      setClassifying(false)
+    }
+  }
 
   // Calculate filter counts
   const filterCounts = useMemo(() => {
@@ -153,6 +176,15 @@ export default function InboxPage() {
           </button>
           <button className="p-2 rounded-lg text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors">
             <MoreHorizontal className="w-5 h-5" strokeWidth={1.5} />
+          </button>
+          <button
+            onClick={handleClassify}
+            disabled={classifying}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1A1A1A] text-white text-[13px] font-medium hover:bg-[#333] transition-colors disabled:opacity-50"
+            title="Phân loại email bằng AI"
+          >
+            <Sparkles className={cn('w-4 h-4', classifying && 'animate-pulse')} strokeWidth={1.5} />
+            {classifying ? 'Đang phân loại...' : 'Phân loại AI'}
           </button>
         </div>
 
