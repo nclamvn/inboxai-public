@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Trash2, RotateCcw } from 'lucide-react'
+import { Trash2, RotateCcw, X } from 'lucide-react'
 import { useEmails } from '@/hooks/use-emails'
 import { EmailList } from '@/components/email/email-list'
 import { EmailDetail } from '@/components/email/email-detail'
@@ -71,9 +71,18 @@ export default function TrashPage() {
           <div className="h-full flex flex-col bg-white">
             {/* Custom header for trash */}
             <div className="flex items-center justify-between p-4 border-b border-[#EBEBEB] bg-[#FEF2F2]">
-              <div>
-                <h2 className="font-semibold text-[#1A1A1A]">{selectedEmail.subject || '(Không có tiêu đề)'}</h2>
-                <p className="text-[14px] text-[#DC2626]">Email này đang ở thùng rác</p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setSelectedEmail(null)}
+                  className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-white/50 rounded-lg transition-colors"
+                  title="Đóng"
+                >
+                  <X className="w-5 h-5" strokeWidth={1.5} />
+                </button>
+                <div>
+                  <h2 className="font-semibold text-[#1A1A1A]">{selectedEmail.subject || '(Không có tiêu đề)'}</h2>
+                  <p className="text-[14px] text-[#DC2626]">Email này đang ở thùng rác</p>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button

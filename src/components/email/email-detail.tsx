@@ -130,8 +130,12 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
       <div className="flex items-center justify-between p-4 border-b border-[#EBEBEB]">
         <div className="flex items-center gap-2">
           <button
-            onClick={onClose}
-            className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] rounded-lg transition-colors lg:hidden"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onClose()
+            }}
+            className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] rounded-lg transition-colors"
           >
             <X className="w-5 h-5" strokeWidth={1.5} />
           </button>
