@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
   RefreshCw, MoreHorizontal, Inbox,
@@ -134,10 +134,11 @@ export default function InboxPage() {
     }
   }
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
+    console.log('handleBack called - closing email detail')
     setSelectedId(null)
     setViewMode('list')
-  }
+  }, [])
 
   const handleMaximize = () => {
     setViewMode(viewMode === 'full' ? 'split' : 'full')

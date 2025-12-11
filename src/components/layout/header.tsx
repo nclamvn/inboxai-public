@@ -124,7 +124,12 @@ export function Header() {
                       </span>
                     </div>
                     <button
-                      onClick={() => setShowAIPopover(false)}
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setShowAIPopover(false)
+                      }}
                       className="p-1 rounded text-[#9B9B9B] hover:text-[#6B6B6B]"
                     >
                       <X className="w-4 h-4" strokeWidth={1.5} />
@@ -140,11 +145,19 @@ export function Header() {
                   {briefing?.items && briefing.items.length > 0 ? (
                     <div className="p-2">
                       {briefing.items.map((item, i) => (
-                        <Link
+                        <button
                           key={i}
-                          href="/inbox"
-                          onClick={() => setShowAIPopover(false)}
-                          className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#F5F5F5] transition-colors"
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            setShowAIPopover(false)
+                            // Small delay to ensure popover closes before navigation
+                            setTimeout(() => {
+                              router.push('/inbox')
+                            }, 50)
+                          }}
+                          className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[#F5F5F5] transition-colors text-left"
                         >
                           <div className={cn(
                             'w-8 h-8 rounded-lg flex items-center justify-center text-[13px] font-medium',
@@ -159,7 +172,7 @@ export function Header() {
                           <span className="text-[14px] text-[#1A1A1A]">
                             {item.title}
                           </span>
-                        </Link>
+                        </button>
                       ))}
                     </div>
                   ) : (
@@ -169,13 +182,20 @@ export function Header() {
                   )}
                 </div>
                 <div className="p-2 border-t border-[#EBEBEB]">
-                  <Link
-                    href="/insights"
-                    onClick={() => setShowAIPopover(false)}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setShowAIPopover(false)
+                      setTimeout(() => {
+                        router.push('/insights')
+                      }, 50)
+                    }}
                     className="block w-full text-center py-2 text-[13px] text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors"
                   >
                     Xem Insights →
-                  </Link>
+                  </button>
                 </div>
               </div>
             </>

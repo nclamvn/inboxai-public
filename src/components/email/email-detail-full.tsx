@@ -156,9 +156,11 @@ export function EmailDetailFull({
             AI Trả lời
           </button>
           <button
+            type="button"
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
+              console.log('Close button clicked, calling onBack')
               onBack()
             }}
             className="p-2 rounded-lg text-[#9B9B9B] hover:text-[#6B6B6B] hover:bg-[#F5F5F5] transition-colors"
