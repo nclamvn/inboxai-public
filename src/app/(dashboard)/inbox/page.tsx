@@ -412,8 +412,9 @@ function InboxContent() {
 
         {/* Loading state when fetching single email */}
         {(effectiveViewMode === 'split' || effectiveViewMode === 'full') && selectedId && !selectedEmail && fetchingEmail && (
-          <div className="flex-1 flex items-center justify-center bg-white">
+          <div className="flex-1 flex flex-col items-center justify-center bg-white gap-3">
             <Loader2 className="w-6 h-6 animate-spin text-[#9B9B9B]" strokeWidth={1.5} />
+            <p className="text-[13px] text-[#9B9B9B]">Đang tải email...</p>
           </div>
         )}
 

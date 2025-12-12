@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
 import { fetchEmailBody } from '@/lib/email/imap-client'
 
+// Allow up to 30 seconds for IMAP fetch
+export const maxDuration = 30
+
 const supabaseAdmin = createSupabaseAdmin(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -33,9 +36,13 @@ export async function GET(
     return NextResponse.json({ error: 'Email not found' }, { status: 404 })
   }
 
-  // LAZY LOAD: If body not fetched yet and has source account, fetch from IMAP
-  if (!email.body_fetched && email.source_account_id && email.original_uid) {
-    console.log(`[API] Lazy loading body for email ${email.id}`)
+  // Check if body is actually empty (not just body_fetched flag)
+  const hasBody = email.body_text && email.body_text.trim().length > 10
+  const needsBodyFetch = !hasBody && email.source_account_id && email.original_uid
+
+  // LAZY LOAD: If body is empty and has source account, fetch from IMAP
+  if (needsBodyFetch) {
+    console.log(`[API] Lazy loading body for email ${email.id} (body_fetched=${email.body_fetched}, hasBody=${hasBody})`)
 
     // Get source account with credentials
     const { data: account } = await supabaseAdmin
@@ -64,12 +71,23 @@ export async function GET(
           email.body_html = body.body_html
           email.body_fetched = true
 
-          console.log(`[API] Body fetched and cached for email ${email.id}`)
+          console.log(`[API] Body fetched and cached for email ${email.id} (${body.body_text?.length || 0} chars)`)
+        } else {
+          // Mark as fetched even if empty to avoid retry
+          await supabaseAdmin
+            .from('emails')
+            .update({ body_fetched: true })
+            .eq('id', email.id)
+          email.body_fetched = true
+          console.log(`[API] No body found for email ${email.id}, marked as fetched`)
         }
       } catch (fetchError) {
-        console.error(`[API] Failed to fetch body:`, fetchError)
+        const errMsg = fetchError instanceof Error ? fetchError.message : 'Unknown error'
+        console.error(`[API] Failed to fetch body for ${email.id}:`, errMsg)
         // Continue without body - don't fail the request
       }
+    } else {
+      console.warn(`[API] No source account found for email ${email.id}`)
     }
   }
 
