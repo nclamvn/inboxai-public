@@ -1,5 +1,12 @@
 import OpenAI from 'openai'
 import type { AIClassification, Priority, Category } from '@/types'
+import {
+  getSenderTrust,
+  calculateTrustScore,
+  extractEmailSignals,
+  isSameDomain,
+  type SenderTrust
+} from './sender-trust'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!
@@ -47,6 +54,12 @@ SUGGESTED_ACTION (chọn 1):
 - read_later: đọc sau
 - none: không cần action
 
+CRITICAL RULES:
+1. Nếu SENDER_TRUST = trusted hoặc has_replied = true → KHÔNG BAO GIỜ phân loại là spam
+2. Email từ người thật (có tên đầy đủ, lời chào cá nhân) thường là personal/work
+3. Email với lời chào có tên người nhận thường là personal/work
+4. Cùng domain công ty = work
+
 CHÚ Ý:
 - Summary phải bằng tiếng Việt, ngắn gọn, nêu được nội dung chính
 - Nếu phát hiện deadline trong email, trích xuất ra field deadline
@@ -58,16 +71,56 @@ interface ClassifyEmailInput {
   subject?: string
   body_text?: string
   body_html?: string
+  user_id?: string  // Optional: for sender trust lookup
+  user_email?: string  // Optional: for same-domain check
 }
 
+/**
+ * Enhanced email classification with multi-signal approach
+ * 1. Check sender trust first (rule-based override)
+ * 2. Extract email signals
+ * 3. Call AI with context
+ * 4. Apply trust-based post-processing
+ */
 export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassification> {
-  const emailContent = `
-FROM: ${email.from_name || ''} <${email.from_address}>
-SUBJECT: ${email.subject || '(Không có tiêu đề)'}
+  // STEP 1: Get sender trust if user_id provided
+  let senderTrust: SenderTrust | null = null
+  let trustScore = 0
 
-BODY:
-${email.body_text || stripHtml(email.body_html || '')}
-`.trim()
+  if (email.user_id) {
+    try {
+      senderTrust = await getSenderTrust(email.user_id, email.from_address)
+      trustScore = calculateTrustScore(senderTrust)
+    } catch (e) {
+      console.error('Failed to get sender trust:', e)
+    }
+  }
+
+  // RULE-BASED QUICK DECISIONS (skip AI call)
+  if (senderTrust?.trust_level === 'blocked') {
+    return {
+      priority: 1,
+      category: 'spam',
+      needs_reply: false,
+      deadline: null,
+      summary: 'Sender bị chặn',
+      suggested_labels: ['blocked'],
+      suggested_action: 'delete',
+      confidence: 1,
+      key_entities: { people: [], dates: [], amounts: [], tasks: [] }
+    }
+  }
+
+  // STEP 2: Extract email signals
+  const signals = extractEmailSignals(email)
+
+  // Check same domain (likely colleague)
+  const sameDomain = email.user_email
+    ? isSameDomain(email.user_email, email.from_address)
+    : false
+
+  // STEP 3: Build enhanced prompt with context
+  const emailContent = buildEnhancedPrompt(email, senderTrust, signals, sameDomain)
 
   try {
     const response = await openai.chat.completions.create({
@@ -79,10 +132,10 @@ ${email.body_text || stripHtml(email.body_html || '')}
         },
         {
           role: 'user',
-          content: `EMAIL CẦN PHÂN TÍCH:\n${emailContent}`
+          content: emailContent
         }
       ],
-      temperature: 0.3,
+      temperature: 0.2, // Lower temperature for more consistent results
       max_tokens: 1024
     })
 
@@ -97,7 +150,10 @@ ${email.body_text || stripHtml(email.body_html || '')}
       throw new Error('No JSON found in response')
     }
 
-    const result = JSON.parse(jsonMatch[0]) as AIClassification
+    let result = JSON.parse(jsonMatch[0]) as AIClassification
+
+    // STEP 4: Apply trust-based override
+    result = applyTrustOverride(result, senderTrust, trustScore, signals, sameDomain)
 
     // Validate và normalize
     return {
@@ -119,23 +175,156 @@ ${email.body_text || stripHtml(email.body_html || '')}
   } catch (error) {
     console.error('AI classification failed:', error)
 
-    // Return default values on error
-    return {
-      priority: 3,
-      category: 'uncategorized',
-      needs_reply: false,
-      deadline: null,
-      summary: '',
-      suggested_labels: [],
-      suggested_action: 'none',
-      confidence: 0,
-      key_entities: {
-        people: [],
-        dates: [],
-        amounts: [],
-        tasks: []
-      }
+    // Fallback: Use rule-based classification
+    return fallbackClassification(email, senderTrust, signals, sameDomain)
+  }
+}
+
+/**
+ * Build enhanced prompt with sender trust and signals context
+ */
+function buildEnhancedPrompt(
+  email: ClassifyEmailInput,
+  senderTrust: SenderTrust | null,
+  signals: Record<string, unknown>,
+  sameDomain: boolean
+): string {
+  let context = ''
+
+  // Add sender trust context
+  if (senderTrust) {
+    context += `
+SENDER HISTORY (QUAN TRỌNG):
+- Trust Level: ${senderTrust.trust_level}
+- Đã Reply Trước: ${senderTrust.has_replied ? 'CÓ ✓' : 'KHÔNG'}
+- Là Contact: ${senderTrust.is_contact ? 'CÓ ✓' : 'KHÔNG'}
+- Số lần nhận email: ${senderTrust.times_received}
+`
+  }
+
+  // Add signals context
+  context += `
+SENDER SIGNALS:
+- Is NoReply/System: ${signals.isNoReply}
+- Is Marketing Address: ${signals.isMarketing}
+- Has Real Person Name: ${signals.hasRealName}
+- Same Company Domain: ${sameDomain}
+
+CONTENT SIGNALS:
+- Has Personal Greeting: ${signals.hasPersonalGreeting}
+- Has Unsubscribe Link: ${signals.hasUnsubscribe}
+- Has Promotional Words: ${signals.hasPromoWords}
+`
+
+  return `${context}
+
+EMAIL CẦN PHÂN TÍCH:
+FROM: ${email.from_name || ''} <${email.from_address}>
+SUBJECT: ${email.subject || '(Không có tiêu đề)'}
+
+BODY (first 3000 chars):
+${(email.body_text || stripHtml(email.body_html || '')).slice(0, 3000)}
+`
+}
+
+/**
+ * Apply trust-based override to AI result
+ */
+function applyTrustOverride(
+  result: AIClassification,
+  senderTrust: SenderTrust | null,
+  trustScore: number,
+  signals: Record<string, unknown>,
+  sameDomain: boolean
+): AIClassification {
+  // CRITICAL: Trusted sender should NEVER be spam
+  if (result.category === 'spam') {
+    // Override if trusted
+    if (trustScore > 50 || senderTrust?.has_replied || senderTrust?.is_contact) {
+      result.category = 'personal'
+      result.confidence = Math.max(result.confidence, 0.8)
+      result.summary = result.summary + ' (Trusted sender)'
     }
+
+    // Override if same domain (colleague)
+    if (sameDomain) {
+      result.category = 'work'
+      result.confidence = Math.max(result.confidence, 0.85)
+    }
+
+    // Override if has real name and personal greeting
+    if (signals.hasRealName && signals.hasPersonalGreeting) {
+      result.category = 'personal'
+      result.confidence = Math.max(result.confidence, 0.7)
+    }
+  }
+
+  // Boost priority for trusted senders
+  if (trustScore > 50 && result.priority < 3) {
+    result.priority = 3 as Priority
+  }
+
+  // Same domain = likely work
+  if (sameDomain && result.category !== 'transaction') {
+    result.category = 'work'
+  }
+
+  return result
+}
+
+/**
+ * Fallback rule-based classification when AI fails
+ */
+function fallbackClassification(
+  email: ClassifyEmailInput,
+  senderTrust: SenderTrust | null,
+  signals: Record<string, unknown>,
+  sameDomain: boolean
+): AIClassification {
+  let category: Category = 'uncategorized'
+  let priority: Priority = 3
+
+  // Rule 1: Trusted sender = personal
+  if (senderTrust?.has_replied || senderTrust?.is_contact) {
+    category = 'personal'
+    priority = 3
+  }
+  // Rule 2: Same domain = work
+  else if (sameDomain) {
+    category = 'work'
+    priority = 3
+  }
+  // Rule 3: NoReply + Promo words = promotion
+  else if (signals.isNoReply && signals.hasPromoWords) {
+    category = 'promotion'
+    priority = 1
+  }
+  // Rule 4: Has unsubscribe = newsletter or promotion
+  else if (signals.hasUnsubscribe) {
+    category = signals.hasPromoWords ? 'promotion' : 'newsletter'
+    priority = 2
+  }
+  // Rule 5: Marketing address = promotion
+  else if (signals.isMarketing) {
+    category = 'promotion'
+    priority = 1
+  }
+  // Rule 6: Real name + personal greeting = personal
+  else if (signals.hasRealName && signals.hasPersonalGreeting) {
+    category = 'personal'
+    priority = 3
+  }
+
+  return {
+    priority,
+    category,
+    needs_reply: false,
+    deadline: null,
+    summary: '',
+    suggested_labels: [],
+    suggested_action: 'none',
+    confidence: 0.5,
+    key_entities: { people: [], dates: [], amounts: [], tasks: [] }
   }
 }
 

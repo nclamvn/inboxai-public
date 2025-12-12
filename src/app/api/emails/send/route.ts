@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { sendEmailViaSMTP } from '@/lib/email/smtp-client'
 import { decryptPassword, EMAIL_PROVIDERS } from '@/lib/email/imap-client'
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
+import { markSenderAsTrusted } from '@/lib/ai/sender-trust'
 
 const supabaseAdmin = createSupabaseAdmin(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -135,9 +136,30 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Save sent email to database
-    const toAddresses = Array.isArray(to) ? to : [to]
+    // IMPORTANT: Mark sender as trusted when replying
+    if (replyToEmailId) {
+      const { data: originalEmail } = await supabaseAdmin
+        .from('emails')
+        .select('from_address')
+        .eq('id', replyToEmailId)
+        .single()
 
+      if (originalEmail?.from_address) {
+        // User is replying = they trust this sender
+        await markSenderAsTrusted(user.id, originalEmail.from_address, 'replied')
+        console.log(`[SEND] Marked ${originalEmail.from_address} as trusted (replied)`)
+      }
+    }
+
+    // Also mark all recipients as trusted (we're sending to them)
+    const toAddresses = Array.isArray(to) ? to : [to]
+    for (const recipientEmail of toAddresses) {
+      if (recipientEmail) {
+        await markSenderAsTrusted(user.id, recipientEmail, 'replied')
+      }
+    }
+
+    // Save sent email to database
     await supabaseAdmin.from('emails').insert({
       user_id: user.id,
       source_account_id: sourceAccountId,

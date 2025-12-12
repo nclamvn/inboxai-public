@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Star, Archive, Trash2, Reply, Forward, MoreHorizontal,
-  Sparkles, ChevronDown, ChevronUp, Loader2, X, Mail
+  Sparkles, ChevronDown, ChevronUp, Loader2, X, Mail,
+  Check, ShieldAlert, Ban
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
@@ -33,9 +34,76 @@ export function EmailDetailFull({
   const [showAIAssistant, setShowAIAssistant] = useState(false)
   const [showAIAnalysis, setShowAIAnalysis] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [feedbackLoading, setFeedbackLoading] = useState<string | null>(null)
+  const [currentCategory, setCurrentCategory] = useState(email.category)
 
   const handleStar = () => {
     onStar?.(email.id)
+  }
+
+  // Handle "Not Spam" feedback
+  const handleNotSpam = async () => {
+    setFeedbackLoading('not_spam')
+    try {
+      const res = await fetch(`/api/emails/${email.id}/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'not_spam' })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setCurrentCategory(data.newCategory || 'personal')
+        onRefresh?.()
+      }
+    } catch (e) {
+      console.error('Not spam error:', e)
+    } finally {
+      setFeedbackLoading(null)
+    }
+  }
+
+  // Handle "Is Spam" feedback
+  const handleIsSpam = async () => {
+    setFeedbackLoading('is_spam')
+    try {
+      const res = await fetch(`/api/emails/${email.id}/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'is_spam' })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setCurrentCategory('spam')
+        onRefresh?.()
+      }
+    } catch (e) {
+      console.error('Is spam error:', e)
+    } finally {
+      setFeedbackLoading(null)
+    }
+  }
+
+  // Handle block sender
+  const handleBlockSender = async () => {
+    if (!confirm(`Chặn tất cả email từ ${email.from_address}?`)) return
+
+    setFeedbackLoading('block')
+    try {
+      const res = await fetch(`/api/emails/${email.id}/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'block_sender' })
+      })
+      const data = await res.json()
+      if (data.success) {
+        onDelete?.(email.id)
+        onBack()
+      }
+    } catch (e) {
+      console.error('Block sender error:', e)
+    } finally {
+      setFeedbackLoading(null)
+    }
   }
 
   const handleArchive = () => {
@@ -140,6 +208,52 @@ export function EmailDetailFull({
               <Trash2 className="w-5 h-5" strokeWidth={1.5} />
             )}
           </button>
+          {/* Spam Feedback Buttons */}
+          {currentCategory === 'spam' ? (
+            <button
+              type="button"
+              onClick={handleNotSpam}
+              disabled={feedbackLoading === 'not_spam'}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-green-600 bg-green-50 hover:bg-green-100 transition-colors"
+            >
+              {feedbackLoading === 'not_spam' ? (
+                <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} />
+              ) : (
+                <Check className="w-4 h-4" strokeWidth={1.5} />
+              )}
+              Không phải spam
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleIsSpam}
+              disabled={feedbackLoading === 'is_spam'}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors"
+            >
+              {feedbackLoading === 'is_spam' ? (
+                <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} />
+              ) : (
+                <ShieldAlert className="w-4 h-4" strokeWidth={1.5} />
+              )}
+              Spam
+            </button>
+          )}
+
+          {/* Block Sender Button */}
+          <button
+            type="button"
+            onClick={handleBlockSender}
+            disabled={feedbackLoading === 'block'}
+            className="p-2 rounded-lg text-[#9B9B9B] hover:text-red-600 hover:bg-red-50 transition-colors"
+            title="Chặn người gửi"
+          >
+            {feedbackLoading === 'block' ? (
+              <Loader2 className="w-5 h-5 animate-spin" strokeWidth={1.5} />
+            ) : (
+              <Ban className="w-5 h-5" strokeWidth={1.5} />
+            )}
+          </button>
+
           <button
             type="button"
             className="p-2 rounded-lg text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] transition-colors"

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { classifyEmail } from '@/lib/ai/classifier'
+import { updateSenderOnReceive } from '@/lib/ai/sender-trust'
 
 export async function POST() {
   const supabase = await createClient()
@@ -9,6 +10,17 @@ export async function POST() {
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  // Get user's primary email for same-domain check
+  const { data: sourceAccount } = await supabase
+    .from('source_accounts')
+    .select('email_address')
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+    .limit(1)
+    .single()
+
+  const userEmail = sourceAccount?.email_address || user.email
 
   // Get emails without category or with 'uncategorized'
   const { data: emails, error } = await supabase
@@ -32,12 +44,18 @@ export async function POST() {
 
   for (const email of emails) {
     try {
+      // Update sender trust data
+      await updateSenderOnReceive(user.id, email.from_address, email.from_name)
+
+      // Classify with full context (user_id for sender trust lookup)
       const classification = await classifyEmail({
         from_address: email.from_address,
         from_name: email.from_name,
         subject: email.subject,
         body_text: email.body_text,
-        body_html: email.body_html
+        body_html: email.body_html,
+        user_id: user.id,
+        user_email: userEmail
       })
 
       const { error: updateError } = await supabase
