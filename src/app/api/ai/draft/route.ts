@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     // Get user profile for sender name
     const { data: profile } = await supabase
       .from('profiles')
-      .select('full_name')
+      .select('display_name')
       .eq('id', user.id)
       .single()
 
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       includeGreeting: options?.includeGreeting ?? true,
       includeSignature: options?.includeSignature ?? true,
       customInstructions: options?.customInstructions,
-      senderName: profile?.full_name || user.email?.split('@')[0]
+      senderName: profile?.display_name || user.email?.split('@')[0]
     }
 
     const generatedDraft = await generateDraft(

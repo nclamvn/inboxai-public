@@ -34,11 +34,11 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
     // Get user's profile for "from" name
     const { data: profile } = await supabase
       .from('profiles')
-      .select('full_name, email')
+      .select('display_name, email')
       .eq('id', userId)
       .single()
 
-    const fromName = profile?.full_name || 'InboxAI User'
+    const fromName = profile?.display_name || 'InboxAI User'
     const fromEmail = DEFAULT_FROM
 
     // Send via Resend - use text content (required by Resend)
