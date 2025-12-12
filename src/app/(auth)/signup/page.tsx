@@ -2,19 +2,15 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Mail, Lock, User, ArrowRight, Loader2, Check, Eye, EyeOff } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { Mail, User, ArrowRight, Loader2, CheckCircle } from 'lucide-react'
 
 export default function SignupPage() {
-  const router = useRouter()
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+  const [message, setMessage] = useState('')
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,48 +18,56 @@ export default function SignupPage() {
     setLoading(true)
 
     try {
-      const supabase = createClient()
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-          },
-        },
+      // Chỉ lưu vào waitlist, KHÔNG tạo Supabase user
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name: fullName })
       })
 
-      if (error) {
-        setError(error.message)
-        return
-      }
+      const data = await res.json()
 
-      setSuccess(true)
+      if (res.ok && data.success) {
+        setSuccess(true)
+        setMessage(data.message || 'Đã thêm vào danh sách chờ!')
+      } else {
+        setError(data.error || 'Có lỗi xảy ra. Vui lòng thử lại.')
+      }
     } catch (err) {
-      setError('Đã xảy ra lỗi. Vui lòng thử lại.')
+      setError('Không thể kết nối. Vui lòng thử lại.')
     } finally {
       setLoading(false)
     }
   }
 
+  // Success state - Hiện popup cảm ơn
   if (success) {
     return (
-      <div className="bg-white rounded-2xl shadow-executive-lg border border-[#EBEBEB] p-8 text-center">
-        <div className="w-16 h-16 bg-[#F0FDF4] rounded-full flex items-center justify-center mx-auto mb-4">
-          <Check className="w-8 h-8 text-[#16A34A]" strokeWidth={1.5} />
+      <div className="bg-[var(--card)] rounded-2xl shadow-executive-lg border border-[var(--border)] p-8 text-center">
+        <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+          <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" strokeWidth={1.5} />
         </div>
-        <h1 className="text-[24px] font-bold text-[#1A1A1A] mb-2">
-          Kiểm tra email của bạn
+
+        <h1 className="text-[24px] font-bold text-[var(--foreground)] mb-3">
+          Cảm ơn bạn đã đăng ký!
         </h1>
-        <p className="text-[#6B6B6B] mb-6">
-          Chúng tôi đã gửi link xác nhận đến <strong>{email}</strong>.
-          Vui lòng kiểm tra và xác nhận email để hoàn tất đăng ký.
+
+        <p className="text-[15px] text-[var(--muted)] mb-6">
+          {message || 'Bạn đã được thêm vào danh sách chờ của InboxAI. Chúng tôi sẽ liên hệ khi có slot mới.'}
         </p>
+
+        <div className="p-4 bg-[var(--secondary)] rounded-xl mb-6">
+          <p className="text-[14px] text-[var(--muted-foreground)]">
+            InboxAI đang trong giai đoạn Private Beta.
+            Chúng tôi sẽ mở rộng dần dần để đảm bảo chất lượng tốt nhất.
+          </p>
+        </div>
+
         <Link
-          href="/login"
-          className="inline-flex items-center gap-2 text-[#1A1A1A] font-medium hover:underline"
+          href="/"
+          className="inline-flex items-center gap-2 text-[var(--foreground)] font-medium hover:underline"
         >
-          Quay lại đăng nhập
+          Quay lại trang chủ
           <ArrowRight className="w-4 h-4" strokeWidth={1.5} />
         </Link>
       </div>
@@ -71,29 +75,29 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-executive-lg border border-[#EBEBEB] p-8">
+    <div className="bg-[var(--card)] rounded-2xl shadow-executive-lg border border-[var(--border)] p-8">
       <div className="text-center mb-8">
-        <h1 className="text-[24px] font-bold text-[#1A1A1A] mb-2">
-          Tạo tài khoản mới
+        <h1 className="text-[24px] font-bold text-[var(--foreground)] mb-2">
+          Đăng ký nhận thông báo
         </h1>
-        <p className="text-[#6B6B6B]">
-          Bắt đầu quản lý email thông minh với InboxAI
+        <p className="text-[var(--muted)]">
+          Để lại email để được mời sử dụng InboxAI khi có slot
         </p>
       </div>
 
       <form onSubmit={handleSignup} className="space-y-4">
         {error && (
-          <div className="p-3 bg-[#FEF2F2] border border-[#FEE2E2] rounded-lg text-[#DC2626] text-[14px]">
+          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-[14px]">
             {error}
           </div>
         )}
 
         <div>
-          <label htmlFor="fullName" className="block text-[14px] font-medium text-[#1A1A1A] mb-1">
+          <label htmlFor="fullName" className="block text-[14px] font-medium text-[var(--foreground)] mb-1">
             Họ và tên
           </label>
           <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9B9B9B]" strokeWidth={1.5} />
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]" strokeWidth={1.5} />
             <input
               id="fullName"
               type="text"
@@ -101,17 +105,17 @@ export default function SignupPage() {
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Nguyễn Văn A"
               required
-              className="w-full pl-10 pr-4 py-2.5 border border-[#EBEBEB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-[14px] font-medium text-[#1A1A1A] mb-1">
+          <label htmlFor="email" className="block text-[14px] font-medium text-[var(--foreground)] mb-1">
             Email
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9B9B9B]" strokeWidth={1.5} />
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]" strokeWidth={1.5} />
             <input
               id="email"
               type="email"
@@ -119,58 +123,41 @@ export default function SignupPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="email@example.com"
               required
-              className="w-full pl-10 pr-4 py-2.5 border border-[#EBEBEB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
             />
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="password" className="block text-[14px] font-medium text-[#1A1A1A] mb-1">
-            Mật khẩu
-          </label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9B9B9B]" strokeWidth={1.5} />
-            <input
-              id="password"
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Tối thiểu 6 ký tự"
-              required
-              minLength={6}
-              className="w-full pl-10 pr-10 py-2.5 border border-[#EBEBEB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9B9B9B] hover:text-[#6B6B6B]"
-            >
-              {showPassword ? <EyeOff className="w-5 h-5" strokeWidth={1.5} /> : <Eye className="w-5 h-5" strokeWidth={1.5} />}
-            </button>
           </div>
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-[#1A1A1A] text-white py-2.5 rounded-lg font-medium hover:bg-[#2D2D2D] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-[var(--primary)] text-[var(--primary-foreground)] py-2.5 rounded-lg font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin" strokeWidth={1.5} />
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" strokeWidth={1.5} />
+              Đang xử lý...
+            </>
           ) : (
             <>
-              Đăng ký
+              Đăng ký waitlist
               <ArrowRight className="w-4 h-4" strokeWidth={1.5} />
             </>
           )}
         </button>
       </form>
 
-      <div className="mt-6 text-center text-[14px] text-[#6B6B6B]">
+      <div className="mt-6 text-center text-[14px] text-[var(--muted)]">
         Đã có tài khoản?{' '}
-        <Link href="/login" className="text-[#1A1A1A] font-medium hover:underline">
+        <Link href="/login" className="text-[var(--foreground)] font-medium hover:underline">
           Đăng nhập
         </Link>
+      </div>
+
+      <div className="mt-4 p-3 bg-[var(--secondary)] rounded-lg">
+        <p className="text-[12px] text-[var(--muted-foreground)] text-center">
+          InboxAI đang trong giai đoạn Private Beta. Chúng tôi sẽ mời bạn khi có slot mới.
+        </p>
       </div>
     </div>
   )
