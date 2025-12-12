@@ -1,7 +1,7 @@
 'use client'
 
 import { memo, useMemo, useCallback } from 'react'
-import { X, Zap, Sparkles, Trash2 } from 'lucide-react'
+import { X, Zap, Sparkles, Trash2, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface FilterOption {
@@ -30,9 +30,11 @@ interface Props {
   onClassify?: () => void
   classifying?: boolean
   onDeleteAll?: (category: string) => void
+  onReclassify?: (category: string) => void
+  reclassifying?: boolean
 }
 
-export const FilterChips = memo(function FilterChips({ activeFilter, onFilterChange, counts, onClassify, classifying, onDeleteAll }: Props) {
+export const FilterChips = memo(function FilterChips({ activeFilter, onFilterChange, counts, onClassify, classifying, onDeleteAll, onReclassify, reclassifying }: Props) {
   // Memoize filters array - important = true means show warning before delete
   const filters: FilterOption[] = useMemo(() => [
     { id: 'all', label: 'Tất cả', count: counts.all, important: true },
@@ -132,6 +134,22 @@ export const FilterChips = memo(function FilterChips({ activeFilter, onFilterCha
           </button>
         )
       })}
+
+      {/* Re-classify button - hiện khi xem Spam */}
+      {activeFilter === 'spam' && counts.spam > 0 && onReclassify && (
+        <button
+          onClick={() => onReclassify('spam')}
+          disabled={reclassifying}
+          className={cn(
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors whitespace-nowrap ml-2',
+            'bg-purple-100 text-purple-700 hover:bg-purple-200',
+            reclassifying && 'opacity-50 cursor-not-allowed'
+          )}
+        >
+          <RefreshCw className={cn('w-3.5 h-3.5', reclassifying && 'animate-spin')} strokeWidth={1.5} />
+          <span>{reclassifying ? 'Đang kiểm tra...' : 'Kiểm tra AI'}</span>
+        </button>
+      )}
 
       {/* Delete All button - hiện cho mọi category (trừ all và needsAction) */}
       {activeFilter && activeFilter !== 'all' && activeFilter !== 'needsAction' && currentFilter && currentFilter.count > 0 && onDeleteAll && (

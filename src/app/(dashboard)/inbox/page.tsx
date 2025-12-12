@@ -28,6 +28,7 @@ function InboxContent() {
   const [viewMode, setViewMode] = useState<ViewMode>(selectedId ? 'split' : 'list')
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
   const [classifying, setClassifying] = useState(false)
+  const [reclassifying, setReclassifying] = useState(false)
 
   // ALWAYS fetch full email when selectedId is set (list only has preview, not body)
   const { email: fetchedEmail, loading: fetchingEmail } = useEmail(selectedId)
@@ -56,6 +57,35 @@ function InboxContent() {
       setClassifying(false)
     }
   }
+
+  // Handle reclassify spam emails with AI
+  const handleReclassify = useCallback(async (category: string) => {
+    setReclassifying(true)
+    try {
+      const res = await fetch('/api/ai/reclassify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, limit: 50 })
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        if (data.updated > 0) {
+          alert(`Đã sửa ${data.updated}/${data.total} emails bị gán sai!\n\n${data.changes?.slice(0, 5).map((c: { subject: string; from: string; to: string }) => `• ${c.subject}: ${c.from} → ${c.to}`).join('\n') || ''}`)
+          refetch()
+        } else {
+          alert(`Đã kiểm tra ${data.total} emails - không có email nào cần sửa`)
+        }
+      } else {
+        alert(data.error || 'Lỗi khi phân loại lại')
+      }
+    } catch (error) {
+      console.error('Reclassify error:', error)
+      alert('Lỗi khi phân loại lại')
+    } finally {
+      setReclassifying(false)
+    }
+  }, [refetch])
 
   // Calculate filter counts
   const filterCounts = useMemo(() => {
@@ -321,6 +351,8 @@ function InboxContent() {
             onClassify={handleClassify}
             classifying={classifying}
             onDeleteAll={handleDeleteAllInCategory}
+            onReclassify={handleReclassify}
+            reclassifying={reclassifying}
           />
         </div>
       )}
