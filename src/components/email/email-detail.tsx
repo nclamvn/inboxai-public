@@ -19,11 +19,11 @@ interface EmailDetailProps {
 }
 
 const priorityLabels: Record<number, { label: string; color: string }> = {
-  1: { label: 'Rất thấp', color: 'bg-[#F5F5F5] text-[#9B9B9B]' },
-  2: { label: 'Thấp', color: 'bg-[#F5F5F5] text-[#6B6B6B]' },
-  3: { label: 'Bình thường', color: 'bg-[#F5F5F5] text-[#1A1A1A]' },
-  4: { label: 'Cao', color: 'bg-[#FFFBEB] text-[#D97706]' },
-  5: { label: 'Khẩn cấp', color: 'bg-[#FEF2F2] text-[#DC2626]' },
+  1: { label: 'Rất thấp', color: 'bg-[var(--secondary)] text-[var(--muted-foreground)]' },
+  2: { label: 'Thấp', color: 'bg-[var(--secondary)] text-[var(--muted)]' },
+  3: { label: 'Bình thường', color: 'bg-[var(--secondary)] text-[var(--foreground)]' },
+  4: { label: 'Cao', color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' },
+  5: { label: 'Khẩn cấp', color: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' },
 }
 
 const categoryLabels: Record<string, string> = {
@@ -125,9 +125,9 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
   }
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-[var(--card)]">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-[#EBEBEB]">
+      <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
         <div className="flex items-center gap-2">
           <button
             onClick={(e) => {
@@ -135,30 +135,30 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
               e.stopPropagation()
               onClose()
             }}
-            className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] rounded-lg transition-colors"
+            className="p-2 text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] rounded-lg transition-colors"
           >
             <X className="w-5 h-5" strokeWidth={1.5} />
           </button>
-          <h2 className="font-semibold text-[#1A1A1A] truncate">{email.subject || '(Không có tiêu đề)'}</h2>
+          <h2 className="font-semibold text-[var(--foreground)] truncate">{email.subject || '(Không có tiêu đề)'}</h2>
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={handleStar}
-            className="p-2 text-[#6B6B6B] hover:text-[#D97706] hover:bg-[#F5F5F5] rounded-lg transition-colors"
+            className="p-2 text-[var(--muted)] hover:text-amber-500 hover:bg-[var(--hover)] rounded-lg transition-colors"
             title={email.is_starred ? 'Bỏ gắn sao' : 'Gắn sao'}
           >
-            <Star className={cn('w-5 h-5', email.is_starred && 'fill-[#D97706] text-[#D97706]')} strokeWidth={1.5} />
+            <Star className={cn('w-5 h-5', email.is_starred && 'fill-amber-500 text-amber-500')} strokeWidth={1.5} />
           </button>
           <button
             onClick={handleArchive}
-            className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] rounded-lg transition-colors"
+            className="p-2 text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] rounded-lg transition-colors"
             title="Lưu trữ"
           >
             <Archive className="w-5 h-5" strokeWidth={1.5} />
           </button>
           <button
             onClick={handleDelete}
-            className="p-2 text-[#6B6B6B] hover:text-[#DC2626] hover:bg-[#F5F5F5] rounded-lg transition-colors"
+            className="p-2 text-[var(--muted)] hover:text-red-500 hover:bg-[var(--hover)] rounded-lg transition-colors"
             title="Xóa"
           >
             <Trash2 className="w-5 h-5" strokeWidth={1.5} />
@@ -166,7 +166,7 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
           <button
             onClick={handleClassify}
             disabled={classifying}
-            className="p-2 text-[#1A1A1A] hover:bg-[#F5F5F5] rounded-lg transition-colors disabled:opacity-50"
+            className="p-2 text-[var(--foreground)] hover:bg-[var(--hover)] rounded-lg transition-colors disabled:opacity-50"
             title="Phân tích AI"
           >
             {classifying ? (
@@ -180,14 +180,14 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
             className={cn(
               'p-2 rounded-lg transition-colors',
               showReplyAssistant
-                ? 'bg-[#1A1A1A] text-white'
-                : 'text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5]'
+                ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
+                : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)]'
             )}
             title="Trợ lý phản hồi AI"
           >
             <MessageSquarePlus className="w-5 h-5" strokeWidth={1.5} />
           </button>
-          <button className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] rounded-lg transition-colors">
+          <button className="p-2 text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] rounded-lg transition-colors">
             <MoreHorizontal className="w-5 h-5" strokeWidth={1.5} />
           </button>
         </div>
@@ -196,17 +196,17 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
       {/* Email Content */}
       <div className="flex-1 overflow-auto">
         {/* Sender Info */}
-        <div className="p-4 border-b border-[#EBEBEB]">
+        <div className="p-4 border-b border-[var(--border)]">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-[#1A1A1A] rounded-full flex items-center justify-center text-white font-medium flex-shrink-0">
+            <div className="w-10 h-10 bg-[var(--primary)] rounded-full flex items-center justify-center text-[var(--primary-foreground)] font-medium flex-shrink-0">
               {(email.from_name || email.from_address || '?')[0].toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-medium text-[#1A1A1A]">{email.from_name || email.from_address}</span>
-                <span className="text-[13px] text-[#6B6B6B]">&lt;{email.from_address}&gt;</span>
+                <span className="font-medium text-[var(--foreground)]">{email.from_name || email.from_address}</span>
+                <span className="text-[13px] text-[var(--muted)]">&lt;{email.from_address}&gt;</span>
               </div>
-              <p className="text-[13px] text-[#6B6B6B]">
+              <p className="text-[13px] text-[var(--muted)]">
                 Đến: tôi • {email.received_at ? formatDate(email.received_at) : ''}
               </p>
             </div>
@@ -215,30 +215,30 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
 
         {/* AI Summary & Meta */}
         {(email.summary || email.needs_reply || email.detected_deadline) && (
-          <div className="p-4 bg-[#FAFAFA] border-b border-[#EBEBEB]">
+          <div className="p-4 bg-[var(--background)] border-b border-[var(--border)]">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[11px] font-medium text-[#9B9B9B] uppercase tracking-wide">AI Phân tích</span>
+              <span className="text-[11px] font-medium text-[var(--muted-foreground)] uppercase tracking-wide">AI Phân tích</span>
             </div>
             {email.summary && (
-              <p className="text-[14px] text-[#1A1A1A] mb-3">{email.summary}</p>
+              <p className="text-[14px] text-[var(--foreground)] mb-3">{email.summary}</p>
             )}
             <div className="flex flex-wrap gap-2">
               <span className={cn('px-2 py-1 text-[12px] rounded-full', priorityInfo.color)}>
                 {priorityInfo.label}
               </span>
               {email.category && (
-                <span className="px-2 py-1 text-[12px] rounded-full bg-[#F5F5F5] text-[#6B6B6B]">
+                <span className="px-2 py-1 text-[12px] rounded-full bg-[var(--secondary)] text-[var(--muted)]">
                   {categoryLabels[email.category] || email.category}
                 </span>
               )}
               {email.needs_reply && (
-                <span className="px-2 py-1 text-[12px] rounded-full bg-[#FFFBEB] text-[#D97706] flex items-center gap-1">
+                <span className="px-2 py-1 text-[12px] rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center gap-1">
                   <AlertCircle className="w-3 h-3" strokeWidth={1.5} />
                   Cần trả lời
                 </span>
               )}
               {email.detected_deadline && (
-                <span className="px-2 py-1 text-[12px] rounded-full bg-[#FEF2F2] text-[#DC2626] flex items-center gap-1">
+                <span className="px-2 py-1 text-[12px] rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center gap-1">
                   <Clock className="w-3 h-3" strokeWidth={1.5} />
                   Deadline: {new Date(email.detected_deadline).toLocaleDateString('vi-VN')}
                 </span>
@@ -249,11 +249,11 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
 
         {/* Email Body */}
         <div className="p-4">
-          <div className="prose max-w-none text-[#1A1A1A]">
+          <div className="email-content prose max-w-none text-[var(--foreground)]">
             {email.body_html ? (
               <div dangerouslySetInnerHTML={{ __html: email.body_html }} />
             ) : (
-              <pre className="whitespace-pre-wrap font-sans text-[#1A1A1A]">
+              <pre className="whitespace-pre-wrap font-sans text-[var(--foreground)]">
                 {email.body_text || email.snippet || '(Không có nội dung)'}
               </pre>
             )}
@@ -262,7 +262,7 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
 
         {/* Reply Assistant */}
         {showReplyAssistant && (
-          <div className="p-4 border-t border-[#EBEBEB]">
+          <div className="p-4 border-t border-[var(--border)]">
             <ReplyAssistant
               email={email}
               onUseDraft={handleUseDraft}
@@ -273,16 +273,16 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
       </div>
 
       {/* Actions Footer */}
-      <div className="p-4 border-t border-[#EBEBEB] bg-[#FAFAFA]">
+      <div className="p-4 border-t border-[var(--border)] bg-[var(--background)]">
         <div className="flex items-center gap-2">
           <button
             onClick={handleReply}
-            className="flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] text-white rounded-lg font-medium hover:bg-[#2D2D2D] transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg font-medium hover:opacity-90 transition-colors"
           >
             <Reply className="w-4 h-4" strokeWidth={1.5} />
             Trả lời
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 border border-[#EBEBEB] rounded-lg text-[#1A1A1A] hover:bg-[#F5F5F5] transition-colors">
+          <button className="flex items-center gap-2 px-4 py-2 border border-[var(--border)] rounded-lg text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors">
             <Forward className="w-4 h-4" strokeWidth={1.5} />
             Chuyển tiếp
           </button>

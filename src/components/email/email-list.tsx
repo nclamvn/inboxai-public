@@ -13,11 +13,11 @@ interface EmailListProps {
 }
 
 const priorityColors: Record<number, string> = {
-  1: 'bg-[#DC2626]',
-  2: 'bg-[#D97706]',
-  3: 'bg-[#1A1A1A]',
-  4: 'bg-[#9B9B9B]',
-  5: 'bg-[#D4D4D4]',
+  1: 'bg-red-600',
+  2: 'bg-amber-600',
+  3: 'bg-[var(--primary)]',
+  4: 'bg-[var(--muted-foreground)]',
+  5: 'bg-[var(--border)]',
 }
 
 const categoryLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'success' | 'warning' | 'urgent' | 'info' }> = {
@@ -35,7 +35,7 @@ export function EmailList({ emails, selectedId, onSelect, onStar }: EmailListPro
   }
 
   return (
-    <div className="divide-y divide-[#EBEBEB]">
+    <div className="divide-y divide-[var(--border)]">
       {emails.map((email) => {
         const categoryInfo = email.category ? categoryLabels[email.category] : null
         const isSelected = email.id === selectedId
@@ -46,7 +46,11 @@ export function EmailList({ emails, selectedId, onSelect, onStar }: EmailListPro
             onClick={() => onSelect(email)}
             className={cn(
               'flex items-start gap-3 p-4 cursor-pointer transition-colors',
-              isSelected ? 'bg-[#F5F5F5]' : email.is_read ? 'bg-white hover:bg-[#FAFAFA]' : 'bg-[#FAFAFA] hover:bg-[#F5F5F5]'
+              isSelected
+                ? 'bg-[var(--secondary)]'
+                : email.is_read
+                  ? 'bg-[var(--card)] hover:bg-[var(--hover)]'
+                  : 'bg-[var(--background)] hover:bg-[var(--secondary)]'
             )}
           >
             {/* Priority Indicator */}
@@ -63,7 +67,7 @@ export function EmailList({ emails, selectedId, onSelect, onStar }: EmailListPro
               <Star
                 className={cn(
                   'w-5 h-5 transition-colors',
-                  email.is_starred ? 'fill-[#D97706] text-[#D97706]' : 'text-[#D4D4D4] hover:text-[#D97706]'
+                  email.is_starred ? 'fill-amber-500 text-amber-500' : 'text-[var(--border)] hover:text-amber-500'
                 )}
                 strokeWidth={1.5}
               />
@@ -74,13 +78,13 @@ export function EmailList({ emails, selectedId, onSelect, onStar }: EmailListPro
               <div className="flex items-center gap-2 mb-1">
                 <span className={cn(
                   'text-[14px] truncate',
-                  email.is_read ? 'text-[#6B6B6B]' : 'font-semibold text-[#1A1A1A]'
+                  email.is_read ? 'text-[var(--muted)]' : 'font-semibold text-[var(--foreground)]'
                 )}>
                   {email.from_name || email.from_address}
                 </span>
                 {email.needs_reply && (
                   <span title="Cần trả lời">
-                    <AlertCircle className="w-4 h-4 text-[#D97706] flex-shrink-0" strokeWidth={1.5} />
+                    <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" strokeWidth={1.5} />
                   </span>
                 )}
                 {categoryInfo && (
@@ -91,18 +95,18 @@ export function EmailList({ emails, selectedId, onSelect, onStar }: EmailListPro
               </div>
               <p className={cn(
                 'text-[14px] truncate mb-1',
-                email.is_read ? 'text-[#6B6B6B]' : 'font-medium text-[#1A1A1A]'
+                email.is_read ? 'text-[var(--muted)]' : 'font-medium text-[var(--foreground)]'
               )}>
                 {email.subject || '(Không có tiêu đề)'}
               </p>
-              <p className="text-[13px] text-[#9B9B9B] truncate">
+              <p className="text-[13px] text-[var(--muted-foreground)] truncate">
                 {email.summary || truncate(email.snippet || '', 80)}
               </p>
             </div>
 
             {/* Time */}
             <div className="flex flex-col items-end gap-1 flex-shrink-0">
-              <span className="text-[12px] text-[#9B9B9B]">
+              <span className="text-[12px] text-[var(--muted-foreground)]">
                 {email.received_at ? formatDate(email.received_at) : ''}
               </span>
             </div>

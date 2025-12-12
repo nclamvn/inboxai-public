@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { SearchBox } from '@/components/search/search-box'
 import { NotificationDropdown } from '@/components/notifications/notification-dropdown'
+import { ThemeToggle } from '@/components/theme/theme-toggle'
 
 interface BriefingData {
   unread: number
@@ -126,7 +127,7 @@ export function Header() {
   }
 
   return (
-    <header className="h-14 border-b border-[#EBEBEB] bg-white flex items-center justify-between px-4">
+    <header className="h-14 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4">
       {/* Search */}
       <div className="flex-1 max-w-xl">
         <SearchBox />
@@ -134,6 +135,9 @@ export function Header() {
 
       {/* Right Actions */}
       <div className="flex items-center gap-1 ml-4">
+        {/* Theme Toggle */}
+        <ThemeToggle />
+
         {/* AI Assistant Badge */}
         <div className="relative" ref={aiPopoverRef}>
           <button
@@ -142,8 +146,8 @@ export function Header() {
             className={cn(
               'flex items-center gap-2 h-9 px-3 rounded-lg transition-colors',
               briefing && briefing.needsAttention > 0
-                ? 'bg-[#1A1A1A] text-white'
-                : 'text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A]'
+                ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
+                : 'text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'
             )}
           >
             <Sparkles className="w-4 h-4" strokeWidth={1.5} />
@@ -156,25 +160,25 @@ export function Header() {
 
           {/* AI Popover */}
           {showAIPopover && (
-            <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl border border-[#EBEBEB] shadow-lg z-50 overflow-hidden">
-              <div className="p-4 border-b border-[#EBEBEB] bg-[#FAFAFA]">
+            <div className="absolute right-0 top-full mt-2 w-80 bg-[var(--card)] rounded-xl border border-[var(--border)] shadow-lg z-50 overflow-hidden">
+              <div className="p-4 border-b border-[var(--border)] bg-[var(--secondary)]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-[#1A1A1A]" strokeWidth={1.5} />
-                    <span className="text-[14px] font-medium text-[#1A1A1A]">
+                    <Sparkles className="w-4 h-4 text-[var(--foreground)]" strokeWidth={1.5} />
+                    <span className="text-[14px] font-medium text-[var(--foreground)]">
                       AI Thư Ký
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowAIPopover(false)}
-                    className="p-1 rounded text-[#9B9B9B] hover:text-[#6B6B6B]"
+                    className="p-1 rounded text-[var(--muted-foreground)] hover:text-[var(--muted)]"
                   >
                     <X className="w-4 h-4" strokeWidth={1.5} />
                   </button>
                 </div>
                 {briefing && (
-                  <p className="text-[13px] text-[#6B6B6B] mt-1">
+                  <p className="text-[13px] text-[var(--muted)] mt-1">
                     {briefing.unread} chưa đọc · {briefing.needsAttention} cần chú ý
                   </p>
                 )}
@@ -187,35 +191,35 @@ export function Header() {
                         key={i}
                         type="button"
                         onClick={handleNavigateToInbox}
-                        className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[#F5F5F5] transition-colors text-left"
+                        className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--hover)] transition-colors text-left"
                       >
                         <div className={cn(
                           'w-8 h-8 rounded-lg flex items-center justify-center text-[13px] font-medium',
-                          item.type === 'urgent' && 'bg-[#FEF2F2] text-[#DC2626]',
-                          item.type === 'deadline' && 'bg-[#FFFBEB] text-[#D97706]',
-                          item.type === 'waiting' && 'bg-[#EFF6FF] text-[#2563EB]',
-                          item.type === 'vip' && 'bg-[#F5F3FF] text-[#7C3AED]',
-                          !['urgent', 'deadline', 'waiting', 'vip'].includes(item.type) && 'bg-[#F5F5F5] text-[#6B6B6B]'
+                          item.type === 'urgent' && 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+                          item.type === 'deadline' && 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
+                          item.type === 'waiting' && 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+                          item.type === 'vip' && 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400',
+                          !['urgent', 'deadline', 'waiting', 'vip'].includes(item.type) && 'bg-[var(--secondary)] text-[var(--muted)]'
                         )}>
                           {item.count}
                         </div>
-                        <span className="text-[14px] text-[#1A1A1A]">
+                        <span className="text-[14px] text-[var(--foreground)]">
                           {item.title}
                         </span>
                       </button>
                     ))}
                   </div>
                 ) : (
-                  <div className="p-6 text-center text-[#6B6B6B]">
+                  <div className="p-6 text-center text-[var(--muted)]">
                     <p className="text-[14px]">Không có gì cần chú ý</p>
                   </div>
                 )}
               </div>
-              <div className="p-2 border-t border-[#EBEBEB]">
+              <div className="p-2 border-t border-[var(--border)]">
                 <button
                   type="button"
                   onClick={handleNavigateToInsights}
-                  className="block w-full text-center py-2 text-[13px] text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors"
+                  className="block w-full text-center py-2 text-[13px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
                 >
                   Xem Insights →
                 </button>
@@ -232,21 +236,21 @@ export function Header() {
           <button
             type="button"
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center gap-2 h-9 pl-1 pr-2 rounded-lg hover:bg-[#F5F5F5] transition-colors"
+            className="flex items-center gap-2 h-9 pl-1 pr-2 rounded-lg hover:bg-[var(--hover)] transition-colors"
           >
-            <div className="w-7 h-7 rounded-full bg-[#1A1A1A] flex items-center justify-center">
-              <span className="text-[11px] font-medium text-white">{initials}</span>
+            <div className="w-7 h-7 rounded-full bg-[var(--primary)] flex items-center justify-center">
+              <span className="text-[11px] font-medium text-[var(--primary-foreground)]">{initials}</span>
             </div>
-            <ChevronDown className="w-4 h-4 text-[#9B9B9B]" strokeWidth={1.5} />
+            <ChevronDown className="w-4 h-4 text-[var(--muted-foreground)]" strokeWidth={1.5} />
           </button>
 
           {showUserMenu && (
-            <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl border border-[#EBEBEB] shadow-lg z-50 overflow-hidden">
-              <div className="p-3 border-b border-[#EBEBEB]">
-                <p className="text-[14px] font-medium text-[#1A1A1A]">
+            <div className="absolute right-0 top-full mt-2 w-56 bg-[var(--card)] rounded-xl border border-[var(--border)] shadow-lg z-50 overflow-hidden">
+              <div className="p-3 border-b border-[var(--border)]">
+                <p className="text-[14px] font-medium text-[var(--foreground)]">
                   {user?.profile?.full_name || 'User'}
                 </p>
-                <p className="text-[12px] text-[#6B6B6B] truncate">
+                <p className="text-[12px] text-[var(--muted)] truncate">
                   {user?.email}
                 </p>
               </div>
@@ -254,7 +258,7 @@ export function Header() {
                 <Link
                   href="/settings"
                   onClick={() => setShowUserMenu(false)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors"
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)] transition-colors"
                 >
                   <Settings className="w-4 h-4" strokeWidth={1.5} />
                   Cài đặt
@@ -262,7 +266,7 @@ export function Header() {
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)] transition-colors"
                 >
                   <LogOut className="w-4 h-4" strokeWidth={1.5} />
                   Đăng xuất

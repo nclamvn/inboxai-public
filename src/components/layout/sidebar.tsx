@@ -34,24 +34,24 @@ export function Sidebar({ defaultCollapsed = true }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'h-full border-r border-[#EBEBEB] bg-white flex-col transition-all duration-200',
+        'h-full border-r border-[var(--border)] bg-[var(--card)] flex-col transition-all duration-200',
         'hidden md:flex', // Hidden on mobile, visible on tablet and up
         collapsed ? 'w-[56px]' : 'w-[200px]'
       )}
     >
       {/* Header */}
       <div className={cn(
-        'h-14 flex items-center border-b border-[#EBEBEB]',
+        'h-14 flex items-center border-b border-[var(--border)]',
         collapsed ? 'justify-center px-0' : 'justify-between px-3'
       )}>
         {!collapsed && (
-          <Link href="/" className="text-[16px] font-semibold text-[#1A1A1A]">
+          <Link href="/" className="text-[16px] font-semibold text-[var(--foreground)]">
             InboxAI
           </Link>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-2 rounded-lg text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] transition-colors"
+          className="p-2 rounded-lg text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors"
         >
           {collapsed ? (
             <Menu className="w-5 h-5" strokeWidth={1.5} />
@@ -67,7 +67,7 @@ export function Sidebar({ defaultCollapsed = true }: SidebarProps) {
           href="/compose"
           className={cn(
             'flex items-center gap-2 rounded-xl font-medium transition-colors',
-            'bg-[#1A1A1A] text-white hover:bg-[#333]',
+            'bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90',
             collapsed
               ? 'w-10 h-10 justify-center'
               : 'w-full h-10 px-4'
@@ -93,15 +93,15 @@ export function Sidebar({ defaultCollapsed = true }: SidebarProps) {
                       ? 'w-10 h-10 justify-center'
                       : 'h-10 px-3',
                     isActive
-                      ? 'bg-[#F5F5F5] text-[#1A1A1A]'
-                      : 'text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A]'
+                      ? 'bg-[var(--secondary)] text-[var(--foreground)]'
+                      : 'text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'
                   )}
                   title={collapsed ? item.label : undefined}
                 >
                   <item.icon
                     className={cn(
                       'w-5 h-5 flex-shrink-0',
-                      isActive ? 'text-[#1A1A1A]' : ''
+                      isActive ? 'text-[var(--foreground)]' : ''
                     )}
                     strokeWidth={1.5}
                   />
@@ -116,7 +116,7 @@ export function Sidebar({ defaultCollapsed = true }: SidebarProps) {
       </nav>
 
       {/* Divider */}
-      <div className={cn('border-t border-[#EBEBEB]', collapsed ? 'mx-2' : 'mx-3')} />
+      <div className={cn('border-t border-[var(--border)]', collapsed ? 'mx-2' : 'mx-3')} />
 
       {/* Bottom Items */}
       <div className="py-2">
@@ -133,15 +133,15 @@ export function Sidebar({ defaultCollapsed = true }: SidebarProps) {
                       ? 'w-10 h-10 justify-center'
                       : 'h-10 px-3',
                     isActive
-                      ? 'bg-[#F5F5F5] text-[#1A1A1A]'
-                      : 'text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A]'
+                      ? 'bg-[var(--secondary)] text-[var(--foreground)]'
+                      : 'text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'
                   )}
                   title={collapsed ? item.label : undefined}
                 >
                   <item.icon
                     className={cn(
                       'w-5 h-5 flex-shrink-0',
-                      isActive ? 'text-[#1A1A1A]' : ''
+                      isActive ? 'text-[var(--foreground)]' : ''
                     )}
                     strokeWidth={1.5}
                   />

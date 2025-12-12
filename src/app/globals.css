@@ -5,9 +5,47 @@
 @import '@fontsource/plus-jakarta-sans/700.css';
 @import '../styles/animations.css';
 
-/* Force light mode - override system dark mode */
+/* Theme CSS Variables */
 :root {
   color-scheme: light;
+
+  /* Light mode colors */
+  --background: #FAFAFA;
+  --foreground: #1A1A1A;
+  --card: #FFFFFF;
+  --card-foreground: #1A1A1A;
+  --muted: #6B6B6B;
+  --muted-foreground: #9B9B9B;
+  --border: #EBEBEB;
+  --input: #F5F5F5;
+  --primary: #1A1A1A;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F5F5F5;
+  --secondary-foreground: #1A1A1A;
+  --accent: #F5F5F5;
+  --accent-foreground: #1A1A1A;
+  --hover: #F5F5F5;
+}
+
+.dark {
+  color-scheme: dark;
+
+  /* Dark mode colors */
+  --background: #0A0A0A;
+  --foreground: #FAFAFA;
+  --card: #141414;
+  --card-foreground: #FAFAFA;
+  --muted: #A1A1A1;
+  --muted-foreground: #737373;
+  --border: #262626;
+  --input: #262626;
+  --primary: #FAFAFA;
+  --primary-foreground: #0A0A0A;
+  --secondary: #262626;
+  --secondary-foreground: #FAFAFA;
+  --accent: #262626;
+  --accent-foreground: #FAFAFA;
+  --hover: #1F1F1F;
 }
 
 /* Scroll offset for fixed header */
@@ -16,30 +54,50 @@ html {
   scroll-padding-top: 80px;
 }
 
-/* Prevent horizontal overflow and ensure white background */
+/* Prevent horizontal overflow */
 body {
   overflow-x: hidden;
-  background-color: #ffffff;
-  color: #1a1a1a;
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
-/* Scrollbar styling */
+/* Smooth theme transition */
+* {
+  transition-property: background-color, border-color, color;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+
+/* Scrollbar styling - Light mode */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--secondary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--border);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--muted-foreground);
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #333;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #444;
 }
 
 /* Hide scrollbar but keep functionality */
@@ -130,17 +188,44 @@ body {
 }
 
 .email-content pre {
-  background: #F5F5F5;
+  background: var(--secondary);
   padding: 12px;
   border-radius: 6px;
   overflow-x: auto;
 }
 
 .email-content code {
-  background: #F5F5F5;
+  background: var(--secondary);
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 0.9em;
+}
+
+/* Dark mode email content */
+.dark .email-content {
+  color: var(--foreground);
+}
+
+.dark .email-content a {
+  color: #60A5FA;
+}
+
+.dark .email-content a:hover {
+  color: #93C5FD;
+}
+
+.dark .email-content td,
+.dark .email-content th {
+  border-color: var(--border);
+}
+
+.dark .email-content blockquote {
+  border-color: var(--border);
+  color: var(--muted);
+}
+
+.dark .email-content img {
+  opacity: 0.95;
 }
 
 /* Safe area for iPhone notch and home indicator */
