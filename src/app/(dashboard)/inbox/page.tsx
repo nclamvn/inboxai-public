@@ -67,6 +67,7 @@ function InboxContent() {
       newsletter: 0,
       promotion: 0,
       social: 0,
+      spam: 0,
       needsAction: 0,
     }
 
@@ -89,6 +90,38 @@ function InboxContent() {
 
     return counts
   }, [emails])
+
+  // Handle delete all in category
+  const handleDeleteAllInCategory = useCallback(async (category: string) => {
+    const count = filterCounts[category as keyof typeof filterCounts] || 0
+    if (count === 0) return
+
+    if (!confirm(`Xóa tất cả ${count} email trong "${category === 'spam' ? 'Spam' : category}"?`)) {
+      return
+    }
+
+    try {
+      const res = await fetch('/api/emails/bulk-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'delete',
+          filter: { category }
+        })
+      })
+
+      const data = await res.json()
+      if (data.success) {
+        refetch()
+        setActiveFilter(null)
+      } else {
+        alert(data.error || 'Xóa thất bại')
+      }
+    } catch (error) {
+      console.error('Delete all failed:', error)
+      alert('Xóa thất bại')
+    }
+  }, [filterCounts, refetch])
 
   // Filtered emails
   const filteredEmails = useMemo(() => {
@@ -251,6 +284,7 @@ function InboxContent() {
             counts={filterCounts}
             onClassify={handleClassify}
             classifying={classifying}
+            onDeleteAll={handleDeleteAllInCategory}
           />
         </div>
       )}

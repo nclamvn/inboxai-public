@@ -113,6 +113,11 @@ export function EmailListCompact({
         text: 'text-[#7C3AED]',
         hoverBg: 'hover:bg-[#EDE9FE]'
       },
+      spam: {
+        bg: 'bg-red-100',
+        text: 'text-red-600',
+        hoverBg: 'hover:bg-red-200'
+      },
     }
     return styles[category] || styles.newsletter
   }
@@ -126,6 +131,7 @@ export function EmailListCompact({
       newsletter: 'Newsletter',
       promotion: 'Khuyến mãi',
       social: 'Mạng XH',
+      spam: 'Spam',
     }
     return labels[category] || category
   }

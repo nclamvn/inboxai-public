@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Menu, Pencil, Inbox, Send, Star, Archive, Trash2,
-  BarChart3, Settings, ChevronLeft
+  BarChart3, Settings, ChevronLeft, Bell
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -18,6 +18,7 @@ const navItems = [
 ]
 
 const bottomItems = [
+  { href: '/subscriptions', icon: Bell, label: 'Đăng ký' },
   { href: '/insights', icon: BarChart3, label: 'Insights' },
   { href: '/settings', icon: Settings, label: 'Cài đặt' },
 ]

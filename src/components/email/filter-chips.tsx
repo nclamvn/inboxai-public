@@ -1,7 +1,7 @@
 'use client'
 
 import { memo, useMemo, useCallback } from 'react'
-import { X, Zap, Sparkles } from 'lucide-react'
+import { X, Zap, Sparkles, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface FilterOption {
@@ -23,13 +23,15 @@ interface Props {
     newsletter: number
     promotion: number
     social: number
+    spam: number
     needsAction: number
   }
   onClassify?: () => void
   classifying?: boolean
+  onDeleteAll?: (category: string) => void
 }
 
-export const FilterChips = memo(function FilterChips({ activeFilter, onFilterChange, counts, onClassify, classifying }: Props) {
+export const FilterChips = memo(function FilterChips({ activeFilter, onFilterChange, counts, onClassify, classifying, onDeleteAll }: Props) {
   // Memoize filters array
   const filters: FilterOption[] = useMemo(() => [
     { id: 'all', label: 'Tất cả', count: counts.all },
@@ -40,6 +42,7 @@ export const FilterChips = memo(function FilterChips({ activeFilter, onFilterCha
     { id: 'newsletter', label: 'Newsletter', count: counts.newsletter },
     { id: 'promotion', label: 'Khuyến mãi', count: counts.promotion, color: 'amber' },
     { id: 'social', label: 'Mạng XH', count: counts.social, color: 'violet' },
+    { id: 'spam', label: 'Spam', count: counts.spam, color: 'spam' },
   ], [counts])
 
   // Memoize visible filters
@@ -61,10 +64,14 @@ export const FilterChips = memo(function FilterChips({ activeFilter, onFilterCha
         case 'red': return 'bg-[#DC2626] text-white'
         case 'amber': return 'bg-[#D97706] text-white'
         case 'violet': return 'bg-[#7C3AED] text-white'
+        case 'spam': return 'bg-[#EF4444] text-white'
         default: return 'bg-[#1A1A1A] text-white'
       }
     } else {
       // Inactive state - subtle
+      if (filter.color === 'spam') {
+        return 'bg-red-50 text-red-600 hover:bg-red-100'
+      }
       return 'bg-[#F5F5F5] text-[#6B6B6B] hover:bg-[#EBEBEB] hover:text-[#1A1A1A]'
     }
   }
@@ -118,6 +125,17 @@ export const FilterChips = memo(function FilterChips({ activeFilter, onFilterCha
           </button>
         )
       })}
+
+      {/* Delete All Spam button */}
+      {activeFilter === 'spam' && counts.spam > 0 && onDeleteAll && (
+        <button
+          onClick={() => onDeleteAll('spam')}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium bg-red-600 text-white hover:bg-red-700 transition-colors whitespace-nowrap ml-2"
+        >
+          <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+          <span>Xóa tất cả</span>
+        </button>
+      )}
 
       {/* Clear filter button */}
       {activeFilter && activeFilter !== 'all' && (
