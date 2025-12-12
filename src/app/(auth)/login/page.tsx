@@ -41,29 +41,29 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-executive-lg border border-[#EBEBEB] p-8">
+    <div className="bg-[var(--card)] rounded-2xl shadow-executive-lg border border-[var(--border)] p-8">
       <div className="text-center mb-8">
-        <h1 className="text-[24px] font-bold text-[#1A1A1A] mb-2">
+        <h1 className="text-[24px] font-bold text-[var(--foreground)] mb-2">
           Chào mừng trở lại
         </h1>
-        <p className="text-[#6B6B6B]">
+        <p className="text-[var(--muted)]">
           Đăng nhập để tiếp tục với InboxAI
         </p>
       </div>
 
       <form onSubmit={handleLogin} className="space-y-4">
         {error && (
-          <div className="p-3 bg-[#FEF2F2] border border-[#FEE2E2] rounded-lg text-[#DC2626] text-[14px]">
+          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-[14px]">
             {error}
           </div>
         )}
 
         <div>
-          <label htmlFor="email" className="block text-[14px] font-medium text-[#1A1A1A] mb-1">
+          <label htmlFor="email" className="block text-[14px] font-medium text-[var(--foreground)] mb-1">
             Email
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9B9B9B]" strokeWidth={1.5} />
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]" strokeWidth={1.5} />
             <input
               id="email"
               type="email"
@@ -71,17 +71,17 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="email@example.com"
               required
-              className="w-full pl-10 pr-4 py-2.5 border border-[#EBEBEB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-[14px] font-medium text-[#1A1A1A] mb-1">
+          <label htmlFor="password" className="block text-[14px] font-medium text-[var(--foreground)] mb-1">
             Mật khẩu
           </label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9B9B9B]" strokeWidth={1.5} />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]" strokeWidth={1.5} />
             <input
               id="password"
               type={showPassword ? 'text' : 'password'}
@@ -89,12 +89,12 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              className="w-full pl-10 pr-10 py-2.5 border border-[#EBEBEB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent"
+              className="w-full pl-10 pr-10 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9B9B9B] hover:text-[#6B6B6B]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] hover:text-[var(--muted)]"
             >
               {showPassword ? <EyeOff className="w-5 h-5" strokeWidth={1.5} /> : <Eye className="w-5 h-5" strokeWidth={1.5} />}
             </button>
@@ -104,7 +104,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-[#1A1A1A] text-white py-2.5 rounded-lg font-medium hover:bg-[#2D2D2D] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-[var(--primary)] text-[var(--primary-foreground)] py-2.5 rounded-lg font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <Loader2 className="w-5 h-5 animate-spin" strokeWidth={1.5} />
@@ -117,9 +117,9 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <div className="mt-6 text-center text-[14px] text-[#6B6B6B]">
+      <div className="mt-6 text-center text-[14px] text-[var(--muted)]">
         Chưa có tài khoản?{' '}
-        <Link href="/signup" className="text-[#1A1A1A] font-medium hover:underline">
+        <Link href="/signup" className="text-[var(--foreground)] font-medium hover:underline">
           Đăng ký ngay
         </Link>
       </div>

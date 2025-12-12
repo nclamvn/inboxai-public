@@ -89,11 +89,11 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
   return (
     <>
       {/* Attachment List */}
-      <div className="border-t border-[#EBEBEB] mt-4 pt-4">
+      <div className="border-t border-[var(--border)] mt-4 pt-4">
         <div className="flex items-center gap-2 mb-3">
-          <Paperclip className="w-4 h-4 text-[#6B6B6B]" />
-          <span className="text-[13px] font-medium text-[#6B6B6B]">
-            {visibleAttachments.length} tep dinh kem
+          <Paperclip className="w-4 h-4 text-[var(--muted)]" />
+          <span className="text-[13px] font-medium text-[var(--muted)]">
+            {visibleAttachments.length} tệp đính kèm
           </span>
         </div>
 
@@ -130,7 +130,7 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
                       onClick={() => handlePreview(att)}
                       disabled={loading === att.id}
                       className="p-1.5 rounded-lg hover:bg-white text-[#6B6B6B]"
-                      title="Xem truoc"
+                      title="Xem trước"
                     >
                       {loading === att.id ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -142,7 +142,7 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
                   <button
                     onClick={() => handleDownload(att)}
                     className="p-1.5 rounded-lg hover:bg-white text-[#6B6B6B]"
-                    title="Tai xuong"
+                    title="Tải xuống"
                   >
                     <Download className="w-4 h-4" />
                   </button>

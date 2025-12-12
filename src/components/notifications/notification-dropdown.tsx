@@ -104,9 +104,9 @@ export function NotificationDropdown() {
     const now = new Date()
     const diff = now.getTime() - d.getTime()
 
-    if (diff < 60000) return 'Vua xong'
-    if (diff < 3600000) return `${Math.floor(diff / 60000)} phut truoc`
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)} gio truoc`
+    if (diff < 60000) return 'Vừa xong'
+    if (diff < 3600000) return `${Math.floor(diff / 60000)} phút trước`
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)} giờ trước`
     return d.toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' })
   }
 
@@ -115,7 +115,7 @@ export function NotificationDropdown() {
       {/* Bell button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg hover:bg-[#F5F5F5] text-[#6B6B6B] transition-colors"
+        className="relative p-2 rounded-lg hover:bg-[var(--hover)] text-[var(--muted)] transition-colors"
       >
         <Bell className="w-5 h-5" strokeWidth={1.5} />
 
@@ -129,17 +129,17 @@ export function NotificationDropdown() {
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-lg border border-[#EBEBEB] overflow-hidden z-50 animate-fadeIn">
+        <div className="absolute right-0 top-full mt-2 w-80 bg-[var(--card)] rounded-xl shadow-lg border border-[var(--border)] overflow-hidden z-50 animate-fadeIn">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#EBEBEB]">
-            <h3 className="text-[15px] font-semibold text-[#1A1A1A]">Thong bao</h3>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
+            <h3 className="text-[15px] font-semibold text-[var(--foreground)]">Thông báo</h3>
             {unreadCount > 0 && (
               <button
                 onClick={() => markAsRead()}
                 className="text-[13px] text-blue-600 hover:underline flex items-center gap-1"
               >
                 <CheckCheck className="w-4 h-4" />
-                Doc tat ca
+                Đọc tất cả
               </button>
             )}
           </div>
@@ -148,12 +148,12 @@ export function NotificationDropdown() {
           <div className="max-h-[400px] overflow-y-auto">
             {loading && notifications.length === 0 ? (
               <div className="flex items-center justify-center py-8">
-                <RefreshCw className="w-5 h-5 animate-spin text-[#9B9B9B]" />
+                <RefreshCw className="w-5 h-5 animate-spin text-[var(--muted-foreground)]" />
               </div>
             ) : notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-[#9B9B9B]">
+              <div className="flex flex-col items-center justify-center py-8 text-[var(--muted-foreground)]">
                 <Bell className="w-10 h-10 mb-2 opacity-50" />
-                <span className="text-[14px]">Khong co thong bao</span>
+                <span className="text-[14px]">Không có thông báo</span>
               </div>
             ) : (
               notifications.map((notification) => {
@@ -165,8 +165,8 @@ export function NotificationDropdown() {
                     key={notification.id}
                     onClick={() => handleClick(notification)}
                     className={cn(
-                      'w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-[#F5F5F5] transition-colors',
-                      !notification.is_read && 'bg-blue-50/50'
+                      'w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-[var(--hover)] transition-colors',
+                      !notification.is_read && 'bg-blue-50/50 dark:bg-blue-900/20'
                     )}
                   >
                     {/* Icon */}
@@ -179,7 +179,7 @@ export function NotificationDropdown() {
                       <div className="flex items-start justify-between gap-2">
                         <span className={cn(
                           'text-[14px] line-clamp-1',
-                          !notification.is_read ? 'font-medium text-[#1A1A1A]' : 'text-[#6B6B6B]'
+                          !notification.is_read ? 'font-medium text-[var(--foreground)]' : 'text-[var(--muted)]'
                         )}>
                           {notification.title}
                         </span>
@@ -189,12 +189,12 @@ export function NotificationDropdown() {
                       </div>
 
                       {notification.message && (
-                        <p className="text-[13px] text-[#9B9B9B] line-clamp-2 mt-0.5">
+                        <p className="text-[13px] text-[var(--muted-foreground)] line-clamp-2 mt-0.5">
                           {notification.message}
                         </p>
                       )}
 
-                      <span className="text-[12px] text-[#BBBBBB] mt-1 block">
+                      <span className="text-[12px] text-[var(--muted-foreground)] mt-1 block">
                         {formatTime(notification.created_at)}
                       </span>
                     </div>
@@ -206,14 +206,14 @@ export function NotificationDropdown() {
 
           {/* Footer - only show if there are notifications */}
           {notifications.length > 0 && (
-            <div className="px-4 py-2 border-t border-[#EBEBEB] bg-[#FAFAFA]">
+            <div className="px-4 py-2 border-t border-[var(--border)] bg-[var(--secondary)]">
               <button
                 onClick={() => {
                   setIsOpen(false)
                 }}
-                className="text-[13px] text-[#6B6B6B] hover:text-[#1A1A1A] w-full text-center"
+                className="text-[13px] text-[var(--muted)] hover:text-[var(--foreground)] w-full text-center"
               >
-                Xem tat ca thong bao
+                Xem tất cả thông báo
               </button>
             </div>
           )}

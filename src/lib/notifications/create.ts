@@ -47,7 +47,7 @@ export async function notifyNewImportantEmail(
   await createNotification(
     userId,
     'important',
-    `Email quan trong tu ${sender}`,
+    `Email quan trọng từ ${sender}`,
     subject.slice(0, 100),
     `/inbox?email=${emailId}`
   )
@@ -59,8 +59,8 @@ export async function notifySyncComplete(userId: string, count: number) {
   await createNotification(
     userId,
     'sync_complete',
-    `Dong bo hoan tat`,
-    `Da dong bo ${count} email moi`
+    `Đồng bộ hoàn tất`,
+    `Đã đồng bộ ${count} email mới`
   )
 }
 
@@ -70,8 +70,8 @@ export async function notifyAiClassified(userId: string, count: number) {
   await createNotification(
     userId,
     'ai_classified',
-    `AI da phan loai xong`,
-    `${count} email da duoc phan loai tu dong`
+    `AI đã phân loại xong`,
+    `${count} email đã được phân loại tự động`
   )
 }
 
@@ -84,7 +84,7 @@ export async function notifyNewEmail(
   await createNotification(
     userId,
     'new_email',
-    `Email moi tu ${sender}`,
+    `Email mới từ ${sender}`,
     subject.slice(0, 100),
     `/inbox?email=${emailId}`
   )

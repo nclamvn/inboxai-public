@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Lock, Send, CheckCircle, LogOut, Mail, User, MessageSquare } from 'lucide-react'
+import { Lock, Send, CheckCircle, LogOut, User, MessageSquare } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 export default function AccessDeniedPage() {
@@ -45,12 +45,12 @@ export default function AccessDeniedPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || 'Co loi xay ra')
+        throw new Error(data.error || 'Có lỗi xảy ra')
       }
 
       setIsSubmitted(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Co loi xay ra')
+      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra')
     } finally {
       setIsSubmitting(false)
     }
@@ -63,22 +63,22 @@ export default function AccessDeniedPage() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-[#EBEBEB] p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-green-600" />
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-[var(--card)] rounded-2xl shadow-sm border border-[var(--border)] p-8 text-center">
+          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
           </div>
-          <h1 className="text-xl font-semibold text-[#1A1A1A] mb-2">
-            Yeu cau da duoc gui!
+          <h1 className="text-xl font-semibold text-[var(--foreground)] mb-2">
+            Yêu cầu đã được gửi!
           </h1>
-          <p className="text-[#6B6B6B] mb-6">
-            Chung toi se xem xet va phan hoi qua email <strong>{userEmail}</strong> trong thoi gian som nhat.
+          <p className="text-[var(--muted)] mb-6">
+            Chúng tôi sẽ xem xét và phản hồi qua email <strong>{userEmail}</strong> trong thời gian sớm nhất.
           </p>
           <button
             onClick={handleLogout}
-            className="text-[14px] text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors"
+            className="text-[14px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
           >
-            Dang nhap tai khoan khac
+            Đăng nhập tài khoản khác
           </button>
         </div>
       </div>
@@ -86,66 +86,66 @@ export default function AccessDeniedPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-[#EBEBEB] overflow-hidden">
+    <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-[var(--card)] rounded-2xl shadow-sm border border-[var(--border)] overflow-hidden">
         {/* Header */}
-        <div className="bg-[#1A1A1A] px-8 py-6 text-center">
+        <div className="bg-[var(--primary)] px-8 py-6 text-center">
           <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-3">
-            <Lock className="w-6 h-6 text-white" />
+            <Lock className="w-6 h-6 text-[var(--primary-foreground)]" />
           </div>
-          <h1 className="text-xl font-semibold text-white mb-1">
+          <h1 className="text-xl font-semibold text-[var(--primary-foreground)] mb-1">
             InboxAI Private Beta
           </h1>
-          <p className="text-white/60 text-[14px]">
-            Hien tai chi mo cho nguoi dung duoc moi
+          <p className="text-[var(--primary-foreground)]/60 text-[14px]">
+            Hiện tại chỉ mở cho người dùng được mời
           </p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-8 space-y-5">
           <div className="text-center mb-6">
-            <p className="text-[#6B6B6B] text-[14px]">
-              Dang nhap voi: <strong className="text-[#1A1A1A]">{userEmail}</strong>
+            <p className="text-[var(--muted)] text-[14px]">
+              Đang nhập với: <strong className="text-[var(--foreground)]">{userEmail}</strong>
             </p>
           </div>
 
           {/* Full Name */}
           <div>
-            <label className="block text-[13px] font-medium text-[#1A1A1A] mb-1.5">
-              Ho va ten
+            <label className="block text-[13px] font-medium text-[var(--foreground)] mb-1.5">
+              Họ và tên
             </label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9B9B9B]" />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="Nguyen Van A"
+                placeholder="Nguyễn Văn A"
                 required
-                className="w-full pl-10 pr-4 py-2.5 border border-[#EBEBEB] rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1A1A1A]/10 focus:border-[#1A1A1A]"
+                className="w-full pl-10 pr-4 py-2.5 border border-[var(--border)] rounded-lg text-[14px] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)]"
               />
             </div>
           </div>
 
           {/* Reason */}
           <div>
-            <label className="block text-[13px] font-medium text-[#1A1A1A] mb-1.5">
-              Ly do muon su dung InboxAI
+            <label className="block text-[13px] font-medium text-[var(--foreground)] mb-1.5">
+              Lý do muốn sử dụng InboxAI
             </label>
             <div className="relative">
-              <MessageSquare className="absolute left-3 top-3 w-4 h-4 text-[#9B9B9B]" />
+              <MessageSquare className="absolute left-3 top-3 w-4 h-4 text-[var(--muted-foreground)]" />
               <textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="Toi muon su dung InboxAI de..."
+                placeholder="Tôi muốn sử dụng InboxAI để..."
                 rows={3}
-                className="w-full pl-10 pr-4 py-2.5 border border-[#EBEBEB] rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1A1A1A]/10 focus:border-[#1A1A1A] resize-none"
+                className="w-full pl-10 pr-4 py-2.5 border border-[var(--border)] rounded-lg text-[14px] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] resize-none"
               />
             </div>
           </div>
 
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-[13px] text-red-600">
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-[13px] text-red-600 dark:text-red-400">
               {error}
             </div>
           )}
@@ -154,17 +154,17 @@ export default function AccessDeniedPage() {
           <button
             type="submit"
             disabled={isSubmitting || !fullName}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-[#1A1A1A] text-white rounded-lg font-medium text-[14px] hover:bg-[#333] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 py-3 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg font-medium text-[14px] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Dang gui...
+                <div className="w-4 h-4 border-2 border-[var(--primary-foreground)]/30 border-t-[var(--primary-foreground)] rounded-full animate-spin" />
+                Đang gửi...
               </>
             ) : (
               <>
                 <Send className="w-4 h-4" />
-                Gui yeu cau truy cap
+                Gửi yêu cầu truy cập
               </>
             )}
           </button>
@@ -174,10 +174,10 @@ export default function AccessDeniedPage() {
             <button
               type="button"
               onClick={handleLogout}
-              className="inline-flex items-center gap-1.5 text-[13px] text-[#9B9B9B] hover:text-[#6B6B6B] transition-colors"
+              className="inline-flex items-center gap-1.5 text-[13px] text-[var(--muted-foreground)] hover:text-[var(--muted)] transition-colors"
             >
               <LogOut className="w-3.5 h-3.5" />
-              Dang nhap tai khoan khac
+              Đăng nhập tài khoản khác
             </button>
           </div>
         </form>

@@ -13,14 +13,14 @@ export async function POST(request: NextRequest) {
 
     if (!email) {
       return NextResponse.json(
-        { error: 'Email la bat buoc' },
+        { error: 'Email là bắt buộc' },
         { status: 400 }
       )
     }
 
     if (!fullName) {
       return NextResponse.json(
-        { error: 'Ho ten la bat buoc' },
+        { error: 'Họ tên là bắt buộc' },
         { status: 400 }
       )
     }
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     if (existing) {
       return NextResponse.json(
-        { error: 'Email nay da co quyen truy cap' },
+        { error: 'Email này đã có quyền truy cập' },
         { status: 400 }
       )
     }
@@ -52,13 +52,13 @@ export async function POST(request: NextRequest) {
     if (existingRequest) {
       if (existingRequest.status === 'pending') {
         return NextResponse.json(
-          { error: 'Yeu cau cua ban dang duoc xem xet' },
+          { error: 'Yêu cầu của bạn đang được xem xét' },
           { status: 400 }
         )
       }
       if (existingRequest.status === 'rejected') {
         return NextResponse.json(
-          { error: 'Yeu cau truoc do da bi tu choi. Vui long lien he admin.' },
+          { error: 'Yêu cầu trước đó đã bị từ chối. Vui lòng liên hệ admin.' },
           { status: 400 }
         )
       }
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Failed to create access request:', error)
       return NextResponse.json(
-        { error: 'Co loi xay ra. Vui long thu lai.' },
+        { error: 'Có lỗi xảy ra. Vui lòng thử lại.' },
         { status: 500 }
       )
     }
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Access request error:', error)
     return NextResponse.json(
-      { error: 'Co loi xay ra. Vui long thu lai.' },
+      { error: 'Có lỗi xảy ra. Vui lòng thử lại.' },
       { status: 500 }
     )
   }

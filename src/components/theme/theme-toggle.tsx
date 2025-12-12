@@ -18,11 +18,10 @@ export function ThemeToggle({ variant = 'icon', className }: ThemeToggleProps) {
         onClick={toggleTheme}
         className={cn(
           'p-2 rounded-lg transition-colors',
-          'text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A]',
-          'dark:text-[#A1A1A1] dark:hover:bg-[#262626] dark:hover:text-[#FAFAFA]',
+          'text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]',
           className
         )}
-        title={resolvedTheme === 'dark' ? 'Chuyen sang sang' : 'Chuyen sang toi'}
+        title={resolvedTheme === 'dark' ? 'Chuyển sang sáng' : 'Chuyển sang tối'}
       >
         {resolvedTheme === 'dark' ? (
           <Sun className="w-5 h-5" strokeWidth={1.5} />
@@ -40,40 +39,40 @@ export function ThemeToggle({ variant = 'icon', className }: ThemeToggleProps) {
         onClick={() => setTheme('light')}
         className={cn(
           'flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] transition-colors',
-          'hover:bg-[#F5F5F5] dark:hover:bg-[#262626]',
+          'hover:bg-[var(--hover)] dark:hover:bg-[var(--hover)]',
           theme === 'light'
-            ? 'bg-[#F5F5F5] dark:bg-[#262626] font-medium text-[#1A1A1A] dark:text-[#FAFAFA]'
-            : 'text-[#6B6B6B] dark:text-[#A1A1A1]'
+            ? 'bg-[var(--secondary)] font-medium text-[var(--foreground)]'
+            : 'text-[var(--muted)]'
         )}
       >
         <Sun className="w-4 h-4" strokeWidth={1.5} />
-        Sang
+        Sáng
       </button>
       <button
         onClick={() => setTheme('dark')}
         className={cn(
           'flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] transition-colors',
-          'hover:bg-[#F5F5F5] dark:hover:bg-[#262626]',
+          'hover:bg-[var(--hover)] dark:hover:bg-[var(--hover)]',
           theme === 'dark'
-            ? 'bg-[#F5F5F5] dark:bg-[#262626] font-medium text-[#1A1A1A] dark:text-[#FAFAFA]'
-            : 'text-[#6B6B6B] dark:text-[#A1A1A1]'
+            ? 'bg-[var(--secondary)] font-medium text-[var(--foreground)]'
+            : 'text-[var(--muted)]'
         )}
       >
         <Moon className="w-4 h-4" strokeWidth={1.5} />
-        Toi
+        Tối
       </button>
       <button
         onClick={() => setTheme('system')}
         className={cn(
           'flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] transition-colors',
-          'hover:bg-[#F5F5F5] dark:hover:bg-[#262626]',
+          'hover:bg-[var(--hover)] dark:hover:bg-[var(--hover)]',
           theme === 'system'
-            ? 'bg-[#F5F5F5] dark:bg-[#262626] font-medium text-[#1A1A1A] dark:text-[#FAFAFA]'
-            : 'text-[#6B6B6B] dark:text-[#A1A1A1]'
+            ? 'bg-[var(--secondary)] font-medium text-[var(--foreground)]'
+            : 'text-[var(--muted)]'
         )}
       >
         <Monitor className="w-4 h-4" strokeWidth={1.5} />
-        He thong
+        Hệ thống
       </button>
     </div>
   )

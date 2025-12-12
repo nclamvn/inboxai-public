@@ -268,7 +268,7 @@ export function EmailListCompact({
                 {email.subject || '(Không có tiêu đề)'}
               </span>
               {(email.attachment_count || 0) > 0 && (
-                <span className="flex items-center gap-0.5 text-[var(--muted-foreground)] flex-shrink-0" title={`${email.attachment_count} tep dinh kem`}>
+                <span className="flex items-center gap-0.5 text-[var(--muted-foreground)] flex-shrink-0" title={`${email.attachment_count} tệp đính kèm`}>
                   <Paperclip className="w-3.5 h-3.5" strokeWidth={1.5} />
                   {(email.attachment_count || 0) > 1 && (
                     <span className="text-[11px]">{email.attachment_count}</span>

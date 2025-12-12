@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
   const { email, notes } = await request.json()
 
   if (!email) {
-    return NextResponse.json({ error: 'Email la bat buoc' }, { status: 400 })
+    return NextResponse.json({ error: 'Email là bắt buộc' }, { status: 400 })
   }
 
   const supabase = await createClient()
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
 
   if (existing) {
     if (existing.is_active) {
-      return NextResponse.json({ error: 'Email da ton tai trong whitelist' }, { status: 400 })
+      return NextResponse.json({ error: 'Email đã tồn tại trong whitelist' }, { status: 400 })
     }
 
     // Reactivate
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, message: 'Da kich hoat lai' })
+    return NextResponse.json({ success: true, message: 'Đã kích hoạt lại' })
   }
 
   // Create new
@@ -160,7 +160,7 @@ export async function PATCH(request: NextRequest) {
         })
         .eq('id', id)
 
-      return NextResponse.json({ success: true, message: 'Da phe duyet' })
+      return NextResponse.json({ success: true, message: 'Đã phê duyệt' })
     }
 
     if (action === 'reject') {
@@ -173,7 +173,7 @@ export async function PATCH(request: NextRequest) {
         })
         .eq('id', id)
 
-      return NextResponse.json({ success: true, message: 'Da tu choi' })
+      return NextResponse.json({ success: true, message: 'Đã từ chối' })
     }
   }
 
