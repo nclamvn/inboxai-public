@@ -21,8 +21,8 @@ export async function GET(
     .from('attachments')
     .select(`
       *,
-      emails (
-        id, original_uid,
+      emails!inner (
+        id, original_uid, user_id,
         source_accounts (
           id, imap_host, imap_port, imap_secure,
           username, password_encrypted
@@ -30,11 +30,16 @@ export async function GET(
       )
     `)
     .eq('id', attachmentId)
-    .eq('user_id', user.id)
     .single()
 
   if (error || !attachment) {
     return NextResponse.json({ error: 'Attachment not found' }, { status: 404 })
+  }
+
+  // Verify user owns this email
+  const emailData = attachment.emails as { user_id: string }
+  if (emailData.user_id !== user.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
   const email = attachment.emails as {

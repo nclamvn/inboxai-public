@@ -13,11 +13,22 @@ export async function GET(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // First verify user owns this email
+  const { data: email } = await supabase
+    .from('emails')
+    .select('id')
+    .eq('id', emailId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!email) {
+    return NextResponse.json({ error: 'Email not found' }, { status: 404 })
+  }
+
   const { data: attachments, error } = await supabase
     .from('attachments')
     .select('*')
     .eq('email_id', emailId)
-    .eq('user_id', user.id)
     .order('created_at', { ascending: true })
 
   if (error) {

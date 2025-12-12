@@ -266,7 +266,6 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
             if (savedEmail && attachments.length > 0) {
               const attachmentRows = attachments.map(att => ({
                 email_id: savedEmail.id,
-                user_id: account.user_id,
                 filename: att.filename,
                 content_type: att.contentType,
                 size: att.size,
