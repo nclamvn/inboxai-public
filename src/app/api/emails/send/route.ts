@@ -73,7 +73,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Decrypt password
-    const password = decryptPassword(account.password_encrypted)
+    let password: string
+    try {
+      password = decryptPassword(account.password_encrypted)
+    } catch (decryptError) {
+      console.error('Password decrypt error:', decryptError)
+      return NextResponse.json(
+        { error: 'Không thể giải mã mật khẩu. Vui lòng xóa và thêm lại tài khoản email.' },
+        { status: 500 }
+      )
+    }
 
     // Handle reply - get original email subject
     let finalSubject = subject
