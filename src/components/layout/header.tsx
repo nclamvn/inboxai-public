@@ -3,13 +3,14 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import {
-  Bell, Sparkles, ChevronDown, LogOut,
+  Sparkles, ChevronDown, LogOut,
   Settings, X
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { SearchBox } from '@/components/search/search-box'
+import { NotificationDropdown } from '@/components/notifications/notification-dropdown'
 
 interface BriefingData {
   unread: number
@@ -224,12 +225,7 @@ export function Header() {
         </div>
 
         {/* Notifications */}
-        <button
-          type="button"
-          className="p-2 rounded-lg text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors"
-        >
-          <Bell className="w-5 h-5" strokeWidth={1.5} />
-        </button>
+        <NotificationDropdown />
 
         {/* User Menu */}
         <div className="relative ml-2" ref={userMenuRef}>

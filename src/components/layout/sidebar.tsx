@@ -18,7 +18,7 @@ const navItems = [
 ]
 
 const bottomItems = [
-  { href: '/subscriptions', icon: Newspaper, label: 'Đăng ký' },
+  { href: '/subscriptions', icon: Newspaper, label: 'Newsletters' },
   { href: '/insights', icon: BarChart3, label: 'Insights' },
   { href: '/settings', icon: Settings, label: 'Cài đặt' },
 ]
