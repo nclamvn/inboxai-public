@@ -167,18 +167,18 @@ export function EmailDetailMobile({
         </div>
       </div>
 
-      {/* FLOATING ACTION BUTTONS - with breathing room */}
-      <div className="flex items-center justify-center gap-3 px-5 py-4 border-t border-[#EBEBEB] bg-white safe-area-bottom flex-shrink-0">
+      {/* FLOATING ACTION BUTTONS - pill design with proper spacing */}
+      <div className="flex items-center justify-center gap-4 px-6 pt-4 pb-8 border-t border-[#EBEBEB] bg-white safe-area-bottom flex-shrink-0">
         <button
           onClick={() => window.location.href = `/compose?replyTo=${email.id}`}
-          className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#1A1A1A] text-white rounded-xl active:bg-[#333] max-w-[180px]"
+          className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#1A1A1A] text-white rounded-full active:bg-[#333] max-w-[160px]"
         >
           <Reply className="w-4 h-4" />
           <span className="text-[14px] font-medium">Trả lời</span>
         </button>
         <button
           onClick={() => window.location.href = `/compose?forward=${email.id}`}
-          className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#F5F5F5] text-[#1A1A1A] rounded-xl active:bg-[#EBEBEB] max-w-[180px]"
+          className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#F5F5F5] text-[#1A1A1A] rounded-full active:bg-[#EBEBEB] max-w-[160px]"
         >
           <Forward className="w-4 h-4" />
           <span className="text-[14px] font-medium">Chuyển tiếp</span>
