@@ -4,15 +4,22 @@
 @import '@fontsource/plus-jakarta-sans/600.css';
 @import '@fontsource/plus-jakarta-sans/700.css';
 
+/* Force light mode - override system dark mode */
+:root {
+  color-scheme: light;
+}
+
 /* Scroll offset for fixed header */
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 80px;
 }
 
-/* Prevent horizontal overflow */
+/* Prevent horizontal overflow and ensure white background */
 body {
   overflow-x: hidden;
+  background-color: #ffffff;
+  color: #1a1a1a;
 }
 
 /* Scrollbar styling */

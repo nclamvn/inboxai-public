@@ -125,32 +125,25 @@ export async function generateWeeklyReport(userId: string): Promise<WeeklyReport
     .gte('received_at', prevWeekStart.toISOString())
     .lt('received_at', weekStart.toISOString())
 
-  // Fetch behaviors
-  const { data: behaviors } = await supabase
-    .from('user_behaviors')
+  // Fetch ALL emails for sender analysis (last 30 days for more data)
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const { data: allRecentEmails } = await supabase
+    .from('emails')
     .select('*')
     .eq('user_id', userId)
-    .gte('created_at', weekStart.toISOString())
-
-  // Fetch sender scores
-  const { data: senderScores } = await supabase
-    .from('sender_scores')
-    .select('*')
-    .eq('user_id', userId)
-    .order('total_received', { ascending: false })
-    .limit(20)
+    .gte('received_at', thirtyDaysAgo.toISOString())
+    .order('received_at', { ascending: false })
 
   const emails = (thisWeekEmails || []) as Email[]
   const prevEmails = (lastWeekEmails || []) as Email[]
-  const actions = (behaviors || []) as Behavior[]
-  const senders = (senderScores || []) as SenderScore[]
+  const allEmails = (allRecentEmails || []) as Email[]
 
   // === CALCULATE STATS ===
-  const stats = calculateWeeklyStats(emails, actions)
+  const stats = calculateWeeklyStats(emails, [])
   const prevStats = calculateWeeklyStats(prevEmails, [])
 
-  // === TOP SENDERS WITH INSIGHTS ===
-  const topSenders = analyzeSenders(senders)
+  // === TOP SENDERS WITH INSIGHTS (from all recent emails) ===
+  const topSenders = analyzeSendersFromEmails(allEmails)
 
   // === PRODUCTIVITY SCORE ===
   const productivity = calculateProductivityScore(stats, prevStats)
@@ -270,38 +263,71 @@ function calculateWeeklyStats(emails: Email[], behaviors: Behavior[]): WeeklySta
   }
 }
 
-function analyzeSenders(senders: SenderScore[]): SenderInsight[] {
-  return senders.slice(0, 10).map(sender => {
-    const openRate = sender.total_received > 0
-      ? Math.round(sender.total_opened / sender.total_received * 100)
+function analyzeSendersFromEmails(emails: Email[]): SenderInsight[] {
+  // Group emails by sender
+  const senderMap: Record<string, {
+    email: string
+    name: string
+    total: number
+    read: number
+    deleted: number
+    archived: number
+  }> = {}
+
+  emails.forEach(e => {
+    const key = e.from_address || 'unknown'
+    if (!senderMap[key]) {
+      senderMap[key] = {
+        email: key,
+        name: e.from_name || key.split('@')[0],
+        total: 0,
+        read: 0,
+        deleted: 0,
+        archived: 0
+      }
+    }
+    senderMap[key].total++
+    if (e.is_read) senderMap[key].read++
+    if (e.is_deleted) senderMap[key].deleted++
+    if (e.is_archived) senderMap[key].archived++
+  })
+
+  // Convert to array and sort by total
+  const senders = Object.values(senderMap)
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 10)
+
+  return senders.map(sender => {
+    const openRate = sender.total > 0
+      ? Math.round(sender.read / sender.total * 100)
       : 0
 
     let suggestion: 'vip' | 'unsubscribe' | 'mute' | 'none' = 'none'
     let reason = ''
 
     // Suggest VIP if high engagement
-    if (openRate >= 90 && sender.total_received >= 3) {
+    if (openRate >= 90 && sender.total >= 3) {
       suggestion = 'vip'
       reason = 'Luôn mở email từ người này'
     }
     // Suggest unsubscribe if very low engagement
-    else if (openRate < 10 && sender.total_received >= 5) {
+    else if (openRate < 20 && sender.total >= 5) {
       suggestion = 'unsubscribe'
-      reason = `${sender.total_received} email, chỉ mở ${sender.total_opened}`
+      reason = `${sender.total} email, chỉ mở ${sender.read}`
     }
     // Suggest mute if mostly deleted
-    else if (sender.total_deleted > sender.total_opened && sender.total_received >= 3) {
+    else if (sender.deleted > sender.read && sender.total >= 3) {
       suggestion = 'mute'
       reason = 'Thường xóa email từ người này'
     }
 
     return {
-      email: sender.sender_email,
-      name: sender.sender_name || sender.sender_email.split('@')[0],
-      totalEmails: sender.total_received,
+      email: sender.email,
+      name: sender.name,
+      totalEmails: sender.total,
       openRate,
-      avgReadTime: sender.avg_read_time,
-      importance: sender.importance_score,
+      avgReadTime: 0,
+      importance: openRate,
       suggestion,
       reason
     }

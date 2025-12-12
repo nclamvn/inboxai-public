@@ -154,7 +154,7 @@ export function SourceAccountsSection() {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-[#EBEBEB] overflow-hidden">
+    <div className="bg-white rounded-xl border border-[#EBEBEB]">
       <div className="p-4 border-b border-[#EBEBEB] flex items-center justify-between">
         <div>
           <h3 className="text-[15px] font-semibold text-[#1A1A1A]">Tài khoản email</h3>
@@ -250,7 +250,7 @@ export function SourceAccountsSection() {
 
                   {/* Dropdown menu */}
                   {syncDropdownId === account.id && (
-                    <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-[#EBEBEB] rounded-lg shadow-lg py-1 z-10">
+                    <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-[#EBEBEB] rounded-lg shadow-lg py-1 z-50">
                       <button
                         onClick={() => {
                           setSyncDropdownId(null)

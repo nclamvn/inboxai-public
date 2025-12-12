@@ -55,6 +55,7 @@ export function EmailDetailFull({
   const handleUseDraft = (subject: string, body: string) => {
     const params = new URLSearchParams({
       replyTo: email.from_address || '',
+      replyToEmailId: email.id,
       subject,
       body,
     })

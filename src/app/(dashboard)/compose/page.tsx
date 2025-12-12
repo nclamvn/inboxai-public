@@ -2,7 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Send, Paperclip, X, Loader2, Sparkles } from 'lucide-react'
+import { Send, Paperclip, X, Loader2, Sparkles, ChevronDown } from 'lucide-react'
+
+interface SourceAccount {
+  id: string
+  email_address: string
+  display_name?: string
+  provider: string
+  is_active: boolean
+}
 
 export default function ComposePage() {
   const router = useRouter()
@@ -15,6 +23,34 @@ export default function ComposePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isFromAI, setIsFromAI] = useState(false)
+
+  // Account selection
+  const [accounts, setAccounts] = useState<SourceAccount[]>([])
+  const [selectedAccountId, setSelectedAccountId] = useState<string>('')
+  const [loadingAccounts, setLoadingAccounts] = useState(true)
+  const [showAccountDropdown, setShowAccountDropdown] = useState(false)
+
+  // Fetch source accounts
+  useEffect(() => {
+    async function fetchAccounts() {
+      try {
+        const res = await fetch('/api/source-accounts')
+        if (res.ok) {
+          const data = await res.json()
+          const activeAccounts = (data.accounts || []).filter((a: SourceAccount) => a.is_active)
+          setAccounts(activeAccounts)
+          if (activeAccounts.length > 0) {
+            setSelectedAccountId(activeAccounts[0].id)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch accounts:', error)
+      } finally {
+        setLoadingAccounts(false)
+      }
+    }
+    fetchAccounts()
+  }, [])
 
   // Pre-fill form from query params (used by AI Reply Assistant)
   useEffect(() => {
@@ -30,12 +66,19 @@ export default function ComposePage() {
     }
   }, [searchParams])
 
+  const selectedAccount = accounts.find(a => a.id === selectedAccountId)
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
 
     if (!to.trim() || !subject.trim()) {
       setError('Vui lòng điền đầy đủ thông tin người nhận và tiêu đề.')
+      return
+    }
+
+    if (!selectedAccountId) {
+      setError('Vui lòng chọn tài khoản gửi.')
       return
     }
 
@@ -48,6 +91,7 @@ export default function ComposePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          sourceAccountId: selectedAccountId,
           to: to.split(',').map(e => e.trim()),
           subject,
           text: body,
@@ -104,11 +148,60 @@ export default function ComposePage() {
         )}
 
         <div className="p-4 space-y-3 border-b border-[#EBEBEB]">
+          {/* From (Account Selector) */}
+          <div className="flex items-center gap-3">
+            <label className="w-16 text-[14px] text-[#6B6B6B]">Từ</label>
+            <div className="relative flex-1">
+              {loadingAccounts ? (
+                <div className="flex items-center gap-2 px-3 py-2 border border-[#EBEBEB] rounded-lg text-[#6B6B6B]">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-[14px]">Đang tải...</span>
+                </div>
+              ) : accounts.length === 0 ? (
+                <div className="px-3 py-2 border border-[#FEE2E2] bg-[#FEF2F2] rounded-lg text-[#DC2626] text-[14px]">
+                  Chưa có tài khoản email. <a href="/settings" className="underline">Thêm ngay</a>
+                </div>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setShowAccountDropdown(!showAccountDropdown)}
+                    className="w-full flex items-center justify-between px-3 py-2 border border-[#EBEBEB] rounded-lg hover:border-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent transition-colors"
+                  >
+                    <span className="text-[14px] text-[#1A1A1A]">
+                      {selectedAccount?.email_address || 'Chọn tài khoản'}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-[#6B6B6B] transition-transform ${showAccountDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showAccountDropdown && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#EBEBEB] rounded-lg shadow-lg z-50 py-1">
+                      {accounts.map(account => (
+                        <button
+                          key={account.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedAccountId(account.id)
+                            setShowAccountDropdown(false)
+                          }}
+                          className={`w-full px-3 py-2 text-left text-[14px] hover:bg-[#F5F5F5] transition-colors ${
+                            account.id === selectedAccountId ? 'bg-[#F5F5F5] text-[#1A1A1A]' : 'text-[#6B6B6B]'
+                          }`}
+                        >
+                          {account.email_address}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
           {/* To */}
           <div className="flex items-center gap-3">
             <label className="w-16 text-[14px] text-[#6B6B6B]">Đến</label>
             <input
-              type="email"
+              type="text"
               value={to}
               onChange={(e) => setTo(e.target.value)}
               placeholder="email@example.com"
