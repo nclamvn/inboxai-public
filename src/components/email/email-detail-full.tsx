@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Star, Archive, Trash2, Reply, Forward, MoreHorizontal,
-  Sparkles, ChevronDown, ChevronUp, Loader2, X
+  Sparkles, ChevronDown, ChevronUp, Loader2, X, Mail
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
@@ -253,23 +253,31 @@ export function EmailDetailFull({
 
       {/* Email Body */}
       <div className="flex-1 overflow-y-auto px-6 py-6">
-        {email.body_html ? (
+        {email.body_html && email.body_html.replace(/<[^>]*>/g, '').trim().length > 10 ? (
           <div
             className="prose prose-sm max-w-none text-[#1A1A1A]"
             dangerouslySetInnerHTML={{ __html: email.body_html }}
           />
-        ) : email.body_text ? (
+        ) : email.body_text && email.body_text.trim().length > 0 ? (
           <pre className="whitespace-pre-wrap font-sans text-[15px] text-[#1A1A1A] leading-relaxed bg-transparent p-0 m-0">
             {email.body_text}
           </pre>
-        ) : email.snippet ? (
+        ) : email.snippet && email.snippet.trim().length > 0 ? (
           <div className="text-[15px] text-[#1A1A1A] leading-relaxed whitespace-pre-wrap">
             {email.snippet}
           </div>
         ) : (
-          <p className="text-[14px] text-[#9B9B9B] italic">
-            (Không có nội dung)
-          </p>
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-16 h-16 rounded-full bg-[#F5F5F5] flex items-center justify-center mb-4">
+              <Mail className="w-8 h-8 text-[#9B9B9B]" strokeWidth={1.5} />
+            </div>
+            <p className="text-[15px] text-[#6B6B6B] mb-1">
+              Email này không có nội dung
+            </p>
+            <p className="text-[13px] text-[#9B9B9B]">
+              Có thể chỉ có tiêu đề hoặc là email test
+            </p>
+          </div>
         )}
       </div>
 

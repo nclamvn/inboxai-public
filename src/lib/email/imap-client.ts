@@ -204,7 +204,7 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
             : []
 
           // Insert email
-          const { error: insertError } = await supabase.from('emails').insert({
+          const { data: insertedEmail, error: insertError } = await supabase.from('emails').insert({
             user_id: account.user_id,
             source_account_id: account.id,
             original_uid: String(msg.uid),
@@ -225,7 +225,7 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
             is_archived: false,
             is_deleted: false,
             direction: 'inbound'
-          })
+          }).select('id').single()
 
           if (insertError) {
             // Handle duplicate key error gracefully
@@ -239,6 +239,11 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
           result.synced++
           result.lastUid = String(msg.uid)
           processedCount++
+
+          // Trigger auto-classify (non-blocking)
+          if (insertedEmail?.id) {
+            classifyEmailAsync(insertedEmail.id).catch(() => {})
+          }
 
           // Log progress every 20 emails saved
           if (processedCount % 20 === 0) {
@@ -308,6 +313,30 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
   }
 
   return result
+}
+
+// Helper: classify email async (fire and forget)
+async function classifyEmailAsync(emailId: string): Promise<void> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
+    if (!baseUrl) {
+      console.log('[CLASSIFY] No base URL configured, skipping auto-classify')
+      return
+    }
+
+    const url = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`
+
+    // Fire and forget - don't await
+    fetch(`${url}/api/ai/classify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ emailId })
+    }).catch((err) => {
+      console.log(`[CLASSIFY] Failed for ${emailId}:`, err.message)
+    })
+  } catch {
+    // Ignore errors - non-critical
+  }
 }
 
 // Provider presets
