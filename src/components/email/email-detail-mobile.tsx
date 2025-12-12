@@ -1,0 +1,273 @@
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import {
+  ChevronLeft, Star, MoreVertical, Reply, Forward,
+  Archive, Trash2, Mail, AlertCircle, Loader2,
+  Tag, Flag, MailOpen, Ban, Check
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
+import type { Email } from '@/types'
+
+interface EmailDetailMobileProps {
+  email: Email
+  onBack: () => void
+  onRefresh?: () => void
+  onStar?: (id: string) => void
+  onArchive?: (id: string) => void
+  onDelete?: (id: string) => void
+}
+
+export function EmailDetailMobile({
+  email,
+  onBack,
+  onRefresh,
+  onStar,
+  onArchive,
+  onDelete
+}: EmailDetailMobileProps) {
+  const [showActions, setShowActions] = useState(false)
+  const [isStarred, setIsStarred] = useState(email.is_starred)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const previousId = useRef<string | null>(null)
+
+  // Reset on email change
+  useEffect(() => {
+    if (email.id !== previousId.current) {
+      setShowActions(false)
+      setIsStarred(email.is_starred)
+      setActionLoading(null)
+      previousId.current = email.id
+    }
+  }, [email.id, email.is_starred])
+
+  const toggleStar = async () => {
+    const newValue = !isStarred
+    setIsStarred(newValue)
+    if (onStar) {
+      onStar(email.id)
+    }
+  }
+
+  const handleArchive = () => {
+    setShowActions(false)
+    setActionLoading('archive')
+    if (onArchive) {
+      onArchive(email.id)
+    }
+  }
+
+  const handleDelete = () => {
+    setShowActions(false)
+    setActionLoading('delete')
+    if (onDelete) {
+      onDelete(email.id)
+    }
+  }
+
+  // Format date compact
+  const formatDate = (date: string | null) => {
+    if (!date) return ''
+    const d = new Date(date)
+    const now = new Date()
+    const isToday = d.toDateString() === now.toDateString()
+
+    if (isToday) {
+      return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+    }
+    return d.toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' })
+  }
+
+  // Check for actual body content
+  const hasBody = (email.body_text && email.body_text.trim().length > 10) ||
+                  (email.body_html && email.body_html.trim().length > 10)
+
+  return (
+    <div className="fixed inset-0 z-50 bg-white flex flex-col">
+      {/* COMPACT HEADER - single row */}
+      <header className="flex items-center h-12 px-2 border-b border-[#EBEBEB] bg-white safe-area-top flex-shrink-0">
+        {/* Back */}
+        <button
+          onClick={onBack}
+          className="p-2 -ml-1 rounded-full active:bg-[#F5F5F5]"
+        >
+          <ChevronLeft className="w-6 h-6 text-[#1A1A1A]" />
+        </button>
+
+        {/* Subject - truncate */}
+        <h1 className="flex-1 text-[15px] font-medium text-[#1A1A1A] truncate mx-2">
+          {email.subject || '(Không có tiêu đề)'}
+        </h1>
+
+        {/* Star */}
+        <button
+          onClick={toggleStar}
+          className="p-2 rounded-full active:bg-[#F5F5F5]"
+        >
+          <Star
+            className={cn(
+              'w-5 h-5',
+              isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-[#9B9B9B]'
+            )}
+          />
+        </button>
+
+        {/* More actions */}
+        <button
+          onClick={() => setShowActions(true)}
+          className="p-2 rounded-full active:bg-[#F5F5F5]"
+        >
+          <MoreVertical className="w-5 h-5 text-[#6B6B6B]" />
+        </button>
+      </header>
+
+      {/* CONTENT - maximum space */}
+      <div className="flex-1 overflow-y-auto overscroll-contain">
+        {/* Sender info - compact 2 lines max */}
+        <div className="flex items-start gap-3 px-4 py-3 border-b border-[#F5F5F5]">
+          {/* Avatar */}
+          <div className="w-10 h-10 rounded-full bg-[#E8F0FE] flex items-center justify-center text-[15px] font-medium text-[#1967D2] flex-shrink-0">
+            {(email.from_name || email.from_address || 'U')[0].toUpperCase()}
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <span className="text-[14px] font-medium text-[#1A1A1A] truncate">
+                {email.from_name || email.from_address?.split('@')[0] || 'Unknown'}
+              </span>
+              <span className="text-[12px] text-[#9B9B9B] ml-2 flex-shrink-0">
+                {formatDate(email.received_at)}
+              </span>
+            </div>
+            <div className="text-[13px] text-[#6B6B6B] truncate">
+              {email.from_address}
+            </div>
+          </div>
+        </div>
+
+        {/* Email body */}
+        <div className="px-4 py-3">
+          {!hasBody ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Mail className="w-10 h-10 text-[#CCCCCC] mb-2" />
+              <span className="text-[13px] text-[#9B9B9B]">Không có nội dung</span>
+            </div>
+          ) : email.body_html ? (
+            <div
+              dangerouslySetInnerHTML={{ __html: sanitizeEmailHtml(email.body_html) }}
+              className="prose prose-sm max-w-none text-[14px] leading-relaxed email-content animate-fadeIn"
+            />
+          ) : email.body_text ? (
+            <pre className="whitespace-pre-wrap font-sans text-[14px] text-[#1A1A1A] leading-relaxed animate-fadeIn">
+              {email.body_text}
+            </pre>
+          ) : null}
+        </div>
+      </div>
+
+      {/* FLOATING ACTION BUTTONS - minimal */}
+      <div className="flex items-center justify-center gap-4 px-4 py-3 border-t border-[#EBEBEB] bg-white safe-area-bottom flex-shrink-0">
+        <button
+          onClick={() => window.location.href = `/compose?replyTo=${email.id}`}
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#1A1A1A] text-white rounded-full active:bg-[#333]"
+        >
+          <Reply className="w-4 h-4" />
+          <span className="text-[14px] font-medium">Trả lời</span>
+        </button>
+        <button
+          onClick={() => window.location.href = `/compose?forward=${email.id}`}
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#F5F5F5] text-[#1A1A1A] rounded-full active:bg-[#EBEBEB]"
+        >
+          <Forward className="w-4 h-4" />
+          <span className="text-[14px] font-medium">Chuyển tiếp</span>
+        </button>
+      </div>
+
+      {/* Actions Sheet */}
+      {showActions && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/40 z-50 animate-fadeIn"
+            onClick={() => setShowActions(false)}
+          />
+
+          {/* Sheet */}
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl animate-slideUp safe-area-bottom">
+            <div className="w-10 h-1 bg-[#E0E0E0] rounded-full mx-auto mt-3 mb-2" />
+
+            <div className="px-2 pb-4">
+              <ActionItem
+                icon={Archive}
+                label="Lưu trữ"
+                onClick={handleArchive}
+                loading={actionLoading === 'archive'}
+              />
+              <ActionItem
+                icon={Trash2}
+                label="Xóa"
+                onClick={handleDelete}
+                danger
+                loading={actionLoading === 'delete'}
+              />
+              <ActionItem
+                icon={Tag}
+                label="Đổi nhãn"
+                onClick={() => setShowActions(false)}
+              />
+              <ActionItem
+                icon={Flag}
+                label="Đánh dấu quan trọng"
+                onClick={() => { toggleStar(); setShowActions(false); }}
+              />
+              <ActionItem
+                icon={MailOpen}
+                label="Đánh dấu chưa đọc"
+                onClick={() => setShowActions(false)}
+              />
+              <ActionItem
+                icon={Ban}
+                label="Chặn người gửi"
+                onClick={() => setShowActions(false)}
+              />
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+function ActionItem({
+  icon: Icon,
+  label,
+  onClick,
+  danger,
+  loading
+}: {
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  onClick: () => void
+  danger?: boolean
+  loading?: boolean
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading}
+      className={cn(
+        'flex items-center gap-4 w-full px-4 py-3.5 rounded-xl active:bg-[#F5F5F5] disabled:opacity-50',
+        danger && 'text-red-600'
+      )}
+    >
+      {loading ? (
+        <Loader2 className="w-5 h-5 animate-spin" />
+      ) : (
+        <Icon className="w-5 h-5" />
+      )}
+      <span className="text-[15px]">{label}</span>
+    </button>
+  )
+}

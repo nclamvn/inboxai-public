@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { Inbox, Send, Star, Archive, Settings, Pencil } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -15,6 +15,14 @@ const navItems = [
 
 export function MobileNav() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  // Hide bottom nav when viewing email detail on mobile
+  const isViewingEmail = searchParams.get('email') !== null
+
+  if (isViewingEmail) {
+    return null
+  }
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#EBEBEB] flex items-center justify-around px-2 z-50 pb-safe" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>

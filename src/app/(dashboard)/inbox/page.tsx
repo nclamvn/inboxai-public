@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useMemo, useState, useCallback } from 'react'
+import { Suspense, useMemo, useState, useCallback, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import {
   RefreshCw, MoreHorizontal, Inbox,
@@ -13,6 +13,7 @@ import { FilterChips } from '@/components/email/filter-chips'
 import { EmailListCompact } from '@/components/email/email-list-compact'
 import { EmailListSkeleton } from '@/components/email/email-list-skeleton'
 import { EmailDetailFull } from '@/components/email/email-detail-full'
+import { EmailDetailMobile } from '@/components/email/email-detail-mobile'
 
 type ViewMode = 'list' | 'split' | 'full'
 
@@ -29,6 +30,15 @@ function InboxContent() {
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
   const [classifying, setClassifying] = useState(false)
   const [reclassifying, setReclassifying] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detect mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // ALWAYS fetch full email when selectedId is set (list only has preview, not body)
   const { email: fetchedEmail, loading: fetchingEmail } = useEmail(selectedId)
@@ -285,6 +295,30 @@ function InboxContent() {
         <p className="text-[#6B6B6B] max-w-md">
           Chưa có email nào trong hộp thư đến.
         </p>
+      </div>
+    )
+  }
+
+  // MOBILE: Full-screen email detail - completely replaces the inbox view
+  if (isMobile && selectedId && selectedEmail) {
+    return (
+      <EmailDetailMobile
+        email={selectedEmail}
+        onBack={handleCloseEmail}
+        onRefresh={refetch}
+        onStar={toggleStar}
+        onArchive={handleArchive}
+        onDelete={handleDelete}
+      />
+    )
+  }
+
+  // MOBILE: Show loading state while fetching email
+  if (isMobile && selectedId && fetchingEmail) {
+    return (
+      <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-[#9B9B9B] mb-2" strokeWidth={1.5} />
+        <p className="text-[13px] text-[#9B9B9B]">Đang tải email...</p>
       </div>
     )
   }

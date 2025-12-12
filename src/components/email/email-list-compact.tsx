@@ -211,18 +211,26 @@ export function EmailListCompact({
           selectedId === email.id
             ? 'bg-[#F5F5F5]'
             : 'hover:bg-[#FAFAFA] active:bg-[#F0F0F0]',
-          !email.is_read && 'bg-white'
+          !email.is_read && 'bg-blue-50/30'
         )}
       >
         <div className="flex items-start gap-3">
-          {/* Star */}
+          {/* Avatar for mobile-like look */}
+          <div className={cn(
+            'w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-medium flex-shrink-0 md:hidden',
+            !email.is_read ? 'bg-[#E8F0FE] text-[#1967D2]' : 'bg-[#F5F5F5] text-[#6B6B6B]'
+          )}>
+            {(email.from_name || email.from_address || 'U')[0].toUpperCase()}
+          </div>
+
+          {/* Star - desktop only */}
           <button
             onClick={(e) => {
               e.stopPropagation()
               onStar?.(email.id)
             }}
             className={cn(
-              'mt-0.5 flex-shrink-0',
+              'mt-0.5 flex-shrink-0 hidden md:block',
               email.is_starred ? 'text-[#D97706]' : 'text-[#D4D4D4] hover:text-[#9B9B9B]'
             )}
           >
@@ -239,7 +247,7 @@ export function EmailListCompact({
             <div className="flex items-center justify-between gap-2">
               <span className={cn(
                 'text-[14px] truncate',
-                email.is_read ? 'text-[#4B4B4B] font-medium' : 'text-[#1A1A1A] font-bold'
+                email.is_read ? 'text-[#4B4B4B] font-medium' : 'text-[#1A1A1A] font-semibold'
               )}>
                 {email.from_name || email.from_address?.split('@')[0]}
               </span>
@@ -255,21 +263,24 @@ export function EmailListCompact({
               )}
               <span className={cn(
                 'text-[14px] truncate',
-                email.is_read ? 'text-[#6B6B6B] font-normal' : 'text-[#1A1A1A] font-semibold'
+                email.is_read ? 'text-[#6B6B6B]' : 'text-[#1A1A1A]'
               )}>
                 {email.subject || '(Không có tiêu đề)'}
               </span>
             </div>
 
-            {/* Row 3: Preview (only in full mode) */}
-            {!compact && (
-              <p className="text-[13px] text-[#9B9B9B] truncate mt-0.5">
-                {(email.body_text || email.snippet || '')?.replace(/\\n/g, ' ').slice(0, 100)}...
-              </p>
-            )}
+            {/* Row 3: Preview */}
+            <p className="text-[13px] text-[#9B9B9B] truncate mt-0.5">
+              {(email.body_text || email.snippet || '')?.replace(/\\n/g, ' ').slice(0, 80)}
+            </p>
           </div>
 
-          {/* Category Tag - Clickable to filter */}
+          {/* Unread indicator - mobile */}
+          {!email.is_read && (
+            <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2 md:hidden" />
+          )}
+
+          {/* Category Tag - desktop only */}
           {email.category && categoryStyle && (
             <button
               onClick={(e) => {
@@ -277,7 +288,7 @@ export function EmailListCompact({
                 onCategoryClick?.(email.category!)
               }}
               className={cn(
-                'px-2 py-0.5 rounded text-[11px] font-medium flex-shrink-0 transition-colors',
+                'px-2 py-0.5 rounded text-[11px] font-medium flex-shrink-0 transition-colors hidden md:block',
                 categoryStyle.bg,
                 categoryStyle.text,
                 categoryStyle.hoverBg

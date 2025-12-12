@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { SearchBox } from '@/components/search/search-box'
 
 interface BriefingData {
@@ -31,10 +31,23 @@ export function Header() {
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showAIPopover, setShowAIPopover] = useState(false)
   const [briefing, setBriefing] = useState<BriefingData | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
   const aiPopoverRef = useRef<HTMLDivElement>(null)
   const userMenuRef = useRef<HTMLDivElement>(null)
+
+  // Hide header on mobile when viewing email detail
+  const isViewingEmail = searchParams.get('email') !== null
+
+  // Detect mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     const getUser = async () => {
@@ -105,6 +118,11 @@ export function Header() {
     .join('')
     .toUpperCase()
     .slice(0, 2) || 'U'
+
+  // Hide header on mobile when viewing email - let EmailDetailMobile handle header
+  if (isMobile && isViewingEmail) {
+    return null
+  }
 
   return (
     <header className="h-14 border-b border-[#EBEBEB] bg-white flex items-center justify-between px-4">
