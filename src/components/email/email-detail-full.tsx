@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Star, Archive, Trash2, Reply, Forward, MoreHorizontal,
@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
+import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import type { Email } from '@/types'
 
 interface Props {
@@ -36,6 +37,19 @@ export function EmailDetailFull({
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [feedbackLoading, setFeedbackLoading] = useState<string | null>(null)
   const [currentCategory, setCurrentCategory] = useState(email.category)
+  const previousEmailId = useRef<string | null>(null)
+
+  // Reset UI state when switching emails - instant feedback
+  useEffect(() => {
+    if (email.id !== previousEmailId.current) {
+      setShowAIAssistant(false)
+      setShowAIAnalysis(false)
+      setActionLoading(null)
+      setFeedbackLoading(null)
+      setCurrentCategory(email.category)
+      previousEmailId.current = email.id
+    }
+  }, [email.id, email.category])
 
   const handleStar = () => {
     onStar?.(email.id)
@@ -370,19 +384,19 @@ export function EmailDetailFull({
       <div className="flex-1 overflow-y-auto px-6 py-6">
         {email.body_html && email.body_html.replace(/<[^>]*>/g, '').trim().length > 10 ? (
           <div
-            className="prose prose-sm max-w-none text-[#1A1A1A]"
-            dangerouslySetInnerHTML={{ __html: email.body_html }}
+            className="email-content prose prose-sm max-w-none text-[#1A1A1A] animate-fadeIn"
+            dangerouslySetInnerHTML={{ __html: sanitizeEmailHtml(email.body_html, { allowImages: true }) }}
           />
         ) : email.body_text && email.body_text.trim().length > 0 ? (
-          <pre className="whitespace-pre-wrap font-sans text-[15px] text-[#1A1A1A] leading-relaxed bg-transparent p-0 m-0">
+          <pre className="whitespace-pre-wrap font-sans text-[15px] text-[#1A1A1A] leading-relaxed bg-transparent p-0 m-0 animate-fadeIn">
             {email.body_text}
           </pre>
         ) : email.snippet && email.snippet.trim().length > 0 ? (
-          <div className="text-[15px] text-[#1A1A1A] leading-relaxed whitespace-pre-wrap">
+          <div className="text-[15px] text-[#1A1A1A] leading-relaxed whitespace-pre-wrap animate-fadeIn">
             {email.snippet}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="flex flex-col items-center justify-center py-16 text-center animate-fadeIn">
             <div className="w-16 h-16 rounded-full bg-[#F5F5F5] flex items-center justify-center mb-4">
               <Mail className="w-8 h-8 text-[#9B9B9B]" strokeWidth={1.5} />
             </div>

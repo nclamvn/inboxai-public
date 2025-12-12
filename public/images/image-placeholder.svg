@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80">
+  <rect width="120" height="80" fill="#F5F5F5"/>
+  <path d="M45 50L55 35L65 45L75 30L85 50H45Z" fill="#CCCCCC"/>
+  <circle cx="50" cy="30" r="8" fill="#CCCCCC"/>
+  <text x="60" y="70" text-anchor="middle" fill="#999999" font-size="10">Hình ảnh</text>
+</svg>

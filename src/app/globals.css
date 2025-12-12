@@ -83,3 +83,62 @@ body {
 .safe-area-inset {
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+/* Email content styling */
+.email-content {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.email-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.email-content img.image-error {
+  max-width: 120px;
+  opacity: 0.7;
+}
+
+.email-content a {
+  color: #2563EB;
+  text-decoration: underline;
+}
+
+.email-content a:hover {
+  color: #1D4ED8;
+}
+
+.email-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.email-content td,
+.email-content th {
+  border: 1px solid #E5E7EB;
+  padding: 8px;
+}
+
+.email-content blockquote {
+  border-left: 3px solid #E5E7EB;
+  padding-left: 1em;
+  margin-left: 0;
+  color: #6B7280;
+}
+
+.email-content pre {
+  background: #F5F5F5;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.email-content code {
+  background: #F5F5F5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}

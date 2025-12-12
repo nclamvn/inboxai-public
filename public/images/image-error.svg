@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80">
+  <rect width="120" height="80" fill="#FEF2F2"/>
+  <path d="M50 25L70 55H30L50 25Z" fill="#FECACA" stroke="#EF4444" stroke-width="2"/>
+  <text x="60" y="70" text-anchor="middle" fill="#DC2626" font-size="10">Không tải được</text>
+</svg>
