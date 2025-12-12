@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Star, Zap, Inbox, Newspaper, ChevronDown, ChevronRight, Loader2 } from 'lucide-react'
+import { Star, Zap, Inbox, Newspaper, ChevronDown, ChevronRight, Loader2, Paperclip } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Email } from '@/types'
 
@@ -256,7 +256,7 @@ export function EmailListCompact({
               </span>
             </div>
 
-            {/* Row 2: Priority + Subject */}
+            {/* Row 2: Priority + Subject + Attachment */}
             <div className="flex items-center gap-1.5 mt-0.5">
               {(email.priority || 0) >= 4 && (
                 <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626] flex-shrink-0" />
@@ -267,6 +267,14 @@ export function EmailListCompact({
               )}>
                 {email.subject || '(Không có tiêu đề)'}
               </span>
+              {(email.attachment_count || 0) > 0 && (
+                <span className="flex items-center gap-0.5 text-[#9B9B9B] flex-shrink-0" title={`${email.attachment_count} tep dinh kem`}>
+                  <Paperclip className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  {(email.attachment_count || 0) > 1 && (
+                    <span className="text-[11px]">{email.attachment_count}</span>
+                  )}
+                </span>
+              )}
             </div>
 
             {/* Row 3: Preview */}

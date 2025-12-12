@@ -49,6 +49,7 @@ export interface Email {
   is_deleted: boolean
   snoozed_until: string | null
   user_notes: string | null
+  attachment_count: number | null
 
   send_status: SendStatus | null
   sent_at: string | null

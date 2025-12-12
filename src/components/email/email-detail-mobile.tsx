@@ -8,7 +8,16 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
+import { AttachmentList } from './attachment-list'
 import type { Email } from '@/types'
+
+interface Attachment {
+  id: string
+  filename: string
+  content_type: string
+  size: number
+  is_inline: boolean
+}
 
 interface EmailDetailMobileProps {
   email: Email
@@ -30,6 +39,7 @@ export function EmailDetailMobile({
   const [showActions, setShowActions] = useState(false)
   const [isStarred, setIsStarred] = useState(email.is_starred)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [attachments, setAttachments] = useState<Attachment[]>([])
   const previousId = useRef<string | null>(null)
 
   // Reset on email change
@@ -38,9 +48,26 @@ export function EmailDetailMobile({
       setShowActions(false)
       setIsStarred(email.is_starred)
       setActionLoading(null)
+      setAttachments([])
       previousId.current = email.id
+
+      // Fetch attachments if email has them
+      if (email.attachment_count && email.attachment_count > 0) {
+        fetchAttachments(email.id)
+      }
     }
-  }, [email.id, email.is_starred])
+  }, [email.id, email.is_starred, email.attachment_count])
+
+  // Fetch attachments
+  const fetchAttachments = async (emailId: string) => {
+    try {
+      const res = await fetch(`/api/emails/${emailId}/attachments`)
+      const data = await res.json()
+      setAttachments(data.attachments || [])
+    } catch (error) {
+      console.error('Failed to fetch attachments:', error)
+    }
+  }
 
   const toggleStar = async () => {
     const newValue = !isStarred
@@ -164,6 +191,11 @@ export function EmailDetailMobile({
               {email.body_text}
             </pre>
           ) : null}
+
+          {/* Attachments */}
+          {attachments.length > 0 && (
+            <AttachmentList attachments={attachments} />
+          )}
         </div>
       </div>
 

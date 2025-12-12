@@ -10,7 +10,16 @@ import {
 import { cn } from '@/lib/utils'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
+import { AttachmentList } from './attachment-list'
 import type { Email } from '@/types'
+
+interface Attachment {
+  id: string
+  filename: string
+  content_type: string
+  size: number
+  is_inline: boolean
+}
 
 interface Props {
   email: Email
@@ -37,6 +46,7 @@ export function EmailDetailFull({
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [feedbackLoading, setFeedbackLoading] = useState<string | null>(null)
   const [currentCategory, setCurrentCategory] = useState(email.category)
+  const [attachments, setAttachments] = useState<Attachment[]>([])
   const previousEmailId = useRef<string | null>(null)
 
   // Reset UI state when switching emails - instant feedback
@@ -47,9 +57,26 @@ export function EmailDetailFull({
       setActionLoading(null)
       setFeedbackLoading(null)
       setCurrentCategory(email.category)
+      setAttachments([])
       previousEmailId.current = email.id
+
+      // Fetch attachments if email has them
+      if (email.attachment_count && email.attachment_count > 0) {
+        fetchAttachments(email.id)
+      }
     }
-  }, [email.id, email.category])
+  }, [email.id, email.category, email.attachment_count])
+
+  // Fetch attachments
+  const fetchAttachments = async (emailId: string) => {
+    try {
+      const res = await fetch(`/api/emails/${emailId}/attachments`)
+      const data = await res.json()
+      setAttachments(data.attachments || [])
+    } catch (error) {
+      console.error('Failed to fetch attachments:', error)
+    }
+  }
 
   const handleStar = () => {
     onStar?.(email.id)
@@ -407,6 +434,11 @@ export function EmailDetailFull({
               Có thể chỉ có tiêu đề hoặc là email test
             </p>
           </div>
+        )}
+
+        {/* Attachments */}
+        {attachments.length > 0 && (
+          <AttachmentList attachments={attachments} />
         )}
       </div>
 

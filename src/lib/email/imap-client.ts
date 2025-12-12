@@ -49,6 +49,33 @@ interface SyncOptions {
   fullSync?: boolean
 }
 
+interface AttachmentMeta {
+  filename: string
+  contentType: string
+  size: number
+  contentId?: string
+  isInline: boolean
+}
+
+// Extract attachments metadata from parsed email
+function extractAttachments(parsed: { attachments?: Array<{ filename?: string; contentType?: string; size?: number; contentId?: string; contentDisposition?: string }> }): AttachmentMeta[] {
+  const attachments: AttachmentMeta[] = []
+
+  if (parsed.attachments && parsed.attachments.length > 0) {
+    for (const att of parsed.attachments) {
+      attachments.push({
+        filename: att.filename || 'unknown',
+        contentType: att.contentType || 'application/octet-stream',
+        size: att.size || 0,
+        contentId: att.contentId?.replace(/[<>]/g, '') || undefined,
+        isInline: att.contentDisposition === 'inline' || !!att.contentId
+      })
+    }
+  }
+
+  return attachments
+}
+
 // Timeout constants
 const MAX_SYNC_DURATION = 50000 // 50 seconds
 const DEFAULT_LIMIT = 25 // Giảm limit vì fetch full body
@@ -182,6 +209,8 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
           let bodyText = ''
           let bodyHtml: string | null = null
 
+          let attachments: AttachmentMeta[] = []
+
           if (message.source) {
             const parsed = await simpleParser(message.source as Buffer, {
               skipHtmlToText: false,
@@ -192,10 +221,13 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
 
             bodyText = (parsed.text || '').slice(0, 100000)
             bodyHtml = parsed.html ? (parsed.html as string).slice(0, 200000) : null
+
+            // Extract attachments metadata
+            attachments = extractAttachments(parsed)
           }
 
-          // Upsert email với body
-          const { error: upsertError } = await supabase
+          // Upsert email với body và attachment_count
+          const { data: savedEmail, error: upsertError } = await supabase
             .from('emails')
             .upsert({
               user_id: account.user_id,
@@ -215,10 +247,13 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
               is_starred: message.flags?.has('\\Flagged') || false,
               is_archived: false,
               is_deleted: false,
-              direction: 'inbound'
+              direction: 'inbound',
+              attachment_count: attachments.length
             }, {
               onConflict: 'source_account_id,original_uid'
             })
+            .select('id')
+            .single()
 
           if (upsertError) {
             console.error(`[SYNC] Upsert error for UID ${uid}:`, upsertError.message)
@@ -226,6 +261,32 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
           } else {
             result.synced++
             lastUid = uid
+
+            // Save attachments metadata
+            if (savedEmail && attachments.length > 0) {
+              const attachmentRows = attachments.map(att => ({
+                email_id: savedEmail.id,
+                user_id: account.user_id,
+                filename: att.filename,
+                content_type: att.contentType,
+                size: att.size,
+                content_id: att.contentId || null,
+                is_inline: att.isInline
+              }))
+
+              const { error: attError } = await supabase
+                .from('attachments')
+                .upsert(attachmentRows, {
+                  onConflict: 'email_id,filename',
+                  ignoreDuplicates: true
+                })
+
+              if (attError && attError.code !== '42P01') {
+                console.error(`[SYNC] Attachment error for UID ${uid}:`, attError.message)
+              } else if (attachments.length > 0) {
+                console.log(`[SYNC] Saved ${attachments.length} attachments for UID ${uid}`)
+              }
+            }
           }
 
           count++
