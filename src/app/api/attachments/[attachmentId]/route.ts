@@ -115,7 +115,9 @@ export async function GET(
       headers.set('Content-Length', att.size?.toString() || '0')
       headers.set('Cache-Control', 'private, max-age=3600')
 
-      return new NextResponse(att.content, { headers })
+      // Convert Buffer to Uint8Array for NextResponse
+      const content = new Uint8Array(att.content)
+      return new NextResponse(content, { headers })
 
     } finally {
       lock.release()
