@@ -1,19 +1,16 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import type { Email } from '@/types'
 
 /**
  * Hook to fetch a single email by ID
- * Used when we need full email details (including body)
+ * Uses API route to enable lazy body loading from IMAP
  */
 export function useEmail(emailId: string | null) {
   const [email, setEmail] = useState<Email | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  const supabase = createClient()
 
   const fetchEmail = useCallback(async () => {
     if (!emailId) {
@@ -25,26 +22,24 @@ export function useEmail(emailId: string | null) {
     setError(null)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
+      // CRITICAL: Use API route instead of direct Supabase query
+      // This enables lazy body loading from IMAP for emails without body_fetched
+      const res = await fetch(`/api/emails/${emailId}`)
 
-      const { data, error: fetchError } = await supabase
-        .from('emails')
-        .select('*')
-        .eq('id', emailId)
-        .eq('user_id', user.id)
-        .single()
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}))
+        throw new Error(errorData.error || `Failed to fetch email: ${res.status}`)
+      }
 
-      if (fetchError) throw fetchError
-
-      setEmail(data as Email)
+      const data = await res.json()
+      setEmail(data.email as Email)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch email')
       setEmail(null)
     } finally {
       setLoading(false)
     }
-  }, [emailId, supabase])
+  }, [emailId])
 
   useEffect(() => {
     fetchEmail()
