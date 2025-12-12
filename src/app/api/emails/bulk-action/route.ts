@@ -39,10 +39,10 @@ export async function POST(request: NextRequest) {
 
     // If specific IDs provided
     if (emailIds && emailIds.length > 0) {
-      // Rate limit: max 100 emails per request
-      if (emailIds.length > 100) {
+      // Rate limit: max 500 emails per request (tăng từ 100)
+      if (emailIds.length > 500) {
         return NextResponse.json({
-          error: 'Too many emails. Maximum 100 per request.'
+          error: 'Too many emails. Maximum 500 per request.'
         }, { status: 400 })
       }
       query = query.in('id', emailIds)
@@ -51,7 +51,12 @@ export async function POST(request: NextRequest) {
     // If filter provided
     if (filter) {
       if (filter.category) {
-        query = query.eq('category', filter.category)
+        // Handle uncategorized: category IS NULL hoặc = 'uncategorized'
+        if (filter.category === 'uncategorized') {
+          query = query.or('category.is.null,category.eq.uncategorized')
+        } else {
+          query = query.eq('category', filter.category)
+        }
       }
       if (filter.isRead !== undefined) {
         query = query.eq('is_read', filter.isRead)
@@ -81,10 +86,10 @@ export async function POST(request: NextRequest) {
 
     const idsToUpdate = matchingEmails.map(e => e.id)
 
-    // Apply rate limit for filter-based queries
-    if (!emailIds && idsToUpdate.length > 100) {
+    // Apply rate limit for filter-based queries (tăng từ 100 lên 500)
+    if (!emailIds && idsToUpdate.length > 500) {
       return NextResponse.json({
-        error: `Tìm thấy ${idsToUpdate.length} email. Vui lòng thu hẹp bộ lọc (tối đa 100).`
+        error: `Tìm thấy ${idsToUpdate.length} email. Vui lòng thu hẹp bộ lọc (tối đa 500).`
       }, { status: 400 })
     }
 

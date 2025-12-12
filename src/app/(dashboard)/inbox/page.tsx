@@ -91,14 +91,50 @@ function InboxContent() {
     return counts
   }, [emails])
 
-  // Handle delete all in category
+  // Categories quan trọng cần warning
+  const IMPORTANT_CATEGORIES = ['work', 'personal', 'transaction', 'needsAction']
+
+  // Category labels
+  const CATEGORY_LABELS: Record<string, string> = {
+    work: 'Công việc',
+    personal: 'Cá nhân',
+    transaction: 'Giao dịch',
+    newsletter: 'Newsletter',
+    promotion: 'Khuyến mãi',
+    social: 'Mạng XH',
+    spam: 'Spam',
+    needsAction: 'Cần xử lý'
+  }
+
+  // Handle delete all in category - với SMART WARNING
   const handleDeleteAllInCategory = useCallback(async (category: string) => {
     const count = filterCounts[category as keyof typeof filterCounts] || 0
     if (count === 0) return
 
-    if (!confirm(`Xóa tất cả ${count} email trong "${category === 'spam' ? 'Spam' : category}"?`)) {
-      return
+    const label = CATEGORY_LABELS[category] || category
+    const isImportant = IMPORTANT_CATEGORIES.includes(category)
+
+    // Smart warning dựa trên importance
+    if (isImportant) {
+      // Categories quan trọng → Double confirm
+      const confirmed = confirm(
+        `⚠️ CẢNH BÁO: Bạn sắp xóa ${count} email "${label}"!\n\n` +
+        `Đây là danh mục QUAN TRỌNG. Hành động này không thể hoàn tác.\n\n` +
+        `Bạn có chắc chắn muốn tiếp tục?`
+      )
+
+      if (!confirmed) return
+
+      // Second confirmation for important categories
+      const doubleConfirmed = confirm(
+        `🔴 XÁC NHẬN LẦN CUỐI:\n\n` +
+        `Xóa tất cả ${count} email "${label}"?\n\n` +
+        `Nhấn OK để xóa vĩnh viễn.`
+      )
+
+      if (!doubleConfirmed) return
     }
+    // Categories không quan trọng (spam, newsletter, promotion) → Không cần confirm
 
     try {
       const res = await fetch('/api/emails/bulk-action', {

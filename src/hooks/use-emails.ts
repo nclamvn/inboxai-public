@@ -9,7 +9,7 @@ interface UseEmailsOptions {
   pageSize?: number
 }
 
-export function useEmails({ folder = 'inbox', pageSize = 50 }: UseEmailsOptions = {}) {
+export function useEmails({ folder = 'inbox', pageSize = 200 }: UseEmailsOptions = {}) {
   const [emails, setEmails] = useState<Email[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)

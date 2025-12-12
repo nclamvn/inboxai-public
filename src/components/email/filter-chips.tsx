@@ -10,6 +10,7 @@ interface FilterOption {
   count: number
   icon?: React.ComponentType<{ className?: string; strokeWidth?: number }>
   color?: string
+  important?: boolean  // Categories quan trọng cần warning khi xóa
 }
 
 interface Props {
@@ -32,18 +33,24 @@ interface Props {
 }
 
 export const FilterChips = memo(function FilterChips({ activeFilter, onFilterChange, counts, onClassify, classifying, onDeleteAll }: Props) {
-  // Memoize filters array
+  // Memoize filters array - important = true means show warning before delete
   const filters: FilterOption[] = useMemo(() => [
-    { id: 'all', label: 'Tất cả', count: counts.all },
-    { id: 'needsAction', label: 'Cần xử lý', count: counts.needsAction, icon: Zap, color: 'urgent' },
-    { id: 'work', label: 'Công việc', count: counts.work, color: 'blue' },
-    { id: 'personal', label: 'Cá nhân', count: counts.personal, color: 'green' },
-    { id: 'transaction', label: 'Giao dịch', count: counts.transaction, color: 'red' },
-    { id: 'newsletter', label: 'Newsletter', count: counts.newsletter },
-    { id: 'promotion', label: 'Khuyến mãi', count: counts.promotion, color: 'amber' },
-    { id: 'social', label: 'Mạng XH', count: counts.social, color: 'violet' },
-    { id: 'spam', label: 'Spam', count: counts.spam, color: 'spam' },
+    { id: 'all', label: 'Tất cả', count: counts.all, important: true },
+    { id: 'needsAction', label: 'Cần xử lý', count: counts.needsAction, icon: Zap, color: 'urgent', important: true },
+    { id: 'work', label: 'Công việc', count: counts.work, color: 'blue', important: true },
+    { id: 'personal', label: 'Cá nhân', count: counts.personal, color: 'green', important: true },
+    { id: 'transaction', label: 'Giao dịch', count: counts.transaction, color: 'red', important: true },
+    { id: 'newsletter', label: 'Newsletter', count: counts.newsletter, important: false },
+    { id: 'promotion', label: 'Khuyến mãi', count: counts.promotion, color: 'amber', important: false },
+    { id: 'social', label: 'Mạng XH', count: counts.social, color: 'violet', important: false },
+    { id: 'spam', label: 'Spam', count: counts.spam, color: 'spam', important: false },
   ], [counts])
+
+  // Get current filter info
+  const currentFilter = useMemo(() =>
+    filters.find(f => f.id === activeFilter),
+    [filters, activeFilter]
+  )
 
   // Memoize visible filters
   const visibleFilters = useMemo(() =>
@@ -126,11 +133,16 @@ export const FilterChips = memo(function FilterChips({ activeFilter, onFilterCha
         )
       })}
 
-      {/* Delete All Spam button */}
-      {activeFilter === 'spam' && counts.spam > 0 && onDeleteAll && (
+      {/* Delete All button - hiện cho mọi category (trừ all và needsAction) */}
+      {activeFilter && activeFilter !== 'all' && activeFilter !== 'needsAction' && currentFilter && currentFilter.count > 0 && onDeleteAll && (
         <button
-          onClick={() => onDeleteAll('spam')}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium bg-red-600 text-white hover:bg-red-700 transition-colors whitespace-nowrap ml-2"
+          onClick={() => onDeleteAll(activeFilter)}
+          className={cn(
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors whitespace-nowrap ml-2',
+            currentFilter.important
+              ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'  // Important = orange warning style
+              : 'bg-red-600 text-white hover:bg-red-700'  // Not important = red quick delete
+          )}
         >
           <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
           <span>Xóa tất cả</span>
