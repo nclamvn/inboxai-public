@@ -50,8 +50,8 @@ interface SyncOptions {
 }
 
 // Timeout constants
-const MAX_SYNC_DURATION = 45000 // 45 seconds
-const BATCH_SIZE = 50
+const MAX_SYNC_DURATION = 50000 // 50 seconds
+const DEFAULT_LIMIT = 25 // Giảm limit vì fetch full body
 
 export async function testImapConnection(config: {
   host: string
@@ -83,12 +83,13 @@ export async function testImapConnection(config: {
   }
 }
 
-// PHASE 1: Quick sync - headers only (NO source/body)
+// FULL SYNC - Fetch emails with body content
 export async function syncEmails(account: SourceAccount, options: SyncOptions = {}): Promise<SyncResult> {
-  const { limit = 100, fullSync = false } = options
+  const { limit = DEFAULT_LIMIT, fullSync = false } = options
   const startTime = Date.now()
 
   const { createClient } = await import('@supabase/supabase-js')
+  const { simpleParser } = await import('mailparser')
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -109,7 +110,7 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
     return result
   }
 
-  console.log(`[SYNC] Starting QUICK sync for: ${account.email_address}`)
+  console.log(`[SYNC] Starting FULL sync for: ${account.email_address}`)
   console.log(`[SYNC] Options: limit=${limit}, fullSync=${fullSync}`)
   console.log(`[SYNC] Last sync UID: ${account.last_sync_uid || 'none'}`)
 
@@ -154,93 +155,99 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
         console.log(`[SYNC] First sync - sequences ${startSeq} to ${totalMessages}`)
       }
 
-      // QUICK FETCH: envelope + flags only (NO source!)
-      const emailsToInsert: Array<Record<string, unknown>> = []
       let lastUid: string | null = null
       let count = 0
 
+      // FULL FETCH: envelope + flags + SOURCE (body)
       for await (const message of client.fetch(fetchRange, {
-        envelope: true,  // Headers only - FAST!
+        envelope: true,
         uid: true,
-        flags: true
-        // NO 'source' - this is the key to speed!
+        flags: true,
+        source: true  // QUAN TRỌNG: Fetch full email source để có body
       }, { uid: true })) {
 
         // Timeout check
         if (Date.now() - startTime > MAX_SYNC_DURATION) {
-          console.log(`[SYNC] Timeout at ${count} messages`)
+          console.log(`[SYNC] Timeout at ${count} messages, stopping`)
           break
         }
 
         const uid = String(message.uid)
         const env = message.envelope
 
-        if (env) {
-          emailsToInsert.push({
-            user_id: account.user_id,
-            source_account_id: account.id,
-            original_uid: uid,
-            message_id: env.messageId || `${uid}@${account.imap_host}`,
-            from_address: env.from?.[0]?.address || '',
-            from_name: env.from?.[0]?.name || '',
-            to_addresses: env.to?.map((t: { address?: string }) => t.address).filter(Boolean) || [],
-            cc_addresses: env.cc?.map((c: { address?: string }) => c.address).filter(Boolean) || [],
-            subject: env.subject || '(No subject)',
-            body_text: null,  // Will fetch on demand
-            body_html: null,  // Will fetch on demand
-            body_fetched: false,  // Flag for lazy loading
-            snippet: null,
-            received_at: env.date ? new Date(env.date).toISOString() : new Date().toISOString(),
-            is_read: message.flags?.has('\\Seen') || false,
-            is_starred: message.flags?.has('\\Flagged') || false,
-            is_archived: false,
-            is_deleted: false,
-            direction: 'inbound'
-          })
+        if (!env) continue
 
-          lastUid = uid
+        try {
+          // Parse full email to get body
+          let bodyText = ''
+          let bodyHtml: string | null = null
+
+          if (message.source) {
+            const parsed = await simpleParser(message.source as Buffer, {
+              skipHtmlToText: false,
+              skipTextToHtml: true,
+              skipImageLinks: true,
+              maxHtmlLengthToParse: 300000
+            })
+
+            bodyText = (parsed.text || '').slice(0, 100000)
+            bodyHtml = parsed.html ? (parsed.html as string).slice(0, 200000) : null
+          }
+
+          // Upsert email với body
+          const { error: upsertError } = await supabase
+            .from('emails')
+            .upsert({
+              user_id: account.user_id,
+              source_account_id: account.id,
+              original_uid: uid,
+              message_id: env.messageId || `${uid}@${account.imap_host}`,
+              from_address: env.from?.[0]?.address || '',
+              from_name: env.from?.[0]?.name || '',
+              to_addresses: env.to?.map((t: { address?: string }) => t.address).filter(Boolean) || [],
+              cc_addresses: env.cc?.map((c: { address?: string }) => c.address).filter(Boolean) || [],
+              subject: env.subject || '(No subject)',
+              body_text: bodyText,
+              body_html: bodyHtml,
+              body_fetched: true,
+              received_at: env.date ? new Date(env.date).toISOString() : new Date().toISOString(),
+              is_read: message.flags?.has('\\Seen') || false,
+              is_starred: message.flags?.has('\\Flagged') || false,
+              is_archived: false,
+              is_deleted: false,
+              direction: 'inbound'
+            }, {
+              onConflict: 'source_account_id,original_uid'
+            })
+
+          if (upsertError) {
+            console.error(`[SYNC] Upsert error for UID ${uid}:`, upsertError.message)
+            result.errors.push(`UID ${uid}: ${upsertError.message}`)
+          } else {
+            result.synced++
+            lastUid = uid
+          }
+
           count++
 
-          if (count % 50 === 0) {
-            console.log(`[SYNC] Fetched ${count} headers in ${Date.now() - startTime}ms`)
+          // Progress log
+          if (count % 5 === 0) {
+            console.log(`[SYNC] Progress: ${count} emails in ${Date.now() - startTime}ms`)
           }
 
           if (count >= limit) {
             console.log(`[SYNC] Reached limit: ${limit}`)
             break
           }
+
+        } catch (parseError) {
+          const errMsg = parseError instanceof Error ? parseError.message : 'Parse error'
+          console.error(`[SYNC] Parse error for UID ${uid}:`, errMsg)
+          result.errors.push(`UID ${uid}: ${errMsg}`)
         }
       }
 
-      console.log(`[SYNC] Fetched ${emailsToInsert.length} headers in ${Date.now() - startTime}ms`)
-
-      // Batch insert with upsert
-      if (emailsToInsert.length > 0) {
-        for (let i = 0; i < emailsToInsert.length; i += BATCH_SIZE) {
-          if (Date.now() - startTime > MAX_SYNC_DURATION) {
-            console.log(`[SYNC] Timeout during insert`)
-            break
-          }
-
-          const batch = emailsToInsert.slice(i, i + BATCH_SIZE)
-
-          const { error: insertError } = await supabase
-            .from('emails')
-            .upsert(batch, {
-              onConflict: 'source_account_id,original_uid',
-              ignoreDuplicates: true
-            })
-
-          if (insertError) {
-            console.error(`[SYNC] Insert error:`, insertError.message)
-            result.errors.push(insertError.message)
-          } else {
-            result.synced += batch.length
-          }
-        }
-      }
-
-      console.log(`[SYNC] Inserted ${result.synced} emails in ${Date.now() - startTime}ms`)
+      console.log(`[SYNC] Synced ${result.synced} emails in ${Date.now() - startTime}ms`)
 
       // Update account sync status
       if (lastUid || result.synced > 0) {

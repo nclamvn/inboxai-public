@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { syncEmails } from '@/lib/email/imap-client'
 
-// Shorter timeout for faster response
-export const maxDuration = 30
+// Longer timeout for full body sync
+export const maxDuration = 55
 
 // POST - Trigger sync for account
 export async function POST(
@@ -35,20 +35,20 @@ export async function POST(
     return NextResponse.json({ error: 'Account is not active' }, { status: 400 })
   }
 
-  // Parse request body for options - DEFAULT 30 emails max
-  let limit = 30
+  // Parse request body for options - DEFAULT 25 emails (full body sync is slower)
+  let limit = 25
   let fullSync = false
   try {
     const body = await request.json()
-    if (body.limit) limit = Math.min(body.limit, 50)  // Max 50
+    if (body.limit) limit = Math.min(body.limit, 40)  // Max 40 per sync
     if (body.fullSync) fullSync = true
   } catch {
     // No body provided, use defaults
   }
 
-  console.log(`[SYNC-API] Starting for ${account.email_address}, limit=${limit}`)
+  console.log(`[SYNC-API] Starting FULL sync for ${account.email_address}, limit=${limit}`)
 
-  // Perform sync with options (headers only - fast!)
+  // Perform sync with options (FULL BODY sync)
   const result = await syncEmails(account, { limit, fullSync })
 
   const duration = Date.now() - startTime
@@ -61,7 +61,7 @@ export async function POST(
     duration: `${duration}ms`,
     errors: result.errors.slice(0, 3),
     message: result.synced > 0
-      ? `Đã đồng bộ ${result.synced} email mới`
+      ? `Đã đồng bộ ${result.synced} email (có nội dung)`
       : 'Không có email mới'
   })
 }
