@@ -50,8 +50,8 @@ interface SyncOptions {
 }
 
 // Timeout constants
-const MAX_SYNC_DURATION = 50000 // 50 seconds (Render has 60s timeout)
-const BATCH_SIZE = 20
+const MAX_SYNC_DURATION = 45000 // 45 seconds
+const BATCH_SIZE = 50
 
 export async function testImapConnection(config: {
   host: string
@@ -83,8 +83,9 @@ export async function testImapConnection(config: {
   }
 }
 
+// PHASE 1: Quick sync - headers only (NO source/body)
 export async function syncEmails(account: SourceAccount, options: SyncOptions = {}): Promise<SyncResult> {
-  const { limit = 50, fullSync = false } = options // Reduced default limit
+  const { limit = 100, fullSync = false } = options
   const startTime = Date.now()
 
   const { createClient } = await import('@supabase/supabase-js')
@@ -108,13 +109,12 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
     return result
   }
 
-  console.log(`[SYNC] Starting sync for: ${account.email_address}`)
+  console.log(`[SYNC] Starting QUICK sync for: ${account.email_address}`)
   console.log(`[SYNC] Options: limit=${limit}, fullSync=${fullSync}`)
   console.log(`[SYNC] Last sync UID: ${account.last_sync_uid || 'none'}`)
 
   try {
     const { ImapFlow } = await import('imapflow')
-    const { simpleParser } = await import('mailparser')
 
     const client = new ImapFlow({
       host: account.imap_host,
@@ -143,120 +143,82 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
 
       if (fullSync) {
         fetchRange = '1:*'
-        console.log(`[SYNC] Full sync mode - fetching all messages`)
+        console.log(`[SYNC] Full sync mode`)
       } else if (account.last_sync_uid) {
         const lastUid = parseInt(account.last_sync_uid)
         fetchRange = `${lastUid + 1}:*`
-        console.log(`[SYNC] Incremental sync - fetching UID > ${lastUid}`)
+        console.log(`[SYNC] Incremental sync - UID > ${lastUid}`)
       } else {
         const startSeq = Math.max(1, totalMessages - limit + 1)
         fetchRange = `${startSeq}:*`
-        console.log(`[SYNC] First sync - fetching sequences ${startSeq} to ${totalMessages}`)
+        console.log(`[SYNC] First sync - sequences ${startSeq} to ${totalMessages}`)
       }
 
-      // PHASE 1: Fetch all messages first (fast)
-      const messages: Array<{ uid: number; source: Buffer; flags: Set<string> }> = []
-
-      for await (const message of client.fetch(fetchRange, { source: true, uid: true, flags: true }, { uid: true })) {
-        // Check timeout
-        if (Date.now() - startTime > MAX_SYNC_DURATION) {
-          console.log('[SYNC] Approaching timeout, stopping fetch...')
-          break
-        }
-
-        if (message.source) {
-          messages.push({
-            uid: message.uid,
-            source: message.source,
-            flags: message.flags || new Set()
-          })
-        }
-
-        if (messages.length >= limit) {
-          console.log(`[SYNC] Reached limit: ${limit}`)
-          break
-        }
-
-        if (messages.length % 20 === 0) {
-          console.log(`[SYNC] Fetched ${messages.length} messages...`)
-        }
-      }
-
-      console.log(`[SYNC] Fetch completed: ${messages.length} messages in ${Date.now() - startTime}ms`)
-
-      // PHASE 2: Parse and collect emails for batch insert
+      // QUICK FETCH: envelope + flags only (NO source!)
       const emailsToInsert: Array<Record<string, unknown>> = []
       let lastUid: string | null = null
+      let count = 0
 
-      for (const msg of messages) {
-        // Check timeout
+      for await (const message of client.fetch(fetchRange, {
+        envelope: true,  // Headers only - FAST!
+        uid: true,
+        flags: true
+        // NO 'source' - this is the key to speed!
+      }, { uid: true })) {
+
+        // Timeout check
         if (Date.now() - startTime > MAX_SYNC_DURATION) {
-          console.log('[SYNC] Approaching timeout, stopping parse...')
+          console.log(`[SYNC] Timeout at ${count} messages`)
           break
         }
 
-        try {
-          // Lightweight parse - skip unnecessary processing
-          const parsed = await simpleParser(msg.source, {
-            skipHtmlToText: false,
-            skipTextToHtml: true,
-            skipImageLinks: true
-          })
+        const uid = String(message.uid)
+        const env = message.envelope
 
-          const fromAddress = parsed.from?.value?.[0]?.address || ''
-          const fromName = parsed.from?.value?.[0]?.name || ''
-
-          const toAddresses = parsed.to
-            ? (Array.isArray(parsed.to) ? parsed.to : [parsed.to])
-                .flatMap(t => t.value?.map(v => v.address) || [])
-            : []
-
-          const ccAddresses = parsed.cc
-            ? (Array.isArray(parsed.cc) ? parsed.cc : [parsed.cc])
-                .flatMap(c => c.value?.map(v => v.address) || [])
-            : []
-
-          // Limit body size to prevent large payload issues
-          const bodyText = (parsed.text || '').slice(0, 50000)
-          const bodyHtml = parsed.html ? (parsed.html as string).slice(0, 100000) : null
-
+        if (env) {
           emailsToInsert.push({
             user_id: account.user_id,
             source_account_id: account.id,
-            original_uid: String(msg.uid),
-            message_id: parsed.messageId || `${msg.uid}@${account.imap_host}`,
-            from_address: fromAddress,
-            from_name: fromName,
-            to_addresses: toAddresses,
-            cc_addresses: ccAddresses,
-            subject: parsed.subject || '(No subject)',
-            body_text: bodyText,
-            body_html: bodyHtml,
-            received_at: parsed.date?.toISOString() || new Date().toISOString(),
-            is_read: msg.flags.has('\\Seen'),
-            is_starred: msg.flags.has('\\Flagged'),
+            original_uid: uid,
+            message_id: env.messageId || `${uid}@${account.imap_host}`,
+            from_address: env.from?.[0]?.address || '',
+            from_name: env.from?.[0]?.name || '',
+            to_addresses: env.to?.map((t: { address?: string }) => t.address).filter(Boolean) || [],
+            cc_addresses: env.cc?.map((c: { address?: string }) => c.address).filter(Boolean) || [],
+            subject: env.subject || '(No subject)',
+            body_text: null,  // Will fetch on demand
+            body_html: null,  // Will fetch on demand
+            body_fetched: false,  // Flag for lazy loading
+            snippet: null,
+            received_at: env.date ? new Date(env.date).toISOString() : new Date().toISOString(),
+            is_read: message.flags?.has('\\Seen') || false,
+            is_starred: message.flags?.has('\\Flagged') || false,
             is_archived: false,
             is_deleted: false,
             direction: 'inbound'
           })
 
-          lastUid = String(msg.uid)
+          lastUid = uid
+          count++
 
-        } catch (parseError) {
-          const errorMsg = parseError instanceof Error ? parseError.message : 'Parse error'
-          result.errors.push(`UID ${msg.uid}: ${errorMsg}`)
-          console.error(`[SYNC] Parse error UID ${msg.uid}:`, errorMsg)
+          if (count % 50 === 0) {
+            console.log(`[SYNC] Fetched ${count} headers in ${Date.now() - startTime}ms`)
+          }
+
+          if (count >= limit) {
+            console.log(`[SYNC] Reached limit: ${limit}`)
+            break
+          }
         }
       }
 
-      console.log(`[SYNC] Parsed ${emailsToInsert.length} emails in ${Date.now() - startTime}ms`)
+      console.log(`[SYNC] Fetched ${emailsToInsert.length} headers in ${Date.now() - startTime}ms`)
 
-      // PHASE 3: Batch insert with upsert (ignore duplicates)
+      // Batch insert with upsert
       if (emailsToInsert.length > 0) {
         for (let i = 0; i < emailsToInsert.length; i += BATCH_SIZE) {
-          // Check timeout
           if (Date.now() - startTime > MAX_SYNC_DURATION) {
-            console.log('[SYNC] Approaching timeout, stopping insert...')
+            console.log(`[SYNC] Timeout during insert`)
             break
           }
 
@@ -270,21 +232,17 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
             })
 
           if (insertError) {
-            console.error(`[SYNC] Batch insert error:`, insertError.message)
+            console.error(`[SYNC] Insert error:`, insertError.message)
             result.errors.push(insertError.message)
           } else {
             result.synced += batch.length
           }
-
-          if ((i + BATCH_SIZE) % 50 === 0) {
-            console.log(`[SYNC] Inserted ${Math.min(i + BATCH_SIZE, emailsToInsert.length)} emails...`)
-          }
         }
       }
 
-      console.log(`[SYNC] Insert completed: ${result.synced} emails in ${Date.now() - startTime}ms`)
+      console.log(`[SYNC] Inserted ${result.synced} emails in ${Date.now() - startTime}ms`)
 
-      // PHASE 4: Update account sync status
+      // Update account sync status
       if (lastUid || result.synced > 0) {
         const updateData: Record<string, unknown> = {
           last_sync_at: new Date().toISOString(),
@@ -305,7 +263,7 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
           .update(updateData)
           .eq('id', account.id)
 
-        console.log(`[SYNC] Updated account: last_sync_uid=${lastUid}, total_synced=${updateData.total_emails_synced}`)
+        console.log(`[SYNC] Updated: last_sync_uid=${lastUid}`)
       }
 
       result.success = true
@@ -315,14 +273,13 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
     }
 
     await client.logout()
-    console.log(`[SYNC] Completed in ${Date.now() - startTime}ms: ${result.synced} synced, ${result.errors.length} errors`)
+    console.log(`[SYNC] DONE in ${Date.now() - startTime}ms: ${result.synced} synced`)
 
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'Sync failed'
     result.errors.push(errorMsg)
-    console.error(`[SYNC] Fatal error:`, errorMsg)
+    console.error(`[SYNC] Error:`, errorMsg)
 
-    // Update sync error
     const { createClient } = await import('@supabase/supabase-js')
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -339,6 +296,75 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
   }
 
   return result
+}
+
+// PHASE 2: Fetch body for a single email (lazy load)
+export async function fetchEmailBody(
+  account: SourceAccount,
+  originalUid: string
+): Promise<{ body_text: string; body_html: string | null } | null> {
+  let password: string
+  try {
+    password = decryptPassword(account.password_encrypted)
+  } catch (e) {
+    console.error('[FETCH_BODY] Decrypt error')
+    return null
+  }
+
+  console.log(`[FETCH_BODY] Fetching UID ${originalUid} from ${account.email_address}`)
+
+  try {
+    const { ImapFlow } = await import('imapflow')
+
+    const client = new ImapFlow({
+      host: account.imap_host,
+      port: account.imap_port,
+      secure: account.imap_secure,
+      auth: {
+        user: account.username,
+        pass: password
+      },
+      logger: false
+    })
+
+    await client.connect()
+    const lock = await client.getMailboxLock('INBOX')
+
+    try {
+      // Fetch single email by UID
+      const message = await client.fetchOne(originalUid, {
+        source: true
+      }, { uid: true }) as { source?: Buffer } | false
+
+      if (!message || !message.source) {
+        console.log(`[FETCH_BODY] No source for UID ${originalUid}`)
+        return null
+      }
+
+      // Parse with simpleParser
+      const { simpleParser } = await import('mailparser')
+      const parsed = await simpleParser(message.source, {
+        skipHtmlToText: false,
+        skipTextToHtml: true,
+        skipImageLinks: true
+      })
+
+      console.log(`[FETCH_BODY] Parsed UID ${originalUid}`)
+
+      return {
+        body_text: (parsed.text || '').slice(0, 50000),
+        body_html: parsed.html ? (parsed.html as string).slice(0, 100000) : null
+      }
+
+    } finally {
+      lock.release()
+      await client.logout()
+    }
+
+  } catch (error) {
+    console.error('[FETCH_BODY] Error:', error)
+    return null
+  }
 }
 
 // Provider presets
