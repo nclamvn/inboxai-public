@@ -92,7 +92,7 @@ export function ToastContainer() {
   if (toasts.length === 0) return null
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+    <div className="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-auto md:right-6 z-50 flex flex-col gap-3 pointer-events-none">
       {toasts.map(t => (
         <ToastItem key={t.id} toast={t} onClose={() => removeToast(t.id)} />
       ))}
@@ -117,8 +117,8 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   return (
     <div
       className={cn(
-        'flex items-start gap-3 w-[360px] p-4 rounded-xl bg-white border border-[#EBEBEB] shadow-executive-lg',
-        'animate-in slide-in-from-right-full duration-300'
+        'flex items-start gap-3 w-full md:w-[360px] p-4 rounded-xl bg-white border border-[#EBEBEB] shadow-lg pointer-events-auto',
+        'animate-slideUp'
       )}
     >
       {getIcon()}
