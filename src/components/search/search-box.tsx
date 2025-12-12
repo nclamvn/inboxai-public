@@ -189,10 +189,10 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
       <div className={cn(
         'flex items-center gap-2 h-10 px-4 rounded-lg border transition-all',
         focused
-          ? 'border-[#1A1A1A] bg-white shadow-sm'
-          : 'border-[#EBEBEB] bg-[#F5F5F5] hover:bg-[#EBEBEB]'
+          ? 'border-[var(--primary)] bg-[var(--card)] shadow-sm'
+          : 'border-[var(--border)] bg-[var(--input)] hover:bg-[var(--secondary)]'
       )}>
-        <Search className="w-4 h-4 text-[#9B9B9B] flex-shrink-0" strokeWidth={1.5} />
+        <Search className="w-4 h-4 text-[var(--muted-foreground)] flex-shrink-0" strokeWidth={1.5} />
         <input
           ref={inputRef}
           type="text"
@@ -213,7 +213,7 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
           }}
           onKeyDown={handleKeyDown}
           placeholder="Tìm kiếm email... (thử from: hoặc is:unread)"
-          className="flex-1 bg-transparent text-[14px] text-[#1A1A1A] placeholder-[#9B9B9B] outline-none"
+          className="flex-1 bg-transparent text-[14px] text-[var(--foreground)] placeholder-[var(--muted-foreground)] outline-none"
           autoFocus={autoFocus}
         />
         {query && (
@@ -222,7 +222,7 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
               setQuery('')
               inputRef.current?.focus()
             }}
-            className="p-1 rounded text-[#9B9B9B] hover:text-[#6B6B6B] transition-colors"
+            className="p-1 rounded text-[var(--muted-foreground)] hover:text-[var(--muted)] transition-colors"
           >
             <X className="w-4 h-4" strokeWidth={1.5} />
           </button>
@@ -231,11 +231,11 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
 
       {/* Suggestions Dropdown */}
       {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-[#EBEBEB] shadow-lg z-50 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--card)] rounded-xl border border-[var(--border)] shadow-lg z-50 overflow-hidden">
           {/* Operators Section */}
           {suggestions.some(s => s.type === 'operator') && (
-            <div className="p-2 border-b border-[#EBEBEB]">
-              <p className="px-2 py-1 text-[11px] font-medium text-[#9B9B9B] uppercase tracking-wider">
+            <div className="p-2 border-b border-[var(--border)]">
+              <p className="px-2 py-1 text-[11px] font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
                 Toán tử tìm kiếm
               </p>
               {suggestions
@@ -249,17 +249,17 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
                       className={cn(
                         'w-full flex items-center gap-3 px-2 py-2 rounded-lg text-left transition-colors',
                         selectedIndex === index
-                          ? 'bg-[#F5F5F5]'
-                          : 'hover:bg-[#FAFAFA]'
+                          ? 'bg-[var(--secondary)]'
+                          : 'hover:bg-[var(--hover)]'
                       )}
                     >
-                      <Icon className="w-4 h-4 text-[#6B6B6B]" strokeWidth={1.5} />
+                      <Icon className="w-4 h-4 text-[var(--muted)]" strokeWidth={1.5} />
                       <div className="flex-1 min-w-0">
-                        <span className="text-[14px] font-medium text-[#1A1A1A]">
+                        <span className="text-[14px] font-medium text-[var(--foreground)]">
                           {suggestion.text}
                         </span>
                         {suggestion.description && (
-                          <span className="text-[13px] text-[#9B9B9B] ml-2">
+                          <span className="text-[13px] text-[var(--muted-foreground)] ml-2">
                             {suggestion.description}
                           </span>
                         )}
@@ -272,8 +272,8 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
 
           {/* Recent Searches */}
           {suggestions.some(s => s.type === 'recent') && (
-            <div className="p-2 border-b border-[#EBEBEB]">
-              <p className="px-2 py-1 text-[11px] font-medium text-[#9B9B9B] uppercase tracking-wider">
+            <div className="p-2 border-b border-[var(--border)]">
+              <p className="px-2 py-1 text-[11px] font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
                 Tìm kiếm gần đây
               </p>
               {suggestions
@@ -287,12 +287,12 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
                       className={cn(
                         'w-full flex items-center gap-3 px-2 py-2 rounded-lg text-left transition-colors',
                         selectedIndex === actualIndex
-                          ? 'bg-[#F5F5F5]'
-                          : 'hover:bg-[#FAFAFA]'
+                          ? 'bg-[var(--secondary)]'
+                          : 'hover:bg-[var(--hover)]'
                       )}
                     >
-                      <Clock className="w-4 h-4 text-[#9B9B9B]" strokeWidth={1.5} />
-                      <span className="text-[14px] text-[#6B6B6B]">
+                      <Clock className="w-4 h-4 text-[var(--muted-foreground)]" strokeWidth={1.5} />
+                      <span className="text-[14px] text-[var(--muted)]">
                         {suggestion.text}
                       </span>
                     </button>
@@ -304,7 +304,7 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
           {/* Saved Searches */}
           {suggestions.some(s => s.type === 'saved') && (
             <div className="p-2">
-              <p className="px-2 py-1 text-[11px] font-medium text-[#9B9B9B] uppercase tracking-wider">
+              <p className="px-2 py-1 text-[11px] font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
                 Đã lưu
               </p>
               {suggestions
@@ -318,12 +318,12 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
                       className={cn(
                         'w-full flex items-center gap-3 px-2 py-2 rounded-lg text-left transition-colors',
                         selectedIndex === actualIndex
-                          ? 'bg-[#F5F5F5]'
-                          : 'hover:bg-[#FAFAFA]'
+                          ? 'bg-[var(--secondary)]'
+                          : 'hover:bg-[var(--hover)]'
                       )}
                     >
-                      <Bookmark className="w-4 h-4 text-[#D97706]" strokeWidth={1.5} />
-                      <span className="text-[14px] text-[#6B6B6B]">
+                      <Bookmark className="w-4 h-4 text-amber-500" strokeWidth={1.5} />
+                      <span className="text-[14px] text-[var(--muted)]">
                         {suggestion.text}
                       </span>
                     </button>
@@ -333,8 +333,8 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
           )}
 
           {/* Help text */}
-          <div className="px-4 py-2 bg-[#FAFAFA] border-t border-[#EBEBEB]">
-            <p className="text-[11px] text-[#9B9B9B]">
+          <div className="px-4 py-2 bg-[var(--background)] border-t border-[var(--border)]">
+            <p className="text-[11px] text-[var(--muted-foreground)]">
               Nhấn Enter để tìm · ↑↓ để chọn · Esc để đóng
             </p>
           </div>

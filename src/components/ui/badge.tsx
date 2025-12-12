@@ -11,12 +11,12 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
     const baseStyles = 'inline-flex items-center font-medium'
 
     const variants = {
-      default: 'bg-[#F5F5F5] text-[#1A1A1A]',
-      secondary: 'bg-transparent text-[#6B6B6B] border border-[#EBEBEB]',
-      urgent: 'bg-[#FEF2F2] text-[#DC2626]',
-      warning: 'bg-[#FFFBEB] text-[#B45309]',
-      success: 'bg-[#F0FDF4] text-[#16A34A]',
-      info: 'bg-[#EFF6FF] text-[#2563EB]',
+      default: 'bg-[var(--secondary)] text-[var(--foreground)]',
+      secondary: 'bg-transparent text-[var(--muted)] border border-[var(--border)]',
+      urgent: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+      warning: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
+      success: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+      info: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
     }
 
     const sizes = {

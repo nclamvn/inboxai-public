@@ -67,21 +67,21 @@ export const FilterChips = memo(function FilterChips({ activeFilter, onFilterCha
     if (isActive) {
       // Active state - filled
       switch (filter.color) {
-        case 'urgent': return 'bg-[#1A1A1A] text-white'
-        case 'blue': return 'bg-[#2563EB] text-white'
-        case 'green': return 'bg-[#16A34A] text-white'
-        case 'red': return 'bg-[#DC2626] text-white'
-        case 'amber': return 'bg-[#D97706] text-white'
-        case 'violet': return 'bg-[#7C3AED] text-white'
-        case 'spam': return 'bg-[#EF4444] text-white'
-        default: return 'bg-[#1A1A1A] text-white'
+        case 'urgent': return 'bg-[var(--primary)] text-[var(--primary-foreground)]'
+        case 'blue': return 'bg-blue-600 text-white'
+        case 'green': return 'bg-green-600 text-white'
+        case 'red': return 'bg-red-600 text-white'
+        case 'amber': return 'bg-amber-600 text-white'
+        case 'violet': return 'bg-violet-600 text-white'
+        case 'spam': return 'bg-red-500 text-white'
+        default: return 'bg-[var(--primary)] text-[var(--primary-foreground)]'
       }
     } else {
       // Inactive state - subtle
       if (filter.color === 'spam') {
-        return 'bg-red-50 text-red-600 hover:bg-red-100'
+        return 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
       }
-      return 'bg-[#F5F5F5] text-[#6B6B6B] hover:bg-[#EBEBEB] hover:text-[#1A1A1A]'
+      return 'bg-[var(--secondary)] text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'
     }
   }
 
@@ -94,7 +94,7 @@ export const FilterChips = memo(function FilterChips({ activeFilter, onFilterCha
           disabled={classifying}
           className={cn(
             'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors whitespace-nowrap',
-            'bg-[#F5F5F5] text-[#6B6B6B] hover:bg-[#EBEBEB] hover:text-[#1A1A1A]',
+            'bg-[var(--secondary)] text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]',
             classifying && 'opacity-50 cursor-not-allowed'
           )}
         >
@@ -105,7 +105,7 @@ export const FilterChips = memo(function FilterChips({ activeFilter, onFilterCha
 
       {/* Divider */}
       {onClassify && (
-        <div className="w-px h-5 bg-[#EBEBEB] mx-1" />
+        <div className="w-px h-5 bg-[var(--border)] mx-1" />
       )}
 
       {visibleFilters.map((filter) => {
@@ -142,7 +142,7 @@ export const FilterChips = memo(function FilterChips({ activeFilter, onFilterCha
           disabled={reclassifying}
           className={cn(
             'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors whitespace-nowrap ml-2',
-            'bg-purple-100 text-purple-700 hover:bg-purple-200',
+            'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50',
             reclassifying && 'opacity-50 cursor-not-allowed'
           )}
         >
@@ -158,8 +158,8 @@ export const FilterChips = memo(function FilterChips({ activeFilter, onFilterCha
           className={cn(
             'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors whitespace-nowrap ml-2',
             currentFilter.important
-              ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'  // Important = orange warning style
-              : 'bg-red-600 text-white hover:bg-red-700'  // Not important = red quick delete
+              ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50'
+              : 'bg-red-600 text-white hover:bg-red-700'
           )}
         >
           <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
@@ -171,7 +171,7 @@ export const FilterChips = memo(function FilterChips({ activeFilter, onFilterCha
       {activeFilter && activeFilter !== 'all' && (
         <button
           onClick={handleClearFilter}
-          className="p-1.5 rounded-full text-[#9B9B9B] hover:text-[#6B6B6B] hover:bg-[#F5F5F5] transition-colors ml-1"
+          className="p-1.5 rounded-full text-[var(--muted-foreground)] hover:text-[var(--muted)] hover:bg-[var(--secondary)] transition-colors ml-1"
         >
           <X className="w-4 h-4" strokeWidth={1.5} />
         </button>

@@ -111,31 +111,31 @@ export function EmailDetailMobile({
                   (email.body_html && email.body_html.trim().length > 10)
 
   return (
-    <div className="fixed inset-0 z-50 bg-white flex flex-col">
+    <div className="fixed inset-0 z-50 bg-[var(--card)] flex flex-col">
       {/* COMPACT HEADER - single row */}
-      <header className="flex items-center h-12 px-2 border-b border-[#EBEBEB] bg-white safe-area-top flex-shrink-0">
+      <header className="flex items-center h-12 px-2 border-b border-[var(--border)] bg-[var(--card)] safe-area-top flex-shrink-0">
         {/* Back */}
         <button
           onClick={onBack}
-          className="p-2 -ml-1 rounded-full active:bg-[#F5F5F5]"
+          className="p-2 -ml-1 rounded-full active:bg-[var(--hover)]"
         >
-          <ChevronLeft className="w-6 h-6 text-[#1A1A1A]" />
+          <ChevronLeft className="w-6 h-6 text-[var(--foreground)]" />
         </button>
 
         {/* Subject - truncate */}
-        <h1 className="flex-1 text-[15px] font-medium text-[#1A1A1A] truncate mx-2">
+        <h1 className="flex-1 text-[15px] font-medium text-[var(--foreground)] truncate mx-2">
           {email.subject || '(Không có tiêu đề)'}
         </h1>
 
         {/* Star */}
         <button
           onClick={toggleStar}
-          className="p-2 rounded-full active:bg-[#F5F5F5]"
+          className="p-2 rounded-full active:bg-[var(--hover)]"
         >
           <Star
             className={cn(
               'w-5 h-5',
-              isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-[#9B9B9B]'
+              isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-[var(--muted-foreground)]'
             )}
           />
         </button>
@@ -143,32 +143,32 @@ export function EmailDetailMobile({
         {/* More actions */}
         <button
           onClick={() => setShowActions(true)}
-          className="p-2 rounded-full active:bg-[#F5F5F5]"
+          className="p-2 rounded-full active:bg-[var(--hover)]"
         >
-          <MoreVertical className="w-5 h-5 text-[#6B6B6B]" />
+          <MoreVertical className="w-5 h-5 text-[var(--muted)]" />
         </button>
       </header>
 
       {/* CONTENT - maximum space */}
       <div className="flex-1 overflow-y-auto overscroll-contain">
         {/* Sender info - compact 2 lines max */}
-        <div className="flex items-start gap-3 px-4 py-3 border-b border-[#F5F5F5]">
+        <div className="flex items-start gap-3 px-4 py-3 border-b border-[var(--border)]">
           {/* Avatar */}
-          <div className="w-10 h-10 rounded-full bg-[#E8F0FE] flex items-center justify-center text-[15px] font-medium text-[#1967D2] flex-shrink-0">
+          <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-[15px] font-medium text-blue-600 dark:text-blue-400 flex-shrink-0">
             {(email.from_name || email.from_address || 'U')[0].toUpperCase()}
           </div>
 
           {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <span className="text-[14px] font-medium text-[#1A1A1A] truncate">
+              <span className="text-[14px] font-medium text-[var(--foreground)] truncate">
                 {email.from_name || email.from_address?.split('@')[0] || 'Unknown'}
               </span>
-              <span className="text-[12px] text-[#9B9B9B] ml-2 flex-shrink-0">
+              <span className="text-[12px] text-[var(--muted-foreground)] ml-2 flex-shrink-0">
                 {formatDate(email.received_at)}
               </span>
             </div>
-            <div className="text-[13px] text-[#6B6B6B] truncate">
+            <div className="text-[13px] text-[var(--muted)] truncate">
               {email.from_address}
             </div>
           </div>
@@ -178,16 +178,16 @@ export function EmailDetailMobile({
         <div className="px-4 py-3">
           {!hasBody ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <Mail className="w-10 h-10 text-[#CCCCCC] mb-2" />
-              <span className="text-[13px] text-[#9B9B9B]">Không có nội dung</span>
+              <Mail className="w-10 h-10 text-[var(--muted-foreground)] mb-2" />
+              <span className="text-[13px] text-[var(--muted-foreground)]">Không có nội dung</span>
             </div>
           ) : email.body_html ? (
             <div
               dangerouslySetInnerHTML={{ __html: sanitizeEmailHtml(email.body_html) }}
-              className="prose prose-sm max-w-none text-[14px] leading-relaxed email-content animate-fadeIn"
+              className="prose prose-sm dark:prose-invert max-w-none text-[14px] leading-relaxed email-content animate-fadeIn"
             />
           ) : email.body_text ? (
-            <pre className="whitespace-pre-wrap font-sans text-[14px] text-[#1A1A1A] leading-relaxed animate-fadeIn">
+            <pre className="whitespace-pre-wrap font-sans text-[14px] text-[var(--foreground)] leading-relaxed animate-fadeIn">
               {email.body_text}
             </pre>
           ) : null}
@@ -200,19 +200,19 @@ export function EmailDetailMobile({
       </div>
 
       {/* Footer wrapper với spacing từ đáy màn hình */}
-      <div className="pb-6 bg-white flex-shrink-0">
+      <div className="pb-6 bg-[var(--card)] flex-shrink-0">
         {/* FLOATING ACTION BUTTONS - pill design */}
-        <div className="flex items-center justify-center gap-4 px-6 py-3 border-t border-[#EBEBEB]">
+        <div className="flex items-center justify-center gap-4 px-6 py-3 border-t border-[var(--border)]">
           <button
             onClick={() => window.location.href = `/compose?replyTo=${email.id}`}
-            className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#1A1A1A] text-white rounded-full active:bg-[#333] max-w-[160px]"
+            className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-full active:opacity-80 max-w-[160px]"
           >
             <Reply className="w-4 h-4" />
             <span className="text-[14px] font-medium">Trả lời</span>
           </button>
           <button
             onClick={() => window.location.href = `/compose?forward=${email.id}`}
-            className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#F5F5F5] text-[#1A1A1A] rounded-full active:bg-[#EBEBEB] max-w-[160px]"
+            className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--secondary)] text-[var(--foreground)] rounded-full active:bg-[var(--hover)] max-w-[160px]"
           >
             <Forward className="w-4 h-4" />
             <span className="text-[14px] font-medium">Chuyển tiếp</span>
@@ -230,8 +230,8 @@ export function EmailDetailMobile({
           />
 
           {/* Sheet */}
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl animate-slideUp safe-area-bottom">
-            <div className="w-10 h-1 bg-[#E0E0E0] rounded-full mx-auto mt-3 mb-2" />
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--card)] rounded-t-2xl animate-slideUp safe-area-bottom">
+            <div className="w-10 h-1 bg-[var(--border)] rounded-full mx-auto mt-3 mb-2" />
 
             <div className="px-2 pb-4">
               <ActionItem
@@ -293,8 +293,8 @@ function ActionItem({
       onClick={onClick}
       disabled={loading}
       className={cn(
-        'flex items-center gap-4 w-full px-4 py-3.5 rounded-xl active:bg-[#F5F5F5] disabled:opacity-50',
-        danger && 'text-red-600'
+        'flex items-center gap-4 w-full px-4 py-3.5 rounded-xl active:bg-[var(--hover)] disabled:opacity-50 text-[var(--foreground)]',
+        danger && 'text-red-600 dark:text-red-400'
       )}
     >
       {loading ? (

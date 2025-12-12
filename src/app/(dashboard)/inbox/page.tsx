@@ -256,21 +256,21 @@ function InboxContent() {
   // Show skeleton while loading initial data
   if (loading) {
     return (
-      <div className="flex-1 flex flex-col h-full overflow-hidden bg-white">
+      <div className="flex-1 flex flex-col h-full overflow-hidden bg-[var(--card)]">
         {/* Toolbar skeleton */}
-        <div className="h-12 border-b border-[#EBEBEB] bg-white flex items-center justify-between px-4">
+        <div className="h-12 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg bg-[#F5F5F5]" />
-            <div className="w-9 h-9 rounded-lg bg-[#F5F5F5]" />
+            <div className="w-9 h-9 rounded-lg bg-[var(--secondary)]" />
+            <div className="w-9 h-9 rounded-lg bg-[var(--secondary)]" />
           </div>
-          <div className="w-20 h-4 rounded bg-[#F5F5F5]" />
+          <div className="w-20 h-4 rounded bg-[var(--secondary)]" />
         </div>
 
         {/* Filter chips skeleton */}
-        <div className="border-b border-[#EBEBEB] bg-[#FAFAFA] px-4 py-2">
+        <div className="border-b border-[var(--border)] bg-[var(--background)] px-4 py-2">
           <div className="flex gap-1.5">
             {[80, 70, 65, 60, 70, 65].map((w, i) => (
-              <div key={i} className="h-7 rounded-full bg-[#EBEBEB]" style={{ width: w }} />
+              <div key={i} className="h-7 rounded-full bg-[var(--border)]" style={{ width: w }} />
             ))}
           </div>
         </div>
@@ -285,14 +285,14 @@ function InboxContent() {
 
   if (emails.length === 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-white">
-        <div className="w-20 h-20 bg-[#F5F5F5] rounded-full flex items-center justify-center mb-4">
-          <Inbox className="w-10 h-10 text-[#9B9B9B]" strokeWidth={1.5} />
+      <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-[var(--card)]">
+        <div className="w-20 h-20 bg-[var(--secondary)] rounded-full flex items-center justify-center mb-4">
+          <Inbox className="w-10 h-10 text-[var(--muted-foreground)]" strokeWidth={1.5} />
         </div>
-        <h2 className="text-[20px] font-semibold text-[#1A1A1A] mb-2">
+        <h2 className="text-[20px] font-semibold text-[var(--foreground)] mb-2">
           Hộp thư trống
         </h2>
-        <p className="text-[#6B6B6B] max-w-md">
+        <p className="text-[var(--muted)] max-w-md">
           Chưa có email nào trong hộp thư đến.
         </p>
       </div>
@@ -316,23 +316,23 @@ function InboxContent() {
   // MOBILE: Show loading state while fetching email
   if (isMobile && selectedId && fetchingEmail) {
     return (
-      <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-[#9B9B9B] mb-2" strokeWidth={1.5} />
-        <p className="text-[13px] text-[#9B9B9B]">Đang tải email...</p>
+      <div className="fixed inset-0 z-50 bg-[var(--card)] flex flex-col items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-[var(--muted-foreground)] mb-2" strokeWidth={1.5} />
+        <p className="text-[13px] text-[var(--muted-foreground)]">Đang tải email...</p>
       </div>
     )
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-white">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[var(--card)]">
       {/* Toolbar */}
-      <div className="h-12 border-b border-[#EBEBEB] bg-white flex items-center justify-between px-4">
+      <div className="h-12 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
           {effectiveViewMode !== 'list' && (
             <button
               type="button"
               onClick={handleCloseEmail}
-              className="p-2 rounded-lg text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors"
+              className="p-2 rounded-lg text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)] transition-colors"
             >
               <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
             </button>
@@ -341,19 +341,19 @@ function InboxContent() {
             type="button"
             onClick={() => refetch()}
             disabled={loading}
-            className="p-2 rounded-lg text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors disabled:opacity-50"
+            className="p-2 rounded-lg text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)] transition-colors disabled:opacity-50"
           >
             <RefreshCw className={cn('w-5 h-5', loading && 'animate-spin')} strokeWidth={1.5} />
           </button>
           <button
             type="button"
-            className="p-2 rounded-lg text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors"
+            className="p-2 rounded-lg text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)] transition-colors"
           >
             <MoreHorizontal className="w-5 h-5" strokeWidth={1.5} />
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-[13px] text-[#6B6B6B]">
+        <div className="flex items-center gap-2 text-[13px] text-[var(--muted)]">
           <span>
             {filteredEmails.length}
             {activeFilter && ` / ${emails.length}`} email
@@ -362,7 +362,7 @@ function InboxContent() {
             <button
               type="button"
               onClick={handleMaximize}
-              className="p-2 rounded-lg text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors"
+              className="p-2 rounded-lg text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)] transition-colors"
               title={viewMode === 'full' ? 'Thu nhỏ' : 'Phóng to'}
             >
               {viewMode === 'full' ? (
@@ -377,7 +377,7 @@ function InboxContent() {
 
       {/* Filter Chips - Only show in list/split mode */}
       {effectiveViewMode !== 'full' && (
-        <div className="border-b border-[#EBEBEB] bg-[#FAFAFA]">
+        <div className="border-b border-[var(--border)] bg-[var(--background)]">
           <FilterChips
             activeFilter={activeFilter}
             onFilterChange={setActiveFilter}
@@ -396,17 +396,17 @@ function InboxContent() {
         {/* Email List - Hidden on mobile when viewing email detail */}
         {effectiveViewMode !== 'full' && (
           <div className={cn(
-            'border-r border-[#EBEBEB] overflow-y-auto transition-all duration-200 bg-white',
+            'border-r border-[var(--border)] overflow-y-auto transition-all duration-200 bg-[var(--card)]',
             effectiveViewMode === 'list' ? 'flex-1' : 'hidden lg:block lg:w-[360px]'
           )}>
             {filteredEmails.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-32 text-[#9B9B9B]">
+              <div className="flex flex-col items-center justify-center h-32 text-[var(--muted-foreground)]">
                 <p className="text-[14px]">Không có email</p>
                 {activeFilter && (
                   <button
                     type="button"
                     onClick={() => setActiveFilter(null)}
-                    className="text-[13px] text-[#6B6B6B] hover:text-[#1A1A1A] mt-2"
+                    className="text-[13px] text-[var(--muted)] hover:text-[var(--foreground)] mt-2"
                   >
                     Xóa bộ lọc
                   </button>
@@ -431,7 +431,7 @@ function InboxContent() {
 
         {/* Email Detail */}
         {(effectiveViewMode === 'split' || effectiveViewMode === 'full') && selectedEmail && (
-          <div className="flex-1 overflow-y-auto bg-white">
+          <div className="flex-1 overflow-y-auto bg-[var(--card)]">
             <EmailDetailFull
               email={selectedEmail}
               onBack={handleCloseEmail}
@@ -446,16 +446,16 @@ function InboxContent() {
 
         {/* Loading state when fetching single email */}
         {(effectiveViewMode === 'split' || effectiveViewMode === 'full') && selectedId && !selectedEmail && fetchingEmail && (
-          <div className="flex-1 flex flex-col items-center justify-center bg-white gap-3">
-            <Loader2 className="w-6 h-6 animate-spin text-[#9B9B9B]" strokeWidth={1.5} />
-            <p className="text-[13px] text-[#9B9B9B]">Đang tải email...</p>
+          <div className="flex-1 flex flex-col items-center justify-center bg-[var(--card)] gap-3">
+            <Loader2 className="w-6 h-6 animate-spin text-[var(--muted-foreground)]" strokeWidth={1.5} />
+            <p className="text-[13px] text-[var(--muted-foreground)]">Đang tải email...</p>
           </div>
         )}
 
         {/* Empty State when split but no selection */}
         {effectiveViewMode === 'split' && !selectedId && (
-          <div className="flex-1 flex items-center justify-center bg-[#FAFAFA]">
-            <p className="text-[14px] text-[#9B9B9B]">Chọn email để xem</p>
+          <div className="flex-1 flex items-center justify-center bg-[var(--background)]">
+            <p className="text-[14px] text-[var(--muted-foreground)]">Chọn email để xem</p>
           </div>
         )}
       </div>
@@ -466,8 +466,8 @@ function InboxContent() {
 export default function InboxPage() {
   return (
     <Suspense fallback={
-      <div className="flex-1 flex items-center justify-center bg-white">
-        <Loader2 className="w-6 h-6 animate-spin text-[#9B9B9B]" strokeWidth={1.5} />
+      <div className="flex-1 flex items-center justify-center bg-[var(--card)]">
+        <Loader2 className="w-6 h-6 animate-spin text-[var(--muted-foreground)]" strokeWidth={1.5} />
       </div>
     }>
       <InboxContent />

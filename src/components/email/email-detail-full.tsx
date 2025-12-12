@@ -207,7 +207,7 @@ export function EmailDetailFull({
   return (
     <div className={cn('flex flex-col h-full', fullWidth && 'max-w-4xl mx-auto')}>
       {/* Action Bar */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-[#EBEBEB]">
+      <div className="flex items-center justify-between px-6 py-3 border-b border-[var(--border)]">
         <div className="flex items-center gap-1">
           <button
             type="button"
@@ -215,8 +215,8 @@ export function EmailDetailFull({
             className={cn(
               'p-2 rounded-lg transition-colors',
               email.is_starred
-                ? 'text-[#D97706] hover:bg-[#FFFBEB]'
-                : 'text-[#9B9B9B] hover:text-[#6B6B6B] hover:bg-[#F5F5F5]'
+                ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20'
+                : 'text-[var(--muted-foreground)] hover:text-[var(--muted)] hover:bg-[var(--hover)]'
             )}
           >
             <Star
@@ -229,7 +229,7 @@ export function EmailDetailFull({
             type="button"
             onClick={handleArchive}
             disabled={actionLoading === 'archive'}
-            className="p-2 rounded-lg text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] transition-colors"
+            className="p-2 rounded-lg text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors"
           >
             {actionLoading === 'archive' ? (
               <Loader2 className="w-5 h-5 animate-spin" strokeWidth={1.5} />
@@ -241,7 +241,7 @@ export function EmailDetailFull({
             type="button"
             onClick={handleDelete}
             disabled={actionLoading === 'delete'}
-            className="p-2 rounded-lg text-[#6B6B6B] hover:text-[#DC2626] hover:bg-[#FEF2F2] transition-colors"
+            className="p-2 rounded-lg text-[var(--muted)] hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
           >
             {actionLoading === 'delete' ? (
               <Loader2 className="w-5 h-5 animate-spin" strokeWidth={1.5} />
@@ -255,7 +255,7 @@ export function EmailDetailFull({
               type="button"
               onClick={handleNotSpam}
               disabled={feedbackLoading === 'not_spam'}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-green-600 bg-green-50 hover:bg-green-100 transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
             >
               {feedbackLoading === 'not_spam' ? (
                 <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} />
@@ -269,7 +269,7 @@ export function EmailDetailFull({
               type="button"
               onClick={handleIsSpam}
               disabled={feedbackLoading === 'is_spam'}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-colors"
             >
               {feedbackLoading === 'is_spam' ? (
                 <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} />
@@ -285,7 +285,7 @@ export function EmailDetailFull({
             type="button"
             onClick={handleBlockSender}
             disabled={feedbackLoading === 'block'}
-            className="p-2 rounded-lg text-[#9B9B9B] hover:text-red-600 hover:bg-red-50 transition-colors"
+            className="p-2 rounded-lg text-[var(--muted-foreground)] hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
             title="Chặn người gửi"
           >
             {feedbackLoading === 'block' ? (
@@ -297,7 +297,7 @@ export function EmailDetailFull({
 
           <button
             type="button"
-            className="p-2 rounded-lg text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] transition-colors"
+            className="p-2 rounded-lg text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors"
           >
             <MoreHorizontal className="w-5 h-5" strokeWidth={1.5} />
           </button>
@@ -310,8 +310,8 @@ export function EmailDetailFull({
             className={cn(
               'flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors',
               showAIAssistant
-                ? 'bg-[#1A1A1A] text-white'
-                : 'text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5]'
+                ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
+                : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)]'
             )}
           >
             <Sparkles className="w-4 h-4" strokeWidth={1.5} />
@@ -320,7 +320,7 @@ export function EmailDetailFull({
           <button
             type="button"
             onClick={handleClose}
-            className="p-2 rounded-lg text-[#9B9B9B] hover:text-[#6B6B6B] hover:bg-[#F5F5F5] transition-colors"
+            className="p-2 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--muted)] hover:bg-[var(--hover)] transition-colors"
             title="Đóng"
           >
             <X className="w-5 h-5" strokeWidth={1.5} />
@@ -329,37 +329,37 @@ export function EmailDetailFull({
       </div>
 
       {/* Email Header */}
-      <div className="px-6 py-4 border-b border-[#EBEBEB]">
-        <h1 className="text-[20px] font-medium text-[#1A1A1A] mb-4">
+      <div className="px-6 py-4 border-b border-[var(--border)]">
+        <h1 className="text-[20px] font-medium text-[var(--foreground)] mb-4">
           {email.subject || '(Không có tiêu đề)'}
         </h1>
 
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             {/* Avatar */}
-            <div className="w-10 h-10 rounded-full bg-[#F5F5F5] flex items-center justify-center">
-              <span className="text-[14px] font-medium text-[#6B6B6B]">
+            <div className="w-10 h-10 rounded-full bg-[var(--secondary)] flex items-center justify-center">
+              <span className="text-[14px] font-medium text-[var(--muted)]">
                 {(email.from_name || email.from_address)?.[0]?.toUpperCase()}
               </span>
             </div>
 
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[15px] font-medium text-[#1A1A1A]">
+                <span className="text-[15px] font-medium text-[var(--foreground)]">
                   {email.from_name || email.from_address?.split('@')[0]}
                 </span>
-                <span className="text-[13px] text-[#9B9B9B]">
+                <span className="text-[13px] text-[var(--muted-foreground)]">
                   {'<'}{email.from_address}{'>'}
                 </span>
               </div>
-              <p className="text-[13px] text-[#6B6B6B]">
+              <p className="text-[13px] text-[var(--muted)]">
                 Đến: tôi
               </p>
             </div>
           </div>
 
           <div className="text-right">
-            <p className="text-[13px] text-[#9B9B9B]">
+            <p className="text-[13px] text-[var(--muted-foreground)]">
               {formatDate(email.received_at)}
             </p>
           </div>
@@ -371,20 +371,20 @@ export function EmailDetailFull({
             <button
               type="button"
               onClick={() => setShowAIAnalysis(!showAIAnalysis)}
-              className="flex items-center gap-2 text-[13px] text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors"
+              className="flex items-center gap-2 text-[13px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
             >
               <Sparkles className="w-3.5 h-3.5" strokeWidth={1.5} />
               <span className="flex items-center gap-2">
                 {email.priority && (
                   <span className={cn(
                     'px-1.5 py-0.5 rounded text-[11px] font-medium',
-                    (email.priority || 0) >= 4 ? 'bg-[#FEF2F2] text-[#DC2626]' : 'bg-[#F5F5F5] text-[#6B6B6B]'
+                    (email.priority || 0) >= 4 ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 'bg-[var(--secondary)] text-[var(--muted)]'
                   )}>
                     {getPriorityLabel(email.priority)}
                   </span>
                 )}
                 {email.category && (
-                  <span className="px-1.5 py-0.5 rounded text-[11px] font-medium bg-[#F5F5F5] text-[#6B6B6B]">
+                  <span className="px-1.5 py-0.5 rounded text-[11px] font-medium bg-[var(--secondary)] text-[var(--muted)]">
                     {getCategoryLabel(email.category)}
                   </span>
                 )}
@@ -397,8 +397,8 @@ export function EmailDetailFull({
             </button>
 
             {showAIAnalysis && email.summary && (
-              <div className="mt-2 p-3 rounded-lg bg-[#FAFAFA] border border-[#EBEBEB]">
-                <p className="text-[13px] text-[#6B6B6B]">
+              <div className="mt-2 p-3 rounded-lg bg-[var(--secondary)] border border-[var(--border)]">
+                <p className="text-[13px] text-[var(--muted)]">
                   {email.summary}
                 </p>
               </div>
@@ -411,26 +411,26 @@ export function EmailDetailFull({
       <div className="flex-1 overflow-y-auto px-6 py-6">
         {email.body_html && email.body_html.replace(/<[^>]*>/g, '').trim().length > 10 ? (
           <div
-            className="email-content prose prose-sm max-w-none text-[#1A1A1A] animate-fadeIn"
+            className="email-content prose prose-sm dark:prose-invert max-w-none text-[var(--foreground)] animate-fadeIn"
             dangerouslySetInnerHTML={{ __html: sanitizeEmailHtml(email.body_html, { allowImages: true }) }}
           />
         ) : email.body_text && email.body_text.trim().length > 0 ? (
-          <pre className="whitespace-pre-wrap font-sans text-[15px] text-[#1A1A1A] leading-relaxed bg-transparent p-0 m-0 animate-fadeIn">
+          <pre className="whitespace-pre-wrap font-sans text-[15px] text-[var(--foreground)] leading-relaxed bg-transparent p-0 m-0 animate-fadeIn">
             {email.body_text}
           </pre>
         ) : email.snippet && email.snippet.trim().length > 0 ? (
-          <div className="text-[15px] text-[#1A1A1A] leading-relaxed whitespace-pre-wrap animate-fadeIn">
+          <div className="text-[15px] text-[var(--foreground)] leading-relaxed whitespace-pre-wrap animate-fadeIn">
             {email.snippet}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-16 text-center animate-fadeIn">
-            <div className="w-16 h-16 rounded-full bg-[#F5F5F5] flex items-center justify-center mb-4">
-              <Mail className="w-8 h-8 text-[#9B9B9B]" strokeWidth={1.5} />
+            <div className="w-16 h-16 rounded-full bg-[var(--secondary)] flex items-center justify-center mb-4">
+              <Mail className="w-8 h-8 text-[var(--muted-foreground)]" strokeWidth={1.5} />
             </div>
-            <p className="text-[15px] text-[#6B6B6B] mb-1">
+            <p className="text-[15px] text-[var(--muted)] mb-1">
               Email này không có nội dung
             </p>
-            <p className="text-[13px] text-[#9B9B9B]">
+            <p className="text-[13px] text-[var(--muted-foreground)]">
               Có thể chỉ có tiêu đề hoặc là email test
             </p>
           </div>
@@ -444,19 +444,19 @@ export function EmailDetailFull({
 
       {/* Quick Reply Bar */}
       {!showAIAssistant && (
-        <div className="px-6 py-4 border-t border-[#EBEBEB] bg-[#FAFAFA]">
+        <div className="px-6 py-4 border-t border-[var(--border)] bg-[var(--secondary)]">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => handleUseDraft(`Re: ${email.subject}`, '')}
-              className="flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] text-white rounded-lg text-[14px] font-medium hover:bg-[#2D2D2D] transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg text-[14px] font-medium hover:opacity-90 transition-colors"
             >
               <Reply className="w-4 h-4" strokeWidth={1.5} />
               Trả lời
             </button>
             <button
               type="button"
-              className="flex items-center gap-2 px-4 py-2 border border-[#EBEBEB] rounded-lg text-[14px] text-[#6B6B6B] hover:bg-[#F5F5F5] transition-colors"
+              className="flex items-center gap-2 px-4 py-2 border border-[var(--border)] rounded-lg text-[14px] text-[var(--muted)] hover:bg-[var(--hover)] transition-colors"
             >
               <Forward className="w-4 h-4" strokeWidth={1.5} />
               Chuyển tiếp
@@ -467,7 +467,7 @@ export function EmailDetailFull({
 
       {/* AI Reply Assistant */}
       {showAIAssistant && (
-        <div className="border-t border-[#EBEBEB]">
+        <div className="border-t border-[var(--border)]">
           <ReplyAssistant
             email={email}
             onUseDraft={handleUseDraft}
