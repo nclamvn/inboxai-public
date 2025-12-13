@@ -80,15 +80,15 @@ export function SmartInbox({ onSelectEmail }: SmartInboxProps) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-5 h-5 animate-spin text-[#9B9B9B] mx-auto mb-2" strokeWidth={1.5} />
-          <p className="text-sm text-[#6B6B6B]">Đang phân tích hộp thư...</p>
+          <Loader2 className="w-5 h-5 animate-spin text-[var(--muted)] mx-auto mb-2" strokeWidth={1.5} />
+          <p className="text-sm text-[var(--muted-foreground)]">Đang phân tích hộp thư...</p>
         </div>
       </div>
     )
   }
 
   if (!data) {
-    return <div className="p-8 text-center text-sm text-[#6B6B6B]">Lỗi tải dữ liệu</div>
+    return <div className="p-8 text-center text-sm text-[var(--muted-foreground)]">Lỗi tải dữ liệu</div>
   }
 
   const viewModes = [
@@ -100,25 +100,25 @@ export function SmartInbox({ onSelectEmail }: SmartInboxProps) {
   ]
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-[var(--card)]">
       {/* Stats Bar */}
-      <div className="px-5 py-3 border-b border-[#EBEBEB] bg-[#FAFAFA]">
+      <div className="px-5 py-3 border-b border-[var(--border)] bg-[var(--secondary)]">
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#6B6B6B]" strokeWidth={1.5} />
-            <span className="font-semibold text-sm text-[#1A1A1A]">AI Thủ Kho</span>
+            <Sparkles className="w-4 h-4 text-[var(--muted-foreground)]" strokeWidth={1.5} />
+            <span className="font-semibold text-sm text-[var(--foreground)]">AI Thủ Kho</span>
           </div>
           <div className="flex items-center gap-2 text-xs flex-wrap">
-            <span className="px-2 py-1 bg-white rounded-md border border-[#EBEBEB] text-[#6B6B6B]">
+            <span className="px-2 py-1 bg-[var(--card)] rounded-md border border-[var(--border)] text-[var(--muted-foreground)]">
               {data.total} email
             </span>
             {data.stats.needsReply > 0 && (
-              <span className="px-2 py-1 bg-amber-50 text-amber-700 rounded-md border border-amber-200">
+              <span className="px-2 py-1 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 rounded-md border border-amber-200 dark:border-amber-500/30">
                 {data.stats.needsReply} cần trả lời
               </span>
             )}
             {data.stats.hasDeadline > 0 && (
-              <span className="px-2 py-1 bg-red-50 text-red-700 rounded-md border border-red-200">
+              <span className="px-2 py-1 bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 rounded-md border border-red-200 dark:border-red-500/30">
                 {data.stats.hasDeadline} có deadline
               </span>
             )}
@@ -127,7 +127,7 @@ export function SmartInbox({ onSelectEmail }: SmartInboxProps) {
       </div>
 
       {/* View Mode Tabs */}
-      <div className="flex border-b border-[#EBEBEB] overflow-x-auto bg-white">
+      <div className="flex border-b border-[var(--border)] overflow-x-auto bg-[var(--card)]">
         {viewModes.map((mode) => (
           <button
             key={mode.id}
@@ -135,8 +135,8 @@ export function SmartInbox({ onSelectEmail }: SmartInboxProps) {
             className={cn(
               'flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors duration-150 whitespace-nowrap',
               viewMode === mode.id
-                ? 'text-[#1A1A1A] border-b-2 border-[#1A1A1A]'
-                : 'text-[#6B6B6B] hover:text-[#4B4B4B]'
+                ? 'text-[var(--foreground)] border-b-2 border-[var(--foreground)]'
+                : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
             )}
           >
             <mode.icon className="w-4 h-4" strokeWidth={1.5} />
@@ -176,10 +176,10 @@ export function SmartInbox({ onSelectEmail }: SmartInboxProps) {
 
 function PriorityView({ data, onSelect }: { data: SmartViewData['byPriority']; onSelect: (email: Email) => void }) {
   const groups = [
-    { key: 'urgent', label: 'Khẩn cấp', icon: <Flame className="w-4 h-4 text-red-600" strokeWidth={1.5} />, color: 'bg-red-50 border-red-200', emails: data.urgent },
-    { key: 'high', label: 'Quan trọng', icon: <Bell className="w-4 h-4 text-amber-600" strokeWidth={1.5} />, color: 'bg-amber-50 border-amber-200', emails: data.high },
-    { key: 'normal', label: 'Bình thường', icon: null, color: 'bg-[#FAFAFA] border-[#EBEBEB]', emails: data.normal },
-    { key: 'low', label: 'Có thể bỏ qua', icon: null, color: 'bg-[#FAFAFA] border-[#F5F5F5]', emails: data.low },
+    { key: 'urgent', label: 'Khẩn cấp', icon: <Flame className="w-4 h-4 text-red-600 dark:text-red-400" strokeWidth={1.5} />, color: 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30', emails: data.urgent },
+    { key: 'high', label: 'Quan trọng', icon: <Bell className="w-4 h-4 text-amber-600 dark:text-amber-400" strokeWidth={1.5} />, color: 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30', emails: data.high },
+    { key: 'normal', label: 'Bình thường', icon: null, color: 'bg-[var(--secondary)] border-[var(--border)]', emails: data.normal },
+    { key: 'low', label: 'Có thể bỏ qua', icon: null, color: 'bg-[var(--secondary)] border-[var(--border)]', emails: data.low },
   ]
 
   return (
@@ -212,7 +212,7 @@ function SenderView({ data, onSelect }: { data: SmartViewData['bySender']; onSel
           label={sender.name}
           icon={<Users className="w-4 h-4" strokeWidth={1.5} />}
           count={sender.count}
-          color="bg-[#FAFAFA] border-[#EBEBEB]"
+          color="bg-[var(--secondary)] border-[var(--border)]"
           emails={sender.emails}
           onSelect={onSelect}
         />
@@ -222,15 +222,14 @@ function SenderView({ data, onSelect }: { data: SmartViewData['bySender']; onSel
 }
 
 function CategoryView({ data, onSelect }: { data: SmartViewData['byCategory']; onSelect: (email: Email) => void }) {
-  // Import icons at component level - using existing imports
   const groups = [
-    { key: 'work', label: 'Công việc', color: 'bg-[#FAFAFA] border-[#EBEBEB]' },
-    { key: 'personal', label: 'Cá nhân', color: 'bg-[#FAFAFA] border-[#EBEBEB]' },
-    { key: 'transaction', label: 'Giao dịch', color: 'bg-[#FAFAFA] border-[#EBEBEB]' },
-    { key: 'newsletter', label: 'Newsletter', color: 'bg-[#FAFAFA] border-[#EBEBEB]' },
-    { key: 'promotion', label: 'Khuyến mãi', color: 'bg-[#FAFAFA] border-[#EBEBEB]' },
-    { key: 'social', label: 'Mạng xã hội', color: 'bg-[#FAFAFA] border-[#EBEBEB]' },
-    { key: 'uncategorized', label: 'Chưa phân loại', color: 'bg-[#FAFAFA] border-[#F5F5F5]' },
+    { key: 'work', label: 'Công việc', color: 'bg-[var(--secondary)] border-[var(--border)]' },
+    { key: 'personal', label: 'Cá nhân', color: 'bg-[var(--secondary)] border-[var(--border)]' },
+    { key: 'transaction', label: 'Giao dịch', color: 'bg-[var(--secondary)] border-[var(--border)]' },
+    { key: 'newsletter', label: 'Newsletter', color: 'bg-[var(--secondary)] border-[var(--border)]' },
+    { key: 'promotion', label: 'Khuyến mãi', color: 'bg-[var(--secondary)] border-[var(--border)]' },
+    { key: 'social', label: 'Mạng xã hội', color: 'bg-[var(--secondary)] border-[var(--border)]' },
+    { key: 'uncategorized', label: 'Chưa phân loại', color: 'bg-[var(--secondary)] border-[var(--border)]' },
   ]
 
   return (
@@ -252,10 +251,10 @@ function CategoryView({ data, onSelect }: { data: SmartViewData['byCategory']; o
 
 function TimeView({ data, onSelect }: { data: SmartViewData['byTime']; onSelect: (email: Email) => void }) {
   const groups = [
-    { key: 'today', label: 'Hôm nay', color: 'bg-[#FAFAFA] border-[#EBEBEB]', emails: data.today },
-    { key: 'thisWeek', label: 'Tuần này', color: 'bg-[#FAFAFA] border-[#EBEBEB]', emails: data.thisWeek },
-    { key: 'thisMonth', label: 'Tháng này', color: 'bg-[#FAFAFA] border-[#EBEBEB]', emails: data.thisMonth },
-    { key: 'older', label: 'Cũ hơn', color: 'bg-[#FAFAFA] border-[#F5F5F5]', emails: data.older },
+    { key: 'today', label: 'Hôm nay', color: 'bg-[var(--secondary)] border-[var(--border)]', emails: data.today },
+    { key: 'thisWeek', label: 'Tuần này', color: 'bg-[var(--secondary)] border-[var(--border)]', emails: data.thisWeek },
+    { key: 'thisMonth', label: 'Tháng này', color: 'bg-[var(--secondary)] border-[var(--border)]', emails: data.thisMonth },
+    { key: 'older', label: 'Cũ hơn', color: 'bg-[var(--secondary)] border-[var(--border)]', emails: data.older },
   ]
 
   return (
@@ -331,7 +330,7 @@ function ActionsView({
         label="Cần trả lời"
         icon={<Bell className="w-4 h-4" strokeWidth={1.5} />}
         count={actionItems.needsReply.length}
-        color="bg-red-50 border-red-200"
+        color="bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30"
         emails={actionItems.needsReply}
         onSelect={onSelect}
       />
@@ -339,7 +338,7 @@ function ActionsView({
         label="Có deadline"
         icon={<Clock className="w-4 h-4" strokeWidth={1.5} />}
         count={actionItems.hasDeadline.length}
-        color="bg-amber-50 border-amber-200"
+        color="bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30"
         emails={actionItems.hasDeadline}
         onSelect={onSelect}
       />
@@ -347,7 +346,7 @@ function ActionsView({
         label="Quan trọng chưa đọc"
         icon={<Flame className="w-4 h-4" strokeWidth={1.5} />}
         count={actionItems.unreadImportant.length}
-        color="bg-[#F5F5F5] border-[#EBEBEB]"
+        color="bg-[var(--secondary)] border-[var(--border)]"
         emails={actionItems.unreadImportant}
         onSelect={onSelect}
       />
@@ -355,28 +354,28 @@ function ActionsView({
         label="Chưa đọc lâu (>3 ngày)"
         icon={<Clock className="w-4 h-4" strokeWidth={1.5} />}
         count={actionItems.unreadLongTime.length}
-        color="bg-[#FAFAFA] border-[#EBEBEB]"
+        color="bg-[var(--secondary)] border-[var(--border)]"
         emails={actionItems.unreadLongTime}
         onSelect={onSelect}
       />
 
       {/* Cleanup Suggestions */}
       {(cleanup.oldUnreadPromo.length > 0 || cleanup.oldUnreadNewsletter.length > 0) && (
-        <div className="mt-6 p-4 bg-[#FAFAFA] rounded-md border border-[#EBEBEB]">
-          <h3 className="font-medium text-[#1A1A1A] mb-4 flex items-center gap-2">
+        <div className="mt-6 p-4 bg-[var(--secondary)] rounded-md border border-[var(--border)]">
+          <h3 className="font-medium text-[var(--foreground)] mb-4 flex items-center gap-2">
             <Lightbulb className="w-4 h-4" strokeWidth={1.5} />
             Đề xuất dọn dẹp
           </h3>
 
           {cleanup.oldUnreadPromo.length > 0 && (
-            <div className="flex items-center justify-between py-2 border-b border-[#F5F5F5] last:border-0">
+            <div className="flex items-center justify-between py-2 border-b border-[var(--border)] last:border-0">
               <div>
-                <p className="text-sm font-medium text-[#4B4B4B]">Email khuyến mãi cũ</p>
-                <p className="text-xs text-[#6B6B6B]">{cleanup.oldUnreadPromo.length} email chưa đọc (&gt;7 ngày)</p>
+                <p className="text-sm font-medium text-[var(--foreground)]">Email khuyến mãi cũ</p>
+                <p className="text-xs text-[var(--muted-foreground)]">{cleanup.oldUnreadPromo.length} email chưa đọc (&gt;7 ngày)</p>
               </div>
               <button
                 onClick={() => setConfirmDialog({ isOpen: true, type: 'deletePromo', loading: false })}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
                 Xóa tất cả
@@ -387,12 +386,12 @@ function ActionsView({
           {cleanup.oldUnreadNewsletter.length > 0 && (
             <div className="flex items-center justify-between py-2">
               <div>
-                <p className="text-sm font-medium text-[#4B4B4B]">Newsletter cũ</p>
-                <p className="text-xs text-[#6B6B6B]">{cleanup.oldUnreadNewsletter.length} email chưa đọc (&gt;14 ngày)</p>
+                <p className="text-sm font-medium text-[var(--foreground)]">Newsletter cũ</p>
+                <p className="text-xs text-[var(--muted-foreground)]">{cleanup.oldUnreadNewsletter.length} email chưa đọc (&gt;14 ngày)</p>
               </div>
               <button
                 onClick={() => setConfirmDialog({ isOpen: true, type: 'archiveNewsletter', loading: false })}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#6B6B6B] hover:bg-[#F5F5F5] rounded-md transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--muted-foreground)] hover:bg-[var(--hover)] rounded-md transition-colors"
               >
                 <Archive className="w-3.5 h-3.5" strokeWidth={1.5} />
                 Archive tất cả
@@ -451,25 +450,25 @@ function EmailGroup({
     <div className={cn('rounded-md border', color)}>
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between p-3 hover:bg-white/50 transition-colors"
+        className="w-full flex items-center justify-between p-3 hover:bg-[var(--hover)] transition-colors"
       >
-        <span className="font-medium text-[#4B4B4B] flex items-center gap-2">
+        <span className="font-medium text-[var(--foreground)] flex items-center gap-2">
           {icon}
           {label}
         </span>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-[#6B6B6B]">{count} email</span>
+          <span className="text-sm text-[var(--muted-foreground)]">{count} email</span>
           <ChevronRight className={cn('w-4 h-4 transition-transform duration-150', expanded && 'rotate-90')} strokeWidth={1.5} />
         </div>
       </button>
 
       {expanded && (
-        <div className="border-t border-white/50">
+        <div className="border-t border-[var(--border)]">
           {emails.slice(0, 5).map((email) => (
             <MiniEmailItem key={email.id} email={email} onClick={() => onSelect(email)} />
           ))}
           {emails.length > 5 && (
-            <div className="p-3 text-center text-sm text-[#6B6B6B] hover:underline cursor-pointer">
+            <div className="p-3 text-center text-sm text-[var(--muted-foreground)] hover:underline cursor-pointer">
               Xem thêm {emails.length - 5} email
             </div>
           )}
@@ -485,20 +484,20 @@ function MiniEmailItem({ email, onClick }: { email: Email; onClick: () => void }
     <div
       onClick={onClick}
       className={cn(
-        'flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors duration-150 hover:bg-[#FAFAFA] border-b border-[#F5F5F5] last:border-b-0',
-        !email.is_read && 'bg-white'
+        'flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors duration-150 hover:bg-[var(--hover)] border-b border-[var(--border)] last:border-b-0',
+        !email.is_read && 'bg-[var(--card)]'
       )}
     >
       {email.is_starred && <Star className="w-4 h-4 fill-amber-400 text-amber-400 flex-shrink-0" strokeWidth={1.5} />}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className={cn('text-sm truncate text-[#4B4B4B]', !email.is_read && 'font-medium text-[#1A1A1A]')}>
+          <span className={cn('text-sm truncate text-[var(--muted-foreground)]', !email.is_read && 'font-medium text-[var(--foreground)]')}>
             {email.from_name || email.from_address}
           </span>
         </div>
-        <p className="text-sm text-[#6B6B6B] truncate">{email.subject || '(Không có tiêu đề)'}</p>
+        <p className="text-sm text-[var(--muted-foreground)] truncate">{email.subject || '(Không có tiêu đề)'}</p>
       </div>
-      <span className="text-xs text-[#9B9B9B] flex-shrink-0">
+      <span className="text-xs text-[var(--muted)] flex-shrink-0">
         {email.received_at ? formatDate(email.received_at) : ''}
       </span>
     </div>
@@ -508,7 +507,7 @@ function MiniEmailItem({ email, onClick }: { email: Email; onClick: () => void }
 // Empty State
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="p-8 text-center text-sm text-[#6B6B6B]">
+    <div className="p-8 text-center text-sm text-[var(--muted-foreground)]">
       {message}
     </div>
   )

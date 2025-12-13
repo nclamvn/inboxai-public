@@ -30,11 +30,11 @@ function getFileIcon(contentType: string) {
 
 // Get color based on content type
 function getFileColor(contentType: string) {
-  if (contentType.startsWith('image/')) return 'bg-purple-100 text-purple-600'
-  if (contentType.includes('pdf')) return 'bg-red-100 text-red-600'
-  if (contentType.includes('spreadsheet') || contentType.includes('excel')) return 'bg-green-100 text-green-600'
-  if (contentType.includes('document') || contentType.includes('word')) return 'bg-blue-100 text-blue-600'
-  return 'bg-gray-100 text-gray-600'
+  if (contentType.startsWith('image/')) return 'bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400'
+  if (contentType.includes('pdf')) return 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400'
+  if (contentType.includes('spreadsheet') || contentType.includes('excel')) return 'bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400'
+  if (contentType.includes('document') || contentType.includes('word')) return 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400'
+  return 'bg-[var(--secondary)] text-[var(--muted-foreground)]'
 }
 
 // Format file size
@@ -106,7 +106,7 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
             return (
               <div
                 key={att.id}
-                className="flex items-center gap-2 px-3 py-2 bg-[#F5F5F5] rounded-lg hover:bg-[#EBEBEB] transition-colors group"
+                className="flex items-center gap-2 px-3 py-2 bg-[var(--secondary)] rounded-lg hover:bg-[var(--border)] transition-colors group"
               >
                 {/* Icon */}
                 <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', colorClass)}>
@@ -115,10 +115,10 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
 
                 {/* Info */}
                 <div className="min-w-0">
-                  <div className="text-[13px] font-medium text-[#1A1A1A] truncate max-w-[150px]">
+                  <div className="text-[13px] font-medium text-[var(--foreground)] truncate max-w-[150px]">
                     {att.filename}
                   </div>
-                  <div className="text-[11px] text-[#9B9B9B]">
+                  <div className="text-[11px] text-[var(--muted)]">
                     {formatSize(att.size)}
                   </div>
                 </div>
@@ -129,7 +129,7 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
                     <button
                       onClick={() => handlePreview(att)}
                       disabled={loading === att.id}
-                      className="p-1.5 rounded-lg hover:bg-white text-[#6B6B6B]"
+                      className="p-1.5 rounded-lg hover:bg-[var(--card)] text-[var(--muted-foreground)]"
                       title="Xem trước"
                     >
                       {loading === att.id ? (
@@ -141,7 +141,7 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
                   )}
                   <button
                     onClick={() => handleDownload(att)}
-                    className="p-1.5 rounded-lg hover:bg-white text-[#6B6B6B]"
+                    className="p-1.5 rounded-lg hover:bg-[var(--card)] text-[var(--muted-foreground)]"
                     title="Tải xuống"
                   >
                     <Download className="w-4 h-4" />

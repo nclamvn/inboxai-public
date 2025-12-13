@@ -93,8 +93,8 @@ export function AssistantPanel({ onSelectEmail, onRefresh }: Props) {
 
   if (loading) {
     return (
-      <div className="border-b border-[#EBEBEB] bg-[#FAFAFA] p-5">
-        <div className="flex items-center gap-3 text-[#6B6B6B]">
+      <div className="border-b border-[var(--border)] bg-[var(--secondary)] p-5">
+        <div className="flex items-center gap-3 text-[var(--muted-foreground)]">
           <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} />
           <span className="text-[14px]">AI đang phân tích hộp thư...</span>
         </div>
@@ -107,34 +107,34 @@ export function AssistantPanel({ onSelectEmail, onRefresh }: Props) {
   }
 
   return (
-    <div className="border-b border-[#EBEBEB] bg-gradient-to-r from-[#FAFAFA] to-white">
+    <div className="border-b border-[var(--border)] bg-gradient-to-r from-[var(--secondary)] to-[var(--card)]">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-[#F5F5F5]">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]">
         <div className="flex items-center gap-3">
           <IconBox variant="primary" size="sm">
             <Sparkles className="w-4 h-4" strokeWidth={1.5} />
           </IconBox>
           <div>
-            <p className="text-[14px] font-semibold text-[#1A1A1A]">
+            <p className="text-[14px] font-semibold text-[var(--foreground)]">
               {data.greeting}, sếp!
             </p>
-            <p className="text-[13px] text-[#6B6B6B]">
+            <p className="text-[13px] text-[var(--muted-foreground)]">
               {data.summary.unread} email chưa đọc · {data.summary.today} email hôm nay
             </p>
           </div>
         </div>
         <button
           onClick={() => setDismissed(true)}
-          className="p-1.5 rounded-lg hover:bg-[#F5F5F5] transition-colors"
+          className="p-1.5 rounded-lg hover:bg-[var(--secondary)] transition-colors"
         >
-          <X className="w-4 h-4 text-[#9B9B9B]" strokeWidth={1.5} />
+          <X className="w-4 h-4 text-[var(--muted)]" strokeWidth={1.5} />
         </button>
       </div>
 
       {/* Briefing Items */}
       {data.briefingItems.length > 0 && (
         <div className="px-5 py-4">
-          <p className="text-[11px] font-medium text-[#9B9B9B] uppercase tracking-wider mb-3">
+          <p className="text-[11px] font-medium text-[var(--muted)] uppercase tracking-wider mb-3">
             Cần chú ý
           </p>
           <div className="space-y-1.5">
@@ -153,20 +153,20 @@ export function AssistantPanel({ onSelectEmail, onRefresh }: Props) {
                 <button
                   key={index}
                   onClick={() => item.emailIds[0] && onSelectEmail?.(item.emailIds[0])}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white border border-transparent hover:border-[#EBEBEB] transition-all text-left group"
+                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--card)] border border-transparent hover:border-[var(--border)] transition-all text-left group"
                 >
                   <IconBox variant={getVariant() as 'red' | 'amber' | 'blue' | 'violet' | 'default'} size="sm">
                     <Icon className="w-4 h-4" strokeWidth={1.5} />
                   </IconBox>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-medium text-[#1A1A1A]">
+                    <p className="text-[14px] font-medium text-[var(--foreground)]">
                       {item.title}
                     </p>
-                    <p className="text-[13px] text-[#6B6B6B]">
+                    <p className="text-[13px] text-[var(--muted-foreground)]">
                       {item.description}
                     </p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-[#D4D4D4] group-hover:text-[#6B6B6B] transition-colors" strokeWidth={1.5} />
+                  <ChevronRight className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--muted-foreground)] transition-colors" strokeWidth={1.5} />
                 </button>
               )
             })}
@@ -176,15 +176,15 @@ export function AssistantPanel({ onSelectEmail, onRefresh }: Props) {
 
       {/* Cleanup Suggestions */}
       {data.cleanupItems.length > 0 && (
-        <div className="px-5 py-4 border-t border-[#F5F5F5]">
-          <p className="text-[11px] font-medium text-[#9B9B9B] uppercase tracking-wider mb-3">
+        <div className="px-5 py-4 border-t border-[var(--border)]">
+          <p className="text-[11px] font-medium text-[var(--muted)] uppercase tracking-wider mb-3">
             Đề xuất dọn dẹp
           </p>
           <div className="space-y-2">
             {data.cleanupItems.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#EBEBEB]"
+                className="flex items-center justify-between p-3 rounded-xl bg-[var(--card)] border border-[var(--border)]"
               >
                 <div className="flex items-center gap-3">
                   <IconBox variant="default" size="sm">
@@ -195,10 +195,10 @@ export function AssistantPanel({ onSelectEmail, onRefresh }: Props) {
                     )}
                   </IconBox>
                   <div>
-                    <p className="text-[14px] font-medium text-[#1A1A1A]">
+                    <p className="text-[14px] font-medium text-[var(--foreground)]">
                       {item.title}
                     </p>
-                    <p className="text-[13px] text-[#6B6B6B]">
+                    <p className="text-[13px] text-[var(--muted-foreground)]">
                       {item.description}
                     </p>
                   </div>
@@ -209,8 +209,8 @@ export function AssistantPanel({ onSelectEmail, onRefresh }: Props) {
                   className={cn(
                     'px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors',
                     item.action === 'archive'
-                      ? 'bg-[#F5F5F5] text-[#1A1A1A] hover:bg-[#EBEBEB]'
-                      : 'bg-[#FEF2F2] text-[#DC2626] hover:bg-[#FEE2E2]',
+                      ? 'bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--border)]'
+                      : 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20',
                     processingAction === item.action && 'opacity-50 cursor-not-allowed'
                   )}
                 >

@@ -104,37 +104,37 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   const getIcon = () => {
     switch (toast.type) {
       case 'success':
-        return <CheckCircle className="w-5 h-5 text-[#16A34A]" strokeWidth={1.5} />
+        return <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" strokeWidth={1.5} />
       case 'error':
-        return <AlertCircle className="w-5 h-5 text-[#DC2626]" strokeWidth={1.5} />
+        return <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" strokeWidth={1.5} />
       case 'warning':
-        return <AlertCircle className="w-5 h-5 text-[#D97706]" strokeWidth={1.5} />
+        return <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" strokeWidth={1.5} />
       default:
-        return <Info className="w-5 h-5 text-[#6B6B6B]" strokeWidth={1.5} />
+        return <Info className="w-5 h-5 text-[var(--muted-foreground)]" strokeWidth={1.5} />
     }
   }
 
   return (
     <div
       className={cn(
-        'flex items-start gap-3 w-full md:w-[360px] p-4 rounded-xl bg-white border border-[#EBEBEB] shadow-lg pointer-events-auto',
+        'flex items-start gap-3 w-full md:w-[360px] p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] shadow-lg pointer-events-auto',
         'animate-slideUp'
       )}
     >
       {getIcon()}
       <div className="flex-1 min-w-0">
-        <p className="text-[14px] font-medium text-[#1A1A1A]">
+        <p className="text-[14px] font-medium text-[var(--foreground)]">
           {toast.message}
         </p>
         {toast.description && (
-          <p className="text-[13px] text-[#6B6B6B] mt-0.5">
+          <p className="text-[13px] text-[var(--muted-foreground)] mt-0.5">
             {toast.description}
           </p>
         )}
       </div>
       <button
         onClick={onClose}
-        className="p-1 rounded-lg text-[#9B9B9B] hover:text-[#6B6B6B] hover:bg-[#F5F5F5] transition-colors"
+        className="p-1 rounded-lg text-[var(--muted)] hover:text-[var(--muted-foreground)] hover:bg-[var(--secondary)] transition-colors"
       >
         <X className="w-4 h-4" strokeWidth={1.5} />
       </button>

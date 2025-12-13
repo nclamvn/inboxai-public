@@ -8,13 +8,13 @@ interface SkeletonProps {
 
 export function Skeleton({ className }: SkeletonProps) {
   return (
-    <div className={cn('animate-shimmer rounded bg-[#F0F0F0]', className)} />
+    <div className={cn('animate-shimmer rounded bg-[var(--secondary)]', className)} />
   )
 }
 
 export function EmailRowSkeleton() {
   return (
-    <div className="flex items-center gap-3 px-4 py-3 border-b border-[#F5F5F5]">
+    <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border)]">
       <Skeleton className="w-4 h-4 rounded" />
       <div className="flex-1 space-y-2">
         <div className="flex justify-between">
@@ -31,7 +31,7 @@ export function EmailRowSkeleton() {
 
 export function EmailListSkeleton({ count = 8 }: { count?: number }) {
   return (
-    <div className="divide-y divide-[#F5F5F5]">
+    <div className="divide-y divide-[var(--border)]">
       {[...Array(count)].map((_, i) => (
         <EmailRowSkeleton key={i} />
       ))}
@@ -63,7 +63,7 @@ export function EmailDetailSkeleton() {
 
 export function CardSkeleton() {
   return (
-    <div className="bg-white rounded-xl border border-[#EBEBEB] p-4 space-y-3">
+    <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-4 space-y-3">
       <div className="flex items-center justify-between">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-4 w-16" />
@@ -76,7 +76,7 @@ export function CardSkeleton() {
 
 export function SidebarSkeleton() {
   return (
-    <div className="w-64 h-full bg-white border-r border-[#EBEBEB] p-4 space-y-4">
+    <div className="w-64 h-full bg-[var(--card)] border-r border-[var(--border)] p-4 space-y-4">
       <Skeleton className="h-10 w-full rounded-xl" />
       <div className="space-y-2">
         {[...Array(5)].map((_, i) => (
@@ -92,7 +92,7 @@ export function SidebarSkeleton() {
 
 export function TableRowSkeleton({ columns = 4 }: { columns?: number }) {
   return (
-    <tr className="border-b border-[#F5F5F5]">
+    <tr className="border-b border-[var(--border)]">
       {[...Array(columns)].map((_, i) => (
         <td key={i} className="px-4 py-3">
           <Skeleton className="h-4 w-full" />

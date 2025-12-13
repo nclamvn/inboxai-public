@@ -146,36 +146,36 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
   }
 
   const urgencyLabels: Record<string, { label: string; color: string }> = {
-    high: { label: 'Khẩn cấp', color: 'bg-[#FEF2F2] text-[#DC2626]' },
-    medium: { label: 'Trung bình', color: 'bg-[#FFFBEB] text-[#D97706]' },
-    low: { label: 'Thấp', color: 'bg-[#F5F5F5] text-[#6B6B6B]' }
+    high: { label: 'Khẩn cấp', color: 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400' },
+    medium: { label: 'Trung bình', color: 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400' },
+    low: { label: 'Thấp', color: 'bg-[var(--secondary)] text-[var(--muted-foreground)]' }
   }
 
   return (
-    <div className="bg-white border border-[#EBEBEB] rounded-xl shadow-sm overflow-hidden">
+    <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-[#EBEBEB] bg-[#FAFAFA]">
+      <div className="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--secondary)]">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-[#1A1A1A] rounded-lg flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white" strokeWidth={1.5} />
+          <div className="w-8 h-8 bg-[var(--foreground)] rounded-lg flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-[var(--background)]" strokeWidth={1.5} />
           </div>
           <div>
-            <h3 className="font-semibold text-[#1A1A1A]">Trợ lý phản hồi AI</h3>
-            <p className="text-[12px] text-[#6B6B6B]">Phân tích và gợi ý phản hồi thông minh</p>
+            <h3 className="font-semibold text-[var(--foreground)]">Trợ lý phản hồi AI</h3>
+            <p className="text-[12px] text-[var(--muted-foreground)]">Phân tích và gợi ý phản hồi thông minh</p>
           </div>
         </div>
         {onClose && (
           <button
             onClick={onClose}
-            className="p-2 hover:bg-[#F5F5F5] rounded-lg transition-colors"
+            className="p-2 hover:bg-[var(--hover)] rounded-lg transition-colors"
           >
-            <X className="w-4 h-4 text-[#6B6B6B]" strokeWidth={1.5} />
+            <X className="w-4 h-4 text-[var(--muted-foreground)]" strokeWidth={1.5} />
           </button>
         )}
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-[#EBEBEB]">
+      <div className="flex border-b border-[var(--border)]">
         {[
           { id: 'quick' as const, label: 'Trả lời nhanh', icon: Zap },
           { id: 'draft' as const, label: 'Soạn thảo', icon: FileText },
@@ -191,8 +191,8 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
             }}
             className={`flex-1 flex items-center justify-center gap-2 py-3 text-[14px] font-medium transition-colors ${
               activeTab === tab.id
-                ? 'text-[#1A1A1A] border-b-2 border-[#1A1A1A]'
-                : 'text-[#6B6B6B] hover:text-[#1A1A1A]'
+                ? 'text-[var(--foreground)] border-b-2 border-[var(--foreground)]'
+                : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
             }`}
           >
             <tab.icon className="w-4 h-4" strokeWidth={1.5} />
@@ -204,7 +204,7 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
       {/* Content */}
       <div className="p-4">
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-[#FEF2F2] border border-[#FEE2E2] rounded-lg text-[#DC2626] text-[14px] mb-4">
+          <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg text-red-600 dark:text-red-400 text-[14px] mb-4">
             <AlertCircle className="w-4 h-4" strokeWidth={1.5} />
             {error}
           </div>
@@ -213,19 +213,19 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
         {/* Analysis Summary (shown in all tabs) */}
         {loading.analyze ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-[#6B6B6B]" strokeWidth={1.5} />
+            <Loader2 className="w-6 h-6 animate-spin text-[var(--muted-foreground)]" strokeWidth={1.5} />
           </div>
         ) : analysis && (
-          <div className="mb-4 p-3 bg-[#FAFAFA] rounded-lg border border-[#EBEBEB]">
+          <div className="mb-4 p-3 bg-[var(--secondary)] rounded-lg border border-[var(--border)]">
             <div className="flex flex-wrap gap-2 mb-2">
-              <span className="px-2 py-1 bg-[#F5F5F5] rounded text-[12px] text-[#1A1A1A]">
+              <span className="px-2 py-1 bg-[var(--background)] rounded text-[12px] text-[var(--foreground)]">
                 {intentLabels[analysis.intent] || analysis.intent}
               </span>
-              <span className={`px-2 py-1 rounded text-[12px] ${urgencyLabels[analysis.urgency]?.color || 'bg-[#F5F5F5] text-[#6B6B6B]'}`}>
+              <span className={`px-2 py-1 rounded text-[12px] ${urgencyLabels[analysis.urgency]?.color || 'bg-[var(--secondary)] text-[var(--muted-foreground)]'}`}>
                 {urgencyLabels[analysis.urgency]?.label || analysis.urgency}
               </span>
             </div>
-            <p className="text-[13px] text-[#6B6B6B]">
+            <p className="text-[13px] text-[var(--muted-foreground)]">
               <strong>Điểm chính:</strong> {analysis.keyPoints.join(', ')}
             </p>
           </div>
@@ -234,19 +234,19 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
         {/* Quick Reply Tab */}
         {activeTab === 'quick' && analysis && (
           <div className="space-y-3">
-            <h4 className="text-[14px] font-medium text-[#1A1A1A]">Phản hồi gợi ý</h4>
+            <h4 className="text-[14px] font-medium text-[var(--foreground)]">Phản hồi gợi ý</h4>
             {analysis.quickReplies.map((reply, index) => (
               <button
                 key={index}
                 onClick={() => handleQuickReply(reply.content)}
-                className="w-full p-3 text-left bg-white border border-[#EBEBEB] rounded-lg hover:border-[#1A1A1A] hover:shadow-sm transition-all group"
+                className="w-full p-3 text-left bg-[var(--card)] border border-[var(--border)] rounded-lg hover:border-[var(--foreground)] hover:shadow-sm transition-all group"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[14px] font-medium text-[#1A1A1A]">{reply.label}</span>
-                  <span className="text-[12px] text-[#9B9B9B] capitalize">{reply.tone}</span>
+                  <span className="text-[14px] font-medium text-[var(--foreground)]">{reply.label}</span>
+                  <span className="text-[12px] text-[var(--muted)] capitalize">{reply.tone}</span>
                 </div>
-                <p className="text-[13px] text-[#6B6B6B] line-clamp-2">{reply.content}</p>
-                <div className="flex items-center gap-1 mt-2 text-[12px] text-[#1A1A1A] opacity-0 group-hover:opacity-100 transition-opacity">
+                <p className="text-[13px] text-[var(--muted-foreground)] line-clamp-2">{reply.content}</p>
+                <div className="flex items-center gap-1 mt-2 text-[12px] text-[var(--foreground)] opacity-0 group-hover:opacity-100 transition-opacity">
                   <Send className="w-3 h-3" strokeWidth={1.5} />
                   Sử dụng
                 </div>
@@ -254,12 +254,12 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
             ))}
 
             {analysis.suggestedActions.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-[#EBEBEB]">
-                <h4 className="text-[14px] font-medium text-[#1A1A1A] mb-2">Hành động gợi ý</h4>
+              <div className="mt-4 pt-4 border-t border-[var(--border)]">
+                <h4 className="text-[14px] font-medium text-[var(--foreground)] mb-2">Hành động gợi ý</h4>
                 <ul className="space-y-1">
                   {analysis.suggestedActions.map((action, index) => (
-                    <li key={index} className="flex items-center gap-2 text-[13px] text-[#6B6B6B]">
-                      <Check className="w-3 h-3 text-[#16A34A]" strokeWidth={2} />
+                    <li key={index} className="flex items-center gap-2 text-[13px] text-[var(--muted-foreground)]">
+                      <Check className="w-3 h-3 text-green-600 dark:text-green-400" strokeWidth={2} />
                       {action}
                     </li>
                   ))}
@@ -275,13 +275,13 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
             {/* Options */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[12px] font-medium text-[#6B6B6B] mb-1">
+                <label className="block text-[12px] font-medium text-[var(--muted-foreground)] mb-1">
                   Giọng điệu
                 </label>
                 <select
                   value={draftOptions.tone}
                   onChange={(e) => setDraftOptions(prev => ({ ...prev, tone: e.target.value as 'formal' | 'friendly' | 'neutral' }))}
-                  className="w-full px-3 py-2 border border-[#EBEBEB] rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[var(--border)] rounded-lg text-[14px] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
                 >
                   <option value="formal">Trang trọng</option>
                   <option value="friendly">Thân thiện</option>
@@ -289,13 +289,13 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
                 </select>
               </div>
               <div>
-                <label className="block text-[12px] font-medium text-[#6B6B6B] mb-1">
+                <label className="block text-[12px] font-medium text-[var(--muted-foreground)] mb-1">
                   Độ dài
                 </label>
                 <select
                   value={draftOptions.length}
                   onChange={(e) => setDraftOptions(prev => ({ ...prev, length: e.target.value as 'short' | 'medium' | 'long' }))}
-                  className="w-full px-3 py-2 border border-[#EBEBEB] rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[var(--border)] rounded-lg text-[14px] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
                 >
                   <option value="short">Ngắn</option>
                   <option value="medium">Trung bình</option>
@@ -305,28 +305,28 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
             </div>
 
             <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 text-[13px] text-[#6B6B6B] cursor-pointer">
+              <label className="flex items-center gap-2 text-[13px] text-[var(--muted-foreground)] cursor-pointer">
                 <input
                   type="checkbox"
                   checked={draftOptions.includeGreeting}
                   onChange={(e) => setDraftOptions(prev => ({ ...prev, includeGreeting: e.target.checked }))}
-                  className="w-4 h-4 rounded border-[#EBEBEB] text-[#1A1A1A] focus:ring-[#1A1A1A]"
+                  className="w-4 h-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]"
                 />
                 Lời chào
               </label>
-              <label className="flex items-center gap-2 text-[13px] text-[#6B6B6B] cursor-pointer">
+              <label className="flex items-center gap-2 text-[13px] text-[var(--muted-foreground)] cursor-pointer">
                 <input
                   type="checkbox"
                   checked={draftOptions.includeSignature}
                   onChange={(e) => setDraftOptions(prev => ({ ...prev, includeSignature: e.target.checked }))}
-                  className="w-4 h-4 rounded border-[#EBEBEB] text-[#1A1A1A] focus:ring-[#1A1A1A]"
+                  className="w-4 h-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]"
                 />
                 Chữ ký
               </label>
             </div>
 
             <div>
-              <label className="block text-[12px] font-medium text-[#6B6B6B] mb-1">
+              <label className="block text-[12px] font-medium text-[var(--muted-foreground)] mb-1">
                 Yêu cầu thêm (tùy chọn)
               </label>
               <input
@@ -334,14 +334,14 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
                 value={draftOptions.customInstructions}
                 onChange={(e) => setDraftOptions(prev => ({ ...prev, customInstructions: e.target.value }))}
                 placeholder="VD: Nhấn mạnh deadline, đề cập đến cuộc họp..."
-                className="w-full px-3 py-2 border border-[#EBEBEB] rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent"
+                className="w-full px-3 py-2 border border-[var(--border)] rounded-lg text-[14px] bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
               />
             </div>
 
             <button
               onClick={generateDraft}
               disabled={loading.draft || !analysis}
-              className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#1A1A1A] text-white rounded-lg font-medium hover:bg-[#2D2D2D] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 py-2.5 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg font-medium hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading.draft ? (
                 <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} />
@@ -355,36 +355,36 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
 
             {/* Generated Draft */}
             {draft && (
-              <div className="mt-4 p-4 bg-[#FAFAFA] rounded-lg border border-[#EBEBEB]">
+              <div className="mt-4 p-4 bg-[var(--secondary)] rounded-lg border border-[var(--border)]">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-[14px] font-medium text-[#1A1A1A]">{draft.subject}</h4>
+                  <h4 className="text-[14px] font-medium text-[var(--foreground)]">{draft.subject}</h4>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handleCopy(draft.body)}
-                      className="p-1.5 hover:bg-[#F5F5F5] rounded transition-colors"
+                      className="p-1.5 hover:bg-[var(--hover)] rounded transition-colors"
                       title="Sao chép"
                     >
                       {copied ? (
-                        <Check className="w-4 h-4 text-[#16A34A]" strokeWidth={1.5} />
+                        <Check className="w-4 h-4 text-green-600 dark:text-green-400" strokeWidth={1.5} />
                       ) : (
-                        <Copy className="w-4 h-4 text-[#6B6B6B]" strokeWidth={1.5} />
+                        <Copy className="w-4 h-4 text-[var(--muted-foreground)]" strokeWidth={1.5} />
                       )}
                     </button>
                     <button
                       onClick={generateDraft}
-                      className="p-1.5 hover:bg-[#F5F5F5] rounded transition-colors"
+                      className="p-1.5 hover:bg-[var(--hover)] rounded transition-colors"
                       title="Tạo lại"
                     >
-                      <RefreshCw className="w-4 h-4 text-[#6B6B6B]" strokeWidth={1.5} />
+                      <RefreshCw className="w-4 h-4 text-[var(--muted-foreground)]" strokeWidth={1.5} />
                     </button>
                   </div>
                 </div>
-                <pre className="text-[13px] text-[#1A1A1A] whitespace-pre-wrap font-sans mb-3">
+                <pre className="text-[13px] text-[var(--foreground)] whitespace-pre-wrap font-sans mb-3">
                   {draft.body}
                 </pre>
                 <button
                   onClick={() => onUseDraft(draft.subject, draft.body)}
-                  className="w-full flex items-center justify-center gap-2 py-2 bg-[#1A1A1A] text-white rounded-lg text-[14px] font-medium hover:bg-[#2D2D2D] transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg text-[14px] font-medium hover:opacity-90 transition-colors"
                 >
                   <Send className="w-4 h-4" strokeWidth={1.5} />
                   Sử dụng bản nháp này
@@ -392,20 +392,20 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
 
                 {/* Alternative versions */}
                 {draft.alternativeVersions && draft.alternativeVersions.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-[#EBEBEB]">
-                    <h5 className="text-[13px] font-medium text-[#6B6B6B] mb-2">Phiên bản khác</h5>
+                  <div className="mt-4 pt-4 border-t border-[var(--border)]">
+                    <h5 className="text-[13px] font-medium text-[var(--muted-foreground)] mb-2">Phiên bản khác</h5>
                     {draft.alternativeVersions.map((alt, index) => (
-                      <div key={index} className="p-3 bg-white rounded-lg border border-[#EBEBEB] mb-2">
+                      <div key={index} className="p-3 bg-[var(--card)] rounded-lg border border-[var(--border)] mb-2">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-[12px] text-[#9B9B9B] capitalize">{alt.tone}</span>
+                          <span className="text-[12px] text-[var(--muted)] capitalize">{alt.tone}</span>
                           <button
                             onClick={() => onUseDraft(draft.subject, alt.body)}
-                            className="text-[12px] text-[#1A1A1A] font-medium hover:underline"
+                            className="text-[12px] text-[var(--foreground)] font-medium hover:underline"
                           >
                             Sử dụng
                           </button>
                         </div>
-                        <p className="text-[13px] text-[#6B6B6B] line-clamp-3">{alt.body}</p>
+                        <p className="text-[13px] text-[var(--muted-foreground)] line-clamp-3">{alt.body}</p>
                       </div>
                     ))}
                   </div>
@@ -420,21 +420,21 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
           <div className="space-y-4">
             {loading.research ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-[#6B6B6B]" strokeWidth={1.5} />
+                <Loader2 className="w-6 h-6 animate-spin text-[var(--muted-foreground)]" strokeWidth={1.5} />
               </div>
             ) : research ? (
               <>
                 {/* Sender History */}
-                <div className="p-4 bg-[#FAFAFA] rounded-lg border border-[#EBEBEB]">
-                  <h4 className="text-[14px] font-medium text-[#1A1A1A] mb-3">Lịch sử với người gửi</h4>
+                <div className="p-4 bg-[var(--secondary)] rounded-lg border border-[var(--border)]">
+                  <h4 className="text-[14px] font-medium text-[var(--foreground)] mb-3">Lịch sử với người gửi</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-[12px] text-[#9B9B9B]">Tổng email</p>
-                      <p className="text-[16px] font-semibold text-[#1A1A1A]">{research.senderHistory.totalEmails}</p>
+                      <p className="text-[12px] text-[var(--muted)]">Tổng email</p>
+                      <p className="text-[16px] font-semibold text-[var(--foreground)]">{research.senderHistory.totalEmails}</p>
                     </div>
                     <div>
-                      <p className="text-[12px] text-[#9B9B9B]">Liên hệ gần nhất</p>
-                      <p className="text-[14px] text-[#1A1A1A]">
+                      <p className="text-[12px] text-[var(--muted)]">Liên hệ gần nhất</p>
+                      <p className="text-[14px] text-[var(--foreground)]">
                         {research.senderHistory.lastContact
                           ? new Date(research.senderHistory.lastContact).toLocaleDateString('vi-VN')
                           : 'N/A'}
@@ -443,10 +443,10 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
                   </div>
                   {research.senderHistory.commonTopics.length > 0 && (
                     <div className="mt-3">
-                      <p className="text-[12px] text-[#9B9B9B] mb-1">Chủ đề thường gặp</p>
+                      <p className="text-[12px] text-[var(--muted)] mb-1">Chủ đề thường gặp</p>
                       <div className="flex flex-wrap gap-1">
                         {research.senderHistory.commonTopics.map((topic, index) => (
-                          <span key={index} className="px-2 py-0.5 bg-[#F5F5F5] rounded text-[12px] text-[#6B6B6B]">
+                          <span key={index} className="px-2 py-0.5 bg-[var(--background)] rounded text-[12px] text-[var(--muted-foreground)]">
                             {topic}
                           </span>
                         ))}
@@ -458,22 +458,22 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
                 {/* Thread Context */}
                 {research.threadContext.length > 0 && (
                   <div>
-                    <h4 className="text-[14px] font-medium text-[#1A1A1A] mb-2 flex items-center gap-2">
+                    <h4 className="text-[14px] font-medium text-[var(--foreground)] mb-2 flex items-center gap-2">
                       <MessageSquare className="w-4 h-4" strokeWidth={1.5} />
                       Chuỗi email ({research.threadContext.length})
                     </h4>
                     <div className="space-y-2">
                       {research.threadContext.map(threadEmail => (
-                        <div key={threadEmail.id} className="p-3 bg-[#FAFAFA] rounded-lg border border-[#EBEBEB]">
+                        <div key={threadEmail.id} className="p-3 bg-[var(--secondary)] rounded-lg border border-[var(--border)]">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[13px] font-medium text-[#1A1A1A] truncate">
+                            <span className="text-[13px] font-medium text-[var(--foreground)] truncate">
                               {threadEmail.from_name || threadEmail.from_address}
                             </span>
-                            <span className="text-[12px] text-[#9B9B9B]">
+                            <span className="text-[12px] text-[var(--muted)]">
                               {threadEmail.received_at ? new Date(threadEmail.received_at).toLocaleDateString('vi-VN') : ''}
                             </span>
                           </div>
-                          <p className="text-[12px] text-[#6B6B6B] line-clamp-2">{threadEmail.snippet}</p>
+                          <p className="text-[12px] text-[var(--muted-foreground)] line-clamp-2">{threadEmail.snippet}</p>
                         </div>
                       ))}
                     </div>
@@ -483,17 +483,17 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
                 {/* Related Emails */}
                 {research.relatedEmails.length > 0 && (
                   <div>
-                    <h4 className="text-[14px] font-medium text-[#1A1A1A] mb-2 flex items-center gap-2">
+                    <h4 className="text-[14px] font-medium text-[var(--foreground)] mb-2 flex items-center gap-2">
                       <Clock className="w-4 h-4" strokeWidth={1.5} />
                       Email liên quan ({research.relatedEmails.length})
                     </h4>
                     <div className="space-y-2 max-h-60 overflow-auto">
                       {research.relatedEmails.map(relatedEmail => (
-                        <div key={relatedEmail.id} className="p-3 bg-[#FAFAFA] rounded-lg border border-[#EBEBEB]">
-                          <p className="text-[13px] font-medium text-[#1A1A1A] truncate mb-1">
+                        <div key={relatedEmail.id} className="p-3 bg-[var(--secondary)] rounded-lg border border-[var(--border)]">
+                          <p className="text-[13px] font-medium text-[var(--foreground)] truncate mb-1">
                             {relatedEmail.subject || '(Không có tiêu đề)'}
                           </p>
-                          <p className="text-[12px] text-[#9B9B9B]">
+                          <p className="text-[12px] text-[var(--muted)]">
                             {relatedEmail.from_name || relatedEmail.from_address} • {relatedEmail.received_at ? new Date(relatedEmail.received_at).toLocaleDateString('vi-VN') : ''}
                           </p>
                         </div>
@@ -503,7 +503,7 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
                 )}
 
                 {research.relatedEmails.length === 0 && research.threadContext.length === 0 && (
-                  <div className="text-center py-8 text-[#6B6B6B]">
+                  <div className="text-center py-8 text-[var(--muted-foreground)]">
                     <Search className="w-8 h-8 mx-auto mb-2 opacity-50" strokeWidth={1.5} />
                     <p className="text-[14px]">Không tìm thấy email liên quan</p>
                   </div>
@@ -513,7 +513,7 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
               <div className="text-center py-8">
                 <button
                   onClick={fetchResearch}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#F5F5F5] rounded-lg text-[14px] text-[#1A1A1A] font-medium hover:bg-[#EBEBEB] transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--secondary)] rounded-lg text-[14px] text-[var(--foreground)] font-medium hover:bg-[var(--border)] transition-colors"
                 >
                   <Search className="w-4 h-4" strokeWidth={1.5} />
                   Tìm kiếm thông tin

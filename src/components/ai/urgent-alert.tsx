@@ -59,7 +59,7 @@ export function UrgentAlert({ onSelectEmail }: Props) {
         <div
           key={email.id}
           className={cn(
-            'bg-white border border-[#EBEBEB] rounded-xl shadow-executive-lg p-4',
+            'bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-executive-lg p-4',
             'animate-in slide-in-from-right-5 fade-in duration-300'
           )}
           style={{ animationDelay: `${index * 100}ms` }}
@@ -69,21 +69,21 @@ export function UrgentAlert({ onSelectEmail }: Props) {
               <AlertCircle className="w-4 h-4" strokeWidth={1.5} />
             </IconBox>
             <div className="flex-1 min-w-0">
-              <p className="text-[12px] text-[#DC2626] font-medium mb-1">
+              <p className="text-[12px] text-red-600 dark:text-red-400 font-medium mb-1">
                 Email quan trọng
               </p>
-              <p className="text-[14px] font-medium text-[#1A1A1A] truncate">
+              <p className="text-[14px] font-medium text-[var(--foreground)] truncate">
                 {email.from_name || email.from_address}
               </p>
-              <p className="text-[13px] text-[#6B6B6B] truncate">
+              <p className="text-[13px] text-[var(--muted-foreground)] truncate">
                 {email.subject || '(Không có tiêu đề)'}
               </p>
             </div>
             <button
               onClick={() => handleDismiss(email.id)}
-              className="p-1 rounded-lg hover:bg-[#F5F5F5] transition-colors"
+              className="p-1 rounded-lg hover:bg-[var(--secondary)] transition-colors"
             >
-              <X className="w-4 h-4 text-[#9B9B9B]" strokeWidth={1.5} />
+              <X className="w-4 h-4 text-[var(--muted)]" strokeWidth={1.5} />
             </button>
           </div>
           <Button

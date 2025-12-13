@@ -86,7 +86,7 @@ function SearchContent() {
   const renderHighlightedText = (text: string | null | undefined) => {
     if (!text) return null
     const html = text
-      .replace(/\[\[HIGHLIGHT\]\]/g, '<mark class="bg-[#FEF9C3] text-[#1A1A1A] px-0.5 rounded">')
+      .replace(/\[\[HIGHLIGHT\]\]/g, '<mark class="bg-yellow-100 dark:bg-yellow-500/20 text-[var(--foreground)] px-0.5 rounded">')
       .replace(/\[\[\/HIGHLIGHT\]\]/g, '</mark>')
     return <span dangerouslySetInnerHTML={{ __html: html }} />
   }
@@ -109,13 +109,13 @@ function SearchContent() {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-white">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[var(--card)]">
       {/* Search Header */}
-      <div className="border-b border-[#EBEBEB] bg-white">
+      <div className="border-b border-[var(--border)] bg-[var(--card)]">
         <div className="flex items-center gap-4 px-4 py-3">
           <button
             onClick={() => router.push('/inbox')}
-            className="p-2 rounded-lg text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors"
+            className="p-2 rounded-lg text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--foreground)] transition-colors"
           >
             <ArrowLeft className="w-5 h-5" strokeWidth={1.5} />
           </button>
@@ -131,7 +131,7 @@ function SearchContent() {
           {query && (
             <button
               onClick={handleSaveSearch}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--foreground)] transition-colors"
             >
               <Bookmark className="w-4 h-4" strokeWidth={1.5} />
               <span className="text-[13px]">Lưu</span>
@@ -141,18 +141,18 @@ function SearchContent() {
 
         {/* Results summary */}
         {results && (
-          <div className="px-4 py-2 border-t border-[#EBEBEB] bg-[#FAFAFA]">
-            <p className="text-[13px] text-[#6B6B6B]">
-              Tìm thấy <span className="font-medium text-[#1A1A1A]">{results.total}</span> kết quả
-              {query && <span> cho &quot;<span className="font-medium text-[#1A1A1A]">{query}</span>&quot;</span>}
+          <div className="px-4 py-2 border-t border-[var(--border)] bg-[var(--secondary)]">
+            <p className="text-[13px] text-[var(--muted-foreground)]">
+              Tìm thấy <span className="font-medium text-[var(--foreground)]">{results.total}</span> kết quả
+              {query && <span> cho &quot;<span className="font-medium text-[var(--foreground)]">{query}</span>&quot;</span>}
             </p>
           </div>
         )}
 
         {/* Save message */}
         {saveMessage && (
-          <div className="px-4 py-2 bg-[#F0FDF4] border-t border-[#DCFCE7]">
-            <p className="text-[13px] text-[#16A34A]">{saveMessage}</p>
+          <div className="px-4 py-2 bg-green-50 dark:bg-green-500/10 border-t border-green-200 dark:border-green-500/30">
+            <p className="text-[13px] text-green-600 dark:text-green-400">{saveMessage}</p>
           </div>
         )}
       </div>
@@ -161,32 +161,32 @@ function SearchContent() {
       <div className="flex-1 flex overflow-hidden">
         {/* Email List */}
         {viewMode === 'list' || !selectedEmail ? (
-          <div className="flex-1 overflow-y-auto bg-white">
+          <div className="flex-1 overflow-y-auto bg-[var(--card)]">
             {loading ? (
               <div className="flex items-center justify-center h-32">
-                <Loader2 className="w-6 h-6 animate-spin text-[#9B9B9B]" strokeWidth={1.5} />
+                <Loader2 className="w-6 h-6 animate-spin text-[var(--muted)]" strokeWidth={1.5} />
               </div>
             ) : !results ? (
-              <div className="flex flex-col items-center justify-center h-64 text-[#9B9B9B]">
-                <Search className="w-12 h-12 mb-4 text-[#D4D4D4]" strokeWidth={1} />
-                <p className="text-[15px] font-medium text-[#6B6B6B]">Tìm kiếm email</p>
+              <div className="flex flex-col items-center justify-center h-64 text-[var(--muted)]">
+                <Search className="w-12 h-12 mb-4 text-[var(--muted)]" strokeWidth={1} />
+                <p className="text-[15px] font-medium text-[var(--muted-foreground)]">Tìm kiếm email</p>
                 <p className="text-[13px] mt-1">Sử dụng toán tử như from:, subject:, is:unread</p>
               </div>
             ) : results.emails.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 text-[#9B9B9B]">
-                <Search className="w-12 h-12 mb-4 text-[#D4D4D4]" strokeWidth={1} />
-                <p className="text-[15px] font-medium text-[#6B6B6B]">Không tìm thấy kết quả</p>
+              <div className="flex flex-col items-center justify-center h-64 text-[var(--muted)]">
+                <Search className="w-12 h-12 mb-4 text-[var(--muted)]" strokeWidth={1} />
+                <p className="text-[15px] font-medium text-[var(--muted-foreground)]">Không tìm thấy kết quả</p>
                 <p className="text-[13px] mt-1">Thử tìm với từ khóa khác</p>
               </div>
             ) : (
-              <div className="divide-y divide-[#EBEBEB]">
+              <div className="divide-y divide-[var(--border)]">
                 {results.emails.map((email) => (
                   <button
                     key={email.id}
                     onClick={() => handleSelectEmail(email.id)}
                     className={cn(
                       'w-full text-left px-4 py-3 transition-colors',
-                      selectedId === email.id ? 'bg-[#F5F5F5]' : 'hover:bg-[#FAFAFA]'
+                      selectedId === email.id ? 'bg-[var(--secondary)]' : 'hover:bg-[var(--hover)]'
                     )}
                   >
                     <div className="flex items-start gap-3">
@@ -196,14 +196,14 @@ function SearchContent() {
                           <span
                             className={cn(
                               'text-[14px] truncate',
-                              email.is_read ? 'font-medium text-[#4B4B4B]' : 'font-bold text-[#1A1A1A]'
+                              email.is_read ? 'font-medium text-[var(--muted-foreground)]' : 'font-bold text-[var(--foreground)]'
                             )}
                           >
                             {email._highlights?.from_name
                               ? renderHighlightedText(email._highlights.from_name)
                               : (email.from_name || email.from_address)}
                           </span>
-                          <span className="text-[12px] text-[#9B9B9B] flex-shrink-0">
+                          <span className="text-[12px] text-[var(--muted)] flex-shrink-0">
                             {formatDate(email.received_at)}
                           </span>
                         </div>
@@ -212,7 +212,7 @@ function SearchContent() {
                         <p
                           className={cn(
                             'text-[14px] truncate mt-0.5',
-                            email.is_read ? 'text-[#6B6B6B]' : 'font-semibold text-[#1A1A1A]'
+                            email.is_read ? 'text-[var(--muted-foreground)]' : 'font-semibold text-[var(--foreground)]'
                           )}
                         >
                           {email._highlights?.subject
@@ -221,7 +221,7 @@ function SearchContent() {
                         </p>
 
                         {/* Preview with highlights */}
-                        <p className="text-[13px] text-[#9B9B9B] truncate mt-0.5">
+                        <p className="text-[13px] text-[var(--muted)] truncate mt-0.5">
                           {email._highlights?.body_preview
                             ? renderHighlightedText(email._highlights.body_preview)
                             : email.body_text?.slice(0, 100)}
@@ -239,24 +239,24 @@ function SearchContent() {
         {viewMode === 'split' && selectedEmail && (
           <>
             {/* Narrow list */}
-            <div className="w-[320px] border-r border-[#EBEBEB] overflow-y-auto bg-white">
-              <div className="divide-y divide-[#F5F5F5]">
+            <div className="w-[320px] border-r border-[var(--border)] overflow-y-auto bg-[var(--card)]">
+              <div className="divide-y divide-[var(--border)]">
                 {results?.emails.map((email) => (
                   <button
                     key={email.id}
                     onClick={() => handleSelectEmail(email.id)}
                     className={cn(
                       'w-full text-left px-3 py-2.5 transition-colors',
-                      selectedId === email.id ? 'bg-[#F5F5F5]' : 'hover:bg-[#FAFAFA]'
+                      selectedId === email.id ? 'bg-[var(--secondary)]' : 'hover:bg-[var(--hover)]'
                     )}
                   >
                     <p className={cn(
                       'text-[13px] truncate',
-                      email.is_read ? 'text-[#6B6B6B]' : 'font-medium text-[#1A1A1A]'
+                      email.is_read ? 'text-[var(--muted-foreground)]' : 'font-medium text-[var(--foreground)]'
                     )}>
                       {email.from_name || email.from_address}
                     </p>
-                    <p className="text-[12px] text-[#9B9B9B] truncate mt-0.5">
+                    <p className="text-[12px] text-[var(--muted)] truncate mt-0.5">
                       {email.subject}
                     </p>
                   </button>
@@ -265,7 +265,7 @@ function SearchContent() {
             </div>
 
             {/* Detail */}
-            <div className="flex-1 overflow-y-auto bg-white">
+            <div className="flex-1 overflow-y-auto bg-[var(--card)]">
               <EmailDetailFull
                 email={selectedEmail}
                 onBack={handleBack}
@@ -283,7 +283,7 @@ export default function SearchPage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="w-6 h-6 animate-spin text-[#9B9B9B]" strokeWidth={1.5} />
+        <Loader2 className="w-6 h-6 animate-spin text-[var(--muted)]" strokeWidth={1.5} />
       </div>
     }>
       <SearchContent />

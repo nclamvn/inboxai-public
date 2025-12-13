@@ -127,13 +127,13 @@ export default function ComposePage() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-[var(--background)]">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-[#EBEBEB]">
-        <h1 className="text-[18px] font-semibold text-[#1A1A1A]">Soạn thư mới</h1>
+      <div className="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--card)]">
+        <h1 className="text-[18px] font-semibold text-[var(--foreground)]">Soạn thư mới</h1>
         <button
           onClick={handleDiscard}
-          className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] rounded-lg transition-colors"
+          className="p-2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)] rounded-lg transition-colors"
         >
           <X className="w-5 h-5" strokeWidth={1.5} />
         </button>
@@ -142,23 +142,23 @@ export default function ComposePage() {
       {/* Form */}
       <form onSubmit={handleSend} className="flex-1 flex flex-col">
         {error && (
-          <div className="mx-4 mt-4 p-3 bg-[#FEF2F2] border border-[#FEE2E2] rounded-lg text-[#DC2626] text-[14px]">
+          <div className="mx-4 mt-4 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg text-red-600 dark:text-red-400 text-[14px]">
             {error}
           </div>
         )}
 
-        <div className="p-4 space-y-3 border-b border-[#EBEBEB]">
+        <div className="p-4 space-y-3 border-b border-[var(--border)] bg-[var(--card)]">
           {/* From (Account Selector) */}
           <div className="flex items-center gap-3">
-            <label className="w-16 text-[14px] text-[#6B6B6B]">Từ</label>
+            <label className="w-16 text-[14px] text-[var(--muted-foreground)]">Từ</label>
             <div className="relative flex-1">
               {loadingAccounts ? (
-                <div className="flex items-center gap-2 px-3 py-2 border border-[#EBEBEB] rounded-lg text-[#6B6B6B]">
+                <div className="flex items-center gap-2 px-3 py-2 border border-[var(--border)] rounded-lg text-[var(--muted-foreground)]">
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span className="text-[14px]">Đang tải...</span>
                 </div>
               ) : accounts.length === 0 ? (
-                <div className="px-3 py-2 border border-[#FEE2E2] bg-[#FEF2F2] rounded-lg text-[#DC2626] text-[14px]">
+                <div className="px-3 py-2 border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 rounded-lg text-red-600 dark:text-red-400 text-[14px]">
                   Chưa có tài khoản email. <a href="/settings" className="underline">Thêm ngay</a>
                 </div>
               ) : (
@@ -166,15 +166,15 @@ export default function ComposePage() {
                   <button
                     type="button"
                     onClick={() => setShowAccountDropdown(!showAccountDropdown)}
-                    className="w-full flex items-center justify-between px-3 py-2 border border-[#EBEBEB] rounded-lg hover:border-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent transition-colors"
+                    className="w-full flex items-center justify-between px-3 py-2 border border-[var(--border)] rounded-lg hover:border-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-colors bg-[var(--background)]"
                   >
-                    <span className="text-[14px] text-[#1A1A1A]">
+                    <span className="text-[14px] text-[var(--foreground)]">
                       {selectedAccount?.email_address || 'Chọn tài khoản'}
                     </span>
-                    <ChevronDown className={`w-4 h-4 text-[#6B6B6B] transition-transform ${showAccountDropdown ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-4 h-4 text-[var(--muted-foreground)] transition-transform ${showAccountDropdown ? 'rotate-180' : ''}`} />
                   </button>
                   {showAccountDropdown && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#EBEBEB] rounded-lg shadow-lg z-50 py-1">
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--card)] border border-[var(--border)] rounded-lg shadow-lg z-50 py-1">
                       {accounts.map(account => (
                         <button
                           key={account.id}
@@ -183,8 +183,8 @@ export default function ComposePage() {
                             setSelectedAccountId(account.id)
                             setShowAccountDropdown(false)
                           }}
-                          className={`w-full px-3 py-2 text-left text-[14px] hover:bg-[#F5F5F5] transition-colors ${
-                            account.id === selectedAccountId ? 'bg-[#F5F5F5] text-[#1A1A1A]' : 'text-[#6B6B6B]'
+                          className={`w-full px-3 py-2 text-left text-[14px] hover:bg-[var(--secondary)] transition-colors ${
+                            account.id === selectedAccountId ? 'bg-[var(--secondary)] text-[var(--foreground)]' : 'text-[var(--muted-foreground)]'
                           }`}
                         >
                           {account.email_address}
@@ -199,20 +199,20 @@ export default function ComposePage() {
 
           {/* To */}
           <div className="flex items-center gap-3">
-            <label className="w-16 text-[14px] text-[#6B6B6B]">Đến</label>
+            <label className="w-16 text-[14px] text-[var(--muted-foreground)]">Đến</label>
             <input
               type="text"
               value={to}
               onChange={(e) => setTo(e.target.value)}
               placeholder="email@example.com"
               required
-              className="flex-1 px-3 py-2 border border-[#EBEBEB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent"
+              className="flex-1 px-3 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
             />
             {!showCc && (
               <button
                 type="button"
                 onClick={() => setShowCc(true)}
-                className="text-[14px] text-[#1A1A1A] hover:underline"
+                className="text-[14px] text-[var(--foreground)] hover:underline"
               >
                 Cc
               </button>
@@ -222,35 +222,35 @@ export default function ComposePage() {
           {/* Cc */}
           {showCc && (
             <div className="flex items-center gap-3">
-              <label className="w-16 text-[14px] text-[#6B6B6B]">Cc</label>
+              <label className="w-16 text-[14px] text-[var(--muted-foreground)]">Cc</label>
               <input
                 type="email"
                 value={cc}
                 onChange={(e) => setCc(e.target.value)}
                 placeholder="email@example.com"
-                className="flex-1 px-3 py-2 border border-[#EBEBEB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent"
+                className="flex-1 px-3 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
               />
             </div>
           )}
 
           {/* Subject */}
           <div className="flex items-center gap-3">
-            <label className="w-16 text-[14px] text-[#6B6B6B]">Tiêu đề</label>
+            <label className="w-16 text-[14px] text-[var(--muted-foreground)]">Tiêu đề</label>
             <input
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Tiêu đề email"
-              className="flex-1 px-3 py-2 border border-[#EBEBEB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent"
+              className="flex-1 px-3 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
             />
           </div>
         </div>
 
         {/* Body */}
-        <div className="flex-1 p-4">
+        <div className="flex-1 p-4 bg-[var(--card)]">
           {isFromAI && (
-            <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-[#FAFAFA] border border-[#EBEBEB] rounded-lg text-[14px] text-[#6B6B6B]">
-              <Sparkles className="w-4 h-4 text-[#1A1A1A]" strokeWidth={1.5} />
+            <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-[var(--secondary)] border border-[var(--border)] rounded-lg text-[14px] text-[var(--muted-foreground)]">
+              <Sparkles className="w-4 h-4 text-[var(--foreground)]" strokeWidth={1.5} />
               <span>Nội dung được tạo bởi AI. Vui lòng xem lại trước khi gửi.</span>
             </div>
           )}
@@ -258,16 +258,16 @@ export default function ComposePage() {
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder="Nội dung email..."
-            className="w-full h-full min-h-[300px] px-3 py-2 border border-[#EBEBEB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent resize-none"
+            className="w-full h-full min-h-[300px] px-3 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent resize-none bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
           />
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-between p-4 border-t border-[#EBEBEB] bg-[#FAFAFA]">
+        <div className="flex items-center justify-between p-4 border-t border-[var(--border)] bg-[var(--secondary)]">
           <div className="flex items-center gap-2">
             <button
               type="button"
-              className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] rounded-lg transition-colors"
+              className="p-2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] rounded-lg transition-colors"
               title="Đính kèm file"
             >
               <Paperclip className="w-5 h-5" strokeWidth={1.5} />
@@ -277,14 +277,14 @@ export default function ComposePage() {
             <button
               type="button"
               onClick={handleDiscard}
-              className="px-4 py-2 text-[#6B6B6B] hover:bg-[#F5F5F5] rounded-lg transition-colors"
+              className="px-4 py-2 text-[var(--muted-foreground)] hover:bg-[var(--hover)] rounded-lg transition-colors"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={loading || !to}
-              className="flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] text-white rounded-lg font-medium hover:bg-[#2D2D2D] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg font-medium hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" strokeWidth={1.5} />

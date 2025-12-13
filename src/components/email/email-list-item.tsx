@@ -21,11 +21,11 @@ interface EmailListItemProps {
 }
 
 const priorityColors: Record<number, string> = {
-  1: 'bg-[#DC2626]',
-  2: 'bg-[#D97706]',
-  3: 'bg-[#1A1A1A]',
-  4: 'bg-[#9B9B9B]',
-  5: 'bg-[#D4D4D4]',
+  1: 'bg-red-600',
+  2: 'bg-amber-600',
+  3: 'bg-[var(--foreground)]',
+  4: 'bg-[var(--muted)]',
+  5: 'bg-[var(--border)]',
 }
 
 const categoryLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'success' | 'warning' | 'urgent' | 'info' }> = {
@@ -58,9 +58,9 @@ export function EmailListItem({
     <div
       onClick={onClick}
       className={cn(
-        'flex items-start gap-3 p-4 border-b border-[#EBEBEB] cursor-pointer transition-colors',
-        isRead ? 'bg-white' : 'bg-[#FAFAFA]',
-        'hover:bg-[#F5F5F5]'
+        'flex items-start gap-3 p-4 border-b border-[var(--border)] cursor-pointer transition-colors',
+        isRead ? 'bg-[var(--card)]' : 'bg-[var(--secondary)]',
+        'hover:bg-[var(--hover)]'
       )}
     >
       {/* Priority Indicator */}
@@ -77,7 +77,7 @@ export function EmailListItem({
         <Star
           className={cn(
             'w-5 h-5 transition-colors',
-            isStarred ? 'fill-[#D97706] text-[#D97706]' : 'text-[#D4D4D4] hover:text-[#D97706]'
+            isStarred ? 'fill-amber-500 text-amber-500' : 'text-[var(--muted)] hover:text-amber-500'
           )}
           strokeWidth={1.5}
         />
@@ -86,7 +86,7 @@ export function EmailListItem({
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <span className={cn('text-[14px] truncate', isRead ? 'text-[#6B6B6B]' : 'font-semibold text-[#1A1A1A]')}>
+          <span className={cn('text-[14px] truncate', isRead ? 'text-[var(--muted-foreground)]' : 'font-semibold text-[var(--foreground)]')}>
             {fromName || fromAddress}
           </span>
           {categoryInfo && (
@@ -94,16 +94,16 @@ export function EmailListItem({
               {categoryInfo.label}
             </Badge>
           )}
-          {hasAttachments && <Paperclip className="w-3.5 h-3.5 text-[#9B9B9B] flex-shrink-0" strokeWidth={1.5} />}
+          {hasAttachments && <Paperclip className="w-3.5 h-3.5 text-[var(--muted)] flex-shrink-0" strokeWidth={1.5} />}
         </div>
-        <p className={cn('text-[14px] truncate mb-1', isRead ? 'text-[#6B6B6B]' : 'font-medium text-[#1A1A1A]')}>
+        <p className={cn('text-[14px] truncate mb-1', isRead ? 'text-[var(--muted-foreground)]' : 'font-medium text-[var(--foreground)]')}>
           {subject || '(Không có tiêu đề)'}
         </p>
-        <p className="text-[13px] text-[#9B9B9B] truncate">{truncate(snippet, 80)}</p>
+        <p className="text-[13px] text-[var(--muted)] truncate">{truncate(snippet, 80)}</p>
       </div>
 
       {/* Time */}
-      <span className="text-[12px] text-[#9B9B9B] flex-shrink-0 mt-0.5">
+      <span className="text-[12px] text-[var(--muted)] flex-shrink-0 mt-0.5">
         {formatDate(receivedAt)}
       </span>
     </div>
