@@ -19,26 +19,26 @@ export function MailboxSection({ mailboxAddress }: MailboxSectionProps) {
   }
 
   return (
-    <section className="bg-white rounded-xl border border-[#EBEBEB] p-6 mb-6">
+    <section className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 mb-6">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-[#F0FDF4] rounded-lg flex items-center justify-center">
-          <Mail className="w-5 h-5 text-[#16A34A]" strokeWidth={1.5} />
+        <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+          <Mail className="w-5 h-5 text-green-600 dark:text-green-400" strokeWidth={1.5} />
         </div>
         <div>
-          <h2 className="text-[18px] font-semibold text-[#1A1A1A]">Địa chỉ InboxAI</h2>
-          <p className="text-[14px] text-[#6B6B6B]">Địa chỉ email riêng của bạn trên InboxAI</p>
+          <h2 className="text-[18px] font-semibold text-[var(--foreground)]">Địa chỉ InboxAI</h2>
+          <p className="text-[14px] text-[var(--muted-foreground)]">Địa chỉ email riêng của bạn trên InboxAI</p>
         </div>
       </div>
 
-      <div className="bg-[#FAFAFA] rounded-lg p-4">
-        <p className="text-[14px] text-[#6B6B6B] mb-2">Địa chỉ email InboxAI của bạn</p>
+      <div className="bg-[var(--secondary)] rounded-lg p-4">
+        <p className="text-[14px] text-[var(--muted-foreground)] mb-2">Địa chỉ email InboxAI của bạn</p>
         <div className="flex items-center gap-2">
-          <code className="flex-1 px-3 py-2 bg-white border border-[#EBEBEB] rounded-lg font-mono text-[#1A1A1A]">
+          <code className="flex-1 px-3 py-2 bg-[var(--card)] border border-[var(--border)] rounded-lg font-mono text-[var(--foreground)]">
             {mailboxAddress || 'Đang tạo...'}
           </code>
           <button
             onClick={handleCopy}
-            className="px-3 py-2 text-[14px] text-[#1A1A1A] hover:bg-[#F5F5F5] rounded-lg transition-colors flex items-center gap-1"
+            className="px-3 py-2 text-[14px] text-[var(--foreground)] hover:bg-[var(--hover)] rounded-lg transition-colors flex items-center gap-1"
           >
             {copied ? (
               <>
@@ -53,7 +53,7 @@ export function MailboxSection({ mailboxAddress }: MailboxSectionProps) {
             )}
           </button>
         </div>
-        <p className="text-[12px] text-[#9B9B9B] mt-2">
+        <p className="text-[12px] text-[var(--muted)] mt-2">
           Forward email từ Gmail/Outlook đến địa chỉ này để nhận vào InboxAI
         </p>
       </div>

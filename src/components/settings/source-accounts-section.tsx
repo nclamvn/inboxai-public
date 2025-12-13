@@ -154,11 +154,11 @@ export function SourceAccountsSection() {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-[#EBEBEB]">
-      <div className="p-4 border-b border-[#EBEBEB] flex items-center justify-between">
+    <div className="bg-[var(--card)] rounded-xl border border-[var(--border)]">
+      <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
         <div>
-          <h3 className="text-[15px] font-semibold text-[#1A1A1A]">Tài khoản email</h3>
-          <p className="text-[13px] text-[#6B6B6B] mt-0.5">
+          <h3 className="text-[15px] font-semibold text-[var(--foreground)]">Tài khoản email</h3>
+          <p className="text-[13px] text-[var(--muted-foreground)] mt-0.5">
             Kết nối các tài khoản email để đồng bộ vào InboxAI
           </p>
         </div>
@@ -179,53 +179,53 @@ export function SourceAccountsSection() {
         </div>
       </div>
 
-      <div className="divide-y divide-[#EBEBEB]">
+      <div className="divide-y divide-[var(--border)]">
         {loading ? (
           <div className="p-8 text-center">
-            <Loader2 className="w-6 h-6 mx-auto text-[#9B9B9B] animate-spin" />
-            <p className="text-[14px] text-[#6B6B6B] mt-2">Đang tải...</p>
+            <Loader2 className="w-6 h-6 mx-auto text-[var(--muted)] animate-spin" />
+            <p className="text-[14px] text-[var(--muted-foreground)] mt-2">Đang tải...</p>
           </div>
         ) : accounts.length === 0 ? (
           <div className="p-8 text-center">
-            <Mail className="w-10 h-10 mx-auto text-[#9B9B9B] mb-3" strokeWidth={1.5} />
-            <p className="text-[14px] text-[#6B6B6B]">Chưa có tài khoản email nào</p>
-            <p className="text-[13px] text-[#9B9B9B] mt-1">
+            <Mail className="w-10 h-10 mx-auto text-[var(--muted)] mb-3" strokeWidth={1.5} />
+            <p className="text-[14px] text-[var(--muted-foreground)]">Chưa có tài khoản email nào</p>
+            <p className="text-[13px] text-[var(--muted)] mt-1">
               Thêm tài khoản để bắt đầu đồng bộ email
             </p>
           </div>
         ) : (
           accounts.map(account => (
             <div key={account.id} className="p-4 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg bg-[#F5F5F5] flex items-center justify-center text-xl">
+              <div className="w-10 h-10 rounded-lg bg-[var(--secondary)] flex items-center justify-center text-xl">
                 {getProviderIcon(account.provider)}
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="text-[14px] font-medium text-[#1A1A1A] truncate">
+                  <p className="text-[14px] font-medium text-[var(--foreground)] truncate">
                     {account.email_address}
                   </p>
                   {account.is_active ? (
-                    <span className="flex items-center gap-1 text-[11px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
+                    <span className="flex items-center gap-1 text-[11px] text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-500/20 px-1.5 py-0.5 rounded">
                       <CheckCircle className="w-3 h-3" />
                       Active
                     </span>
                   ) : (
-                    <span className="text-[11px] text-[#9B9B9B] bg-[#F5F5F5] px-1.5 py-0.5 rounded">
+                    <span className="text-[11px] text-[var(--muted)] bg-[var(--secondary)] px-1.5 py-0.5 rounded">
                       Inactive
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-3 mt-1">
-                  <p className="text-[12px] text-[#6B6B6B]">
+                  <p className="text-[12px] text-[var(--muted-foreground)]">
                     Đồng bộ: {formatDate(account.last_sync_at)}
                   </p>
-                  <p className="text-[12px] text-[#9B9B9B]">
+                  <p className="text-[12px] text-[var(--muted)]">
                     {account.total_emails_synced} email
                   </p>
                 </div>
                 {account.sync_error && (
-                  <p className="flex items-center gap-1 text-[12px] text-red-500 mt-1">
+                  <p className="flex items-center gap-1 text-[12px] text-red-500 dark:text-red-400 mt-1">
                     <AlertCircle className="w-3 h-3" />
                     {account.sync_error}
                   </p>
@@ -239,8 +239,8 @@ export function SourceAccountsSection() {
                     onClick={() => setSyncDropdownId(syncDropdownId === account.id ? null : account.id)}
                     disabled={syncingId === account.id}
                     className={cn(
-                      "flex items-center gap-1 px-2 py-1.5 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] rounded-lg transition-colors disabled:opacity-50",
-                      syncDropdownId === account.id && "bg-[#F5F5F5] text-[#1A1A1A]"
+                      "flex items-center gap-1 px-2 py-1.5 text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] rounded-lg transition-colors disabled:opacity-50",
+                      syncDropdownId === account.id && "bg-[var(--hover)] text-[var(--foreground)]"
                     )}
                     title="Đồng bộ email"
                   >
@@ -250,26 +250,26 @@ export function SourceAccountsSection() {
 
                   {/* Dropdown menu */}
                   {syncDropdownId === account.id && (
-                    <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-[#EBEBEB] rounded-lg shadow-lg py-1 z-50">
+                    <div className="absolute right-0 top-full mt-1 w-44 bg-[var(--card)] border border-[var(--border)] rounded-lg shadow-lg py-1 z-50">
                       <button
                         onClick={() => {
                           setSyncDropdownId(null)
                           handleSync(account.id, false)
                         }}
-                        className="w-full px-3 py-2 text-left text-[13px] text-[#1A1A1A] hover:bg-[#F5F5F5] transition-colors"
+                        className="w-full px-3 py-2 text-left text-[13px] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors"
                       >
                         <div className="font-medium">Sync mới</div>
-                        <div className="text-[11px] text-[#6B6B6B]">Chỉ email mới (nhanh)</div>
+                        <div className="text-[11px] text-[var(--muted-foreground)]">Chỉ email mới (nhanh)</div>
                       </button>
                       <button
                         onClick={() => {
                           setSyncDropdownId(null)
                           handleSync(account.id, true)
                         }}
-                        className="w-full px-3 py-2 text-left text-[13px] text-[#1A1A1A] hover:bg-[#F5F5F5] transition-colors"
+                        className="w-full px-3 py-2 text-left text-[13px] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors"
                       >
                         <div className="font-medium">Sync tất cả</div>
-                        <div className="text-[11px] text-[#6B6B6B]">Tối đa 500 email gần nhất</div>
+                        <div className="text-[11px] text-[var(--muted-foreground)]">Tối đa 500 email gần nhất</div>
                       </button>
                     </div>
                   )}
@@ -277,7 +277,7 @@ export function SourceAccountsSection() {
 
                 <button
                   onClick={() => setDeleteConfirm({ show: true, account })}
-                  className="p-2 text-[#6B6B6B] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2 text-[var(--muted-foreground)] hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
                   title="Xóa tài khoản"
                 >
                   <Trash2 className="w-4 h-4" strokeWidth={1.5} />

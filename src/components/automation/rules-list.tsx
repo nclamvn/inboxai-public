@@ -135,7 +135,7 @@ export function RulesList() {
 
   if (loading) {
     return (
-      <div className="p-8 text-center text-[#6B6B6B]">
+      <div className="p-8 text-center text-[var(--muted-foreground)]">
         <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" strokeWidth={1.5} />
         <p className="text-[14px]">Đang tải...</p>
       </div>
@@ -146,7 +146,7 @@ export function RulesList() {
     <div className="p-5">
       {/* Toast */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#1A1A1A] text-white px-4 py-3 rounded-xl shadow-executive-lg text-[14px] animate-in slide-in-from-bottom-2">
+        <div className="fixed bottom-6 right-6 z-50 bg-[var(--primary)] text-[var(--primary-foreground)] px-4 py-3 rounded-xl shadow-lg text-[14px] animate-in slide-in-from-bottom-2">
           {toastMessage}
         </div>
       )}
@@ -154,10 +154,10 @@ export function RulesList() {
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h2 className="text-[16px] font-semibold text-[#1A1A1A]">
+          <h2 className="text-[16px] font-semibold text-[var(--foreground)]">
             Automation Rules
           </h2>
-          <p className="text-[13px] text-[#6B6B6B] mt-0.5">
+          <p className="text-[13px] text-[var(--muted-foreground)] mt-0.5">
             Tự động hóa việc xử lý email
           </p>
         </div>
@@ -182,19 +182,19 @@ export function RulesList() {
               className={cn(
                 'border rounded-xl p-4 transition-colors',
                 rule.is_active
-                  ? 'border-[#EBEBEB] bg-white'
-                  : 'border-[#F5F5F5] bg-[#FAFAFA]'
+                  ? 'border-[var(--border)] bg-[var(--card)]'
+                  : 'border-[var(--border)] bg-[var(--secondary)] opacity-75'
               )}
             >
               <div className="flex items-start gap-3">
                 {/* Icon */}
                 <div className={cn(
                   'w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0',
-                  rule.is_active ? 'bg-[#1A1A1A]' : 'bg-[#EBEBEB]'
+                  rule.is_active ? 'bg-[var(--primary)]' : 'bg-[var(--secondary)]'
                 )}>
                   <ActionIcon className={cn(
                     'w-4 h-4',
-                    rule.is_active ? 'text-white' : 'text-[#6B6B6B]'
+                    rule.is_active ? 'text-[var(--primary-foreground)]' : 'text-[var(--muted-foreground)]'
                   )} strokeWidth={1.5} />
                 </div>
 
@@ -203,7 +203,7 @@ export function RulesList() {
                   <div className="flex items-center gap-2">
                     <h3 className={cn(
                       'text-[14px] font-medium',
-                      rule.is_active ? 'text-[#1A1A1A]' : 'text-[#6B6B6B]'
+                      rule.is_active ? 'text-[var(--foreground)]' : 'text-[var(--muted-foreground)]'
                     )}>
                       {rule.name}
                     </h3>
@@ -213,12 +213,12 @@ export function RulesList() {
                       </Badge>
                     )}
                   </div>
-                  <p className="text-[13px] text-[#6B6B6B] mt-0.5">
+                  <p className="text-[13px] text-[var(--muted-foreground)] mt-0.5">
                     {rule.description}
                   </p>
 
                   {/* Stats */}
-                  <div className="flex items-center gap-3 mt-2 text-[12px] text-[#9B9B9B]">
+                  <div className="flex items-center gap-3 mt-2 text-[12px] text-[var(--muted)]">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" strokeWidth={1.5} />
                       {rule.run_frequency === 'daily' ? 'Hàng ngày' :
@@ -240,13 +240,13 @@ export function RulesList() {
                   <button
                     onClick={() => handleRunRule(rule.id)}
                     disabled={runningRule === rule.id || !rule.is_active}
-                    className="p-2 rounded-lg hover:bg-[#F5F5F5] transition-colors disabled:opacity-50"
+                    className="p-2 rounded-lg hover:bg-[var(--hover)] transition-colors disabled:opacity-50"
                     title="Chạy ngay"
                   >
                     {runningRule === rule.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-[#6B6B6B]" strokeWidth={1.5} />
+                      <Loader2 className="w-4 h-4 animate-spin text-[var(--muted-foreground)]" strokeWidth={1.5} />
                     ) : (
-                      <Play className="w-4 h-4 text-[#6B6B6B]" strokeWidth={1.5} />
+                      <Play className="w-4 h-4 text-[var(--muted-foreground)]" strokeWidth={1.5} />
                     )}
                   </button>
 
@@ -255,8 +255,8 @@ export function RulesList() {
                     className={cn(
                       'p-2 rounded-lg transition-colors',
                       rule.is_active
-                        ? 'hover:bg-[#FFFBEB] text-[#D97706]'
-                        : 'hover:bg-[#F0FDF4] text-[#16A34A]'
+                        ? 'hover:bg-amber-50 dark:hover:bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                        : 'hover:bg-green-50 dark:hover:bg-green-500/10 text-green-600 dark:text-green-400'
                     )}
                     title={rule.is_active ? 'Tắt' : 'Bật'}
                   >
@@ -270,7 +270,7 @@ export function RulesList() {
                   {!rule.is_system && (
                     <button
                       onClick={() => deleteRule(rule.id)}
-                      className="p-2 rounded-lg hover:bg-[#FEF2F2] text-[#DC2626] transition-colors"
+                      className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 dark:text-red-400 transition-colors"
                       title="Xóa"
                     >
                       <Trash2 className="w-4 h-4" strokeWidth={1.5} />
