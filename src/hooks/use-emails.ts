@@ -195,6 +195,18 @@ export function useEmails({ folder = 'inbox', pageSize = 200 }: UseEmailsOptions
     }
   }
 
+  const emptyTrash = async () => {
+    const { error } = await supabase
+      .from('emails')
+      .delete()
+      .eq('is_deleted', true)
+
+    if (!error) {
+      setEmails([])
+    }
+    return !error
+  }
+
   return {
     emails,
     loading,
@@ -209,5 +221,6 @@ export function useEmails({ folder = 'inbox', pageSize = 200 }: UseEmailsOptions
     deleteEmail,
     restoreEmail,
     permanentDelete,
+    emptyTrash,
   }
 }

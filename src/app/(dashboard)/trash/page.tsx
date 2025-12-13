@@ -1,14 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { Trash2, RotateCcw, X } from 'lucide-react'
+import { Trash2, RotateCcw, X, AlertTriangle } from 'lucide-react'
 import { useEmails } from '@/hooks/use-emails'
 import { EmailList } from '@/components/email/email-list'
 import { EmailDetail } from '@/components/email/email-detail'
 import type { Email } from '@/types'
 
 export default function TrashPage() {
-  const { emails, loading, toggleStar, restoreEmail, permanentDelete } = useEmails({ folder: 'trash' })
+  const { emails, loading, toggleStar, restoreEmail, permanentDelete, emptyTrash } = useEmails({ folder: 'trash' })
+  const [isEmptying, setIsEmptying] = useState(false)
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null)
 
   const handleRestore = () => {
@@ -21,6 +22,15 @@ export default function TrashPage() {
   const handlePermanentDelete = () => {
     if (selectedEmail && confirm('Xóa vĩnh viễn email này? Hành động này không thể hoàn tác.')) {
       permanentDelete(selectedEmail.id)
+      setSelectedEmail(null)
+    }
+  }
+
+  const handleEmptyTrash = async () => {
+    if (confirm(`Xóa vĩnh viễn ${emails.length} email? Hành động này không thể hoàn tác.`)) {
+      setIsEmptying(true)
+      await emptyTrash()
+      setIsEmptying(false)
       setSelectedEmail(null)
     }
   }
@@ -54,8 +64,29 @@ export default function TrashPage() {
       {/* Email List */}
       <div className={`${selectedEmail ? 'hidden lg:block lg:w-2/5 xl:w-1/3' : 'w-full'} border-r border-[var(--border)] overflow-auto bg-[var(--card)]`}>
         <div className="p-4 border-b border-[var(--border)] sticky top-0 bg-[var(--card)] z-10">
-          <h1 className="text-[18px] font-semibold text-[var(--foreground)]">Thùng rác</h1>
-          <p className="text-[14px] text-[var(--muted-foreground)]">{emails.length} email • Tự động xóa sau 30 ngày</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-[18px] font-semibold text-[var(--foreground)]">Thùng rác</h1>
+              <p className="text-[14px] text-[var(--muted-foreground)]">{emails.length} email • Tự động xóa sau 30 ngày</p>
+            </div>
+            <button
+              onClick={handleEmptyTrash}
+              disabled={isEmptying || emails.length === 0}
+              className="flex items-center gap-2 px-3 py-2 bg-red-600 text-white text-[14px] font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isEmptying ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Đang xóa...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4" strokeWidth={1.5} />
+                  Xóa tất cả
+                </>
+              )}
+            </button>
+          </div>
         </div>
         <EmailList
           emails={emails}
