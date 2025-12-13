@@ -8,6 +8,7 @@ import { useBehaviorTracker } from '@/hooks/use-behavior-tracker'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
 import { AISummary } from '@/components/email/ai-summary'
 import { SmartReply } from '@/components/email/smart-reply'
+import { ActionItemsCard } from '@/components/email/action-items-card'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import type { Email } from '@/types'
 
@@ -273,6 +274,14 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
           <SmartReply
             emailId={email.id}
             onReply={handleSmartReply}
+          />
+        </div>
+
+        {/* Action Items */}
+        <div className="px-4">
+          <ActionItemsCard
+            emailId={email.id}
+            onViewAll={() => router.push('/actions')}
           />
         </div>
 

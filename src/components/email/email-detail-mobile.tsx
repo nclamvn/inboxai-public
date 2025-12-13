@@ -11,6 +11,7 @@ import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import { AttachmentList } from './attachment-list'
 import { AISummary } from './ai-summary'
 import { SmartReply } from './smart-reply'
+import { ActionItemsCard } from './action-items-card'
 import type { Email } from '@/types'
 
 interface Attachment {
@@ -196,6 +197,14 @@ export function EmailDetailMobile({
               })
               window.location.href = `/compose?${params.toString()}`
             }}
+          />
+        </div>
+
+        {/* Action Items */}
+        <div className="px-4">
+          <ActionItemsCard
+            emailId={email.id}
+            onViewAll={() => window.location.href = '/actions'}
           />
         </div>
 
