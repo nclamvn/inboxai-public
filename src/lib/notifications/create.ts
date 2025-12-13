@@ -1,10 +1,16 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-// Use service role for server-side notification creation
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+let supabaseInstance: SupabaseClient | null = null
+
+function getSupabase(): SupabaseClient {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return supabaseInstance
+}
 
 type NotificationType = 'new_email' | 'sync_complete' | 'ai_classified' | 'important'
 
@@ -16,7 +22,7 @@ export async function createNotification(
   link?: string
 ) {
   try {
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabase()
       .from('notifications')
       .insert({
         user_id: userId,

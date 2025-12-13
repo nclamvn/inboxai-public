@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { checkRateLimit, getClientIP } from '@/lib/rate-limit'
 
-// Use service role for server-side access request creation
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+let supabaseInstance: SupabaseClient | null = null
+
+function getSupabase(): SupabaseClient {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return supabaseInstance
+}
 
 // Rate limit: 3 requests per IP per minute
 const RATE_LIMIT_CONFIG = {
@@ -52,7 +58,7 @@ export async function POST(request: NextRequest) {
     const normalizedEmail = email.toLowerCase().trim()
 
     // Check if already in whitelist
-    const { data: existing } = await supabaseAdmin
+    const { data: existing } = await getSupabase()
       .from('whitelist')
       .select('id')
       .eq('email', normalizedEmail)
@@ -67,7 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if already requested
-    const { data: existingRequest } = await supabaseAdmin
+    const { data: existingRequest } = await getSupabase()
       .from('access_requests')
       .select('id, status')
       .eq('email', normalizedEmail)
@@ -89,7 +95,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new access request
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabase()
       .from('access_requests')
       .insert({
         email: normalizedEmail,
