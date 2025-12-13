@@ -11,13 +11,32 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, icon, children, disabled, ...props }, ref) => {
-    const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]'
+    const baseStyles = cn(
+      'inline-flex items-center justify-center font-medium transition-all duration-150',
+      'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)]',
+      'disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]'
+    )
 
     const variants = {
-      primary: 'bg-[#1A1A1A] text-white hover:bg-[#333333]',
-      secondary: 'bg-[#F5F5F5] text-[#1A1A1A] hover:bg-[#EBEBEB] border border-[#EBEBEB]',
-      ghost: 'bg-transparent text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A]',
-      danger: 'bg-[#FEF2F2] text-[#DC2626] hover:bg-[#FEE2E2] border border-[#FECACA]',
+      primary: cn(
+        'bg-[var(--primary)] text-[var(--primary-foreground)]',
+        'hover:bg-[var(--primary-hover)]',
+        'shadow-sm hover:shadow-md'
+      ),
+      secondary: cn(
+        'bg-[var(--secondary)] text-[var(--secondary-foreground)]',
+        'border border-[var(--border)]',
+        'hover:bg-[var(--secondary-hover)] hover:border-[var(--border-strong)]'
+      ),
+      ghost: cn(
+        'bg-transparent text-[var(--foreground-muted)]',
+        'hover:bg-[var(--hover)] hover:text-[var(--foreground)]'
+      ),
+      danger: cn(
+        'bg-[var(--error-bg)] text-[var(--error)]',
+        'border border-red-200 dark:border-red-800',
+        'hover:bg-red-100 dark:hover:bg-red-900/30'
+      ),
     }
 
     const sizes = {

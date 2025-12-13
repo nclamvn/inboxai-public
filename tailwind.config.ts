@@ -10,30 +10,45 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Executive palette
+        // CSS Variable colors
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
+        'foreground-secondary': 'var(--foreground-secondary)',
+        'foreground-muted': 'var(--foreground-muted)',
+        'foreground-subtle': 'var(--foreground-subtle)',
+        border: 'var(--border)',
+        'border-strong': 'var(--border-strong)',
+        'border-subtle': 'var(--border-subtle)',
+        card: 'var(--card)',
+        'card-foreground': 'var(--card-foreground)',
+        input: 'var(--input)',
+        muted: 'var(--muted)',
+        'muted-foreground': 'var(--muted-foreground)',
+        // Executive palette (legacy)
         executive: {
           bg: {
             DEFAULT: '#FFFFFF',
-            secondary: '#FAFAFA',
-            tertiary: '#F5F5F5',
-            inverse: '#1A1A1A',
+            secondary: '#FAFBFC',
+            tertiary: '#F3F4F6',
+            inverse: '#111827',
           },
           text: {
-            DEFAULT: '#1A1A1A',
-            secondary: '#6B6B6B',
-            tertiary: '#9B9B9B',
+            DEFAULT: '#111827',
+            secondary: '#374151',
+            tertiary: '#6B7280',
             inverse: '#FFFFFF',
           },
           border: {
-            DEFAULT: '#EBEBEB',
-            hover: '#D4D4D4',
-            focus: '#1A1A1A',
-            subtle: '#F5F5F5',
+            DEFAULT: '#E5E7EB',
+            hover: '#D1D5DB',
+            focus: '#111827',
+            subtle: '#F3F4F6',
           },
         },
-        // Legacy colors (keep for backward compatibility)
+        // Primary with CSS var
         primary: {
-          DEFAULT: '#334155',
+          DEFAULT: 'var(--primary)',
+          foreground: 'var(--primary-foreground)',
           50: '#F8FAFC',
           100: '#F1F5F9',
           200: '#E2E8F0',
@@ -45,8 +60,10 @@ const config: Config = {
           800: '#1E293B',
           900: '#0F172A',
         },
+        // Secondary with CSS var
         secondary: {
-          DEFAULT: '#6366F1',
+          DEFAULT: 'var(--secondary)',
+          foreground: 'var(--secondary-foreground)',
           50: '#EEF2FF',
           100: '#E0E7FF',
           200: '#C7D2FE',
@@ -58,8 +75,10 @@ const config: Config = {
           800: '#3730A3',
           900: '#312E81',
         },
+        // Accent with CSS var
         accent: {
-          DEFAULT: '#10B981',
+          DEFAULT: 'var(--accent)',
+          foreground: 'var(--accent-foreground)',
           50: '#ECFDF5',
           100: '#D1FAE5',
           200: '#A7F3D0',
@@ -78,17 +97,43 @@ const config: Config = {
           low: '#64748B',
           minimal: '#CBD5E1',
         },
+        // Category colors
+        category: {
+          work: 'var(--category-work)',
+          'work-bg': 'var(--category-work-bg)',
+          personal: 'var(--category-personal)',
+          'personal-bg': 'var(--category-personal-bg)',
+          transaction: 'var(--category-transaction)',
+          'transaction-bg': 'var(--category-transaction-bg)',
+          newsletter: 'var(--category-newsletter)',
+          'newsletter-bg': 'var(--category-newsletter-bg)',
+          promotion: 'var(--category-promotion)',
+          'promotion-bg': 'var(--category-promotion-bg)',
+          social: 'var(--category-social)',
+          'social-bg': 'var(--category-social-bg)',
+          spam: 'var(--category-spam)',
+          'spam-bg': 'var(--category-spam-bg)',
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['var(--font-inter)', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
         mono: ['JetBrains Mono', 'Menlo', 'monospace'],
       },
       fontSize: {
+        // Refined type scale
+        'xs': ['12px', { lineHeight: '16px', letterSpacing: '0.01em' }],
+        'sm': ['13px', { lineHeight: '18px', letterSpacing: '0' }],
+        'base': ['14px', { lineHeight: '22px', letterSpacing: '-0.01em' }],
+        'lg': ['16px', { lineHeight: '24px', letterSpacing: '-0.01em' }],
+        'xl': ['18px', { lineHeight: '26px', letterSpacing: '-0.02em' }],
+        '2xl': ['22px', { lineHeight: '28px', letterSpacing: '-0.02em' }],
+        '3xl': ['28px', { lineHeight: '34px', letterSpacing: '-0.02em' }],
+        // Legacy sizes
         'display': ['48px', { lineHeight: '56px', letterSpacing: '-0.02em' }],
-        'h1': ['32px', { lineHeight: '40px', letterSpacing: '-0.01em' }],
-        'h2': ['24px', { lineHeight: '32px', letterSpacing: '-0.01em' }],
+        'h1': ['32px', { lineHeight: '40px', letterSpacing: '-0.02em' }],
+        'h2': ['24px', { lineHeight: '32px', letterSpacing: '-0.02em' }],
         'h3': ['18px', { lineHeight: '26px', letterSpacing: '-0.01em' }],
-        'h4': ['16px', { lineHeight: '24px' }],
+        'h4': ['16px', { lineHeight: '24px', letterSpacing: '-0.01em' }],
         'body': ['15px', { lineHeight: '24px' }],
         'body-sm': ['14px', { lineHeight: '22px' }],
         'caption': ['13px', { lineHeight: '20px' }],
@@ -107,8 +152,13 @@ const config: Config = {
         'lg': '8px',
         'xl': '12px',
         '2xl': '16px',
+        '3xl': '20px',
       },
       boxShadow: {
+        'card': 'var(--card-shadow)',
+        'card-hover': 'var(--card-shadow-hover)',
+        'premium': '0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06)',
+        'premium-lg': '0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05)',
         'soft': '0 2px 8px -2px rgba(0, 0, 0, 0.08)',
         'medium': '0 4px 12px -4px rgba(0, 0, 0, 0.12)',
         'strong': '0 8px 24px -8px rgba(0, 0, 0, 0.16)',
@@ -116,7 +166,7 @@ const config: Config = {
         'executive-md': '0 2px 8px rgba(0, 0, 0, 0.06)',
         'executive-lg': '0 4px 16px rgba(0, 0, 0, 0.08)',
         'executive-xl': '0 8px 32px rgba(0, 0, 0, 0.10)',
-        'focus-ring': '0 0 0 2px #1A1A1A',
+        'focus-ring': '0 0 0 2px var(--primary)',
       },
       transitionDuration: {
         '150': '150ms',

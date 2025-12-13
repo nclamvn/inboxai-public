@@ -66,8 +66,9 @@ export function Sidebar({ defaultCollapsed = true }: SidebarProps) {
         <Link
           href="/compose"
           className={cn(
-            'flex items-center gap-2 rounded-xl font-medium transition-colors',
-            'bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90',
+            'flex items-center gap-2 rounded-xl font-semibold transition-all duration-150',
+            'bg-[var(--primary)] text-[var(--primary-foreground)]',
+            'shadow-sm hover:shadow-md hover:bg-[var(--primary-hover)] active:scale-[0.98]',
             collapsed
               ? 'w-10 h-10 justify-center'
               : 'w-full h-10 px-4'
@@ -88,13 +89,13 @@ export function Sidebar({ defaultCollapsed = true }: SidebarProps) {
                 <Link
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-3 rounded-lg transition-colors',
+                    'flex items-center gap-3 rounded-lg transition-all duration-150',
                     collapsed
                       ? 'w-10 h-10 justify-center'
                       : 'h-10 px-3',
                     isActive
-                      ? 'bg-[var(--secondary)] text-[var(--foreground)]'
-                      : 'text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'
+                      ? 'bg-[var(--secondary)] text-[var(--foreground)] font-medium'
+                      : 'text-[var(--foreground-muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'
                   )}
                   title={collapsed ? item.label : undefined}
                 >
@@ -128,13 +129,13 @@ export function Sidebar({ defaultCollapsed = true }: SidebarProps) {
                 <Link
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-3 rounded-lg transition-colors',
+                    'flex items-center gap-3 rounded-lg transition-all duration-150',
                     collapsed
                       ? 'w-10 h-10 justify-center'
                       : 'h-10 px-3',
                     isActive
-                      ? 'bg-[var(--secondary)] text-[var(--foreground)]'
-                      : 'text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'
+                      ? 'bg-[var(--secondary)] text-[var(--foreground)] font-medium'
+                      : 'text-[var(--foreground-muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'
                   )}
                   title={collapsed ? item.label : undefined}
                 >

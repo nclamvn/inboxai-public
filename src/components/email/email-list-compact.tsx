@@ -84,39 +84,39 @@ export function EmailListCompact({
     if (!category) return null
     const styles: Record<string, { bg: string; text: string; hoverBg: string }> = {
       work: {
-        bg: 'bg-blue-100 dark:bg-blue-900/30',
-        text: 'text-blue-600 dark:text-blue-400',
-        hoverBg: 'hover:bg-blue-200 dark:hover:bg-blue-900/50'
+        bg: 'bg-blue-100 dark:bg-blue-500/20',
+        text: 'text-blue-700 dark:text-blue-400',
+        hoverBg: 'hover:bg-blue-200 dark:hover:bg-blue-500/30'
       },
       personal: {
-        bg: 'bg-green-100 dark:bg-green-900/30',
-        text: 'text-green-600 dark:text-green-400',
-        hoverBg: 'hover:bg-green-200 dark:hover:bg-green-900/50'
+        bg: 'bg-purple-100 dark:bg-purple-500/20',
+        text: 'text-purple-700 dark:text-purple-400',
+        hoverBg: 'hover:bg-purple-200 dark:hover:bg-purple-500/30'
       },
       transaction: {
-        bg: 'bg-red-100 dark:bg-red-900/30',
-        text: 'text-red-600 dark:text-red-400',
-        hoverBg: 'hover:bg-red-200 dark:hover:bg-red-900/50'
+        bg: 'bg-emerald-100 dark:bg-emerald-500/20',
+        text: 'text-emerald-700 dark:text-emerald-400',
+        hoverBg: 'hover:bg-emerald-200 dark:hover:bg-emerald-500/30'
       },
       newsletter: {
-        bg: 'bg-[var(--secondary)]',
-        text: 'text-[var(--muted)]',
-        hoverBg: 'hover:bg-[var(--hover)]'
+        bg: 'bg-gray-100 dark:bg-gray-500/20',
+        text: 'text-gray-700 dark:text-gray-400',
+        hoverBg: 'hover:bg-gray-200 dark:hover:bg-gray-500/30'
       },
       promotion: {
-        bg: 'bg-amber-100 dark:bg-amber-900/30',
-        text: 'text-amber-600 dark:text-amber-400',
-        hoverBg: 'hover:bg-amber-200 dark:hover:bg-amber-900/50'
+        bg: 'bg-orange-100 dark:bg-orange-500/20',
+        text: 'text-orange-700 dark:text-orange-400',
+        hoverBg: 'hover:bg-orange-200 dark:hover:bg-orange-500/30'
       },
       social: {
-        bg: 'bg-violet-100 dark:bg-violet-900/30',
-        text: 'text-violet-600 dark:text-violet-400',
-        hoverBg: 'hover:bg-violet-200 dark:hover:bg-violet-900/50'
+        bg: 'bg-cyan-100 dark:bg-cyan-500/20',
+        text: 'text-cyan-700 dark:text-cyan-400',
+        hoverBg: 'hover:bg-cyan-200 dark:hover:bg-cyan-500/30'
       },
       spam: {
-        bg: 'bg-red-100 dark:bg-red-900/30',
-        text: 'text-red-600 dark:text-red-400',
-        hoverBg: 'hover:bg-red-200 dark:hover:bg-red-900/50'
+        bg: 'bg-red-100 dark:bg-red-500/20',
+        text: 'text-red-700 dark:text-red-400',
+        hoverBg: 'hover:bg-red-200 dark:hover:bg-red-500/30'
       },
     }
     return styles[category] || styles.newsletter

@@ -127,7 +127,7 @@ export function Header() {
   }
 
   return (
-    <header className="h-14 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4">
+    <header className="h-14 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4 shadow-sm">
       {/* Search */}
       <div className="flex-1 max-w-xl">
         <SearchBox />
@@ -247,10 +247,10 @@ export function Header() {
           {showUserMenu && (
             <div className="absolute right-0 top-full mt-2 w-56 bg-[var(--card)] rounded-xl border border-[var(--border)] shadow-lg z-50 overflow-hidden">
               <div className="p-3 border-b border-[var(--border)]">
-                <p className="text-[14px] font-medium text-[var(--foreground)]">
+                <p className="text-[14px] font-semibold text-[var(--foreground)]">
                   {user?.profile?.full_name || 'User'}
                 </p>
-                <p className="text-[12px] text-[var(--muted)] truncate">
+                <p className="text-[12px] text-[var(--foreground-muted)] truncate">
                   {user?.email}
                 </p>
               </div>
@@ -258,7 +258,7 @@ export function Header() {
                 <Link
                   href="/settings"
                   onClick={() => setShowUserMenu(false)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)] transition-colors"
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] text-[var(--foreground-muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)] transition-all duration-150"
                 >
                   <Settings className="w-4 h-4" strokeWidth={1.5} />
                   Cài đặt
@@ -266,7 +266,7 @@ export function Header() {
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)] transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] text-[var(--foreground-muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)] transition-all duration-150"
                 >
                   <LogOut className="w-4 h-4" strokeWidth={1.5} />
                   Đăng xuất
