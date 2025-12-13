@@ -19,7 +19,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="h-screen flex bg-[#FAFAFA]">
+    <div className="h-screen flex bg-[var(--background)]">
       {/* Sidebar - Hidden on mobile */}
       <Sidebar defaultCollapsed={true} />
 

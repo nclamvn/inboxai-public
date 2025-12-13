@@ -34,7 +34,7 @@ export default function ArchivePage() {
 
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="h-full flex items-center justify-center bg-[var(--background)]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--foreground)]"></div>
       </div>
     )
@@ -42,7 +42,7 @@ export default function ArchivePage() {
 
   if (emails.length === 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-center p-8">
+      <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-[var(--background)]">
         <div className="w-20 h-20 bg-[var(--secondary)] rounded-full flex items-center justify-center mb-4">
           <Archive className="w-10 h-10 text-[var(--muted)]" strokeWidth={1.5} />
         </div>
