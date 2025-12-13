@@ -363,9 +363,24 @@ p {
   border-radius: 4px;
 }
 
+/* Hide tracking pixels and tiny images */
+.email-content img[width="1"],
+.email-content img[height="1"],
+.email-content img[width="0"],
+.email-content img[height="0"] {
+  display: none !important;
+}
+
+/* Hide images with empty or broken src */
+.email-content img:not([src]),
+.email-content img[src=""],
+.email-content img[src="about:blank"] {
+  display: none !important;
+}
+
+/* Placeholder for images with alt text but no visible image */
 .email-content img.image-error {
-  max-width: 120px;
-  opacity: 0.7;
+  display: none !important;
 }
 
 .email-content a {

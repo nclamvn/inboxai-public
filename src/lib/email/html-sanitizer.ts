@@ -32,19 +32,21 @@ export function sanitizeEmailHtml(
 
   // Fix image issues
   if (allowImages) {
-    // Replace cid: references with placeholder
+    // Remove cid: image references (inline attachments we can't display)
+    // These create ugly placeholders, better to hide them
     sanitized = sanitized.replace(
-      /src=["']cid:[^"']+["']/gi,
-      'src="/images/image-placeholder.svg" data-cid="true"'
+      /<img[^>]*src=["']cid:[^"']+["'][^>]*\/?>/gi,
+      ''
     )
 
     // Add loading="lazy" and error handling to all images
+    // Hide failed images completely instead of showing ugly placeholders
     sanitized = sanitized.replace(
       /<img\s+([^>]*?)(?:\s*\/)?>/gi,
       (match, attrs) => {
         // Skip if already has onerror
         if (attrs.includes('onerror')) return match
-        return `<img ${attrs} loading="lazy" onerror="this.onerror=null;this.src='/images/image-error.svg';this.classList.add('image-error');" />`
+        return `<img ${attrs} loading="lazy" onerror="this.style.display='none';" />`
       }
     )
 
