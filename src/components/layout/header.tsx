@@ -194,12 +194,12 @@ export function Header() {
                         className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--hover)] transition-colors text-left"
                       >
                         <div className={cn(
-                          'w-8 h-8 rounded-lg flex items-center justify-center text-[13px] font-medium',
-                          item.type === 'urgent' && 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
-                          item.type === 'deadline' && 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
-                          item.type === 'waiting' && 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
-                          item.type === 'vip' && 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400',
-                          !['urgent', 'deadline', 'waiting', 'vip'].includes(item.type) && 'bg-[var(--secondary)] text-[var(--muted)]'
+                          'w-8 h-8 rounded-lg flex items-center justify-center text-[13px] font-bold',
+                          item.type === 'urgent' && 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200',
+                          item.type === 'deadline' && 'bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200',
+                          item.type === 'waiting' && 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200',
+                          item.type === 'vip' && 'bg-violet-100 dark:bg-violet-900/50 text-violet-800 dark:text-violet-200',
+                          !['urgent', 'deadline', 'waiting', 'vip'].includes(item.type) && 'bg-[var(--secondary)] text-[var(--foreground)]'
                         )}>
                           {item.count}
                         </div>
