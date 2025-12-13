@@ -7,6 +7,7 @@ import { cn, formatDate } from '@/lib/utils'
 import { useBehaviorTracker } from '@/hooks/use-behavior-tracker'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
 import { AISummary } from '@/components/email/ai-summary'
+import { SmartReply } from '@/components/email/smart-reply'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import type { Email } from '@/types'
 
@@ -122,6 +123,16 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
       replyTo: email.from_address || '',
       subject,
       body,
+    })
+    router.push(`/compose?${params.toString()}`)
+  }
+
+  const handleSmartReply = (content: string, subject: string) => {
+    // Navigate to compose with smart reply content
+    const params = new URLSearchParams({
+      to: email.from_address || '',
+      subject,
+      body: content,
     })
     router.push(`/compose?${params.toString()}`)
   }
@@ -254,6 +265,14 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
           <AISummary
             emailId={email.id}
             bodyLength={(email.body_text || email.body_html || '').length}
+          />
+        </div>
+
+        {/* Smart Reply */}
+        <div className="px-4">
+          <SmartReply
+            emailId={email.id}
+            onReply={handleSmartReply}
           />
         </div>
 

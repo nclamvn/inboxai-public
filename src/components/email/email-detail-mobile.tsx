@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import { AttachmentList } from './attachment-list'
 import { AISummary } from './ai-summary'
+import { SmartReply } from './smart-reply'
 import type { Email } from '@/types'
 
 interface Attachment {
@@ -180,6 +181,21 @@ export function EmailDetailMobile({
           <AISummary
             emailId={email.id}
             bodyLength={(email.body_text || email.body_html || '').length}
+          />
+        </div>
+
+        {/* Smart Reply */}
+        <div className="px-4">
+          <SmartReply
+            emailId={email.id}
+            onReply={(content, subject) => {
+              const params = new URLSearchParams({
+                to: email.from_address || '',
+                subject,
+                body: content,
+              })
+              window.location.href = `/compose?${params.toString()}`
+            }}
           />
         </div>
 
