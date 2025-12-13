@@ -18,8 +18,8 @@ const categoryLabels: Record<string, string> = {
 }
 
 const categoryColors: Record<string, string> = {
-  newsletter: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
-  promotion: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
+  newsletter: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300',
+  promotion: 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400',
   spam: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
 }
 

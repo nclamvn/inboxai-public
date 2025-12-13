@@ -34,13 +34,13 @@ const intentIcons: Record<string, React.ComponentType<{ className?: string }>> =
 }
 
 const intentColors: Record<string, string> = {
-  agree: 'bg-green-50 text-green-700 dark:bg-green-500/20 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-500/30',
-  confirm: 'bg-green-50 text-green-700 dark:bg-green-500/20 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-500/30',
-  decline: 'bg-red-50 text-red-700 dark:bg-red-500/20 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/30',
-  schedule: 'bg-blue-50 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/30',
-  ask_more: 'bg-purple-50 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-500/30',
-  thank: 'bg-pink-50 text-pink-700 dark:bg-pink-500/20 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-500/30',
-  forward: 'bg-gray-100 text-gray-700 dark:bg-gray-500/20 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500/30',
+  agree: 'bg-green-50 text-green-800 dark:bg-green-500/20 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-500/30',
+  confirm: 'bg-green-50 text-green-800 dark:bg-green-500/20 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-500/30',
+  decline: 'bg-red-50 text-red-800 dark:bg-red-500/20 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/30',
+  schedule: 'bg-blue-50 text-blue-800 dark:bg-blue-500/20 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/30',
+  ask_more: 'bg-purple-50 text-purple-800 dark:bg-purple-500/20 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-500/30',
+  thank: 'bg-pink-50 text-pink-800 dark:bg-pink-500/20 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-500/30',
+  forward: 'bg-gray-100 text-gray-800 dark:bg-gray-500/20 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500/30',
 }
 
 export function SmartReply({ emailId, onReply }: SmartReplyProps) {

@@ -162,7 +162,7 @@ export function ActionItemsCard({ emailId, onViewAll }: ActionItemsCardProps) {
             'w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl',
             'bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-500/10 dark:to-indigo-500/10',
             'border border-purple-100 dark:border-purple-500/20',
-            'text-purple-700 dark:text-purple-300 font-medium text-sm',
+            'text-purple-800 dark:text-purple-300 font-medium text-sm',
             'hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-500/20 dark:hover:to-indigo-500/20',
             'transition-all disabled:opacity-50'
           )}

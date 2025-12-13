@@ -142,7 +142,7 @@ export const FilterChips = memo(function FilterChips({ activeFilter, onFilterCha
           disabled={reclassifying}
           className={cn(
             'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors whitespace-nowrap ml-2',
-            'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50',
+            'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50',
             reclassifying && 'opacity-50 cursor-not-allowed'
           )}
         >
@@ -158,7 +158,7 @@ export const FilterChips = memo(function FilterChips({ activeFilter, onFilterCha
           className={cn(
             'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors whitespace-nowrap ml-2',
             currentFilter.important
-              ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50'
+              ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50'
               : 'bg-red-600 text-white hover:bg-red-700'
           )}
         >

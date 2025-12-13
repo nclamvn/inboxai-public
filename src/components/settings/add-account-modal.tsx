@@ -185,7 +185,7 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
                 <span className="font-medium text-[var(--foreground)]">{selectedProvider.name}</span>
               </div>
 
-              <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-lg p-3 text-[13px] text-amber-700 dark:text-amber-400">
+              <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-lg p-3 text-[13px] text-amber-800 dark:text-amber-400">
                 {selectedProvider.instructions}
               </div>
 
