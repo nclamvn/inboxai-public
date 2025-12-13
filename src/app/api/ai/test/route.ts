@@ -1,7 +1,16 @@
 import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 import { classifyEmail } from '@/lib/ai/classifier'
 
 export async function GET() {
+  // Auth check - only authenticated users can test
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const testEmail = {
     from_address: 'boss@company.com',
     from_name: 'Nguyễn Văn A',

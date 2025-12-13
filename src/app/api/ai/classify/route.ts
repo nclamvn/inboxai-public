@@ -1,24 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { classifyEmail } from '@/lib/ai/classifier'
 
-const supabase = createClient(
+const supabaseService = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
 export async function POST(request: NextRequest) {
   try {
+    // Auth check
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { emailId } = await request.json()
 
     if (!emailId) {
       return NextResponse.json({ error: 'Missing emailId' }, { status: 400 })
     }
 
-    const { data: email, error: fetchError } = await supabase
+    // Verify email belongs to user
+    const { data: email, error: fetchError } = await supabaseService
       .from('emails')
       .select('*')
       .eq('id', emailId)
+      .eq('user_id', user.id)
       .single()
 
     if (fetchError || !email) {
@@ -34,7 +45,7 @@ export async function POST(request: NextRequest) {
       body_html: email.body_html
     })
 
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseService
       .from('emails')
       .update({
         priority: classification.priority,

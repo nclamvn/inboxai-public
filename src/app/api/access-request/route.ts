@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { checkRateLimit, getClientIP } from '@/lib/rate-limit'
 
 // Use service role for server-side access request creation
 const supabaseAdmin = createClient(
@@ -7,8 +8,31 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Rate limit: 3 requests per IP per minute
+const RATE_LIMIT_CONFIG = {
+  maxRequests: 3,
+  windowMs: 60 * 1000 // 1 minute
+}
+
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const clientIP = getClientIP(request)
+    const rateLimitResult = checkRateLimit(`access-request:${clientIP}`, RATE_LIMIT_CONFIG)
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Quá nhiều yêu cầu. Vui lòng thử lại sau.' },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(rateLimitResult.resetTime)
+          }
+        }
+      )
+    }
+
     const { email, fullName, reason } = await request.json()
 
     if (!email) {

@@ -1,22 +1,31 @@
 import crypto from 'crypto'
 
 // Encryption helpers
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'default-32-char-key-for-dev-!!'
 const IV_LENGTH = 16
 
+function getEncryptionKey(): string {
+  const key = process.env.ENCRYPTION_KEY
+  if (!key) {
+    throw new Error('ENCRYPTION_KEY environment variable is required for password encryption')
+  }
+  return key
+}
+
 export function encryptPassword(password: string): string {
+  const key = getEncryptionKey()
   const iv = crypto.randomBytes(IV_LENGTH)
-  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY.padEnd(32).slice(0, 32)), iv)
+  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key.padEnd(32).slice(0, 32)), iv)
   let encrypted = cipher.update(password)
   encrypted = Buffer.concat([encrypted, cipher.final()])
   return iv.toString('hex') + ':' + encrypted.toString('hex')
 }
 
 export function decryptPassword(encryptedPassword: string): string {
+  const key = getEncryptionKey()
   const textParts = encryptedPassword.split(':')
   const iv = Buffer.from(textParts.shift()!, 'hex')
   const encryptedText = Buffer.from(textParts.join(':'), 'hex')
-  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY.padEnd(32).slice(0, 32)), iv)
+  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key.padEnd(32).slice(0, 32)), iv)
   let decrypted = decipher.update(encryptedText)
   decrypted = Buffer.concat([decrypted, decipher.final()])
   return decrypted.toString()

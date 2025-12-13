@@ -6,6 +6,7 @@ import { Star, Archive, Trash2, Reply, Forward, MoreHorizontal, X, AlertCircle, 
 import { cn, formatDate } from '@/lib/utils'
 import { useBehaviorTracker } from '@/hooks/use-behavior-tracker'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
+import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import type { Email } from '@/types'
 
 interface EmailDetailProps {
@@ -251,7 +252,7 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
         <div className="p-4">
           <div className="email-content prose max-w-none text-[var(--foreground)]">
             {email.body_html ? (
-              <div dangerouslySetInnerHTML={{ __html: email.body_html }} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizeEmailHtml(email.body_html, { allowImages: true }) }} />
             ) : (
               <pre className="whitespace-pre-wrap font-sans text-[var(--foreground)]">
                 {email.body_text || email.snippet || '(Không có nội dung)'}
