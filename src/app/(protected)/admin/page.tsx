@@ -286,7 +286,7 @@ export default function AdminPage() {
             >
               Yêu cầu truy cập
               {pendingCount > 0 && (
-                <span className="ml-2 px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[12px] rounded-full">
+                <span className="ml-2 px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-gray-900 dark:text-white text-[12px] rounded-full">
                   {pendingCount}
                 </span>
               )}
@@ -357,9 +357,9 @@ export default function AdminPage() {
                           </span>
                           <span className={cn(
                             'px-2 py-0.5 text-[11px] rounded-full',
-                            request.status === 'pending' && 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400',
-                            request.status === 'approved' && 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
-                            request.status === 'rejected' && 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                            request.status === 'pending' && 'bg-orange-100 dark:bg-orange-900/30 text-gray-900 dark:text-white',
+                            request.status === 'approved' && 'bg-green-100 dark:bg-green-900/30 text-gray-900 dark:text-white',
+                            request.status === 'rejected' && 'bg-red-100 dark:bg-red-900/30 text-gray-900 dark:text-white'
                           )}>
                             {request.status === 'pending' && 'Chờ duyệt'}
                             {request.status === 'approved' && 'Đã duyệt'}
@@ -380,14 +380,14 @@ export default function AdminPage() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleApprove(request.id)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg text-[13px] font-medium hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-gray-900 dark:text-white rounded-lg text-[13px] font-medium hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
                           >
                             <Check className="w-4 h-4" />
                             Duyệt
                           </button>
                           <button
                             onClick={() => handleReject(request.id)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-[13px] font-medium hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 dark:bg-red-900/30 text-gray-900 dark:text-white rounded-lg text-[13px] font-medium hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
                           >
                             <X className="w-4 h-4" />
                             Từ chối
@@ -435,7 +435,7 @@ export default function AdminPage() {
                           className={cn(
                             'p-2 rounded-lg transition-colors',
                             entry.is_active
-                              ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50'
+                              ? 'bg-green-100 dark:bg-green-900/30 text-gray-900 dark:text-white hover:bg-green-200 dark:hover:bg-green-900/50'
                               : 'bg-[var(--secondary)] text-[var(--muted-foreground)] hover:bg-[var(--hover)]'
                           )}
                           title={entry.is_active ? 'Vô hiệu hóa' : 'Kích hoạt'}
@@ -448,7 +448,7 @@ export default function AdminPage() {
                         </button>
                         <button
                           onClick={() => handleDelete(entry.id)}
-                          className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                          className="p-2 bg-red-100 dark:bg-red-900/30 text-gray-900 dark:text-white rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
                           title="Xóa"
                         >
                           <Trash2 className="w-4 h-4" />

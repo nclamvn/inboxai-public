@@ -18,9 +18,9 @@ const categoryLabels: Record<string, string> = {
 }
 
 const categoryColors: Record<string, string> = {
-  newsletter: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300',
-  promotion: 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400',
-  spam: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+  newsletter: 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white',
+  promotion: 'bg-amber-100 dark:bg-amber-900/30 text-gray-900 dark:text-white',
+  spam: 'bg-red-100 dark:bg-red-900/30 text-gray-900 dark:text-white'
 }
 
 export default function SubscriptionsPage() {
@@ -184,7 +184,7 @@ export default function SubscriptionsPage() {
                 <button
                   onClick={() => handleUnsubscribe(sub.email)}
                   disabled={processing === sub.email}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/20 disabled:opacity-50 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] text-gray-900 dark:text-white bg-red-50 dark:bg-red-500/10 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/20 disabled:opacity-50 transition-colors"
                 >
                   {processing === sub.email ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />

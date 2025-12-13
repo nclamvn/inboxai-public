@@ -284,7 +284,7 @@ export function EmailDetailFull({
               type="button"
               onClick={handleNotSpam}
               disabled={feedbackLoading === 'not_spam'}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-gray-900 dark:text-white bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
             >
               {feedbackLoading === 'not_spam' ? (
                 <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} />
@@ -298,7 +298,7 @@ export function EmailDetailFull({
               type="button"
               onClick={handleIsSpam}
               disabled={feedbackLoading === 'is_spam'}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-gray-900 dark:text-white bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-colors"
             >
               {feedbackLoading === 'is_spam' ? (
                 <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} />
@@ -440,7 +440,7 @@ export function EmailDetailFull({
                 {email.priority && (
                   <span className={cn(
                     'px-1.5 py-0.5 rounded text-[11px] font-medium',
-                    (email.priority || 0) >= 4 ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 'bg-[var(--secondary)] text-[var(--muted)]'
+                    (email.priority || 0) >= 4 ? 'bg-red-100 dark:bg-red-900/30 text-gray-900 dark:text-white' : 'bg-[var(--secondary)] text-[var(--muted)]'
                   )}>
                     {getPriorityLabel(email.priority)}
                   </span>

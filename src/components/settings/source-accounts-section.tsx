@@ -206,7 +206,7 @@ export function SourceAccountsSection() {
                     {account.email_address}
                   </p>
                   {account.is_active ? (
-                    <span className="flex items-center gap-1 text-[11px] text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-500/20 px-1.5 py-0.5 rounded">
+                    <span className="flex items-center gap-1 text-[11px] text-gray-900 dark:text-white bg-green-50 dark:bg-green-500/20 px-1.5 py-0.5 rounded">
                       <CheckCircle className="w-3 h-3" />
                       Active
                     </span>

@@ -50,12 +50,12 @@ const EmailRow = memo(function EmailRow({
   const getCategoryStyle = (category: string | null) => {
     if (!category) return null
     const styles: Record<string, { bg: string; text: string }> = {
-      work: { bg: 'bg-blue-100 dark:bg-blue-500/20', text: 'text-blue-600 dark:text-blue-400' },
-      personal: { bg: 'bg-green-100 dark:bg-green-500/20', text: 'text-green-600 dark:text-green-400' },
-      transaction: { bg: 'bg-red-100 dark:bg-red-500/20', text: 'text-red-600 dark:text-red-400' },
+      work: { bg: 'bg-blue-100 dark:bg-blue-500/20', text: 'text-gray-900 dark:text-white' },
+      personal: { bg: 'bg-green-100 dark:bg-green-500/20', text: 'text-gray-900 dark:text-white' },
+      transaction: { bg: 'bg-red-100 dark:bg-red-500/20', text: 'text-gray-900 dark:text-white' },
       newsletter: { bg: 'bg-[var(--secondary)]', text: 'text-[var(--muted-foreground)]' },
-      promotion: { bg: 'bg-amber-100 dark:bg-amber-500/20', text: 'text-amber-600 dark:text-amber-400' },
-      social: { bg: 'bg-violet-100 dark:bg-violet-500/20', text: 'text-violet-600 dark:text-violet-400' },
+      promotion: { bg: 'bg-amber-100 dark:bg-amber-500/20', text: 'text-gray-900 dark:text-white' },
+      social: { bg: 'bg-violet-100 dark:bg-violet-500/20', text: 'text-gray-900 dark:text-white' },
     }
     return styles[category] || styles.newsletter
   }

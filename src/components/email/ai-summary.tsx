@@ -22,10 +22,10 @@ interface AISummaryProps {
 }
 
 const sentimentConfig = {
-  positive: { icon: CheckCircle, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-500/10' },
-  neutral: { icon: Sparkles, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-500/10' },
-  negative: { icon: AlertCircle, color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-500/10' },
-  urgent: { icon: AlertCircle, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-500/10' },
+  positive: { icon: CheckCircle, color: 'text-gray-900 dark:text-white', bg: 'bg-green-50 dark:bg-green-500/10' },
+  neutral: { icon: Sparkles, color: 'text-gray-900 dark:text-white', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+  negative: { icon: AlertCircle, color: 'text-gray-900 dark:text-white', bg: 'bg-orange-50 dark:bg-orange-500/10' },
+  urgent: { icon: AlertCircle, color: 'text-gray-900 dark:text-white', bg: 'bg-red-50 dark:bg-red-500/10' },
 }
 
 const sentimentLabels = {
@@ -170,7 +170,7 @@ export function AISummary({ emailId, bodyLength }: AISummaryProps) {
 
           {/* Action required badge */}
           {summary.actionRequired && (
-            <span className="px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-400">
+            <span className="px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-gray-900 dark:bg-amber-500/20 dark:text-white">
               Cần xử lý
             </span>
           )}

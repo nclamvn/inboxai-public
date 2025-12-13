@@ -51,9 +51,9 @@ const typeIcons: Record<string, React.ComponentType<{ className?: string; stroke
 }
 
 const priorityColors: Record<string, { bg: string; text: string; badge: 'urgent' | 'warning' | 'info' }> = {
-  high: { bg: 'bg-red-50 dark:bg-red-500/10', text: 'text-red-600 dark:text-red-400', badge: 'urgent' },
-  medium: { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', badge: 'warning' },
-  low: { bg: 'bg-blue-50 dark:bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400', badge: 'info' }
+  high: { bg: 'bg-red-50 dark:bg-red-500/10', text: 'text-gray-900 dark:text-white', badge: 'urgent' },
+  medium: { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-gray-900 dark:text-white', badge: 'warning' },
+  low: { bg: 'bg-blue-50 dark:bg-blue-500/10', text: 'text-gray-900 dark:text-white', badge: 'info' }
 }
 
 export default function FollowUpsPage() {
@@ -220,7 +220,7 @@ export default function FollowUpsPage() {
               'px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors',
               filter === 'high'
                 ? 'bg-red-500 text-white'
-                : 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20'
+                : 'bg-red-50 dark:bg-red-500/10 text-gray-900 dark:text-white hover:bg-red-100 dark:hover:bg-red-500/20'
             )}
           >
             Quan trọng ({counts.high})
@@ -231,7 +231,7 @@ export default function FollowUpsPage() {
               'px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors',
               filter === 'medium'
                 ? 'bg-amber-500 text-white'
-                : 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-500/20'
+                : 'bg-amber-50 dark:bg-amber-500/10 text-gray-900 dark:text-white hover:bg-amber-100 dark:hover:bg-amber-500/20'
             )}
           >
             Trung bình ({counts.medium})
@@ -242,7 +242,7 @@ export default function FollowUpsPage() {
               'px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors',
               filter === 'low'
                 ? 'bg-blue-500 text-white'
-                : 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20'
+                : 'bg-blue-50 dark:bg-blue-500/10 text-gray-900 dark:text-white hover:bg-blue-100 dark:hover:bg-blue-500/20'
             )}
           >
             Thấp ({counts.low})

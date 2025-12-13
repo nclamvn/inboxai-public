@@ -13,10 +13,10 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
     const variants = {
       default: 'bg-[var(--secondary)] text-[var(--foreground)]',
       secondary: 'bg-transparent text-[var(--muted)] border border-[var(--border)]',
-      urgent: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
-      warning: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
-      success: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
-      info: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+      urgent: 'bg-red-100 dark:bg-red-900/30 text-gray-900 dark:text-white',
+      warning: 'bg-amber-100 dark:bg-amber-900/30 text-gray-900 dark:text-white',
+      success: 'bg-green-100 dark:bg-green-900/30 text-gray-900 dark:text-white',
+      info: 'bg-blue-100 dark:bg-blue-900/30 text-gray-900 dark:text-white',
     }
 
     const sizes = {

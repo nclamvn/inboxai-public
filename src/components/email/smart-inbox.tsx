@@ -113,12 +113,12 @@ export function SmartInbox({ onSelectEmail }: SmartInboxProps) {
               {data.total} email
             </span>
             {data.stats.needsReply > 0 && (
-              <span className="px-2 py-1 bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-400 rounded-md border border-amber-200 dark:border-amber-500/30">
+              <span className="px-2 py-1 bg-amber-50 dark:bg-amber-500/10 text-gray-900 dark:text-white rounded-md border border-amber-200 dark:border-amber-500/30">
                 {data.stats.needsReply} cần trả lời
               </span>
             )}
             {data.stats.hasDeadline > 0 && (
-              <span className="px-2 py-1 bg-red-50 dark:bg-red-500/10 text-red-800 dark:text-red-400 rounded-md border border-red-200 dark:border-red-500/30">
+              <span className="px-2 py-1 bg-red-50 dark:bg-red-500/10 text-gray-900 dark:text-white rounded-md border border-red-200 dark:border-red-500/30">
                 {data.stats.hasDeadline} có deadline
               </span>
             )}

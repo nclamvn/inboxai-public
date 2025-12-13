@@ -44,9 +44,9 @@ const typeLabels: Record<string, string> = {
 }
 
 const priorityColors: Record<string, string> = {
-  high: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10',
-  medium: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10',
-  low: 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-500/10',
+  high: 'text-gray-900 dark:text-white bg-red-50 dark:bg-red-500/10',
+  medium: 'text-gray-900 dark:text-white bg-amber-50 dark:bg-amber-500/10',
+  low: 'text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-500/10',
 }
 
 const priorityLabels: Record<string, string> = {
@@ -260,7 +260,7 @@ export default function ActionsPage() {
                 title="Gấp"
                 icon={AlertTriangle}
                 iconBg="bg-red-100 dark:bg-red-500/20"
-                iconColor="text-red-600 dark:text-red-400"
+                iconColor="text-gray-900 dark:text-white"
                 actions={highPriority}
                 onToggle={toggleStatus}
                 onGoToEmail={goToEmail}
@@ -274,7 +274,7 @@ export default function ActionsPage() {
                 title="Trung bình"
                 icon={Clock}
                 iconBg="bg-amber-100 dark:bg-amber-500/20"
-                iconColor="text-amber-600 dark:text-amber-400"
+                iconColor="text-gray-900 dark:text-white"
                 actions={mediumPriority}
                 onToggle={toggleStatus}
                 onGoToEmail={goToEmail}
@@ -288,7 +288,7 @@ export default function ActionsPage() {
                 title="Thấp"
                 icon={ListTodo}
                 iconBg="bg-gray-100 dark:bg-gray-500/20"
-                iconColor="text-gray-600 dark:text-gray-400"
+                iconColor="text-gray-900 dark:text-white"
                 actions={lowPriority}
                 onToggle={toggleStatus}
                 onGoToEmail={goToEmail}
@@ -302,7 +302,7 @@ export default function ActionsPage() {
                 title="Đã hoàn thành"
                 icon={CheckCircle2}
                 iconBg="bg-green-100 dark:bg-green-500/20"
-                iconColor="text-green-600 dark:text-green-400"
+                iconColor="text-gray-900 dark:text-white"
                 actions={completed}
                 onToggle={toggleStatus}
                 onGoToEmail={goToEmail}

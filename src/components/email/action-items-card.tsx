@@ -41,9 +41,9 @@ const typeLabels: Record<string, string> = {
 }
 
 const priorityColors: Record<string, string> = {
-  high: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10',
-  medium: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10',
-  low: 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-500/10',
+  high: 'text-gray-900 dark:text-white bg-red-50 dark:bg-red-500/10',
+  medium: 'text-gray-900 dark:text-white bg-amber-50 dark:bg-amber-500/10',
+  low: 'text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-500/10',
 }
 
 const priorityLabels: Record<string, string> = {
@@ -162,7 +162,7 @@ export function ActionItemsCard({ emailId, onViewAll }: ActionItemsCardProps) {
             'w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl',
             'bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-500/10 dark:to-indigo-500/10',
             'border border-purple-100 dark:border-purple-500/20',
-            'text-purple-800 dark:text-purple-300 font-medium text-sm',
+            'text-gray-900 dark:text-white font-medium text-sm',
             'hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-500/20 dark:hover:to-indigo-500/20',
             'transition-all disabled:opacity-50'
           )}
@@ -215,7 +215,7 @@ export function ActionItemsCard({ emailId, onViewAll }: ActionItemsCardProps) {
                 Actions ({pendingActions.length})
               </p>
               {hasHighPriority && (
-                <span className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded">
+                <span className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-red-100 dark:bg-red-500/20 text-gray-900 dark:text-white rounded">
                   <AlertTriangle className="w-3 h-3" />
                   GẤP
                 </span>

@@ -26,10 +26,10 @@ const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
 }
 
 const typeColors: Record<string, string> = {
-  new_email: 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400',
-  sync_complete: 'bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400',
-  ai_classified: 'bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400',
-  important: 'bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400',
+  new_email: 'bg-blue-100 dark:bg-blue-500/20 text-gray-900 dark:text-white',
+  sync_complete: 'bg-green-100 dark:bg-green-500/20 text-gray-900 dark:text-white',
+  ai_classified: 'bg-purple-100 dark:bg-purple-500/20 text-gray-900 dark:text-white',
+  important: 'bg-orange-100 dark:bg-orange-500/20 text-gray-900 dark:text-white',
 }
 
 export function NotificationDropdown() {

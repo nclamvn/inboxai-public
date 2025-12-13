@@ -68,8 +68,8 @@ export function FollowUpBadge({ className, showLabel = false }: Props) {
       className={cn(
         'relative flex items-center gap-2 px-3 py-2 rounded-lg transition-colors',
         counts.high > 0
-          ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20'
-          : 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-500/20',
+          ? 'bg-red-50 dark:bg-red-500/10 text-gray-900 dark:text-white hover:bg-red-100 dark:hover:bg-red-500/20'
+          : 'bg-amber-50 dark:bg-amber-500/10 text-gray-900 dark:text-white hover:bg-amber-100 dark:hover:bg-amber-500/20',
         className
       )}
     >

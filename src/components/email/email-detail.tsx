@@ -26,8 +26,8 @@ const priorityLabels: Record<number, { label: string; color: string }> = {
   1: { label: 'Rất thấp', color: 'bg-[var(--secondary)] text-[var(--muted-foreground)]' },
   2: { label: 'Thấp', color: 'bg-[var(--secondary)] text-[var(--muted)]' },
   3: { label: 'Bình thường', color: 'bg-[var(--secondary)] text-[var(--foreground)]' },
-  4: { label: 'Cao', color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' },
-  5: { label: 'Khẩn cấp', color: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' },
+  4: { label: 'Cao', color: 'bg-amber-100 dark:bg-amber-900/30 text-gray-900 dark:text-white' },
+  5: { label: 'Khẩn cấp', color: 'bg-red-100 dark:bg-red-900/30 text-gray-900 dark:text-white' },
 }
 
 const categoryLabels: Record<string, string> = {
@@ -246,13 +246,13 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
                 </span>
               )}
               {email.needs_reply && (
-                <span className="px-2 py-1 text-[12px] rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                <span className="px-2 py-1 text-[12px] rounded-full bg-amber-100 dark:bg-amber-900/30 text-gray-900 dark:text-white flex items-center gap-1">
                   <AlertCircle className="w-3 h-3" strokeWidth={1.5} />
                   Cần trả lời
                 </span>
               )}
               {email.detected_deadline && (
-                <span className="px-2 py-1 text-[12px] rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center gap-1">
+                <span className="px-2 py-1 text-[12px] rounded-full bg-red-100 dark:bg-red-900/30 text-gray-900 dark:text-white flex items-center gap-1">
                   <Clock className="w-3 h-3" strokeWidth={1.5} />
                   Deadline: {new Date(email.detected_deadline).toLocaleDateString('vi-VN')}
                 </span>

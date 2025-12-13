@@ -69,7 +69,7 @@ export function UrgentAlert({ onSelectEmail }: Props) {
               <AlertCircle className="w-4 h-4" strokeWidth={1.5} />
             </IconBox>
             <div className="flex-1 min-w-0">
-              <p className="text-[12px] text-red-600 dark:text-red-400 font-medium mb-1">
+              <p className="text-[12px] text-gray-900 dark:text-white font-medium mb-1">
                 Email quan trọng
               </p>
               <p className="text-[14px] font-medium text-[var(--foreground)] truncate">

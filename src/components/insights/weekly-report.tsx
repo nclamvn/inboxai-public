@@ -113,10 +113,10 @@ export function WeeklyReportView() {
         </div>
         <div className={cn(
           "flex items-center gap-2 px-4 py-2 rounded-full",
-          report.productivity.grade === 'Xuất sắc' && "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
-          report.productivity.grade === 'Tốt' && "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
-          report.productivity.grade === 'Khá' && "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400",
-          report.productivity.grade === 'Cần cải thiện' && "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
+          report.productivity.grade === 'Xuất sắc' && "bg-green-100 dark:bg-green-900/30 text-gray-900 dark:text-white",
+          report.productivity.grade === 'Tốt' && "bg-blue-100 dark:bg-blue-900/30 text-gray-900 dark:text-white",
+          report.productivity.grade === 'Khá' && "bg-amber-100 dark:bg-amber-900/30 text-gray-900 dark:text-white",
+          report.productivity.grade === 'Cần cải thiện' && "bg-red-100 dark:bg-red-900/30 text-gray-900 dark:text-white"
         )}>
           <span className="text-[24px] font-semibold">{report.productivity.score}</span>
           <div className="text-left">
@@ -125,8 +125,8 @@ export function WeeklyReportView() {
           </div>
           <TrendIcon className={cn(
             "w-5 h-5 ml-2",
-            report.productivity.trend === 'up' && "text-green-600 dark:text-green-400",
-            report.productivity.trend === 'down' && "text-red-600 dark:text-red-400",
+            report.productivity.trend === 'up' && "text-gray-900 dark:text-white",
+            report.productivity.trend === 'down' && "text-gray-900 dark:text-white",
             report.productivity.trend === 'stable' && "text-[var(--muted)]"
           )} strokeWidth={1.5} />
         </div>
@@ -175,8 +175,8 @@ export function WeeklyReportView() {
                 </span>
                 <span className={cn(
                   "text-[13px] font-medium flex items-center",
-                  item.change > 0 && "text-green-600 dark:text-green-400",
-                  item.change < 0 && "text-red-600 dark:text-red-400",
+                  item.change > 0 && "text-gray-900 dark:text-white",
+                  item.change < 0 && "text-gray-900 dark:text-white",
                   item.change === 0 && "text-[var(--muted)]"
                 )}>
                   {item.change > 0 ? '+' : ''}{item.changePercent}%
