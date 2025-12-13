@@ -3,53 +3,58 @@
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#0F172A"/>
-      <stop offset="100%" style="stop-color:#1E3A8A"/>
+      <stop offset="50%" style="stop-color:#1E3A5F"/>
+      <stop offset="100%" style="stop-color:#312E81"/>
     </linearGradient>
   </defs>
-
-  <!-- Background -->
+  
+  <!-- Background with rounded corners -->
   <rect width="512" height="512" rx="112.64" fill="url(#bg)"/>
-
-  <g transform="translate(76.8, 76.8)">
-    <!-- Mail envelope -->
-    <rect
-      x="28.671999999999997"
-      y="78.848"
-      width="250.87999999999997"
-      height="179.2"
-      rx="21.503999999999998"
-      fill="none"
-      stroke="white"
-      stroke-width="19.712"
+  
+  <g transform="translate(61.44, 61.44)">
+    <!-- Mail envelope body -->
+    <rect 
+      x="38.912000000000006" 
+      y="108.95360000000001" 
+      width="252.92800000000003" 
+      height="175.104" 
+      rx="23.3472" 
+      fill="none" 
+      stroke="white" 
+      stroke-width="21.401600000000002"
       stroke-linecap="round"
       stroke-linejoin="round"
     />
-
-    <!-- Mail flap -->
-    <polyline
-      points="28.671999999999997,100.352 154.112,179.2 279.55199999999996,100.352"
-      fill="none"
-      stroke="white"
-      stroke-width="19.712"
+    
+    <!-- Mail flap (V shape) -->
+    <polyline 
+      points="38.912000000000006,132.3008 165.376,210.12480000000002 291.84000000000003,132.3008" 
+      fill="none" 
+      stroke="white" 
+      stroke-width="21.401600000000002"
       stroke-linecap="round"
       stroke-linejoin="round"
     />
-
-    <!-- AI Sparkle star -->
-    <g transform="translate(207.87199999999999, 28.671999999999997)">
-      <!-- 4-point star -->
-      <path
-        d="M 60.928 28.671999999999997
-           Q 60.928 60.928 89.6 60.928
-           Q 60.928 60.928 60.928 93.184
-           Q 60.928 60.928 32.256 60.928
-           Q 60.928 60.928 60.928 28.671999999999997
-           Z"
-        fill="#FBBF24"
+    
+    <!-- AI Sparkle - 4-point star -->
+    <g transform="translate(225.68959999999998, 31.1296)">
+      <!-- Main sparkle -->
+      <path 
+        d="M 66.1504 7.7824
+           L 66.1504 124.5184
+           M 7.7824 66.1504
+           L 124.5184 66.1504"
+        fill="none" 
+        stroke="#FBBF24" 
+        stroke-width="21.401600000000002"
+        stroke-linecap="round"
       />
-      <!-- Small star -->
-      <circle cx="21.503999999999998" cy="17.919999999999998" r="8.959999999999999" fill="#FCD34D"/>
-      <circle cx="100.352" cy="7.167999999999999" r="7.167999999999999" fill="#FDE68A"/>
+      <!-- Center dot -->
+      <circle cx="66.1504" cy="66.1504" r="17.5104" fill="#FBBF24"/>
+      
+      <!-- Small sparkle -->
+      <circle cx="124.5184" cy="7.7824" r="9.728000000000002" fill="#FCD34D"/>
+      <circle cx="7.7824" cy="7.7824" r="7.7824" fill="#FDE68A"/>
     </g>
   </g>
 </svg>
