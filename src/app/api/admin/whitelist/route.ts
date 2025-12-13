@@ -1,15 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { createClient as createAdminClient, SupabaseClient } from '@supabase/supabase-js'
 
 // Admin emails that can manage whitelist
 const ADMIN_EMAILS = ['nclamvn@gmail.com']
 
-// Use service role for admin operations
-const supabaseAdmin = createAdminClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+let adminInstance: SupabaseClient | null = null
+
+function getSupabaseAdmin(): SupabaseClient {
+  if (!adminInstance) {
+    adminInstance = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return adminInstance
+}
 
 async function isAdmin(request: NextRequest): Promise<boolean> {
   const supabase = await createClient()
@@ -29,7 +35,7 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get('type') || 'whitelist' // 'whitelist' | 'requests'
 
   if (type === 'requests') {
-    const { data: requests, error } = await supabaseAdmin
+    const { data: requests, error } = await getSupabaseAdmin()
       .from('access_requests')
       .select('*')
       .order('created_at', { ascending: false })
@@ -42,7 +48,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Get whitelist
-  const { data: whitelist, error } = await supabaseAdmin
+  const { data: whitelist, error } = await getSupabaseAdmin()
     .from('whitelist')
     .select('*')
     .order('created_at', { ascending: false })
@@ -72,7 +78,7 @@ export async function POST(request: NextRequest) {
   const normalizedEmail = email.toLowerCase().trim()
 
   // Check if already exists
-  const { data: existing } = await supabaseAdmin
+  const { data: existing } = await getSupabaseAdmin()
     .from('whitelist')
     .select('id, is_active')
     .eq('email', normalizedEmail)
@@ -84,7 +90,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Reactivate
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
       .from('whitelist')
       .update({ is_active: true, notes, added_by: user?.id })
       .eq('id', existing.id)
@@ -97,7 +103,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Create new
-  const { error } = await supabaseAdmin
+  const { error } = await getSupabaseAdmin()
     .from('whitelist')
     .insert({
       email: normalizedEmail,
@@ -131,7 +137,7 @@ export async function PATCH(request: NextRequest) {
   if (type === 'request') {
     if (action === 'approve') {
       // Get request details
-      const { data: requestData } = await supabaseAdmin
+      const { data: requestData } = await getSupabaseAdmin()
         .from('access_requests')
         .select('email, full_name')
         .eq('id', id)
@@ -142,7 +148,7 @@ export async function PATCH(request: NextRequest) {
       }
 
       // Add to whitelist
-      await supabaseAdmin
+      await getSupabaseAdmin()
         .from('whitelist')
         .insert({
           email: requestData.email,
@@ -151,7 +157,7 @@ export async function PATCH(request: NextRequest) {
         })
 
       // Update request status
-      await supabaseAdmin
+      await getSupabaseAdmin()
         .from('access_requests')
         .update({
           status: 'approved',
@@ -164,7 +170,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (action === 'reject') {
-      await supabaseAdmin
+      await getSupabaseAdmin()
         .from('access_requests')
         .update({
           status: 'rejected',
@@ -179,7 +185,7 @@ export async function PATCH(request: NextRequest) {
 
   // Handle whitelist toggle
   if (action === 'toggle') {
-    const { data: entry } = await supabaseAdmin
+    const { data: entry } = await getSupabaseAdmin()
       .from('whitelist')
       .select('is_active')
       .eq('id', id)
@@ -189,7 +195,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
-    await supabaseAdmin
+    await getSupabaseAdmin()
       .from('whitelist')
       .update({ is_active: !entry.is_active })
       .eq('id', id)
@@ -199,7 +205,7 @@ export async function PATCH(request: NextRequest) {
 
   // Handle update notes
   if (action === 'update') {
-    await supabaseAdmin
+    await getSupabaseAdmin()
       .from('whitelist')
       .update({ notes })
       .eq('id', id)
@@ -223,7 +229,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'ID is required' }, { status: 400 })
   }
 
-  const { error } = await supabaseAdmin
+  const { error } = await getSupabaseAdmin()
     .from('whitelist')
     .delete()
     .eq('id', id)
