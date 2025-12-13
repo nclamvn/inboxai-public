@@ -18,9 +18,9 @@ const categoryLabels: Record<string, string> = {
 }
 
 const categoryColors: Record<string, string> = {
-  newsletter: 'bg-gray-100 text-gray-700',
-  promotion: 'bg-amber-100 text-amber-700',
-  spam: 'bg-red-100 text-red-600'
+  newsletter: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
+  promotion: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
+  spam: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
 }
 
 export default function SubscriptionsPage() {
@@ -96,18 +96,18 @@ export default function SubscriptionsPage() {
   const totalEmails = subscriptions.reduce((sum, s) => sum + s.count, 0)
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-white">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[var(--background)]">
       {/* Header */}
-      <div className="border-b border-[#EBEBEB] bg-white px-6 py-4">
+      <div className="border-b border-[var(--border)] bg-[var(--card)] px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-[20px] font-semibold text-[#1A1A1A]">
+            <h1 className="text-[20px] font-semibold text-[var(--foreground)]">
               Quản lý Newsletters
             </h1>
-            <p className="text-[14px] text-[#6B6B6B] mt-1">
+            <p className="text-[14px] text-[var(--muted-foreground)] mt-1">
               Các nguồn gửi email định kỳ đến hộp thư của bạn
             </p>
-            <p className="text-[13px] text-[#9B9B9B] mt-0.5">
+            <p className="text-[13px] text-[var(--muted)] mt-0.5">
               {subscriptions.length} nguồn • {totalEmails} email
             </p>
           </div>
@@ -116,7 +116,7 @@ export default function SubscriptionsPage() {
             <button
               onClick={fetchSubscriptions}
               disabled={loading}
-              className="p-2 rounded-lg text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] transition-colors disabled:opacity-50"
+              className="p-2 rounded-lg text-[var(--muted-foreground)] hover:bg-[var(--hover)] hover:text-[var(--foreground)] transition-colors disabled:opacity-50"
             >
               <RefreshCw className={cn('w-5 h-5', loading && 'animate-spin')} strokeWidth={1.5} />
             </button>
@@ -143,30 +143,30 @@ export default function SubscriptionsPage() {
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center h-32">
-            <Loader2 className="w-6 h-6 animate-spin text-[#9B9B9B]" />
+            <Loader2 className="w-6 h-6 animate-spin text-[var(--muted)]" />
           </div>
         ) : subscriptions.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-center">
-            <div className="w-16 h-16 bg-[#F5F5F5] rounded-full flex items-center justify-center mb-4">
-              <Mail className="w-8 h-8 text-[#9B9B9B]" strokeWidth={1.5} />
+            <div className="w-16 h-16 bg-[var(--secondary)] rounded-full flex items-center justify-center mb-4">
+              <Mail className="w-8 h-8 text-[var(--muted)]" strokeWidth={1.5} />
             </div>
-            <p className="text-[16px] font-medium text-[#1A1A1A] mb-1">
+            <p className="text-[16px] font-medium text-[var(--foreground)] mb-1">
               Không có đăng ký
             </p>
-            <p className="text-[14px] text-[#6B6B6B]">
+            <p className="text-[14px] text-[var(--muted-foreground)]">
               Các email từ newsletter, khuyến mãi và spam sẽ hiện ở đây
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-[#F5F5F5]">
+          <div className="divide-y divide-[var(--border)]">
             {subscriptions.map(sub => (
               <div
                 key={sub.email}
-                className="flex items-center justify-between px-6 py-4 hover:bg-[#FAFAFA] transition-colors"
+                className="flex items-center justify-between px-6 py-4 hover:bg-[var(--hover)] transition-colors"
               >
                 <div className="flex-1 min-w-0 pr-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-[14px] font-medium text-[#1A1A1A] truncate">
+                    <span className="text-[14px] font-medium text-[var(--foreground)] truncate">
                       {sub.name}
                     </span>
                     <span className={cn(
@@ -176,7 +176,7 @@ export default function SubscriptionsPage() {
                       {categoryLabels[sub.category] || sub.category}
                     </span>
                   </div>
-                  <div className="text-[13px] text-[#6B6B6B] truncate">
+                  <div className="text-[13px] text-[var(--muted-foreground)] truncate">
                     {sub.email} • {sub.count} email
                   </div>
                 </div>
@@ -184,7 +184,7 @@ export default function SubscriptionsPage() {
                 <button
                   onClick={() => handleUnsubscribe(sub.email)}
                   disabled={processing === sub.email}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] text-red-600 bg-red-50 rounded-lg hover:bg-red-100 disabled:opacity-50 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/20 disabled:opacity-50 transition-colors"
                 >
                   {processing === sub.email ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />

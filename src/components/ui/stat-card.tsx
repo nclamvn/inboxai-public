@@ -23,25 +23,25 @@ export function StatCard({
 }: StatCardProps) {
   return (
     <div className={cn(
-      'p-5 rounded-xl border border-[#EBEBEB] bg-white',
+      'p-5 rounded-xl border border-[var(--border)] bg-[var(--card)]',
       className
     )}>
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-8 h-8 rounded-lg bg-[#F5F5F5] flex items-center justify-center">
-          <span className="text-[#6B6B6B]">{icon}</span>
+        <div className="w-8 h-8 rounded-lg bg-[var(--secondary)] flex items-center justify-center">
+          <span className="text-[var(--muted-foreground)]">{icon}</span>
         </div>
-        <span className="text-[13px] text-[#6B6B6B]">{label}</span>
+        <span className="text-[13px] text-[var(--muted-foreground)]">{label}</span>
       </div>
       <div className="flex items-baseline gap-2">
-        <p className="text-[28px] font-semibold text-[#1A1A1A] tracking-tight">
+        <p className="text-[28px] font-semibold text-[var(--foreground)] tracking-tight">
           {value}
         </p>
         {trend && (
           <span className={cn(
             'text-[13px] font-medium',
-            trend.direction === 'up' && 'text-[#16A34A]',
-            trend.direction === 'down' && 'text-[#DC2626]',
-            trend.direction === 'stable' && 'text-[#9B9B9B]'
+            trend.direction === 'up' && 'text-green-600 dark:text-green-400',
+            trend.direction === 'down' && 'text-red-600 dark:text-red-400',
+            trend.direction === 'stable' && 'text-[var(--muted)]'
           )}>
             {trend.direction === 'up' ? '+' : trend.direction === 'down' ? '-' : ''}
             {trend.value}%
@@ -49,7 +49,7 @@ export function StatCard({
         )}
       </div>
       {subtext && (
-        <p className="text-[12px] text-[#9B9B9B] mt-1">{subtext}</p>
+        <p className="text-[12px] text-[var(--muted)] mt-1">{subtext}</p>
       )}
     </div>
   )

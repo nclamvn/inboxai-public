@@ -77,8 +77,8 @@ export function WeeklyReportView() {
   if (loading) {
     return (
       <div className="p-12 text-center">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#9B9B9B]" strokeWidth={1.5} />
-        <p className="text-[15px] text-[#6B6B6B]">Đang phân tích dữ liệu...</p>
+        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[var(--muted)]" strokeWidth={1.5} />
+        <p className="text-[15px] text-[var(--muted-foreground)]">Đang phân tích dữ liệu...</p>
       </div>
     )
   }
@@ -86,8 +86,8 @@ export function WeeklyReportView() {
   if (!report) {
     return (
       <div className="p-12 text-center">
-        <AlertCircle className="w-12 h-12 mx-auto mb-4 text-[#D4D4D4]" strokeWidth={1.5} />
-        <p className="text-[15px] text-[#6B6B6B]">Không thể tải báo cáo</p>
+        <AlertCircle className="w-12 h-12 mx-auto mb-4 text-[var(--muted)]" strokeWidth={1.5} />
+        <p className="text-[15px] text-[var(--muted-foreground)]">Không thể tải báo cáo</p>
       </div>
     )
   }
@@ -99,33 +99,24 @@ export function WeeklyReportView() {
     return new Date(iso).toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' })
   }
 
-  const getGradeVariant = () => {
-    switch (report.productivity.grade) {
-      case 'Xuất sắc': return 'success'
-      case 'Tốt': return 'info'
-      case 'Khá': return 'warning'
-      default: return 'urgent'
-    }
-  }
-
   return (
     <div className="p-6 space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-[20px] font-semibold text-[#1A1A1A]">
+          <h2 className="text-[20px] font-semibold text-[var(--foreground)]">
             Báo cáo tuần
           </h2>
-          <p className="text-[14px] text-[#6B6B6B] mt-1">
+          <p className="text-[14px] text-[var(--muted-foreground)] mt-1">
             {formatDate(report.period.start)} - {formatDate(report.period.end)}
           </p>
         </div>
         <div className={cn(
           "flex items-center gap-2 px-4 py-2 rounded-full",
-          report.productivity.grade === 'Xuất sắc' && "bg-[#F0FDF4] text-[#16A34A]",
-          report.productivity.grade === 'Tốt' && "bg-[#EFF6FF] text-[#2563EB]",
-          report.productivity.grade === 'Khá' && "bg-[#FFFBEB] text-[#D97706]",
-          report.productivity.grade === 'Cần cải thiện' && "bg-[#FEF2F2] text-[#DC2626]"
+          report.productivity.grade === 'Xuất sắc' && "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
+          report.productivity.grade === 'Tốt' && "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
+          report.productivity.grade === 'Khá' && "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400",
+          report.productivity.grade === 'Cần cải thiện' && "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
         )}>
           <span className="text-[24px] font-semibold">{report.productivity.score}</span>
           <div className="text-left">
@@ -134,9 +125,9 @@ export function WeeklyReportView() {
           </div>
           <TrendIcon className={cn(
             "w-5 h-5 ml-2",
-            report.productivity.trend === 'up' && "text-[#16A34A]",
-            report.productivity.trend === 'down' && "text-[#DC2626]",
-            report.productivity.trend === 'stable' && "text-[#9B9B9B]"
+            report.productivity.trend === 'up' && "text-green-600 dark:text-green-400",
+            report.productivity.trend === 'down' && "text-red-600 dark:text-red-400",
+            report.productivity.trend === 'stable' && "text-[var(--muted)]"
           )} strokeWidth={1.5} />
         </div>
       </div>
@@ -170,23 +161,23 @@ export function WeeklyReportView() {
       </div>
 
       {/* Comparison */}
-      <div className="bg-[#FAFAFA] rounded-xl p-5">
-        <h3 className="text-[14px] font-medium text-[#1A1A1A] mb-4">
+      <div className="bg-[var(--secondary)] rounded-xl p-5">
+        <h3 className="text-[14px] font-medium text-[var(--foreground)] mb-4">
           So với tuần trước
         </h3>
         <div className="grid grid-cols-3 gap-6">
           {report.comparison.map((item, index) => (
             <div key={index}>
-              <p className="text-[13px] text-[#6B6B6B] mb-1">{item.metric}</p>
+              <p className="text-[13px] text-[var(--muted-foreground)] mb-1">{item.metric}</p>
               <div className="flex items-baseline gap-2">
-                <span className="text-[20px] font-semibold text-[#1A1A1A]">
+                <span className="text-[20px] font-semibold text-[var(--foreground)]">
                   {item.current}
                 </span>
                 <span className={cn(
                   "text-[13px] font-medium flex items-center",
-                  item.change > 0 && "text-[#16A34A]",
-                  item.change < 0 && "text-[#DC2626]",
-                  item.change === 0 && "text-[#9B9B9B]"
+                  item.change > 0 && "text-green-600 dark:text-green-400",
+                  item.change < 0 && "text-red-600 dark:text-red-400",
+                  item.change === 0 && "text-[var(--muted)]"
                 )}>
                   {item.change > 0 ? '+' : ''}{item.changePercent}%
                 </span>
@@ -198,7 +189,7 @@ export function WeeklyReportView() {
 
       {/* Top Senders */}
       <div>
-        <h3 className="text-[14px] font-medium text-[#1A1A1A] mb-4 flex items-center gap-2">
+        <h3 className="text-[14px] font-medium text-[var(--foreground)] mb-4 flex items-center gap-2">
           <Users className="w-4 h-4" strokeWidth={1.5} />
           Top người gửi
         </h3>
@@ -206,16 +197,16 @@ export function WeeklyReportView() {
           {report.topSenders.slice(0, 5).map((sender, index) => (
             <div
               key={index}
-              className="flex items-center gap-4 p-3 rounded-xl border border-[#EBEBEB] bg-white"
+              className="flex items-center gap-4 p-3 rounded-xl border border-[var(--border)] bg-[var(--card)]"
             >
-              <div className="w-10 h-10 rounded-full bg-[#F5F5F5] flex items-center justify-center text-[14px] font-medium text-[#6B6B6B]">
+              <div className="w-10 h-10 rounded-full bg-[var(--secondary)] flex items-center justify-center text-[14px] font-medium text-[var(--muted-foreground)]">
                 {sender.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[14px] font-medium text-[#1A1A1A] truncate">
+                <p className="text-[14px] font-medium text-[var(--foreground)] truncate">
                   {sender.name}
                 </p>
-                <p className="text-[13px] text-[#6B6B6B]">
+                <p className="text-[13px] text-[var(--muted-foreground)]">
                   {sender.totalEmails} email · {sender.openRate}% mở
                 </p>
               </div>
@@ -240,7 +231,7 @@ export function WeeklyReportView() {
       {/* Suggestions */}
       {report.suggestions.length > 0 && (
         <div>
-          <h3 className="text-[14px] font-medium text-[#1A1A1A] mb-4 flex items-center gap-2">
+          <h3 className="text-[14px] font-medium text-[var(--foreground)] mb-4 flex items-center gap-2">
             <Lightbulb className="w-4 h-4" strokeWidth={1.5} />
             Gợi ý từ AI
           </h3>
@@ -258,7 +249,7 @@ export function WeeklyReportView() {
               return (
                 <div
                   key={index}
-                  className="flex items-center gap-4 p-4 rounded-xl border border-[#EBEBEB] bg-white hover:border-[#D4D4D4] transition-colors cursor-pointer"
+                  className="flex items-center gap-4 p-4 rounded-xl border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--hover)] transition-colors cursor-pointer"
                 >
                   <IconBox variant={getVariant() as 'red' | 'amber' | 'blue' | 'emerald' | 'default'} size="md">
                     {suggestion.type === 'unsubscribe' && <UserX className="w-5 h-5" strokeWidth={1.5} />}
@@ -267,15 +258,15 @@ export function WeeklyReportView() {
                     {suggestion.type === 'habit' && <Clock className="w-5 h-5" strokeWidth={1.5} />}
                   </IconBox>
                   <div className="flex-1">
-                    <p className="text-[14px] font-medium text-[#1A1A1A]">
+                    <p className="text-[14px] font-medium text-[var(--foreground)]">
                       {suggestion.title}
                     </p>
-                    <p className="text-[13px] text-[#6B6B6B]">
+                    <p className="text-[13px] text-[var(--muted-foreground)]">
                       {suggestion.description}
                     </p>
                   </div>
                   {suggestion.actionable && (
-                    <ChevronRight className="w-5 h-5 text-[#D4D4D4]" strokeWidth={1.5} />
+                    <ChevronRight className="w-5 h-5 text-[var(--muted)]" strokeWidth={1.5} />
                   )}
                 </div>
               )
@@ -285,25 +276,25 @@ export function WeeklyReportView() {
       )}
 
       {/* Productivity Factors */}
-      <div className="bg-[#FAFAFA] rounded-xl p-5">
-        <h3 className="text-[14px] font-medium text-[#1A1A1A] mb-4">
+      <div className="bg-[var(--secondary)] rounded-xl p-5">
+        <h3 className="text-[14px] font-medium text-[var(--foreground)] mb-4">
           Phân tích điểm Productivity
         </h3>
         <div className="space-y-3">
           {report.productivity.factors.map((factor, index) => (
             <div key={index}>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[13px] text-[#6B6B6B]">{factor.name}</span>
-                <span className="text-[13px] font-medium text-[#1A1A1A]">
+                <span className="text-[13px] text-[var(--muted-foreground)]">{factor.name}</span>
+                <span className="text-[13px] font-medium text-[var(--foreground)]">
                   {Math.round(factor.score)}/100
                 </span>
               </div>
-              <div className="h-2 bg-[#EBEBEB] rounded-full overflow-hidden">
+              <div className="h-2 bg-[var(--border)] rounded-full overflow-hidden">
                 <div
                   className={cn(
                     "h-full rounded-full transition-all",
-                    factor.score >= 70 ? "bg-[#16A34A]" :
-                    factor.score >= 50 ? "bg-[#D97706]" : "bg-[#DC2626]"
+                    factor.score >= 70 ? "bg-green-500" :
+                    factor.score >= 50 ? "bg-amber-500" : "bg-red-500"
                   )}
                   style={{ width: `${factor.score}%` }}
                 />
