@@ -1,10 +1,17 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import type { Category } from '@/types'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+let supabaseInstance: SupabaseClient | null = null
+
+function getSupabase(): SupabaseClient {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return supabaseInstance
+}
 
 interface FeedbackEntry {
   id: string
@@ -32,7 +39,7 @@ export async function recordFeedback(
   const domain = fromAddress.split('@')[1]?.toLowerCase() || ''
   const keywords = extractKeywords(subject)
 
-  await supabase.from('classification_feedback').insert({
+  await getSupabase().from('classification_feedback').insert({
     user_id: userId,
     email_id: emailId,
     from_address: fromAddress.toLowerCase(),
@@ -74,7 +81,7 @@ export async function getLearnedRules(userId: string): Promise<{
   domainRules: Map<string, Category>
   senderRules: Map<string, Category>
 }> {
-  const { data: feedback, error } = await supabase
+  const { data: feedback, error } = await getSupabase()
     .from('classification_feedback')
     .select('*')
     .eq('user_id', userId)
@@ -198,7 +205,7 @@ export async function getAccuracyStats(userId: string): Promise<{
   totalFeedback: number
   categoryAccuracy: Map<Category, { correct: number; total: number }>
 }> {
-  const { data: feedback, error } = await supabase
+  const { data: feedback, error } = await getSupabase()
     .from('classification_feedback')
     .select('original_category, corrected_category')
     .eq('user_id', userId)
@@ -237,7 +244,7 @@ export async function exportLearningData(userId: string): Promise<{
     senderRules: Record<string, Category>
   }
 }> {
-  const { data: feedback } = await supabase
+  const { data: feedback } = await getSupabase()
     .from('classification_feedback')
     .select('*')
     .eq('user_id', userId)

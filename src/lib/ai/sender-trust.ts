@@ -1,9 +1,16 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+let supabaseInstance: SupabaseClient | null = null
+
+function getSupabase(): SupabaseClient {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return supabaseInstance
+}
 
 export interface SenderTrust {
   id: string
@@ -27,7 +34,7 @@ export async function getSenderTrust(
   userId: string,
   senderEmail: string
 ): Promise<SenderTrust | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('sender_trust')
     .select('*')
     .eq('user_id', userId)
@@ -49,7 +56,7 @@ export async function updateSenderOnReceive(
   const email = senderEmail.toLowerCase()
   const domain = email.split('@')[1] || null
 
-  const { data: existing } = await supabase
+  const { data: existing } = await getSupabase()
     .from('sender_trust')
     .select('*')
     .eq('user_id', userId)
@@ -58,7 +65,7 @@ export async function updateSenderOnReceive(
 
   if (existing) {
     // Update existing record
-    await supabase
+    await getSupabase()
       .from('sender_trust')
       .update({
         times_received: (existing.times_received || 0) + 1,
@@ -68,7 +75,7 @@ export async function updateSenderOnReceive(
       .eq('id', existing.id)
   } else {
     // Create new record
-    await supabase
+    await getSupabase()
       .from('sender_trust')
       .insert({
         user_id: userId,
@@ -109,7 +116,7 @@ export async function markSenderAsTrusted(
     updateData.is_contact = true
   }
 
-  const { data: existing } = await supabase
+  const { data: existing } = await getSupabase()
     .from('sender_trust')
     .select('id, times_replied')
     .eq('user_id', userId)
@@ -120,12 +127,12 @@ export async function markSenderAsTrusted(
     if (reason === 'replied') {
       updateData.times_replied = (existing.times_replied || 0) + 1
     }
-    await supabase
+    await getSupabase()
       .from('sender_trust')
       .update(updateData)
       .eq('id', existing.id)
   } else {
-    await supabase
+    await getSupabase()
       .from('sender_trust')
       .insert({
         user_id: userId,
@@ -147,7 +154,7 @@ export async function markSenderAsUntrusted(
   const email = senderEmail.toLowerCase()
   const domain = email.split('@')[1] || null
 
-  const { data: existing } = await supabase
+  const { data: existing } = await getSupabase()
     .from('sender_trust')
     .select('id')
     .eq('user_id', userId)
@@ -161,12 +168,12 @@ export async function markSenderAsUntrusted(
   }
 
   if (existing) {
-    await supabase
+    await getSupabase()
       .from('sender_trust')
       .update(updateData)
       .eq('id', existing.id)
   } else {
-    await supabase
+    await getSupabase()
       .from('sender_trust')
       .insert({
         user_id: userId,
@@ -188,7 +195,7 @@ export async function blockSender(
   const email = senderEmail.toLowerCase()
   const domain = email.split('@')[1] || null
 
-  await supabase
+  await getSupabase()
     .from('sender_trust')
     .upsert({
       user_id: userId,
