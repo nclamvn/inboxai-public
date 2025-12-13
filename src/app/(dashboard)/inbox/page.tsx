@@ -14,6 +14,8 @@ import { EmailListCompact } from '@/components/email/email-list-compact'
 import { EmailListSkeleton } from '@/components/email/email-list-skeleton'
 import { EmailDetailFull } from '@/components/email/email-detail-full'
 import { EmailDetailMobile } from '@/components/email/email-detail-mobile'
+import { SelectionProvider } from '@/contexts/email-selection-context'
+import { SelectionToolbar } from '@/components/email/selection-toolbar'
 
 type ViewMode = 'list' | 'split' | 'full'
 
@@ -250,6 +252,53 @@ function InboxContent() {
     setActiveFilter(category)
   }
 
+  // Handle bulk actions from context menu or selection toolbar
+  const handleBulkAction = useCallback(async (action: string, emailIds: string[], data?: Record<string, unknown>) => {
+    console.log(`[BULK ACTION] ${action} on ${emailIds.length} emails`, data)
+
+    try {
+      // Handle navigation actions locally
+      if (action === 'reply' || action === 'reply-all' || action === 'forward') {
+        const email = emails.find(e => e.id === emailIds[0])
+        if (email) {
+          // Navigate to compose with reply context
+          router.push(`/compose?${action}=${email.id}`)
+        }
+        return
+      }
+
+      // Handle summarize action - call AI
+      if (action === 'summarize') {
+        const email = emails.find(e => e.id === emailIds[0])
+        if (email) {
+          // Could show a toast or modal with AI summary
+          alert('Tính năng tóm tắt AI đang được phát triển')
+        }
+        return
+      }
+
+      // Send bulk action to API
+      const res = await fetch('/api/emails/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, emailIds, data })
+      })
+
+      const result = await res.json()
+
+      if (result.success) {
+        console.log(`[BULK ACTION] Success: ${result.count} emails updated`)
+        refetch()
+      } else {
+        console.error('[BULK ACTION] Failed:', result.error)
+        alert(result.error || 'Thao tác thất bại')
+      }
+    } catch (error) {
+      console.error('[BULK ACTION] Error:', error)
+      alert('Có lỗi xảy ra')
+    }
+  }, [emails, router, refetch])
+
   // Use fetchedEmail (full data with body) instead of list email (preview only)
   const selectedEmail = fetchedEmail
 
@@ -324,6 +373,7 @@ function InboxContent() {
   }
 
   return (
+    <SelectionProvider>
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[var(--card)]">
       {/* Toolbar */}
       <div className="h-12 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4">
@@ -396,36 +446,43 @@ function InboxContent() {
         {/* Email List - Hidden on mobile when viewing email detail */}
         {effectiveViewMode !== 'full' && (
           <div className={cn(
-            'border-r border-[var(--border)] overflow-y-auto transition-all duration-200 bg-[var(--card)]',
-            effectiveViewMode === 'list' ? 'flex-1' : 'hidden lg:block lg:w-[360px]'
+            'border-r border-[var(--border)] overflow-hidden transition-all duration-200 bg-[var(--card)] flex flex-col',
+            effectiveViewMode === 'list' ? 'flex-1' : 'hidden lg:flex lg:w-[360px]'
           )}>
-            {filteredEmails.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-32 text-[var(--muted-foreground)]">
-                <p className="text-[14px]">Không có email</p>
-                {activeFilter && (
-                  <button
-                    type="button"
-                    onClick={() => setActiveFilter(null)}
-                    className="text-[13px] text-[var(--muted)] hover:text-[var(--foreground)] mt-2"
-                  >
-                    Xóa bộ lọc
-                  </button>
-                )}
-              </div>
-            ) : (
-              <EmailListCompact
-                emails={filteredEmails}
-                selectedId={selectedId}
-                onSelect={handleSelectEmail}
-                onStar={toggleStar}
-                onCategoryClick={handleCategoryClick}
-                compact={effectiveViewMode === 'split'}
-                smartSort={!activeFilter}
-                hasMore={hasMore}
-                loadingMore={loadingMore}
-                onLoadMore={loadMore}
-              />
-            )}
+            {/* Selection Toolbar - shows when emails are selected */}
+            <SelectionToolbar onAction={handleBulkAction} />
+
+            {/* Email List */}
+            <div className="flex-1 overflow-y-auto">
+              {filteredEmails.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-32 text-[var(--muted-foreground)]">
+                  <p className="text-[14px]">Không có email</p>
+                  {activeFilter && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveFilter(null)}
+                      className="text-[13px] text-[var(--muted)] hover:text-[var(--foreground)] mt-2"
+                    >
+                      Xóa bộ lọc
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <EmailListCompact
+                  emails={filteredEmails}
+                  selectedId={selectedId}
+                  onSelect={handleSelectEmail}
+                  onStar={toggleStar}
+                  onCategoryClick={handleCategoryClick}
+                  compact={effectiveViewMode === 'split'}
+                  smartSort={!activeFilter}
+                  hasMore={hasMore}
+                  loadingMore={loadingMore}
+                  onLoadMore={loadMore}
+                  onBulkAction={handleBulkAction}
+                />
+              )}
+            </div>
           </div>
         )}
 
@@ -460,6 +517,7 @@ function InboxContent() {
         )}
       </div>
     </div>
+    </SelectionProvider>
   )
 }
 

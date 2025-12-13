@@ -89,6 +89,31 @@ function extractAttachments(parsed: { attachments?: Array<{ filename?: string; c
 const MAX_SYNC_DURATION = 50000 // 50 seconds
 const DEFAULT_LIMIT = 25 // Giảm limit vì fetch full body
 
+// Helper to fetch UIDs and sort them descending (newest first)
+async function getNewestUIDs(
+  client: InstanceType<typeof import('imapflow').ImapFlow>,
+  limit: number,
+  sinceDate?: Date
+): Promise<number[]> {
+  let searchCriteria: { uid?: string; since?: Date } | string = { uid: '1:*' }
+
+  if (sinceDate) {
+    searchCriteria = { since: sinceDate }
+  }
+
+  // Search for all UIDs
+  const uids: number[] = []
+  for await (const msg of client.fetch(searchCriteria, { uid: true }, { uid: true })) {
+    uids.push(msg.uid)
+  }
+
+  // Sort descending (newest/highest UID first)
+  uids.sort((a, b) => b - a)
+
+  // Return only the newest N
+  return uids.slice(0, limit)
+}
+
 export async function testImapConnection(config: {
   host: string
   port: number
@@ -175,43 +200,76 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
       const totalMessages = status.messages || 0
       console.log(`[SYNC] Total messages in INBOX: ${totalMessages}`)
 
-      // Determine fetch range
-      let fetchRange: string
+      // ========================================
+      // KEY FIX: Fetch emails với UID cao nhất (mới nhất) trước
+      // ========================================
+
+      let uidsToFetch: number[] = []
 
       if (fullSync) {
-        fetchRange = '1:*'
-        console.log(`[SYNC] Full sync mode`)
+        // Full sync: lấy N email mới nhất
+        console.log(`[SYNC] Full sync mode - getting ${limit} newest emails`)
+        uidsToFetch = await getNewestUIDs(client, limit)
       } else if (account.last_sync_uid) {
+        // Incremental sync: chỉ lấy email mới hơn last_sync_uid
         const lastUid = parseInt(account.last_sync_uid)
-        fetchRange = `${lastUid + 1}:*`
-        console.log(`[SYNC] Incremental sync - UID > ${lastUid}`)
+        console.log(`[SYNC] Incremental sync - fetching UIDs > ${lastUid}`)
+
+        // Fetch all UIDs greater than lastUid
+        const newUids: number[] = []
+        for await (const msg of client.fetch(`${lastUid + 1}:*`, { uid: true }, { uid: true })) {
+          newUids.push(msg.uid)
+        }
+
+        // Sort descending (newest first) and limit
+        newUids.sort((a, b) => b - a)
+        uidsToFetch = newUids.slice(0, limit)
+        console.log(`[SYNC] Found ${newUids.length} new emails, fetching ${uidsToFetch.length}`)
       } else {
-        const startSeq = Math.max(1, totalMessages - limit + 1)
-        fetchRange = `${startSeq}:*`
-        console.log(`[SYNC] First sync - sequences ${startSeq} to ${totalMessages}`)
+        // First sync: lấy N email mới nhất
+        console.log(`[SYNC] First sync - getting ${limit} newest emails`)
+        uidsToFetch = await getNewestUIDs(client, limit)
       }
 
-      let lastUid: string | null = null
+      if (uidsToFetch.length === 0) {
+        console.log(`[SYNC] No emails to sync`)
+        result.success = true
+        mailbox.release()
+        await client.logout()
+        return result
+      }
+
+      console.log(`[SYNC] UIDs to fetch: ${uidsToFetch.slice(0, 5).join(', ')}${uidsToFetch.length > 5 ? '...' : ''} (${uidsToFetch.length} total)`)
+      console.log(`[SYNC] UID range: ${Math.min(...uidsToFetch)} to ${Math.max(...uidsToFetch)}`)
+
+      let highestUid: number = 0
       let count = 0
 
-      // FULL FETCH: envelope + flags + SOURCE (body)
-      for await (const message of client.fetch(fetchRange, {
-        envelope: true,
-        uid: true,
-        flags: true,
-        source: true  // QUAN TRỌNG: Fetch full email source để có body
-      }, { uid: true })) {
-
+      // Fetch từng UID theo thứ tự mới nhất trước
+      for (const uid of uidsToFetch) {
         // Timeout check
         if (Date.now() - startTime > MAX_SYNC_DURATION) {
           console.log(`[SYNC] Timeout at ${count} messages, stopping`)
           break
         }
 
-        const uid = String(message.uid)
+        // Fetch single message by UID
+        const message = await client.fetchOne(String(uid), {
+          envelope: true,
+          uid: true,
+          flags: true,
+          source: true  // QUAN TRỌNG: Fetch full email source để có body
+        }, { uid: true }) as { uid: number; envelope?: { messageId?: string; from?: Array<{ address?: string; name?: string }>; to?: Array<{ address?: string }>; cc?: Array<{ address?: string }>; subject?: string; date?: Date }; flags?: Set<string>; source?: Buffer } | false
+
+        if (!message || !message.envelope) continue
+
+        const msgUid = message.uid
         const env = message.envelope
 
-        if (!env) continue
+        // Track highest UID for last_sync_uid
+        if (msgUid > highestUid) {
+          highestUid = msgUid
+        }
 
         try {
           // Parse full email to get body
@@ -236,13 +294,14 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
           }
 
           // Upsert email với body và attachment_count
+          const uidStr = String(msgUid)
           const { data: savedEmail, error: upsertError } = await supabase
             .from('emails')
             .upsert({
               user_id: account.user_id,
               source_account_id: account.id,
-              original_uid: uid,
-              message_id: env.messageId || `${uid}@${account.imap_host}`,
+              original_uid: uidStr,
+              message_id: env.messageId || `${uidStr}@${account.imap_host}`,
               from_address: env.from?.[0]?.address || '',
               from_name: env.from?.[0]?.name || '',
               to_addresses: env.to?.map((t: { address?: string }) => t.address).filter(Boolean) || [],
@@ -265,11 +324,10 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
             .single()
 
           if (upsertError) {
-            console.error(`[SYNC] Upsert error for UID ${uid}:`, upsertError.message)
-            result.errors.push(`UID ${uid}: ${upsertError.message}`)
+            console.error(`[SYNC] Upsert error for UID ${uidStr}:`, upsertError.message)
+            result.errors.push(`UID ${uidStr}: ${upsertError.message}`)
           } else {
             result.synced++
-            lastUid = uid
 
             // Save attachments metadata
             if (savedEmail && attachments.length > 0) {
@@ -290,9 +348,9 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
                 })
 
               if (attError && attError.code !== '42P01') {
-                console.error(`[SYNC] Attachment error for UID ${uid}:`, attError.message)
+                console.error(`[SYNC] Attachment error for UID ${uidStr}:`, attError.message)
               } else if (attachments.length > 0) {
-                console.log(`[SYNC] Saved ${attachments.length} attachments for UID ${uid}`)
+                console.log(`[SYNC] Saved ${attachments.length} attachments for UID ${uidStr}`)
               }
             }
           }
@@ -311,23 +369,23 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
 
         } catch (parseError) {
           const errMsg = parseError instanceof Error ? parseError.message : 'Parse error'
-          console.error(`[SYNC] Parse error for UID ${uid}:`, errMsg)
-          result.errors.push(`UID ${uid}: ${errMsg}`)
+          console.error(`[SYNC] Parse error for UID ${msgUid}:`, errMsg)
+          result.errors.push(`UID ${msgUid}: ${errMsg}`)
         }
       }
 
       console.log(`[SYNC] Synced ${result.synced} emails in ${Date.now() - startTime}ms`)
 
-      // Update account sync status
-      if (lastUid || result.synced > 0) {
+      // Update account sync status - use highestUid to track progress
+      if (highestUid > 0 || result.synced > 0) {
         const updateData: Record<string, unknown> = {
           last_sync_at: new Date().toISOString(),
           sync_error: result.errors.length > 0 ? result.errors.slice(0, 3).join('; ') : null
         }
 
-        if (lastUid) {
-          updateData.last_sync_uid = lastUid
-          result.lastUid = lastUid
+        if (highestUid > 0) {
+          updateData.last_sync_uid = String(highestUid)
+          result.lastUid = String(highestUid)
         }
 
         if (result.synced > 0) {
@@ -339,7 +397,7 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
           .update(updateData)
           .eq('id', account.id)
 
-        console.log(`[SYNC] Updated: last_sync_uid=${lastUid}`)
+        console.log(`[SYNC] Updated: last_sync_uid=${highestUid}`)
       }
 
       result.success = true
