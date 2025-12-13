@@ -1,9 +1,16 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+let supabaseInstance: SupabaseClient | null = null
+
+function getSupabase(): SupabaseClient {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return supabaseInstance
+}
 
 // Types
 interface Condition {
@@ -116,7 +123,7 @@ async function executeActions(email: Email, actions: Action[]): Promise<{ succes
     try {
       switch (action.type) {
         case 'archive':
-          await supabase
+          await getSupabase()
             .from('emails')
             .update({ is_archived: true, updated_at: new Date().toISOString() })
             .eq('id', email.id)
@@ -124,7 +131,7 @@ async function executeActions(email: Email, actions: Action[]): Promise<{ succes
           break
 
         case 'delete':
-          await supabase
+          await getSupabase()
             .from('emails')
             .update({ is_deleted: true, updated_at: new Date().toISOString() })
             .eq('id', email.id)
@@ -132,7 +139,7 @@ async function executeActions(email: Email, actions: Action[]): Promise<{ succes
           break
 
         case 'mark_read':
-          await supabase
+          await getSupabase()
             .from('emails')
             .update({ is_read: true, updated_at: new Date().toISOString() })
             .eq('id', email.id)
@@ -140,7 +147,7 @@ async function executeActions(email: Email, actions: Action[]): Promise<{ succes
           break
 
         case 'mark_unread':
-          await supabase
+          await getSupabase()
             .from('emails')
             .update({ is_read: false, updated_at: new Date().toISOString() })
             .eq('id', email.id)
@@ -149,7 +156,7 @@ async function executeActions(email: Email, actions: Action[]): Promise<{ succes
 
         case 'set_priority':
           if (action.priority !== undefined) {
-            await supabase
+            await getSupabase()
               .from('emails')
               .update({ priority: action.priority, updated_at: new Date().toISOString() })
               .eq('id', email.id)
@@ -159,7 +166,7 @@ async function executeActions(email: Email, actions: Action[]): Promise<{ succes
 
         case 'set_category':
           if (action.category) {
-            await supabase
+            await getSupabase()
               .from('emails')
               .update({ category: action.category, updated_at: new Date().toISOString() })
               .eq('id', email.id)
@@ -170,7 +177,7 @@ async function executeActions(email: Email, actions: Action[]): Promise<{ succes
         case 'add_label':
           if (action.label) {
             // Get or create label
-            let { data: label } = await supabase
+            let { data: label } = await getSupabase()
               .from('labels')
               .select('id')
               .eq('user_id', email.user_id)
@@ -178,7 +185,7 @@ async function executeActions(email: Email, actions: Action[]): Promise<{ succes
               .single()
 
             if (!label) {
-              const { data: newLabel } = await supabase
+              const { data: newLabel } = await getSupabase()
                 .from('labels')
                 .insert({ user_id: email.user_id, name: action.label })
                 .select('id')
@@ -187,7 +194,7 @@ async function executeActions(email: Email, actions: Action[]): Promise<{ succes
             }
 
             if (label) {
-              await supabase
+              await getSupabase()
                 .from('email_labels')
                 .upsert({ email_id: email.id, label_id: label.id })
               results.push({ success: true, action: `add_label_${action.label}` })
@@ -211,7 +218,7 @@ export async function runRule(rule: Rule): Promise<{
   actionsTaken: { email_id: string; subject: string | null; results: { success: boolean; action: string }[] }[]
 }> {
   // Fetch user's emails that haven't been processed recently
-  const { data: emails } = await supabase
+  const { data: emails } = await getSupabase()
     .from('emails')
     .select('*')
     .eq('user_id', rule.user_id)
@@ -251,7 +258,7 @@ export async function runAllRules(userId: string): Promise<{
   totalAffected: number
   logs: { rule: string; emailsScanned?: number; emailsAffected?: number; error?: string }[]
 }> {
-  const { data: rules } = await supabase
+  const { data: rules } = await getSupabase()
     .from('automation_rules')
     .select('*')
     .eq('user_id', userId)
@@ -266,7 +273,7 @@ export async function runAllRules(userId: string): Promise<{
 
   for (const rule of rules) {
     // Create log entry
-    const { data: logEntry } = await supabase
+    const { data: logEntry } = await getSupabase()
       .from('automation_logs')
       .insert({
         user_id: userId,
@@ -280,7 +287,7 @@ export async function runAllRules(userId: string): Promise<{
       const result = await runRule(rule as Rule)
 
       // Update log
-      await supabase
+      await getSupabase()
         .from('automation_logs')
         .update({
           finished_at: new Date().toISOString(),
@@ -292,7 +299,7 @@ export async function runAllRules(userId: string): Promise<{
         .eq('id', logEntry?.id)
 
       // Update rule stats
-      await supabase
+      await getSupabase()
         .from('automation_rules')
         .update({
           last_run_at: new Date().toISOString(),
@@ -305,7 +312,7 @@ export async function runAllRules(userId: string): Promise<{
       logs.push({ rule: rule.name, ...result })
 
     } catch (error) {
-      await supabase
+      await getSupabase()
         .from('automation_logs')
         .update({
           finished_at: new Date().toISOString(),
@@ -377,5 +384,5 @@ export async function createDefaultRules(userId: string) {
     }
   ]
 
-  await supabase.from('automation_rules').insert(defaultRules)
+  await getSupabase().from('automation_rules').insert(defaultRules)
 }

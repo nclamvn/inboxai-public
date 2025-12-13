@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { checkRateLimit, getClientIP } from '@/lib/rate-limit'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+let supabaseInstance: SupabaseClient | null = null
+
+function getSupabase(): SupabaseClient {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return supabaseInstance
+}
 
 // Rate limit: 5 requests per IP per minute
 const RATE_LIMIT_CONFIG = {
@@ -41,7 +48,7 @@ export async function POST(request: NextRequest) {
     const emailLower = email.toLowerCase().trim()
 
     // Check if already in waitlist
-    const { data: existing } = await supabase
+    const { data: existing } = await getSupabase()
       .from('access_requests')
       .select('id, status')
       .eq('email', emailLower)
@@ -56,7 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if already whitelisted
-    const { data: whitelisted } = await supabase
+    const { data: whitelisted } = await getSupabase()
       .from('whitelist')
       .select('id')
       .eq('email', emailLower)
@@ -71,7 +78,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Add to waitlist
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('access_requests')
       .insert({
         email: emailLower,

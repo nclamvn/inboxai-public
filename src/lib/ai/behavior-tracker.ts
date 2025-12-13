@@ -1,9 +1,16 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+let supabaseInstance: SupabaseClient | null = null
+
+function getSupabase(): SupabaseClient {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return supabaseInstance
+}
 
 export type BehaviorAction = 'open' | 'read' | 'reply' | 'archive' | 'delete' | 'star' | 'unstar'
 
@@ -30,7 +37,7 @@ export async function trackBehavior(input: TrackBehaviorInput) {
   const { userId, emailId, action, readDuration } = input
 
   // Get email để tính time_to_action
-  const { data: email } = await supabase
+  const { data: email } = await getSupabase()
     .from('emails')
     .select('received_at, from_address, from_name')
     .eq('id', emailId)
@@ -41,7 +48,7 @@ export async function trackBehavior(input: TrackBehaviorInput) {
     : null
 
   // Insert behavior
-  await supabase.from('user_behaviors').insert({
+  await getSupabase().from('user_behaviors').insert({
     user_id: userId,
     email_id: emailId,
     action,
@@ -65,7 +72,7 @@ async function updateSenderScore(
   readDuration?: number
 ) {
   // Upsert sender score
-  const { data: existing } = await supabase
+  const { data: existing } = await getSupabase()
     .from('sender_scores')
     .select('*')
     .eq('user_id', userId)
@@ -113,14 +120,14 @@ async function updateSenderScore(
       }
     }
 
-    await supabase
+    await getSupabase()
       .from('sender_scores')
       .update(updates)
       .eq('id', existing.id)
 
   } else {
     // Create new
-    await supabase.from('sender_scores').insert({
+    await getSupabase().from('sender_scores').insert({
       user_id: userId,
       sender_email: senderEmail,
       sender_name: senderName,
@@ -136,7 +143,7 @@ async function updateSenderScore(
 
 // Increment received count when email arrives
 export async function trackEmailReceived(userId: string, senderEmail: string, senderName?: string) {
-  const { data: existing } = await supabase
+  const { data: existing } = await getSupabase()
     .from('sender_scores')
     .select('id, total_received')
     .eq('user_id', userId)
@@ -144,7 +151,7 @@ export async function trackEmailReceived(userId: string, senderEmail: string, se
     .single()
 
   if (existing) {
-    await supabase
+    await getSupabase()
       .from('sender_scores')
       .update({
         total_received: existing.total_received + 1,
@@ -152,7 +159,7 @@ export async function trackEmailReceived(userId: string, senderEmail: string, se
       })
       .eq('id', existing.id)
   } else {
-    await supabase.from('sender_scores').insert({
+    await getSupabase().from('sender_scores').insert({
       user_id: userId,
       sender_email: senderEmail,
       sender_name: senderName,
@@ -163,7 +170,7 @@ export async function trackEmailReceived(userId: string, senderEmail: string, se
 
 // Get user's behavior summary
 export async function getUserBehaviorSummary(userId: string) {
-  const { data: behaviors } = await supabase
+  const { data: behaviors } = await getSupabase()
     .from('user_behaviors')
     .select('action, time_of_day, day_of_week')
     .eq('user_id', userId)

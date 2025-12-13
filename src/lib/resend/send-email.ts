@@ -1,10 +1,17 @@
 import { resend, DEFAULT_FROM } from './client'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+let supabaseInstance: SupabaseClient | null = null
+
+function getSupabase(): SupabaseClient {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return supabaseInstance
+}
 
 interface SendEmailParams {
   userId: string
@@ -32,7 +39,7 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
 
   try {
     // Get user's profile for "from" name
-    const { data: profile } = await supabase
+    const { data: profile } = await getSupabase()
       .from('profiles')
       .select('display_name, email')
       .eq('id', userId)
@@ -67,7 +74,7 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
     // Save to database as sent email
     const toAddresses = Array.isArray(to) ? to : [to]
 
-    await supabase.from('emails').insert({
+    await getSupabase().from('emails').insert({
       user_id: userId,
       message_id: data?.id,
       from_address: fromEmail,
@@ -102,7 +109,7 @@ export async function sendReply(params: {
   const { userId, originalEmailId, body, htmlBody } = params
 
   // Get original email
-  const { data: original } = await supabase
+  const { data: original } = await getSupabase()
     .from('emails')
     .select('*')
     .eq('id', originalEmailId)

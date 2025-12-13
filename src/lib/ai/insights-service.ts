@@ -1,9 +1,16 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+let supabaseInstance: SupabaseClient | null = null
+
+function getSupabase(): SupabaseClient {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return supabaseInstance
+}
 
 interface WeeklyStats {
   totalReceived: number
@@ -110,7 +117,7 @@ export async function generateWeeklyReport(userId: string): Promise<WeeklyReport
   const prevWeekStart = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
 
   // Fetch this week's data
-  const { data: thisWeekEmails } = await supabase
+  const { data: thisWeekEmails } = await getSupabase()
     .from('emails')
     .select('*')
     .eq('user_id', userId)
@@ -118,7 +125,7 @@ export async function generateWeeklyReport(userId: string): Promise<WeeklyReport
     .order('received_at', { ascending: false })
 
   // Fetch last week's data for comparison
-  const { data: lastWeekEmails } = await supabase
+  const { data: lastWeekEmails } = await getSupabase()
     .from('emails')
     .select('*')
     .eq('user_id', userId)
@@ -127,7 +134,7 @@ export async function generateWeeklyReport(userId: string): Promise<WeeklyReport
 
   // Fetch ALL emails for sender analysis (last 30 days for more data)
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-  const { data: allRecentEmails } = await supabase
+  const { data: allRecentEmails } = await getSupabase()
     .from('emails')
     .select('*')
     .eq('user_id', userId)
@@ -440,13 +447,13 @@ export async function generateDailyDigest(userId: string) {
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
-  const { data: todayEmails } = await supabase
+  const { data: todayEmails } = await getSupabase()
     .from('emails')
     .select('*')
     .eq('user_id', userId)
     .gte('received_at', todayStart.toISOString())
 
-  const { data: unreadImportant } = await supabase
+  const { data: unreadImportant } = await getSupabase()
     .from('emails')
     .select('*')
     .eq('user_id', userId)

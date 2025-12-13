@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { headers } from 'next/headers'
 import crypto from 'crypto'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+let supabaseInstance: SupabaseClient | null = null
+
+function getSupabase(): SupabaseClient {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return supabaseInstance
+}
 
 // Verify Resend webhook signature
 function verifyWebhookSignature(payload: string, signature: string): boolean {
@@ -107,7 +114,7 @@ async function handleInboundEmail(data: InboundEmailData) {
 
   // Find user by email address
   const toAddress = Array.isArray(to) ? to[0] : to
-  const { data: profile } = await supabase
+  const { data: profile } = await getSupabase()
     .from('profiles')
     .select('id')
     .eq('email', toAddress)
@@ -124,7 +131,7 @@ async function handleInboundEmail(data: InboundEmailData) {
   const fromAddress = fromMatch ? fromMatch[2] : from
 
   // Insert email
-  const { data: email, error } = await supabase
+  const { data: email, error } = await getSupabase()
     .from('emails')
     .insert({
       user_id: profile.id,
@@ -154,7 +161,7 @@ async function handleInboundEmail(data: InboundEmailData) {
   // Handle attachments
   if (attachments && attachments.length > 0) {
     for (const attachment of attachments) {
-      await supabase.from('attachments').insert({
+      await getSupabase().from('attachments').insert({
         email_id: email.id,
         filename: attachment.filename,
         content_type: attachment.contentType,
@@ -174,7 +181,7 @@ async function handleDeliveryStatus(data: { email_id?: string }, status: string)
   const { email_id } = data
 
   if (email_id) {
-    await supabase
+    await getSupabase()
       .from('emails')
       .update({ delivery_status: status })
       .eq('message_id', email_id)
