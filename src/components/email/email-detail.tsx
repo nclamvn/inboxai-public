@@ -6,6 +6,7 @@ import { Star, Archive, Trash2, Reply, Forward, MoreHorizontal, X, AlertCircle, 
 import { cn, formatDate } from '@/lib/utils'
 import { useBehaviorTracker } from '@/hooks/use-behavior-tracker'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
+import { AISummary } from '@/components/email/ai-summary'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import type { Email } from '@/types'
 
@@ -247,6 +248,14 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
             </div>
           </div>
         )}
+
+        {/* AI Summary - TL;DR */}
+        <div className="p-4 pb-0">
+          <AISummary
+            emailId={email.id}
+            bodyLength={(email.body_text || email.body_html || '').length}
+          />
+        </div>
 
         {/* Email Body */}
         <div className="p-4">

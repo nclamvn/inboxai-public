@@ -9,6 +9,7 @@ import {
 import { cn } from '@/lib/utils'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import { AttachmentList } from './attachment-list'
+import { AISummary } from './ai-summary'
 import type { Email } from '@/types'
 
 interface Attachment {
@@ -172,6 +173,14 @@ export function EmailDetailMobile({
               {email.from_address}
             </div>
           </div>
+        </div>
+
+        {/* AI Summary */}
+        <div className="px-4 pt-3">
+          <AISummary
+            emailId={email.id}
+            bodyLength={(email.body_text || email.body_html || '').length}
+          />
         </div>
 
         {/* Email body */}
