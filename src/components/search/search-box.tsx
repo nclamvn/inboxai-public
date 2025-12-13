@@ -4,16 +4,33 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Search, X, Clock, Bookmark, User, FileText, Calendar,
-  Star, Paperclip, Tag, AlertCircle
+  Star, Paperclip, Tag, AlertCircle, Sparkles, Loader2, ArrowRight
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface SearchSuggestion {
-  type: 'operator' | 'recent' | 'saved'
+  type: 'operator' | 'recent' | 'saved' | 'ai_preview'
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
   text: string
   description?: string
   value: string
+}
+
+interface AIParseResult {
+  original: string
+  normalized: string
+  intent: string
+  confidence: number
+  filters: {
+    from?: string
+    subject?: string
+    keywords?: string[]
+    dateRange?: { start?: string; end?: string }
+    category?: string
+    hasAttachment?: boolean
+    isUnread?: boolean
+    isStarred?: boolean
+  }
 }
 
 const OPERATORS: SearchSuggestion[] = [
@@ -41,7 +58,10 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
   const [recentSearches, setRecentSearches] = useState<string[]>([])
   const [savedSearches, setSavedSearches] = useState<string[]>([])
   const [selectedIndex, setSelectedIndex] = useState(-1)
+  const [aiParsing, setAIParsing] = useState(false)
+  const [aiResult, setAIResult] = useState<AIParseResult | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const router = useRouter()
 
   // Fetch search history
@@ -65,6 +85,46 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
   useEffect(() => {
     setQuery(defaultValue)
   }, [defaultValue])
+
+  // AI parse query with debounce
+  useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+    }
+
+    // Only parse if query is natural language (not operators)
+    const isNaturalLanguage = query.length >= 3 && !/\b(from:|to:|subject:|category:|after:|before:|is:|has:)/i.test(query)
+
+    if (isNaturalLanguage && focused) {
+      setAIParsing(true)
+      debounceRef.current = setTimeout(async () => {
+        try {
+          const res = await fetch('/api/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query })
+          })
+          if (res.ok) {
+            const data = await res.json()
+            setAIResult(data.parsed)
+          }
+        } catch {
+          console.error('AI parse failed')
+        } finally {
+          setAIParsing(false)
+        }
+      }, 500)
+    } else {
+      setAIResult(null)
+      setAIParsing(false)
+    }
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
+      }
+    }
+  }, [query, focused])
 
   // Get filtered suggestions
   const getSuggestions = useCallback((): SearchSuggestion[] => {
@@ -183,6 +243,28 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
     }
   }
 
+  // Use AI parsed query
+  const handleUseAIParsed = () => {
+    if (aiResult?.normalized) {
+      handleSearch(aiResult.normalized)
+    }
+  }
+
+  // Format filter display
+  const formatFilters = (filters: AIParseResult['filters']): string[] => {
+    const parts: string[] = []
+    if (filters.from) parts.push(`Từ: ${filters.from}`)
+    if (filters.subject) parts.push(`Tiêu đề: ${filters.subject}`)
+    if (filters.keywords?.length) parts.push(`Từ khóa: ${filters.keywords.join(', ')}`)
+    if (filters.dateRange?.start) parts.push(`Sau: ${filters.dateRange.start}`)
+    if (filters.dateRange?.end) parts.push(`Trước: ${filters.dateRange.end}`)
+    if (filters.category) parts.push(`Loại: ${filters.category}`)
+    if (filters.isUnread) parts.push('Chưa đọc')
+    if (filters.isStarred) parts.push('Gắn sao')
+    if (filters.hasAttachment) parts.push('Có đính kèm')
+    return parts
+  }
+
   return (
     <div className={cn('relative', className)}>
       {/* Search Input */}
@@ -212,14 +294,18 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
             setTimeout(() => setShowSuggestions(false), 200)
           }}
           onKeyDown={handleKeyDown}
-          placeholder="Tìm kiếm email... (thử from: hoặc is:unread)"
+          placeholder="Tìm kiếm email... (vd: email sếp gửi tuần trước)"
           className="flex-1 bg-transparent text-[14px] text-[var(--foreground)] placeholder-[var(--muted-foreground)] outline-none"
           autoFocus={autoFocus}
         />
-        {query && (
+        {aiParsing && (
+          <Loader2 className="w-4 h-4 animate-spin text-[var(--primary)]" strokeWidth={1.5} />
+        )}
+        {query && !aiParsing && (
           <button
             onClick={() => {
               setQuery('')
+              setAIResult(null)
               inputRef.current?.focus()
             }}
             className="p-1 rounded text-[var(--muted-foreground)] hover:text-[var(--muted)] transition-colors"
@@ -230,8 +316,40 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
       </div>
 
       {/* Suggestions Dropdown */}
-      {showSuggestions && suggestions.length > 0 && (
+      {showSuggestions && (suggestions.length > 0 || aiResult) && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--card)] rounded-xl border border-[var(--border)] shadow-lg z-50 overflow-hidden">
+          {/* AI Parse Preview */}
+          {aiResult && aiResult.confidence > 0.6 && (
+            <div className="p-3 border-b border-[var(--border)] bg-gradient-to-r from-purple-500/5 to-blue-500/5">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="w-4 h-4 text-purple-500" strokeWidth={1.5} />
+                <span className="text-[12px] font-medium text-purple-600 dark:text-purple-400">
+                  AI hiểu câu tìm kiếm của bạn
+                </span>
+                <span className="text-[11px] text-[var(--muted)] ml-auto">
+                  {Math.round(aiResult.confidence * 100)}% chắc chắn
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {formatFilters(aiResult.filters).map((filter, i) => (
+                  <span
+                    key={i}
+                    className="px-2 py-0.5 bg-[var(--secondary)] rounded text-[12px] text-[var(--muted-foreground)]"
+                  >
+                    {filter}
+                  </span>
+                ))}
+              </div>
+              <button
+                onClick={handleUseAIParsed}
+                className="flex items-center gap-1.5 text-[13px] font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+              >
+                Tìm với bộ lọc này
+                <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.5} />
+              </button>
+            </div>
+          )}
+
           {/* Operators Section */}
           {suggestions.some(s => s.type === 'operator') && (
             <div className="p-2 border-b border-[var(--border)]">
@@ -335,7 +453,7 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
           {/* Help text */}
           <div className="px-4 py-2 bg-[var(--background)] border-t border-[var(--border)]">
             <p className="text-[11px] text-[var(--muted-foreground)]">
-              Nhấn Enter để tìm · ↑↓ để chọn · Esc để đóng
+              Nhấn Enter để tìm · ↑↓ để chọn · Thử "email từ Shopee tuần trước"
             </p>
           </div>
         </div>

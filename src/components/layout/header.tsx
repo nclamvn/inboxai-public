@@ -12,6 +12,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { SearchBox } from '@/components/search/search-box'
 import { NotificationDropdown } from '@/components/notifications/notification-dropdown'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
+import { FollowUpBadge } from '@/components/follow-up/follow-up-badge'
 
 interface BriefingData {
   unread: number
@@ -137,6 +138,9 @@ export function Header() {
       <div className="flex items-center gap-1 ml-4">
         {/* Theme Toggle */}
         <ThemeToggle />
+
+        {/* Follow-up Badge */}
+        <FollowUpBadge />
 
         {/* AI Assistant Badge */}
         <div className="relative" ref={aiPopoverRef}>

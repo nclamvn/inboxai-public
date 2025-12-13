@@ -5,9 +5,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Menu, Pencil, Inbox, Send, Star, Archive, Trash2,
-  BarChart3, Settings, ChevronLeft, Newspaper, ListTodo
+  BarChart3, Settings, ChevronLeft, Newspaper, ListTodo, Bell
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { FollowUpInlineBadge } from '@/components/follow-up/follow-up-badge'
 
 const navItems = [
   { href: '/inbox', icon: Inbox, label: 'Hộp thư đến' },
@@ -18,6 +19,7 @@ const navItems = [
 ]
 
 const bottomItems = [
+  { href: '/follow-ups', icon: Bell, label: 'Follow-ups', hasBadge: true },
   { href: '/subscriptions', icon: Newspaper, label: 'Newsletters' },
   { href: '/actions', icon: ListTodo, label: 'Actions' },
   { href: '/insights', icon: BarChart3, label: 'Insights' },
@@ -132,7 +134,7 @@ export function Sidebar({ defaultCollapsed = true }: SidebarProps) {
                   className={cn(
                     'flex items-center gap-3 rounded-lg transition-all duration-150',
                     collapsed
-                      ? 'w-10 h-10 justify-center'
+                      ? 'w-10 h-10 justify-center relative'
                       : 'h-10 px-3',
                     isActive
                       ? 'bg-[var(--secondary)] text-[var(--foreground)] font-medium'
@@ -148,7 +150,15 @@ export function Sidebar({ defaultCollapsed = true }: SidebarProps) {
                     strokeWidth={1.5}
                   />
                   {!collapsed && (
-                    <span className="text-[14px] truncate">{item.label}</span>
+                    <>
+                      <span className="text-[14px] truncate flex-1">{item.label}</span>
+                      {item.hasBadge && <FollowUpInlineBadge />}
+                    </>
+                  )}
+                  {collapsed && item.hasBadge && (
+                    <div className="absolute -top-0.5 -right-0.5">
+                      <FollowUpInlineBadge />
+                    </div>
                   )}
                 </Link>
               </li>
