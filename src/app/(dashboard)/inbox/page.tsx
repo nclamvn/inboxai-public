@@ -4,7 +4,8 @@ import { Suspense, useMemo, useState, useCallback, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import {
   RefreshCw, MoreHorizontal, Inbox,
-  ChevronLeft, Maximize2, Minimize2, Loader2
+  ChevronLeft, Maximize2, Minimize2, Loader2,
+  X, Sparkles
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useEmails } from '@/hooks/use-emails'
@@ -19,6 +20,12 @@ import { SelectionToolbar } from '@/components/email/selection-toolbar'
 
 type ViewMode = 'list' | 'split' | 'full'
 
+interface BriefingFilter {
+  type: string
+  title: string
+  emailIds: string[]
+}
+
 function InboxContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -26,10 +33,12 @@ function InboxContent() {
 
   // URL-based state - selectedId from URL
   const selectedId = searchParams.get('email')
+  const briefingType = searchParams.get('briefing')
 
   // Local UI state only
   const [viewMode, setViewMode] = useState<ViewMode>(selectedId ? 'split' : 'list')
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
+  const [briefingFilter, setBriefingFilter] = useState<BriefingFilter | null>(null)
   const [classifying, setClassifying] = useState(false)
   const [reclassifying, setReclassifying] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -41,6 +50,28 @@ function InboxContent() {
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  // Read briefing filter from sessionStorage when URL has briefing param
+  useEffect(() => {
+    if (briefingType) {
+      try {
+        const stored = sessionStorage.getItem('briefing_filter')
+        if (stored) {
+          const data = JSON.parse(stored) as BriefingFilter
+          if (data.type === briefingType) {
+            setBriefingFilter(data)
+            setActiveFilter(null) // Clear category filter when using briefing filter
+          }
+        }
+      } catch (e) {
+        console.error('Failed to parse briefing filter:', e)
+      }
+    } else {
+      // Clear briefing filter when URL doesn't have briefing param
+      setBriefingFilter(null)
+      sessionStorage.removeItem('briefing_filter')
+    }
+  }, [briefingType])
 
   // ALWAYS fetch full email when selectedId is set (list only has preview, not body)
   const { email: fetchedEmail, loading: fetchingEmail } = useEmail(selectedId)
@@ -203,6 +234,13 @@ function InboxContent() {
 
   // Filtered emails
   const filteredEmails = useMemo(() => {
+    // Priority 1: Briefing filter (from AI Thư Ký)
+    if (briefingFilter && briefingFilter.emailIds.length > 0) {
+      const emailIdSet = new Set(briefingFilter.emailIds)
+      return emails.filter(email => emailIdSet.has(email.id))
+    }
+
+    // Priority 2: Category filter
     if (!activeFilter) return emails
 
     if (activeFilter === 'needsAction') {
@@ -216,7 +254,7 @@ function InboxContent() {
     }
 
     return emails.filter(email => email.category === activeFilter)
-  }, [emails, activeFilter])
+  }, [emails, activeFilter, briefingFilter])
 
   // URL-based navigation
   const handleSelectEmail = useCallback((id: string) => {
@@ -249,8 +287,21 @@ function InboxContent() {
 
   // Handle clicking category tag in email list
   const handleCategoryClick = (category: string) => {
+    // Clear briefing filter when selecting category filter
+    if (briefingFilter) {
+      setBriefingFilter(null)
+      sessionStorage.removeItem('briefing_filter')
+      router.push('/inbox', { scroll: false })
+    }
     setActiveFilter(category)
   }
+
+  // Clear briefing filter
+  const handleClearBriefingFilter = useCallback(() => {
+    setBriefingFilter(null)
+    sessionStorage.removeItem('briefing_filter')
+    router.push('/inbox', { scroll: false })
+  }, [router])
 
   // Handle bulk actions from context menu or selection toolbar
   const handleBulkAction = useCallback(async (action: string, emailIds: string[], data?: Record<string, unknown>) => {
@@ -425,8 +476,31 @@ function InboxContent() {
         </div>
       </div>
 
-      {/* Filter Chips - Only show in list/split mode */}
-      {effectiveViewMode !== 'full' && (
+      {/* Briefing Filter Banner - Show when filtering by AI Thư Ký */}
+      {briefingFilter && effectiveViewMode !== 'full' && (
+        <div className="px-4 py-2 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800/50 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" strokeWidth={1.5} />
+            <span className="text-[13px] font-medium text-amber-800 dark:text-amber-200">
+              {briefingFilter.title}
+            </span>
+            <span className="text-[12px] text-amber-600 dark:text-amber-400">
+              ({filteredEmails.length} email)
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleClearBriefingFilter}
+            className="p-1 rounded hover:bg-amber-200/50 dark:hover:bg-amber-800/50 text-amber-600 dark:text-amber-400 transition-colors"
+            title="Xóa bộ lọc"
+          >
+            <X className="w-4 h-4" strokeWidth={1.5} />
+          </button>
+        </div>
+      )}
+
+      {/* Filter Chips - Only show in list/split mode and when no briefing filter */}
+      {effectiveViewMode !== 'full' && !briefingFilter && (
         <div className="border-b border-[var(--border)] bg-[var(--background)]">
           <FilterChips
             activeFilter={activeFilter}
@@ -457,10 +531,16 @@ function InboxContent() {
               {filteredEmails.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-32 text-[var(--muted-foreground)]">
                   <p className="text-[14px]">Không có email</p>
-                  {activeFilter && (
+                  {(activeFilter || briefingFilter) && (
                     <button
                       type="button"
-                      onClick={() => setActiveFilter(null)}
+                      onClick={() => {
+                        if (briefingFilter) {
+                          handleClearBriefingFilter()
+                        } else {
+                          setActiveFilter(null)
+                        }
+                      }}
                       className="text-[13px] text-[var(--muted)] hover:text-[var(--foreground)] mt-2"
                     >
                       Xóa bộ lọc

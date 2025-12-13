@@ -6,8 +6,17 @@
   "functions": {
     "api/**/*.ts": {
       "maxDuration": 30
+    },
+    "api/cron/sync-emails/route.ts": {
+      "maxDuration": 300
     }
   },
+  "crons": [
+    {
+      "path": "/api/cron/sync-emails",
+      "schedule": "*/2 * * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/api/webhooks/(.*)",

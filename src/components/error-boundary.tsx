@@ -31,9 +31,9 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return this.props.fallback || (
-        <div className="flex flex-col items-center justify-center h-64 text-[#6B6B6B]">
-          <AlertCircle className="w-12 h-12 mb-4 text-[#DC2626]" strokeWidth={1.5} />
-          <p className="text-[15px] font-medium text-[#1A1A1A]">Đã xảy ra lỗi</p>
+        <div className="flex flex-col items-center justify-center h-64 text-[var(--muted-foreground)]">
+          <AlertCircle className="w-12 h-12 mb-4 text-red-600 dark:text-red-400" strokeWidth={1.5} />
+          <p className="text-[15px] font-medium text-[var(--foreground)]">Đã xảy ra lỗi</p>
           <p className="text-[13px] mt-1">{this.state.error?.message}</p>
           <Button
             variant="secondary"

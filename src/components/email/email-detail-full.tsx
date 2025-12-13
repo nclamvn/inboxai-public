@@ -47,6 +47,8 @@ export function EmailDetailFull({
   const [feedbackLoading, setFeedbackLoading] = useState<string | null>(null)
   const [currentCategory, setCurrentCategory] = useState(email.category)
   const [attachments, setAttachments] = useState<Attachment[]>([])
+  const [showBlockMenu, setShowBlockMenu] = useState(false)
+  const blockMenuRef = useRef<HTMLDivElement>(null)
   const previousEmailId = useRef<string | null>(null)
 
   // Reset UI state when switching emails - instant feedback
@@ -58,6 +60,7 @@ export function EmailDetailFull({
       setFeedbackLoading(null)
       setCurrentCategory(email.category)
       setAttachments([])
+      setShowBlockMenu(false)
       previousEmailId.current = email.id
 
       // Fetch attachments if email has them
@@ -66,6 +69,17 @@ export function EmailDetailFull({
       }
     }
   }, [email.id, email.category, email.attachment_count])
+
+  // Close block menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (blockMenuRef.current && !blockMenuRef.current.contains(event.target as Node)) {
+        setShowBlockMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   // Fetch attachments
   const fetchAttachments = async (emailId: string) => {
@@ -124,27 +138,42 @@ export function EmailDetailFull({
     }
   }
 
-  // Handle block sender
-  const handleBlockSender = async () => {
-    if (!confirm(`Chặn tất cả email từ ${email.from_address}?`)) return
+  // Handle unsubscribe/block sender
+  const handleUnsubscribe = async (blockDomain: boolean = false) => {
+    const domain = email.from_address?.split('@')[1]
+    const target = blockDomain ? `@${domain}` : email.from_address
+
+    if (!confirm(`Chặn tất cả email từ ${target}?\n\nEmail từ ${target} sẽ không được đồng bộ nữa.`)) return
 
     setFeedbackLoading('block')
     try {
-      const res = await fetch(`/api/emails/${email.id}/feedback`, {
+      const res = await fetch('/api/unsubscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'block_sender' })
+        body: JSON.stringify({
+          email_address: email.from_address,
+          sender_name: email.from_name,
+          unsubscribe_domain: blockDomain,
+          delete_existing: true
+        })
       })
       const data = await res.json()
       if (data.success) {
-        onDelete?.(email.id)
+        alert(`Đã chặn ${data.blocked}${data.deleted > 0 ? ` và xóa ${data.deleted} email` : ''}`)
+        onRefresh?.()
         onBack()
       }
     } catch (e) {
-      console.error('Block sender error:', e)
+      console.error('Unsubscribe error:', e)
+      alert('Có lỗi xảy ra khi chặn người gửi')
     } finally {
       setFeedbackLoading(null)
     }
+  }
+
+  // Legacy block sender (for spam feedback)
+  const handleBlockSender = async () => {
+    handleUnsubscribe(false)
   }
 
   const handleArchive = () => {
@@ -280,20 +309,53 @@ export function EmailDetailFull({
             </button>
           )}
 
-          {/* Block Sender Button */}
-          <button
-            type="button"
-            onClick={handleBlockSender}
-            disabled={feedbackLoading === 'block'}
-            className="p-2 rounded-lg text-[var(--muted-foreground)] hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-            title="Chặn người gửi"
-          >
-            {feedbackLoading === 'block' ? (
-              <Loader2 className="w-5 h-5 animate-spin" strokeWidth={1.5} />
-            ) : (
-              <Ban className="w-5 h-5" strokeWidth={1.5} />
+          {/* Block Sender Dropdown */}
+          <div className="relative" ref={blockMenuRef}>
+            <button
+              type="button"
+              onClick={() => setShowBlockMenu(!showBlockMenu)}
+              disabled={feedbackLoading === 'block'}
+              className="p-2 rounded-lg text-[var(--muted-foreground)] hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              title="Chặn người gửi"
+            >
+              {feedbackLoading === 'block' ? (
+                <Loader2 className="w-5 h-5 animate-spin" strokeWidth={1.5} />
+              ) : (
+                <Ban className="w-5 h-5" strokeWidth={1.5} />
+              )}
+            </button>
+
+            {showBlockMenu && (
+              <div className="absolute left-0 top-full mt-1 w-56 bg-[var(--card)] rounded-lg border border-[var(--border)] shadow-lg z-50 py-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowBlockMenu(false)
+                    handleUnsubscribe(false)
+                  }}
+                  className="w-full px-3 py-2 text-left text-[13px] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors"
+                >
+                  <span className="font-medium">Chặn {email.from_address?.split('@')[0]}</span>
+                  <span className="block text-[12px] text-[var(--muted-foreground)]">
+                    Chặn email từ {email.from_address}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowBlockMenu(false)
+                    handleUnsubscribe(true)
+                  }}
+                  className="w-full px-3 py-2 text-left text-[13px] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors border-t border-[var(--border)]"
+                >
+                  <span className="font-medium">Chặn @{email.from_address?.split('@')[1]}</span>
+                  <span className="block text-[12px] text-[var(--muted-foreground)]">
+                    Chặn tất cả email từ domain này
+                  </span>
+                </button>
+              </div>
             )}
-          </button>
+          </div>
 
           <button
             type="button"

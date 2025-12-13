@@ -114,10 +114,26 @@
 /* Better focus states */
 .focus-ring:focus {
   outline: none;
-  box-shadow: 0 0 0 2px white, 0 0 0 4px #1A1A1A;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--foreground);
 }
 
 .focus-ring:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px white, 0 0 0 4px #1A1A1A;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--foreground);
+}
+
+/* Mobile bottom sheet animation */
+@keyframes slideUpFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideUpFromBottom {
+  animation: slideUpFromBottom 0.3s ease-out;
 }

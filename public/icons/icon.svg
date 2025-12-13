@@ -1,0 +1,55 @@
+
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F172A"/>
+      <stop offset="100%" style="stop-color:#1E3A8A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="112.64" fill="url(#bg)"/>
+
+  <g transform="translate(76.8, 76.8)">
+    <!-- Mail envelope -->
+    <rect
+      x="28.671999999999997"
+      y="78.848"
+      width="250.87999999999997"
+      height="179.2"
+      rx="21.503999999999998"
+      fill="none"
+      stroke="white"
+      stroke-width="19.712"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Mail flap -->
+    <polyline
+      points="28.671999999999997,100.352 154.112,179.2 279.55199999999996,100.352"
+      fill="none"
+      stroke="white"
+      stroke-width="19.712"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- AI Sparkle star -->
+    <g transform="translate(207.87199999999999, 28.671999999999997)">
+      <!-- 4-point star -->
+      <path
+        d="M 60.928 28.671999999999997
+           Q 60.928 60.928 89.6 60.928
+           Q 60.928 60.928 60.928 93.184
+           Q 60.928 60.928 32.256 60.928
+           Q 60.928 60.928 60.928 28.671999999999997
+           Z"
+        fill="#FBBF24"
+      />
+      <!-- Small star -->
+      <circle cx="21.503999999999998" cy="17.919999999999998" r="8.959999999999999" fill="#FCD34D"/>
+      <circle cx="100.352" cy="7.167999999999999" r="7.167999999999999" fill="#FDE68A"/>
+    </g>
+  </g>
+</svg>

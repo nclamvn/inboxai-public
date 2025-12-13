@@ -26,10 +26,10 @@ const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
 }
 
 const typeColors: Record<string, string> = {
-  new_email: 'bg-blue-100 text-blue-600',
-  sync_complete: 'bg-green-100 text-green-600',
-  ai_classified: 'bg-purple-100 text-purple-600',
-  important: 'bg-orange-100 text-orange-600',
+  new_email: 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400',
+  sync_complete: 'bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400',
+  ai_classified: 'bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400',
+  important: 'bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400',
 }
 
 export function NotificationDropdown() {
@@ -158,7 +158,7 @@ export function NotificationDropdown() {
             ) : (
               notifications.map((notification) => {
                 const Icon = typeIcons[notification.type] || Bell
-                const colorClass = typeColors[notification.type] || 'bg-gray-100 text-gray-600'
+                const colorClass = typeColors[notification.type] || 'bg-[var(--secondary)] text-[var(--muted-foreground)]'
 
                 return (
                   <button

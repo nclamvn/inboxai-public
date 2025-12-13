@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { syncEmails } from '@/lib/email/imap-client'
+import { getUnsubscribeService } from '@/lib/email/unsubscribe-service'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+export const maxDuration = 300 // 5 minutes
+export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   // Verify cron secret
@@ -15,22 +15,41 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
   try {
     const startTime = Date.now()
-    const results = {
+    const results: {
+      processed: number
+      synced: number
+      filtered: number
+      errors: string[]
+      accounts: Array<{
+        email: string
+        synced: number
+        errors: string[]
+      }>
+    } = {
       processed: 0,
       synced: 0,
-      errors: [] as string[]
+      filtered: 0,
+      errors: [],
+      accounts: []
     }
 
-    // Get all active source accounts that need syncing
+    // Get all active source accounts
     const { data: accounts, error: accountsError } = await supabase
       .from('source_accounts')
       .select('*')
       .eq('is_active', true)
+      .order('last_sync_at', { ascending: true, nullsFirst: true })
+      .limit(10) // Process max 10 accounts per run
 
     if (accountsError) {
-      console.error('Error fetching accounts:', accountsError)
+      console.error('[CRON] Error fetching accounts:', accountsError)
       return NextResponse.json({
         error: 'Failed to fetch accounts',
         details: accountsError.message
@@ -44,27 +63,50 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    console.log(`[CRON] Syncing ${accounts.length} accounts`)
+
+    const unsubscribeService = getUnsubscribeService(supabase)
+
     // Process each account
     for (const account of accounts) {
       results.processed++
+      const accountResult = {
+        email: account.email_address,
+        synced: 0,
+        errors: [] as string[]
+      }
 
       try {
-        // Update last sync attempt
-        await supabase
-          .from('source_accounts')
-          .update({
-            last_sync_at: new Date().toISOString(),
-            sync_error: null
-          })
-          .eq('id', account.id)
+        // Check if account was synced recently (within 1 minute)
+        if (account.last_sync_at) {
+          const lastSync = new Date(account.last_sync_at)
+          const oneMinuteAgo = new Date(Date.now() - 60 * 1000)
+          if (lastSync > oneMinuteAgo) {
+            console.log(`[CRON] Skipping ${account.email_address} - synced recently`)
+            continue
+          }
+        }
 
-        // TODO: Implement actual IMAP sync here
-        // For now, just mark as synced
-        results.synced++
+        console.log(`[CRON] Syncing: ${account.email_address}`)
 
-        console.log(`Synced account: ${account.email_address}`)
+        // Perform IMAP sync
+        const syncResult = await syncEmails(account, {
+          limit: 30,
+          fullSync: false
+        })
+
+        if (syncResult.success) {
+          accountResult.synced = syncResult.synced
+          results.synced += syncResult.synced
+          console.log(`[CRON] Synced ${syncResult.synced} emails for ${account.email_address}`)
+        } else {
+          accountResult.errors = syncResult.errors
+          results.errors.push(`${account.email_address}: ${syncResult.errors.join(', ')}`)
+        }
+
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+        accountResult.errors.push(errorMsg)
         results.errors.push(`${account.email_address}: ${errorMsg}`)
 
         // Update sync error
@@ -75,19 +117,32 @@ export async function GET(request: NextRequest) {
           })
           .eq('id', account.id)
       }
+
+      results.accounts.push(accountResult)
+
+      // Check timeout
+      if (Date.now() - startTime > 280000) { // 280 seconds
+        console.log('[CRON] Approaching timeout, stopping')
+        break
+      }
     }
 
     const duration = Date.now() - startTime
 
     return NextResponse.json({
       success: true,
-      message: `Sync completed`,
-      results,
+      message: `Cron sync completed`,
+      results: {
+        processed: results.processed,
+        synced: results.synced,
+        errors: results.errors.length
+      },
+      accounts: results.accounts,
       duration: `${duration}ms`,
       timestamp: new Date().toISOString()
     })
   } catch (error) {
-    console.error('Cron sync error:', error)
+    console.error('[CRON] Sync error:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json({
       error: 'Sync failed',

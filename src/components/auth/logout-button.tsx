@@ -34,7 +34,7 @@ export function LogoutButton({ className, showIcon = true, children }: LogoutBut
     <button
       onClick={handleLogout}
       disabled={loading}
-      className={className || 'flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors'}
+      className={className || 'flex items-center gap-2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors'}
     >
       {loading ? (
         <Loader2 className="w-4 h-4 animate-spin" />

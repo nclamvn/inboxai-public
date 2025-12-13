@@ -50,12 +50,12 @@ const EmailRow = memo(function EmailRow({
   const getCategoryStyle = (category: string | null) => {
     if (!category) return null
     const styles: Record<string, { bg: string; text: string }> = {
-      work: { bg: 'bg-[#EFF6FF]', text: 'text-[#2563EB]' },
-      personal: { bg: 'bg-[#F0FDF4]', text: 'text-[#16A34A]' },
-      transaction: { bg: 'bg-[#FEF2F2]', text: 'text-[#DC2626]' },
-      newsletter: { bg: 'bg-[#F5F5F5]', text: 'text-[#6B6B6B]' },
-      promotion: { bg: 'bg-[#FFFBEB]', text: 'text-[#D97706]' },
-      social: { bg: 'bg-[#F5F3FF]', text: 'text-[#7C3AED]' },
+      work: { bg: 'bg-blue-100 dark:bg-blue-500/20', text: 'text-blue-600 dark:text-blue-400' },
+      personal: { bg: 'bg-green-100 dark:bg-green-500/20', text: 'text-green-600 dark:text-green-400' },
+      transaction: { bg: 'bg-red-100 dark:bg-red-500/20', text: 'text-red-600 dark:text-red-400' },
+      newsletter: { bg: 'bg-[var(--secondary)]', text: 'text-[var(--muted-foreground)]' },
+      promotion: { bg: 'bg-amber-100 dark:bg-amber-500/20', text: 'text-amber-600 dark:text-amber-400' },
+      social: { bg: 'bg-violet-100 dark:bg-violet-500/20', text: 'text-violet-600 dark:text-violet-400' },
     }
     return styles[category] || styles.newsletter
   }
@@ -78,9 +78,9 @@ const EmailRow = memo(function EmailRow({
   return (
     <div
       className={cn(
-        'flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors border-b border-[#F5F5F5]',
-        isSelected ? 'bg-[#F5F5F5]' : 'hover:bg-[#FAFAFA]',
-        !email.is_read && 'bg-white'
+        'flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors border-b border-[var(--border)]',
+        isSelected ? 'bg-[var(--secondary)]' : 'hover:bg-[var(--hover)]',
+        !email.is_read && 'bg-[var(--card)]'
       )}
     >
       {/* Star button */}
@@ -91,7 +91,7 @@ const EmailRow = memo(function EmailRow({
         }}
         className={cn(
           'mt-0.5 flex-shrink-0 transition-colors',
-          email.is_starred ? 'text-[#D97706]' : 'text-[#D4D4D4] hover:text-[#9B9B9B]'
+          email.is_starred ? 'text-amber-500' : 'text-[var(--border)] hover:text-[var(--muted-foreground)]'
         )}
       >
         <Star
@@ -107,11 +107,11 @@ const EmailRow = memo(function EmailRow({
         <div className="flex items-center justify-between gap-2">
           <span className={cn(
             'text-[14px] truncate',
-            email.is_read ? 'text-[#4B4B4B] font-medium' : 'text-[#1A1A1A] font-bold'
+            email.is_read ? 'text-[var(--muted)] font-medium' : 'text-[var(--foreground)] font-bold'
           )}>
             {email.from_name || email.from_address?.split('@')[0]}
           </span>
-          <span className="text-[12px] text-[#9B9B9B] flex-shrink-0">
+          <span className="text-[12px] text-[var(--muted-foreground)] flex-shrink-0">
             {formatTime(email.received_at)}
           </span>
         </div>
@@ -119,11 +119,11 @@ const EmailRow = memo(function EmailRow({
         {/* Row 2: Priority + Subject */}
         <div className="flex items-center gap-1.5 mt-0.5">
           {(email.priority || 0) >= 4 && (
-            <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626] flex-shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-red-600 flex-shrink-0" />
           )}
           <span className={cn(
             'text-[14px] truncate',
-            email.is_read ? 'text-[#6B6B6B] font-normal' : 'text-[#1A1A1A] font-semibold'
+            email.is_read ? 'text-[var(--muted-foreground)] font-normal' : 'text-[var(--foreground)] font-semibold'
           )}>
             {email.subject || '(Không có tiêu đề)'}
           </span>
@@ -131,7 +131,7 @@ const EmailRow = memo(function EmailRow({
 
         {/* Row 3: Summary preview */}
         {email.summary && (
-          <p className="text-[13px] text-[#9B9B9B] truncate mt-0.5">
+          <p className="text-[13px] text-[var(--muted-foreground)] truncate mt-0.5">
             {email.summary}
           </p>
         )}
@@ -190,7 +190,7 @@ export function EmailListVirtual({
 
   if (emails.length === 0) {
     return (
-      <div className="flex items-center justify-center h-32 text-[14px] text-[#9B9B9B]">
+      <div className="flex items-center justify-center h-32 text-[14px] text-[var(--muted-foreground)]">
         Không có email
       </div>
     )
@@ -237,13 +237,13 @@ export function EmailListVirtual({
 
       {/* Load more indicator */}
       {isFetchingMore && (
-        <div className="py-4 text-center text-[13px] text-[#9B9B9B]">
+        <div className="py-4 text-center text-[13px] text-[var(--muted-foreground)]">
           Đang tải thêm...
         </div>
       )}
 
       {!hasMore && emails.length > 0 && (
-        <div className="py-4 text-center text-[12px] text-[#9B9B9B]">
+        <div className="py-4 text-center text-[12px] text-[var(--muted-foreground)]">
           Đã hiển thị tất cả
         </div>
       )}

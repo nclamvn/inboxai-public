@@ -14,14 +14,17 @@ import { NotificationDropdown } from '@/components/notifications/notification-dr
 import { ThemeToggle } from '@/components/theme/theme-toggle'
 import { FollowUpBadge } from '@/components/follow-up/follow-up-badge'
 
+interface BriefingItem {
+  type: string
+  title: string
+  count: number
+  emailIds?: string[]
+}
+
 interface BriefingData {
   unread: number
   needsAttention: number
-  items: Array<{
-    type: string
-    title: string
-    count: number
-  }>
+  items: BriefingItem[]
 }
 
 interface UserData {
@@ -105,9 +108,19 @@ export function Header() {
     router.push('/login')
   }
 
-  const handleNavigateToInbox = () => {
+  const handleNavigateToInbox = (item?: BriefingItem) => {
     setShowAIPopover(false)
-    router.push('/inbox')
+    if (item?.emailIds && item.emailIds.length > 0) {
+      // Store email IDs in sessionStorage for Inbox to read
+      sessionStorage.setItem('briefing_filter', JSON.stringify({
+        type: item.type,
+        title: item.title,
+        emailIds: item.emailIds
+      }))
+      router.push(`/inbox?briefing=${item.type}`)
+    } else {
+      router.push('/inbox')
+    }
   }
 
   const handleNavigateToInsights = () => {
@@ -194,7 +207,7 @@ export function Header() {
                       <button
                         key={i}
                         type="button"
-                        onClick={handleNavigateToInbox}
+                        onClick={() => handleNavigateToInbox(item)}
                         className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--hover)] transition-colors text-left"
                       >
                         <div className={cn(

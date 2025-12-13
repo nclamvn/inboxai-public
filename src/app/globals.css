@@ -342,6 +342,10 @@ p {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+.h-safe-area-bottom {
+  height: env(safe-area-inset-bottom, 0px);
+}
+
 .safe-area-all {
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }

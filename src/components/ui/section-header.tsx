@@ -20,16 +20,16 @@ export function SectionHeader({
     <div className={cn('flex items-center justify-between', className)}>
       <div className="flex items-center gap-3">
         {icon && (
-          <div className="w-10 h-10 rounded-xl bg-[#1A1A1A] flex items-center justify-center text-white">
+          <div className="w-10 h-10 rounded-xl bg-[var(--foreground)] flex items-center justify-center text-[var(--background)]">
             {icon}
           </div>
         )}
         <div>
-          <h2 className="text-[18px] font-medium text-[#1A1A1A]">
+          <h2 className="text-[18px] font-medium text-[var(--foreground)]">
             {title}
           </h2>
           {description && (
-            <p className="text-[14px] text-[#6B6B6B] mt-0.5">
+            <p className="text-[14px] text-[var(--muted-foreground)] mt-0.5">
               {description}
             </p>
           )}
