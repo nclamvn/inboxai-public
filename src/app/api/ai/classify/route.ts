@@ -36,13 +36,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email not found' }, { status: 404 })
     }
 
-    console.log(`Classifying email: ${emailId}`)
+    console.log(`[CLASSIFY API] Processing email: ${emailId}`)
     const classification = await classifyEmail({
       from_address: email.from_address,
       from_name: email.from_name,
       subject: email.subject,
       body_text: email.body_text,
-      body_html: email.body_html
+      body_html: email.body_html,
+      user_id: user.id,
+      user_email: user.email,
     })
 
     const { error: updateError } = await supabaseService
