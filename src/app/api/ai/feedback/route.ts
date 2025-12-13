@@ -1,14 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { createClient as createServiceClient, SupabaseClient } from '@supabase/supabase-js'
 import { recordFeedback, getAccuracyStats } from '@/lib/ai/feedback-learner'
 import { markSenderAsTrusted, markSenderAsUntrusted } from '@/lib/ai/sender-trust'
 import type { Category } from '@/types'
 
-const supabaseService = createServiceClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+let serviceInstance: SupabaseClient | null = null
+
+function getServiceClient(): SupabaseClient {
+  if (!serviceInstance) {
+    serviceInstance = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return serviceInstance
+}
 
 /**
  * POST /api/ai/feedback
@@ -39,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get email data
-    const { data: email, error: fetchError } = await supabaseService
+    const { data: email, error: fetchError } = await getServiceClient()
       .from('emails')
       .select('id, from_address, subject, category')
       .eq('id', emailId)
@@ -74,7 +81,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Update email with corrected category
-      await supabaseService
+      await getServiceClient()
         .from('emails')
         .update({
           category: correctedCategory,
