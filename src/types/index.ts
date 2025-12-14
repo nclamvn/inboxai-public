@@ -54,6 +54,12 @@ export interface Email {
   send_status: SendStatus | null
   sent_at: string | null
 
+  // Phishing detection
+  phishing_score: number | null
+  phishing_risk: 'safe' | 'low' | 'medium' | 'high' | 'critical' | null
+  phishing_reasons: unknown[] | null
+  is_phishing_reviewed: boolean | null
+
   created_at: string
   updated_at: string
 }
@@ -105,5 +111,18 @@ export interface AIClassification {
     dates: string[]
     amounts: string[]
     tasks: string[]
+  }
+  // Phishing detection
+  phishing?: {
+    score: number
+    risk: 'safe' | 'low' | 'medium' | 'high' | 'critical'
+    reasons: Array<{
+      type: string
+      pattern: string
+      severity: number
+      description: string
+    }>
+    isPhishing: boolean
+    requiresReview: boolean
   }
 }
