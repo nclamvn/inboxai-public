@@ -267,7 +267,9 @@ export function useAIFeatures(emailId: string | null): UseAIFeaturesReturn {
 
   // Load on mount or emailId change
   useEffect(() => {
+    console.log('[useAIFeatures] useEffect triggered, emailId:', emailId);
     if (emailId) {
+      console.log('[useAIFeatures] Calling loadFeatures...');
       loadFeatures(emailId);
     } else {
       // Reset state
