@@ -85,9 +85,52 @@ function extractAttachments(parsed: { attachments?: Array<{ filename?: string; c
   return attachments
 }
 
-// Timeout constants
-const MAX_SYNC_DURATION = 50000 // 50 seconds
-const DEFAULT_LIMIT = 25 // Giảm limit vì fetch full body
+// Timeout constants - OPTIMIZED
+const MAX_SYNC_DURATION = 120000 // 120 seconds (increased)
+const DEFAULT_LIMIT = 100 // Tăng limit nhờ batch processing
+const BATCH_SIZE = 50 // Emails per batch
+const PARALLEL_PARSE_LIMIT = 20 // Concurrent parsing
+const DB_BATCH_SIZE = 50 // Rows per DB insert
+
+/**
+ * Chunk array into batches
+ */
+function chunkArray<T>(array: T[], size: number): T[][] {
+  const chunks: T[][] = []
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size))
+  }
+  return chunks
+}
+
+/**
+ * Process items with concurrency limit
+ */
+async function parallelLimit<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = []
+  let index = 0
+
+  async function worker(): Promise<void> {
+    while (index < items.length) {
+      const currentIndex = index++
+      try {
+        const result = await fn(items[currentIndex])
+        results[currentIndex] = result
+      } catch (error) {
+        console.error(`[Parallel] Error at index ${currentIndex}:`, error)
+        results[currentIndex] = null as R
+      }
+    }
+  }
+
+  const workers = Array(Math.min(limit, items.length)).fill(null).map(() => worker())
+  await Promise.all(workers)
+  return results
+}
 
 // Helper to fetch UIDs and sort them descending (newest first)
 async function getNewestUIDs(
@@ -144,7 +187,24 @@ export async function testImapConnection(config: {
   }
 }
 
-// FULL SYNC - Fetch emails with body content
+// Interface for parsed email data
+interface ParsedEmailData {
+  uid: number
+  messageId: string
+  fromAddress: string
+  fromName: string
+  toAddresses: string[]
+  ccAddresses: string[]
+  subject: string
+  bodyText: string
+  bodyHtml: string | null
+  receivedAt: string
+  isRead: boolean
+  isStarred: boolean
+  attachments: AttachmentMeta[]
+}
+
+// OPTIMIZED SYNC - Batch fetch, parallel parse, batch DB insert
 export async function syncEmails(account: SourceAccount, options: SyncOptions = {}): Promise<SyncResult> {
   const { limit = DEFAULT_LIMIT, fullSync = false } = options
   const startTime = Date.now()
@@ -171,8 +231,8 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
     return result
   }
 
-  console.log(`[SYNC] Starting FULL sync for: ${account.email_address}`)
-  console.log(`[SYNC] Options: limit=${limit}, fullSync=${fullSync}`)
+  console.log(`[SYNC] Starting OPTIMIZED sync for: ${account.email_address}`)
+  console.log(`[SYNC] Options: limit=${limit}, fullSync=${fullSync}, batchSize=${BATCH_SIZE}`)
   console.log(`[SYNC] Last sync UID: ${account.last_sync_uid || 'none'}`)
 
   try {
@@ -242,135 +302,190 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
       console.log(`[SYNC] UIDs to fetch: ${uidsToFetch.slice(0, 5).join(', ')}${uidsToFetch.length > 5 ? '...' : ''} (${uidsToFetch.length} total)`)
       console.log(`[SYNC] UID range: ${Math.min(...uidsToFetch)} to ${Math.max(...uidsToFetch)}`)
 
-      let highestUid: number = 0
-      let count = 0
+      let highestUid: number = Math.max(...uidsToFetch)
 
-      // Fetch từng UID theo thứ tự mới nhất trước
-      for (const uid of uidsToFetch) {
+      // ========================================
+      // OPTIMIZED: Process in batches
+      // ========================================
+      const batches = chunkArray(uidsToFetch, BATCH_SIZE)
+      console.log(`[SYNC] Processing ${batches.length} batches of up to ${BATCH_SIZE} emails`)
+
+      for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+        const batch = batches[batchIndex]
+        const batchStartTime = Date.now()
+
         // Timeout check
         if (Date.now() - startTime > MAX_SYNC_DURATION) {
-          console.log(`[SYNC] Timeout at ${count} messages, stopping`)
+          console.log(`[SYNC] Timeout after ${result.synced} emails, stopping`)
+          result.errors.push(`Timeout after ${result.synced} emails`)
           break
         }
 
-        // Fetch single message by UID
-        const message = await client.fetchOne(String(uid), {
-          envelope: true,
-          uid: true,
-          flags: true,
-          source: true  // QUAN TRỌNG: Fetch full email source để có body
-        }, { uid: true }) as { uid: number; envelope?: { messageId?: string; from?: Array<{ address?: string; name?: string }>; to?: Array<{ address?: string }>; cc?: Array<{ address?: string }>; subject?: string; date?: Date }; flags?: Set<string>; source?: Buffer } | false
-
-        if (!message || !message.envelope) continue
-
-        const msgUid = message.uid
-        const env = message.envelope
-
-        // Track highest UID for last_sync_uid
-        if (msgUid > highestUid) {
-          highestUid = msgUid
-        }
+        console.log(`[SYNC] Batch ${batchIndex + 1}/${batches.length}: fetching ${batch.length} emails`)
 
         try {
-          // Parse full email to get body
-          let bodyText = ''
-          let bodyHtml: string | null = null
+          // ========================================
+          // STEP 1: Batch IMAP fetch
+          // ========================================
+          const uidRange = batch.join(',')
+          const rawMessages: Array<{
+            uid: number
+            envelope: { messageId?: string; from?: Array<{ address?: string; name?: string }>; to?: Array<{ address?: string }>; cc?: Array<{ address?: string }>; subject?: string; date?: Date }
+            flags: Set<string>
+            source: Buffer
+          }> = []
 
-          let attachments: AttachmentMeta[] = []
-
-          if (message.source) {
-            const parsed = await simpleParser(message.source as Buffer, {
-              skipHtmlToText: false,
-              skipTextToHtml: true,
-              skipImageLinks: true,
-              maxHtmlLengthToParse: 300000
-            })
-
-            bodyText = (parsed.text || '').slice(0, 100000)
-            bodyHtml = parsed.html ? (parsed.html as string).slice(0, 200000) : null
-
-            // Extract attachments metadata
-            attachments = extractAttachments(parsed)
-          }
-
-          // Upsert email với body và attachment_count
-          const uidStr = String(msgUid)
-          const { data: savedEmail, error: upsertError } = await supabase
-            .from('emails')
-            .upsert({
-              user_id: account.user_id,
-              source_account_id: account.id,
-              original_uid: uidStr,
-              message_id: env.messageId || `${uidStr}@${account.imap_host}`,
-              from_address: env.from?.[0]?.address || '',
-              from_name: env.from?.[0]?.name || '',
-              to_addresses: env.to?.map((t: { address?: string }) => t.address).filter(Boolean) || [],
-              cc_addresses: env.cc?.map((c: { address?: string }) => c.address).filter(Boolean) || [],
-              subject: env.subject || '(No subject)',
-              body_text: bodyText,
-              body_html: bodyHtml,
-              body_fetched: true,
-              received_at: env.date ? new Date(env.date).toISOString() : new Date().toISOString(),
-              is_read: message.flags?.has('\\Seen') || false,
-              is_starred: message.flags?.has('\\Flagged') || false,
-              is_archived: false,
-              is_deleted: false,
-              direction: 'inbound',
-              attachment_count: attachments.length
-            }, {
-              onConflict: 'source_account_id,original_uid'
-            })
-            .select('id')
-            .single()
-
-          if (upsertError) {
-            console.error(`[SYNC] Upsert error for UID ${uidStr}:`, upsertError.message)
-            result.errors.push(`UID ${uidStr}: ${upsertError.message}`)
-          } else {
-            result.synced++
-
-            // Save attachments metadata
-            if (savedEmail && attachments.length > 0) {
-              const attachmentRows = attachments.map(att => ({
-                email_id: savedEmail.id,
-                filename: att.filename,
-                content_type: att.contentType,
-                size: att.size,
-                content_id: att.contentId || null,
-                is_inline: att.isInline
-              }))
-
-              const { error: attError } = await supabase
-                .from('attachments')
-                .upsert(attachmentRows, {
-                  onConflict: 'email_id,filename',
-                  ignoreDuplicates: true
-                })
-
-              if (attError && attError.code !== '42P01') {
-                console.error(`[SYNC] Attachment error for UID ${uidStr}:`, attError.message)
-              } else if (attachments.length > 0) {
-                console.log(`[SYNC] Saved ${attachments.length} attachments for UID ${uidStr}`)
-              }
+          for await (const msg of client.fetch(uidRange, {
+            envelope: true,
+            uid: true,
+            flags: true,
+            source: true
+          }, { uid: true })) {
+            if (msg.envelope && msg.source) {
+              rawMessages.push({
+                uid: msg.uid,
+                envelope: msg.envelope,
+                flags: msg.flags || new Set(),
+                source: msg.source as Buffer
+              })
             }
           }
 
-          count++
+          console.log(`[SYNC] Batch ${batchIndex + 1}: fetched ${rawMessages.length} raw messages in ${Date.now() - batchStartTime}ms`)
 
-          // Progress log
-          if (count % 5 === 0) {
-            console.log(`[SYNC] Progress: ${count} emails in ${Date.now() - startTime}ms`)
+          // ========================================
+          // STEP 2: Parallel parse emails
+          // ========================================
+          const parseStartTime = Date.now()
+          const parsedEmails = await parallelLimit(
+            rawMessages,
+            PARALLEL_PARSE_LIMIT,
+            async (msg): Promise<ParsedEmailData | null> => {
+              try {
+                const parsed = await simpleParser(msg.source, {
+                  skipHtmlToText: false,
+                  skipTextToHtml: true,
+                  skipImageLinks: true,
+                  maxHtmlLengthToParse: 300000
+                })
+
+                return {
+                  uid: msg.uid,
+                  messageId: msg.envelope.messageId || `${msg.uid}@${account.imap_host}`,
+                  fromAddress: msg.envelope.from?.[0]?.address || '',
+                  fromName: msg.envelope.from?.[0]?.name || '',
+                  toAddresses: msg.envelope.to?.map(t => t.address).filter(Boolean) as string[] || [],
+                  ccAddresses: msg.envelope.cc?.map(c => c.address).filter(Boolean) as string[] || [],
+                  subject: msg.envelope.subject || '(No subject)',
+                  bodyText: (parsed.text || '').slice(0, 100000),
+                  bodyHtml: parsed.html ? (parsed.html as string).slice(0, 200000) : null,
+                  receivedAt: msg.envelope.date ? new Date(msg.envelope.date).toISOString() : new Date().toISOString(),
+                  isRead: msg.flags.has('\\Seen'),
+                  isStarred: msg.flags.has('\\Flagged'),
+                  attachments: extractAttachments(parsed)
+                }
+              } catch (parseErr) {
+                console.error(`[SYNC] Parse error for UID ${msg.uid}:`, parseErr)
+                return null
+              }
+            }
+          )
+
+          const validEmails = parsedEmails.filter((e): e is ParsedEmailData => e !== null)
+          console.log(`[SYNC] Batch ${batchIndex + 1}: parsed ${validEmails.length} emails in ${Date.now() - parseStartTime}ms`)
+
+          if (validEmails.length === 0) continue
+
+          // ========================================
+          // STEP 3: Batch DB insert
+          // ========================================
+          const dbStartTime = Date.now()
+          const emailRecords = validEmails.map(email => ({
+            user_id: account.user_id,
+            source_account_id: account.id,
+            original_uid: String(email.uid),
+            message_id: email.messageId,
+            from_address: email.fromAddress,
+            from_name: email.fromName,
+            to_addresses: email.toAddresses,
+            cc_addresses: email.ccAddresses,
+            subject: email.subject,
+            body_text: email.bodyText,
+            body_html: email.bodyHtml,
+            body_fetched: true,
+            received_at: email.receivedAt,
+            is_read: email.isRead,
+            is_starred: email.isStarred,
+            is_archived: false,
+            is_deleted: false,
+            direction: 'inbound',
+            attachment_count: email.attachments.length
+          }))
+
+          // Batch upsert emails
+          const { data: savedEmails, error: batchError } = await supabase
+            .from('emails')
+            .upsert(emailRecords, {
+              onConflict: 'source_account_id,original_uid'
+            })
+            .select('id, original_uid')
+
+          if (batchError) {
+            console.error(`[SYNC] Batch ${batchIndex + 1} DB error:`, batchError.message)
+            result.errors.push(`Batch ${batchIndex + 1}: ${batchError.message}`)
+          } else {
+            const insertedCount = savedEmails?.length || 0
+            result.synced += insertedCount
+
+            // Batch insert attachments
+            if (savedEmails && savedEmails.length > 0) {
+              const allAttachments: Array<{
+                email_id: string
+                filename: string
+                content_type: string
+                size: number
+                content_id: string | null
+                is_inline: boolean
+              }> = []
+
+              for (const savedEmail of savedEmails) {
+                const originalEmail = validEmails.find(e => String(e.uid) === savedEmail.original_uid)
+                if (originalEmail && originalEmail.attachments.length > 0) {
+                  for (const att of originalEmail.attachments) {
+                    allAttachments.push({
+                      email_id: savedEmail.id,
+                      filename: att.filename,
+                      content_type: att.contentType,
+                      size: att.size,
+                      content_id: att.contentId || null,
+                      is_inline: att.isInline
+                    })
+                  }
+                }
+              }
+
+              if (allAttachments.length > 0) {
+                await supabase
+                  .from('attachments')
+                  .upsert(allAttachments, {
+                    onConflict: 'email_id,filename',
+                    ignoreDuplicates: true
+                  })
+                console.log(`[SYNC] Batch ${batchIndex + 1}: saved ${allAttachments.length} attachments`)
+              }
+            }
+
+            console.log(`[SYNC] Batch ${batchIndex + 1}: inserted ${insertedCount} emails in ${Date.now() - dbStartTime}ms`)
           }
 
-          if (count >= limit) {
-            console.log(`[SYNC] Reached limit: ${limit}`)
-            break
-          }
+          const batchTime = Date.now() - batchStartTime
+          console.log(`[SYNC] Batch ${batchIndex + 1}/${batches.length} completed in ${batchTime}ms (${Math.round(batchTime / batch.length)}ms/email)`)
 
-        } catch (parseError) {
-          const errMsg = parseError instanceof Error ? parseError.message : 'Parse error'
-          console.error(`[SYNC] Parse error for UID ${msgUid}:`, errMsg)
-          result.errors.push(`UID ${msgUid}: ${errMsg}`)
+        } catch (batchError) {
+          const errMsg = batchError instanceof Error ? batchError.message : 'Batch error'
+          console.error(`[SYNC] Batch ${batchIndex + 1} error:`, errMsg)
+          result.errors.push(`Batch ${batchIndex + 1}: ${errMsg}`)
+          // Continue with next batch
         }
       }
 

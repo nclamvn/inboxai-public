@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { syncEmails } from '@/lib/email/imap-client'
 
-// Longer timeout for full body sync
-export const maxDuration = 55
+// Longer timeout for optimized batch sync
+export const maxDuration = 120 // Increased to 2 minutes
+
+// OPTIMIZED LIMITS
+const DEFAULT_LIMIT = 100
+const MAX_LIMIT = 500
 
 // POST - Trigger sync for account
 export async function POST(
@@ -35,18 +39,18 @@ export async function POST(
     return NextResponse.json({ error: 'Account is not active' }, { status: 400 })
   }
 
-  // Parse request body for options - DEFAULT 25 emails (full body sync is slower)
-  let limit = 25
+  // Parse request body for options - OPTIMIZED defaults
+  let limit = DEFAULT_LIMIT
   let fullSync = false
   try {
     const body = await request.json()
-    if (body.limit) limit = Math.min(body.limit, 40)  // Max 40 per sync
+    if (body.limit) limit = Math.min(body.limit, MAX_LIMIT)  // Max 500 per sync
     if (body.fullSync) fullSync = true
   } catch {
     // No body provided, use defaults
   }
 
-  console.log(`[SYNC-API] Starting FULL sync for ${account.email_address}, limit=${limit}`)
+  console.log(`[SYNC-API] Starting OPTIMIZED sync for ${account.email_address}, limit=${limit}`)
 
   // Perform sync with options (FULL BODY sync)
   const result = await syncEmails(account, { limit, fullSync })

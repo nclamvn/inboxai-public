@@ -67,7 +67,7 @@ export function SourceAccountsSection() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fullSync,
-          limit: fullSync ? 500 : 200
+          limit: fullSync ? 500 : 100  // Optimized: 100 for quick, 500 for full
         })
       })
       const data = await res.json()
@@ -258,8 +258,8 @@ export function SourceAccountsSection() {
                         }}
                         className="w-full px-3 py-2 text-left text-[13px] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors"
                       >
-                        <div className="font-medium">Sync mới</div>
-                        <div className="text-[11px] text-[var(--muted-foreground)]">Chỉ email mới (nhanh)</div>
+                        <div className="font-medium">Sync nhanh</div>
+                        <div className="text-[11px] text-[var(--muted-foreground)]">100 email mới nhất</div>
                       </button>
                       <button
                         onClick={() => {
@@ -268,8 +268,8 @@ export function SourceAccountsSection() {
                         }}
                         className="w-full px-3 py-2 text-left text-[13px] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors"
                       >
-                        <div className="font-medium">Sync tất cả</div>
-                        <div className="text-[11px] text-[var(--muted-foreground)]">Tối đa 500 email gần nhất</div>
+                        <div className="font-medium">Sync đầy đủ</div>
+                        <div className="text-[11px] text-[var(--muted-foreground)]">500 email (batch optimized)</div>
                       </button>
                     </div>
                   )}

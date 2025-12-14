@@ -6,6 +6,9 @@ import { getUnsubscribeService } from '@/lib/email/unsubscribe-service'
 export const maxDuration = 300 // 5 minutes
 export const dynamic = 'force-dynamic'
 
+// OPTIMIZED CRON SETTINGS
+const CRON_EMAILS_PER_ACCOUNT = 100 // Increased from 30
+
 export async function GET(request: NextRequest) {
   // Verify cron secret
   const authHeader = request.headers.get('authorization')
@@ -89,9 +92,9 @@ export async function GET(request: NextRequest) {
 
         console.log(`[CRON] Syncing: ${account.email_address}`)
 
-        // Perform IMAP sync
+        // Perform OPTIMIZED IMAP sync
         const syncResult = await syncEmails(account, {
-          limit: 30,
+          limit: CRON_EMAILS_PER_ACCOUNT,
           fullSync: false
         })
 
