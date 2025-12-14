@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient, SupabaseClient } from '@supabase/supabase-js'
 import { recordFeedback, getAccuracyStats } from '@/lib/ai/feedback-learner'
 import { markSenderAsTrusted, markSenderAsUntrusted } from '@/lib/ai/sender-trust'
+import { updateReputation } from '@/lib/ai/sender-reputation'
 import type { Category } from '@/types'
 
 let serviceInstance: SupabaseClient | null = null
@@ -70,6 +71,9 @@ export async function POST(request: NextRequest) {
         originalCategory,
         correctedCategory
       )
+
+      // Update sender reputation with user feedback (higher weight)
+      await updateReputation(user.id, email.from_address, correctedCategory, true)
 
       // Update sender trust based on correction
       if (originalCategory === 'spam' && correctedCategory !== 'spam') {

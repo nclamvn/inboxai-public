@@ -285,15 +285,12 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
           </div>
         )}
 
-        {/* AI Features Panel - Smart Allocation */}
+        {/* AI Features Panel - Smart Allocation + SWR Caching */}
         <div className="p-4">
           <AIFeaturesPanel
             emailId={email.id}
             category={email.category || 'personal'}
             priority={email.priority || 3}
-            existingResults={{
-              summary: email.summary ?? undefined,
-            }}
             onFeatureResult={(featureKey, result) => {
               console.log('AI Feature result:', featureKey, result);
               // Refresh email data when new AI results arrive

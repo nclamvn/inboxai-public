@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
 import { markSenderAsTrusted, markSenderAsUntrusted, blockSender } from '@/lib/ai/sender-trust'
+import { updateReputation } from '@/lib/ai/sender-reputation'
 
 const supabaseAdmin = createSupabaseAdmin(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -61,6 +62,9 @@ export async function POST(
           .update({ category: targetCategory })
           .eq('id', emailId)
 
+        // Update sender reputation with user feedback
+        await updateReputation(user.id, email.from_address, targetCategory, true)
+
         // Log feedback
         await logFeedback(user.id, emailId, originalCategory, targetCategory, 'not_spam')
 
@@ -79,6 +83,9 @@ export async function POST(
           .from('emails')
           .update({ category: 'spam' })
           .eq('id', emailId)
+
+        // Update sender reputation with user feedback
+        await updateReputation(user.id, email.from_address, 'spam', true)
 
         // Log feedback
         await logFeedback(user.id, emailId, originalCategory, 'spam', 'is_spam')
@@ -106,6 +113,9 @@ export async function POST(
           .eq('user_id', user.id)
           .eq('from_address', email.from_address)
 
+        // Update sender reputation with user feedback (blocked = spam)
+        await updateReputation(user.id, email.from_address, 'spam', true)
+
         return NextResponse.json({
           success: true,
           message: `Đã chặn ${email.from_address}`,
@@ -131,6 +141,9 @@ export async function POST(
           // Moving TO spam = untrust sender
           await markSenderAsUntrusted(user.id, email.from_address)
         }
+
+        // Update sender reputation with user feedback
+        await updateReputation(user.id, email.from_address, newCategory, true)
 
         // Log feedback
         await logFeedback(user.id, emailId, originalCategory, newCategory, 'recategorize')

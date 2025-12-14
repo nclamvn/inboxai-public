@@ -13,7 +13,7 @@ import { AIFeatureKey, AI_FEATURES_INFO } from '@/types/ai-features';
 interface AIFeatureButtonProps {
   featureKey: AIFeatureKey;
   emailId: string;
-  onTrigger?: (featureKey: AIFeatureKey, result: unknown) => void;
+  onTrigger?: (featureKey: AIFeatureKey, result?: unknown) => void | Promise<void>;
   disabled?: boolean;
   size?: 'sm' | 'md' | 'lg';
   variant?: 'default' | 'outline' | 'ghost';
@@ -41,18 +41,8 @@ export function AIFeatureButton({
 
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/ai/features/${emailId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ featureKey }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to trigger feature');
-      }
-
-      const data = await response.json();
-      onTrigger?.(featureKey, data.result);
+      // Let the parent handle the API call (useAIFeatures hook)
+      await onTrigger?.(featureKey);
     } catch (error) {
       console.error('Error triggering AI feature:', error);
     } finally {

@@ -45,6 +45,7 @@
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "resend": "^6.6.0",
+    "swr": "^2.3.7",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {

@@ -24,6 +24,19 @@ import {
   suggestAction
 } from './priority-rules'
 import { applyLearnedRules } from './feedback-learner'
+import {
+  getReputation,
+  updateReputation,
+  resolveCategory,
+  type ReputationLookupResult
+} from './sender-reputation'
+import {
+  detectPhishing,
+  updateEmailPhishingStatus,
+  type PhishingResult
+} from './phishing-detector'
+import { logClassification } from './classification-logger'
+import { updateDomainCategory } from './domain-reputation'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!
@@ -67,6 +80,7 @@ Trả lời JSON:
 CHỈ TRẢ VỀ JSON.`
 
 interface ClassifyEmailInput {
+  email_id?: string // For logging
   from_address: string
   from_name?: string
   subject?: string
@@ -393,6 +407,18 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
 
   let classificationMethod: ClassificationMethod = { method: 'ai' }
 
+  // Start phishing detection early (runs in parallel with other checks)
+  const phishingPromise = detectPhishing({
+    from_address: email.from_address,
+    from_name: email.from_name,
+    subject: email.subject,
+    body_text: email.body_text,
+    body_html: email.body_html
+  }).catch(e => {
+    console.error('[CLASSIFIER] Phishing detection failed:', e)
+    return null
+  })
+
   // STEP 1: Get sender trust
   let senderTrust: SenderTrust | null = null
   let trustScore = 0
@@ -409,6 +435,53 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
   // BLOCKED sender → Instant spam
   if (senderTrust?.trust_level === 'blocked') {
     return createBlockedResponse()
+  }
+
+  // PHASE 0: Sender Reputation Lookup (NEW)
+  // Check if we have high-confidence sender reputation to use directly
+  let reputationResult: ReputationLookupResult | null = null
+  if (email.user_id) {
+    try {
+      reputationResult = await getReputation(email.user_id, email.from_address)
+
+      if (reputationResult.shouldUseReputation && reputationResult.suggestedCategory) {
+        console.log(`[CLASSIFIER] Using sender reputation: ${reputationResult.suggestedCategory} (conf: ${reputationResult.reputation?.confidence.toFixed(2)})`)
+
+        const reputationCategory = reputationResult.suggestedCategory as Category
+        const priority = determinePriority({
+          category: reputationCategory,
+          subject: email.subject || '',
+          fromAddress: email.from_address,
+          bodyText: email.body_text || '',
+          hasAttachment: false,
+          isRepliedThread: false,
+          senderTrustLevel: senderTrust?.trust_level,
+        })
+
+        // PHASE 5: Update reputation (track email even when using cached reputation)
+        updateReputation(email.user_id, email.from_address, reputationCategory, false).catch(e => {
+          console.error('[CLASSIFIER] Failed to update reputation:', e)
+        })
+
+        // Wait for phishing detection
+        const phishingResult = await phishingPromise
+
+        return {
+          priority,
+          category: reputationCategory,
+          needs_reply: needsReply(reputationCategory, email.subject || '', email.body_text || '', email.from_address),
+          deadline: extractDeadline(email.subject || '', email.body_text || ''),
+          summary: '',
+          suggested_labels: [],
+          suggested_action: suggestAction(reputationCategory, priority, false),
+          confidence: reputationResult.reputation?.confidence || 0.85,
+          key_entities: { people: [], dates: [], amounts: [], tasks: [] },
+          phishing: phishingResult || undefined
+        }
+      }
+    } catch (e) {
+      console.error('[CLASSIFIER] Reputation lookup failed:', e)
+    }
   }
 
   // STEP 2: Check learned rules from user feedback
@@ -429,6 +502,14 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
           senderTrustLevel: senderTrust?.trust_level,
         })
 
+        // PHASE 5: Update sender reputation
+        updateReputation(email.user_id, email.from_address, learned.category, false).catch(e => {
+          console.error('[CLASSIFIER] Failed to update reputation:', e)
+        })
+
+        // Wait for phishing detection
+        const phishingResult = await phishingPromise
+
         return {
           priority,
           category: learned.category,
@@ -438,7 +519,8 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
           suggested_labels: [],
           suggested_action: suggestAction(learned.category, priority, false),
           confidence: learned.confidence,
-          key_entities: { people: [], dates: [], amounts: [], tasks: [] }
+          key_entities: { people: [], dates: [], amounts: [], tasks: [] },
+          phishing: phishingResult || undefined
         }
       }
     } catch (e) {
@@ -475,6 +557,16 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
       senderTrustLevel: senderTrust?.trust_level,
     })
 
+    // PHASE 5: Update sender reputation
+    if (email.user_id) {
+      updateReputation(email.user_id, email.from_address, finalCategory, false).catch(e => {
+        console.error('[CLASSIFIER] Failed to update reputation:', e)
+      })
+    }
+
+    // Wait for phishing detection
+    const phishingResult = await phishingPromise
+
     return {
       priority,
       category: finalCategory,
@@ -484,7 +576,8 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
       suggested_labels: [],
       suggested_action: suggestAction(finalCategory, priority, false),
       confidence: finalConfidence,
-      key_entities: { people: [], dates: [], amounts: [], tasks: [] }
+      key_entities: { people: [], dates: [], amounts: [], tasks: [] },
+      phishing: phishingResult || undefined
     }
   }
 
@@ -541,6 +634,74 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
 
   console.log(`[CLASSIFIER] Final: ${finalCategory} (${finalConfidence.toFixed(2)}) via ${classificationMethod.method}`)
 
+  // PHASE 5: Update sender reputation with final classification
+  if (email.user_id) {
+    updateReputation(email.user_id, email.from_address, finalCategory, false).catch(e => {
+      console.error('[CLASSIFIER] Failed to update reputation:', e)
+    })
+  }
+
+  // Wait for phishing detection result
+  const phishingResult = await phishingPromise
+
+  // If high phishing score and classified as non-spam, consider overriding to spam
+  if (phishingResult?.isPhishing && finalCategory !== 'spam') {
+    console.log(`[CLASSIFIER] Phishing detected (score: ${phishingResult.score}), overriding to spam`)
+
+    // Log classification (async)
+    if (email.user_id && email.email_id) {
+      logClassification({
+        userId: email.user_id,
+        emailId: email.email_id,
+        senderEmail: email.from_address,
+        subject: email.subject,
+        assignedCategory: 'spam',
+        aiConfidence: Math.max(finalConfidence, phishingResult.score / 100),
+        phishingScore: phishingResult.score,
+        classificationSource: classificationMethod.method === 'ai' ? 'gpt' : classificationMethod.method === 'rule' ? 'rule_based' : classificationMethod.method,
+        usedSenderReputation: false,
+        senderReputationScore: reputationResult?.reputation?.confidence
+      }).catch(e => console.error('[CLASSIFIER] Logging failed:', e))
+
+      // Update domain category
+      updateDomainCategory(email.user_id, email.from_address, 'spam')
+        .catch(e => console.error('[CLASSIFIER] Domain category update failed:', e))
+    }
+
+    return {
+      priority: 1,
+      category: 'spam',
+      needs_reply: false,
+      deadline: null,
+      summary: aiResult.summary,
+      suggested_labels: ['phishing'],
+      suggested_action: 'delete',
+      confidence: Math.max(finalConfidence, phishingResult.score / 100),
+      key_entities: aiResult.key_entities,
+      phishing: phishingResult
+    }
+  }
+
+  // Log classification (async)
+  if (email.user_id && email.email_id) {
+    logClassification({
+      userId: email.user_id,
+      emailId: email.email_id,
+      senderEmail: email.from_address,
+      subject: email.subject,
+      assignedCategory: finalCategory,
+      aiConfidence: finalConfidence,
+      phishingScore: phishingResult?.score || 0,
+      classificationSource: classificationMethod.method === 'ai' ? 'gpt' : classificationMethod.method === 'rule' ? 'rule_based' : classificationMethod.method,
+      usedSenderReputation: false,
+      senderReputationScore: reputationResult?.reputation?.confidence
+    }).catch(e => console.error('[CLASSIFIER] Logging failed:', e))
+
+    // Update domain category
+    updateDomainCategory(email.user_id, email.from_address, finalCategory)
+      .catch(e => console.error('[CLASSIFIER] Domain category update failed:', e))
+  }
+
   return {
     priority,
     category: finalCategory,
@@ -550,7 +711,8 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
     suggested_labels: [],
     suggested_action: suggestAction(finalCategory, priority, needsReplyFlag),
     confidence: finalConfidence,
-    key_entities: aiResult.key_entities
+    key_entities: aiResult.key_entities,
+    phishing: phishingResult || undefined
   }
 }
 
