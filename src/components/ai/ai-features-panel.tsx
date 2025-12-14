@@ -38,6 +38,7 @@ export function AIFeaturesPanel({
   const [collapsedFeatures, setCollapsedFeatures] = useState<Set<AIFeatureKey>>(new Set());
 
   const {
+    data,
     results,
     allocation,
     availableButtons,
@@ -46,6 +47,15 @@ export function AIFeaturesPanel({
     isCached,
     triggerFeature,
   } = useAIFeatures(emailId);
+
+  // DEBUG: Log all state
+  console.log('[AIFeaturesPanel] emailId:', emailId);
+  console.log('[AIFeaturesPanel] isLoading:', isLoading);
+  console.log('[AIFeaturesPanel] error:', error);
+  console.log('[AIFeaturesPanel] data:', data);
+  console.log('[AIFeaturesPanel] results:', results);
+  console.log('[AIFeaturesPanel] availableButtons:', availableButtons);
+  console.log('[AIFeaturesPanel] allocation:', allocation);
 
   const toggleCollapse = (featureKey: AIFeatureKey) => {
     setCollapsedFeatures(prev => {

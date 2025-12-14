@@ -72,6 +72,10 @@ export async function POST(
     // Get allocation
     const allocation = await getFeatureAllocationForEmail(user.id, email);
 
+    // DEBUG: Log allocation
+    console.log('[BatchAPI] email.category:', email.category);
+    console.log('[BatchAPI] allocation:', JSON.stringify(allocation, null, 2));
+
     // Collect existing results from database (cached)
     const existingResults: Record<string, FeatureResultWithMeta> = {};
 
@@ -240,7 +244,7 @@ export async function POST(
 
     const totalTimeMs = Date.now() - startTime;
 
-    return NextResponse.json({
+    const response = {
       emailId,
       allocation: {
         category: allocation.category,
@@ -253,7 +257,12 @@ export async function POST(
       totalCost,
       totalTimeMs,
       cached: featuresToRun.length === 0,
-    });
+    };
+
+    // DEBUG: Log final response
+    console.log('[BatchAPI] Final response:', JSON.stringify(response, null, 2));
+
+    return NextResponse.json(response);
 
   } catch (error) {
     console.error('Error running batch AI features:', error);
