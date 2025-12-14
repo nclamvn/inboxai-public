@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
       .from('source_accounts')
       .select('id')
       .eq('user_id', user.id)
-      .eq('email', googleUser.email)
+      .eq('email_address', googleUser.email)
       .single();
 
     if (existingAccount) {
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
         .from('source_accounts')
         .insert({
           user_id: user.id,
-          email: googleUser.email,
+          email_address: googleUser.email,
           provider: 'gmail',
           auth_type: 'oauth_google',
           oauth_access_token: tokens.access_token,
@@ -110,6 +110,7 @@ export async function GET(request: NextRequest) {
           oauth_expires_at: expiresAt.toISOString(),
           oauth_scope: tokens.scope,
           is_connected: true,
+          is_active: true,
           display_name: googleUser.name,
         });
     }
