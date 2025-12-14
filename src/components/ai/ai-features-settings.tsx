@@ -188,16 +188,16 @@ export function AIFeaturesSettings() {
             value={usageStats.totalEmails}
           />
           <StatCard
-            label="Tong chi phi"
+            label="Tổng chi phí"
             value={`$${usageStats.totalCost.toFixed(4)}`}
           />
           <StatCard
-            label="Tiet kiem"
+            label="Tiết kiệm"
             value={`$${usageStats.savingsEstimate.toFixed(4)}`}
             highlight
           />
           <StatCard
-            label="% Tiet kiem"
+            label="% Tiết kiệm"
             value={`${Math.round((usageStats.savingsEstimate / (usageStats.totalCost + usageStats.savingsEstimate || 1)) * 100)}%`}
             highlight
           />
@@ -205,7 +205,7 @@ export function AIFeaturesSettings() {
       )}
 
       {/* Category Tabs */}
-      <div className="border-b dark:border-gray-700">
+      <div className="border-b border-gray-200 dark:border-gray-700">
         <div className="flex overflow-x-auto">
           {CATEGORIES_INFO.map(cat => (
             <button
@@ -227,10 +227,10 @@ export function AIFeaturesSettings() {
       {/* Features Config for Active Category */}
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Cai dat AI cho {CATEGORIES_INFO.find(c => c.key === activeCategory)?.nameVi}
+          Cài đặt AI cho {CATEGORIES_INFO.find(c => c.key === activeCategory)?.nameVi}
         </h3>
 
-        <div className="divide-y dark:divide-gray-700 rounded-lg border dark:border-gray-700">
+        <div className="divide-y divide-gray-200 dark:divide-gray-700 rounded-lg border border-gray-200 dark:border-gray-700">
           {AI_FEATURES_INFO.filter(f => f.key !== 'classification').map(feature => {
             const config = getFeatureConfig(activeCategory, feature.key);
 
@@ -240,13 +240,13 @@ export function AIFeaturesSettings() {
                   <p className="font-medium text-sm text-gray-900 dark:text-white">
                     {feature.nameVi}
                   </p>
-                  <p className="text-xs text-gray-500">{feature.descriptionVi}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">{feature.descriptionVi}</p>
                 </div>
 
                 <div className="flex items-center gap-4">
                   {/* Auto Enable Toggle */}
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <span className="text-xs text-gray-500">Tu dong</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Tự động</span>
                     <input
                       type="checkbox"
                       checked={config.autoEnabled}
@@ -262,7 +262,7 @@ export function AIFeaturesSettings() {
 
                   {/* Button Visible Toggle */}
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <span className="text-xs text-gray-500">Nut bam</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Nút bấm</span>
                     <input
                       type="checkbox"
                       checked={config.buttonVisible}
@@ -287,7 +287,7 @@ export function AIFeaturesSettings() {
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
           <Star className="w-4 h-4 text-yellow-500" />
-          VIP Senders (Bat tat ca AI)
+          VIP Senders (Bật tất cả AI)
         </h3>
 
         {/* Add VIP Form */}
@@ -299,18 +299,20 @@ export function AIFeaturesSettings() {
             onChange={(e) => setNewVipEmail(e.target.value)}
             className={cn(
               'flex-1 px-3 py-2 text-sm rounded-lg border',
-              'dark:bg-gray-800 dark:border-gray-700',
+              'bg-white border-gray-300 text-gray-900',
+              'dark:bg-gray-800 dark:border-gray-700 dark:text-white',
               'focus:outline-none focus:ring-2 focus:ring-blue-500'
             )}
           />
           <input
             type="text"
-            placeholder="Hoac domain (vd: company.com)"
+            placeholder="Hoặc domain (vd: company.com)"
             value={newVipDomain}
             onChange={(e) => setNewVipDomain(e.target.value)}
             className={cn(
               'flex-1 px-3 py-2 text-sm rounded-lg border',
-              'dark:bg-gray-800 dark:border-gray-700',
+              'bg-white border-gray-300 text-gray-900',
+              'dark:bg-gray-800 dark:border-gray-700 dark:text-white',
               'focus:outline-none focus:ring-2 focus:ring-blue-500'
             )}
           />
@@ -329,12 +331,12 @@ export function AIFeaturesSettings() {
 
         {/* VIP List */}
         {vipSenders.length > 0 ? (
-          <div className="divide-y dark:divide-gray-700 rounded-lg border dark:border-gray-700">
+          <div className="divide-y divide-gray-200 dark:divide-gray-700 rounded-lg border border-gray-200 dark:border-gray-700">
             {vipSenders.map(vip => (
               <div key={vip.id} className="flex items-center justify-between p-3">
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4 text-yellow-500" />
-                  <span className="text-sm">
+                  <span className="text-sm text-gray-900 dark:text-white">
                     {vip.sender_email || `*@${vip.sender_domain}`}
                   </span>
                 </div>
@@ -348,8 +350,8 @@ export function AIFeaturesSettings() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500 text-center py-4">
-            Chua co VIP sender nao
+          <p className="text-sm text-gray-600 dark:text-gray-400 text-center py-4">
+            Chưa có VIP sender nào
           </p>
         )}
       </div>
@@ -358,7 +360,7 @@ export function AIFeaturesSettings() {
       {isSaving && (
         <div className="fixed bottom-4 right-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm">
           <Loader2 className="w-4 h-4 animate-spin" />
-          Dang luu...
+          Đang lưu...
         </div>
       )}
     </div>

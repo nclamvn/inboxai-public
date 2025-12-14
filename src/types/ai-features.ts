@@ -62,13 +62,13 @@ export interface AIFeaturesForEmail {
 
 // Feature display names
 export const AI_FEATURE_NAMES: Record<AIFeatureKey, { en: string; vi: string }> = {
-  classification: { en: 'Classification', vi: 'Phan loai' },
-  summary: { en: 'AI Summary', vi: 'Tom tat AI' },
-  smart_reply: { en: 'Smart Reply', vi: 'Goi y tra loi' },
-  action_items: { en: 'Action Items', vi: 'Cong viec can lam' },
-  follow_up: { en: 'Follow-up', vi: 'Theo doi' },
-  sentiment: { en: 'Sentiment', vi: 'Cam xuc' },
-  translate: { en: 'Translate', vi: 'Dich' },
+  classification: { en: 'Classification', vi: 'Phân loại' },
+  summary: { en: 'AI Summary', vi: 'Tóm tắt AI' },
+  smart_reply: { en: 'Smart Reply', vi: 'Gợi ý trả lời' },
+  action_items: { en: 'Action Items', vi: 'Công việc cần làm' },
+  follow_up: { en: 'Follow-up', vi: 'Theo dõi' },
+  sentiment: { en: 'Sentiment', vi: 'Cảm xúc' },
+  translate: { en: 'Translate', vi: 'Dịch' },
 };
 
 // Feature icons (for UI)
@@ -84,15 +84,15 @@ export const AI_FEATURE_ICONS: Record<AIFeatureKey, string> = {
 
 // Trigger type display names
 export const TRIGGER_TYPE_NAMES: Record<TriggerType, { en: string; vi: string }> = {
-  auto_default: { en: 'Auto (Default)', vi: 'Tu dong (Mac dinh)' },
-  manual: { en: 'Manual', vi: 'Thu cong' },
-  vip_sender: { en: 'VIP Sender', vi: 'Nguoi gui VIP' },
-  content_trigger: { en: 'Content Match', vi: 'Noi dung khop' },
-  priority_override: { en: 'High Priority', vi: 'Uu tien cao' },
-  long_email: { en: 'Long Email', vi: 'Email dai' },
-  has_attachment: { en: 'Has Attachment', vi: 'Co dinh kem' },
-  has_money: { en: 'Money Detected', vi: 'Phat hien tien' },
-  has_deadline: { en: 'Deadline Detected', vi: 'Phat hien deadline' },
+  auto_default: { en: 'Auto (Default)', vi: 'Tự động (Mặc định)' },
+  manual: { en: 'Manual', vi: 'Thủ công' },
+  vip_sender: { en: 'VIP Sender', vi: 'Người gửi VIP' },
+  content_trigger: { en: 'Content Match', vi: 'Nội dung khớp' },
+  priority_override: { en: 'High Priority', vi: 'Ưu tiên cao' },
+  long_email: { en: 'Long Email', vi: 'Email dài' },
+  has_attachment: { en: 'Has Attachment', vi: 'Có đính kèm' },
+  has_money: { en: 'Money Detected', vi: 'Phát hiện tiền' },
+  has_deadline: { en: 'Deadline Detected', vi: 'Phát hiện deadline' },
 };
 
 // Feature info for API/UI
@@ -110,54 +110,54 @@ export const AI_FEATURES_INFO: AIFeatureInfo[] = [
   {
     key: 'summary',
     name: 'AI Summary',
-    nameVi: 'Tom tat AI',
+    nameVi: 'Tóm tắt AI',
     description: 'Summarize email content',
-    descriptionVi: 'Tom tat noi dung email',
+    descriptionVi: 'Tóm tắt nội dung email',
     icon: 'FileText',
     estimatedCost: 0.002,
   },
   {
     key: 'smart_reply',
     name: 'Smart Reply',
-    nameVi: 'Goi y tra loi',
+    nameVi: 'Gợi ý trả lời',
     description: 'Generate reply suggestions',
-    descriptionVi: 'Tao goi y cau tra loi',
+    descriptionVi: 'Tạo gợi ý câu trả lời',
     icon: 'MessageSquare',
     estimatedCost: 0.005,
   },
   {
     key: 'action_items',
     name: 'Action Items',
-    nameVi: 'Cong viec can lam',
+    nameVi: 'Công việc cần làm',
     description: 'Extract tasks and deadlines',
-    descriptionVi: 'Trich xuat cong viec va deadline',
+    descriptionVi: 'Trích xuất công việc và deadline',
     icon: 'CheckSquare',
     estimatedCost: 0.002,
   },
   {
     key: 'follow_up',
     name: 'Follow-up',
-    nameVi: 'Theo doi',
+    nameVi: 'Theo dõi',
     description: 'Detect follow-up needs',
-    descriptionVi: 'Phat hien can theo doi',
+    descriptionVi: 'Phát hiện cần theo dõi',
     icon: 'Bell',
     estimatedCost: 0.001,
   },
   {
     key: 'sentiment',
     name: 'Sentiment',
-    nameVi: 'Cam xuc',
+    nameVi: 'Cảm xúc',
     description: 'Analyze email tone',
-    descriptionVi: 'Phan tich tone email',
+    descriptionVi: 'Phân tích tone email',
     icon: 'Heart',
     estimatedCost: 0.001,
   },
   {
     key: 'translate',
     name: 'Translate',
-    nameVi: 'Dich thuat',
+    nameVi: 'Dịch thuật',
     description: 'Translate email content',
-    descriptionVi: 'Dich noi dung email',
+    descriptionVi: 'Dịch nội dung email',
     icon: 'Languages',
     estimatedCost: 0.003,
   },
@@ -173,24 +173,24 @@ export interface CategoryInfo {
 }
 
 export const CATEGORIES_INFO: CategoryInfo[] = [
-  { key: 'work', name: 'Work', nameVi: 'Cong viec', color: 'blue', icon: 'Briefcase' },
-  { key: 'personal', name: 'Personal', nameVi: 'Ca nhan', color: 'green', icon: 'User' },
-  { key: 'transaction', name: 'Transaction', nameVi: 'Giao dich', color: 'yellow', icon: 'CreditCard' },
-  { key: 'newsletter', name: 'Newsletter', nameVi: 'Tin tuc', color: 'purple', icon: 'Newspaper' },
-  { key: 'promotion', name: 'Promotion', nameVi: 'Khuyen mai', color: 'orange', icon: 'Tag' },
-  { key: 'social', name: 'Social', nameVi: 'Mang xa hoi', color: 'pink', icon: 'Users' },
+  { key: 'work', name: 'Work', nameVi: 'Công việc', color: 'blue', icon: 'Briefcase' },
+  { key: 'personal', name: 'Personal', nameVi: 'Cá nhân', color: 'green', icon: 'User' },
+  { key: 'transaction', name: 'Transaction', nameVi: 'Giao dịch', color: 'yellow', icon: 'CreditCard' },
+  { key: 'newsletter', name: 'Newsletter', nameVi: 'Bản tin', color: 'purple', icon: 'Newspaper' },
+  { key: 'promotion', name: 'Promotion', nameVi: 'Khuyến mãi', color: 'orange', icon: 'Tag' },
+  { key: 'social', name: 'Social', nameVi: 'Mạng xã hội', color: 'pink', icon: 'Users' },
   { key: 'spam', name: 'Spam', nameVi: 'Spam', color: 'red', icon: 'AlertTriangle' },
 ];
 
 // Trigger type display info with colors
 export const TRIGGER_DISPLAY: Record<TriggerType, { label: string; labelVi: string; color: string }> = {
-  auto_default: { label: 'Auto', labelVi: 'Tu dong', color: 'gray' },
-  manual: { label: 'Manual', labelVi: 'Thu cong', color: 'blue' },
+  auto_default: { label: 'Auto', labelVi: 'Tự động', color: 'gray' },
+  manual: { label: 'Manual', labelVi: 'Thủ công', color: 'blue' },
   vip_sender: { label: 'VIP Sender', labelVi: 'Sender VIP', color: 'gold' },
-  content_trigger: { label: 'Content', labelVi: 'Noi dung', color: 'purple' },
-  priority_override: { label: 'Priority', labelVi: 'Uu tien', color: 'red' },
-  long_email: { label: 'Long Email', labelVi: 'Email dai', color: 'cyan' },
-  has_attachment: { label: 'Attachment', labelVi: 'Dinh kem', color: 'orange' },
-  has_money: { label: 'Money', labelVi: 'Tien', color: 'green' },
+  content_trigger: { label: 'Content', labelVi: 'Nội dung', color: 'purple' },
+  priority_override: { label: 'Priority', labelVi: 'Ưu tiên', color: 'red' },
+  long_email: { label: 'Long Email', labelVi: 'Email dài', color: 'cyan' },
+  has_attachment: { label: 'Attachment', labelVi: 'Đính kèm', color: 'orange' },
+  has_money: { label: 'Money', labelVi: 'Tiền', color: 'green' },
   has_deadline: { label: 'Deadline', labelVi: 'Deadline', color: 'red' },
 };
