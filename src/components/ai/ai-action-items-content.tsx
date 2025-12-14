@@ -32,7 +32,7 @@ export function AIActionItemsContent({
 
   if (!items || items.length === 0) {
     return (
-      <p className="text-sm text-gray-500">Khong tim thay cong viec can lam</p>
+      <p className="text-sm text-[var(--muted-foreground)]">Không tìm thấy công việc cần làm</p>
     );
   }
 
@@ -56,7 +56,7 @@ export function AIActionItemsContent({
           key={item.id || index}
           className={cn(
             'flex items-start gap-3 p-2 rounded-lg transition-colors',
-            'hover:bg-gray-50 dark:hover:bg-gray-800/50',
+            'hover:bg-[var(--hover)]',
             item.completed && 'opacity-60'
           )}
         >
@@ -67,13 +67,13 @@ export function AIActionItemsContent({
             {item.completed ? (
               <CheckSquare className="w-5 h-5 text-green-500" />
             ) : (
-              <Square className="w-5 h-5 text-gray-400 hover:text-gray-600" />
+              <Square className="w-5 h-5 text-[var(--muted-foreground)] hover:text-[var(--foreground)]" />
             )}
           </button>
 
           <div className="flex-1 min-w-0">
             <p className={cn(
-              'text-sm text-gray-700 dark:text-gray-300',
+              'text-sm text-[var(--foreground)]',
               item.completed && 'line-through'
             )}>
               {item.task}
@@ -81,7 +81,7 @@ export function AIActionItemsContent({
 
             <div className="flex items-center gap-2 mt-1">
               {item.deadline && (
-                <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+                <span className="inline-flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
                   <Calendar className="w-3 h-3" />
                   {item.deadline}
                 </span>
@@ -92,7 +92,7 @@ export function AIActionItemsContent({
                   priorityColors[item.priority]
                 )}>
                   {item.priority === 'high' ? 'Cao' :
-                   item.priority === 'medium' ? 'Trung binh' : 'Thap'}
+                   item.priority === 'medium' ? 'Trung bình' : 'Thấp'}
                 </span>
               )}
             </div>

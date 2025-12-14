@@ -25,14 +25,14 @@ interface AISummaryContentProps {
 export function AISummaryContent({ summary, className }: AISummaryContentProps) {
   if (!summary) {
     return (
-      <p className="text-sm text-gray-500">Không có tóm tắt</p>
+      <p className="text-sm text-[var(--muted-foreground)]">Không có tóm tắt</p>
     );
   }
 
   // Handle string format (legacy)
   if (typeof summary === 'string') {
     return (
-      <div className={cn('text-sm text-gray-700 dark:text-gray-300', className)}>
+      <div className={cn('text-sm text-[var(--foreground)]', className)}>
         <p className="whitespace-pre-wrap">{summary}</p>
       </div>
     );
@@ -45,10 +45,10 @@ export function AISummaryContent({ summary, className }: AISummaryContentProps) 
     <div className={cn('space-y-2', className)}>
       {/* Summary bullet points */}
       {bulletPoints && bulletPoints.length > 0 && (
-        <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+        <ul className="text-sm text-[var(--foreground)] space-y-1">
           {bulletPoints.map((point, i) => (
             <li key={i} className="flex items-start gap-2">
-              <span className="text-gray-400 mt-1">•</span>
+              <span className="text-[var(--muted-foreground)] mt-1">•</span>
               <span>{point}</span>
             </li>
           ))}

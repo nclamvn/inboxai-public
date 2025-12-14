@@ -80,9 +80,8 @@ export function AIFeatureCard({
   return (
     <div
       className={cn(
-        'rounded-lg border bg-card transition-all duration-200',
-        'dark:border-gray-700 dark:bg-gray-800/50',
-        'border-gray-200 bg-white',
+        'rounded-lg border transition-all duration-200',
+        'border-[var(--border)] bg-[var(--card)]',
         className
       )}
     >
@@ -90,26 +89,26 @@ export function AIFeatureCard({
       <div
         className={cn(
           'flex items-center justify-between px-4 py-3 cursor-pointer',
-          'hover:bg-gray-50 dark:hover:bg-gray-700/50',
+          'hover:bg-[var(--hover)]',
           'rounded-t-lg',
           isCollapsed && 'rounded-b-lg'
         )}
         onClick={handleToggle}
       >
         <div className="flex items-center gap-3">
-          <div className={cn('p-1.5 rounded-md bg-gray-100 dark:bg-gray-700', iconColor)}>
+          <div className={cn('p-1.5 rounded-md bg-[var(--secondary)]', iconColor)}>
             <Icon className="w-4 h-4" />
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-medium text-sm">
+            <span className="font-medium text-sm text-[var(--foreground)]">
               {titleVi || title}
             </span>
             {triggerInfo && (
               <span
                 className={cn(
                   'text-xs px-1.5 py-0.5 rounded-full',
-                  'bg-gray-100 dark:bg-gray-700',
-                  'text-gray-600 dark:text-gray-400'
+                  'bg-[var(--secondary)]',
+                  'text-[var(--muted-foreground)]'
                 )}
               >
                 {triggerInfo.labelVi}
@@ -120,7 +119,7 @@ export function AIFeatureCard({
 
         <div className="flex items-center gap-2">
           {isLoading && (
-            <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+            <Loader2 className="w-4 h-4 animate-spin text-[var(--muted-foreground)]" />
           )}
           {onDismiss && !isLoading && (
             <button
@@ -128,26 +127,26 @@ export function AIFeatureCard({
                 e.stopPropagation();
                 onDismiss();
               }}
-              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
+              className="p-1 hover:bg-[var(--hover)] rounded"
             >
-              <X className="w-4 h-4 text-gray-400" />
+              <X className="w-4 h-4 text-[var(--muted-foreground)]" />
             </button>
           )}
           {isCollapsed ? (
-            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <ChevronDown className="w-4 h-4 text-[var(--muted-foreground)]" />
           ) : (
-            <ChevronUp className="w-4 h-4 text-gray-400" />
+            <ChevronUp className="w-4 h-4 text-[var(--muted-foreground)]" />
           )}
         </div>
       </div>
 
       {/* Content */}
       {!isCollapsed && (
-        <div className="px-4 pb-4 pt-1 border-t dark:border-gray-700">
+        <div className="px-4 pb-4 pt-1 border-t border-[var(--border)]">
           {isLoading ? (
             <div className="flex items-center justify-center py-4">
-              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-              <span className="ml-2 text-sm text-gray-500">Dang xu ly...</span>
+              <Loader2 className="w-6 h-6 animate-spin text-[var(--muted-foreground)]" />
+              <span className="ml-2 text-sm text-[var(--muted-foreground)]">Đang xử lý...</span>
             </div>
           ) : (
             children
