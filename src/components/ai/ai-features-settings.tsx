@@ -3,6 +3,7 @@
 /**
  * AI Features Settings
  * Settings panel for configuring AI features
+ * Fixed: Vietnamese diacritics + Light theme contrast
  */
 
 import { useState, useEffect } from 'react';
@@ -11,6 +12,7 @@ import {
   Star,
   Plus,
   Trash2,
+  Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -28,25 +30,14 @@ interface VipSender {
   priority_boost: number;
 }
 
-interface UsageStats {
-  totalEmails: number;
-  totalCost: number;
-  savingsEstimate: number;
-}
-
 export function AIFeaturesSettings() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [activeCategory, setActiveCategory] = useState<EmailCategory>('work');
-  const [defaults, setDefaults] = useState<Array<{
-    category: string;
-    feature_key: string;
-    auto_enabled: boolean;
-    button_visible: boolean;
-  }>>([]);
-  const [userOverrides, setUserOverrides] = useState<Record<string, Record<string, { auto?: boolean; button?: boolean }>>>({});
+  const [defaults, setDefaults] = useState<any[]>([]);
+  const [userOverrides, setUserOverrides] = useState<Record<string, Record<string, any>>>({});
   const [vipSenders, setVipSenders] = useState<VipSender[]>([]);
-  const [usageStats, setUsageStats] = useState<UsageStats | null>(null);
+  const [usageStats, setUsageStats] = useState<any>(null);
 
   // New VIP sender form
   const [newVipEmail, setNewVipEmail] = useState('');
@@ -180,6 +171,17 @@ export function AIFeaturesSettings() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+          <Zap className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+        </div>
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">AI Features</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Cấu hình tính năng AI theo loại email</p>
+        </div>
+      </div>
+
       {/* Usage Stats Summary */}
       {usageStats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -206,16 +208,16 @@ export function AIFeaturesSettings() {
 
       {/* Category Tabs */}
       <div className="border-b border-gray-200 dark:border-gray-700">
-        <div className="flex overflow-x-auto">
+        <div className="flex overflow-x-auto -mb-px">
           {CATEGORIES_INFO.map(cat => (
             <button
               key={cat.key}
               onClick={() => setActiveCategory(cat.key)}
               className={cn(
-                'px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors',
+                'px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors',
                 activeCategory === cat.key
                   ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
               )}
             >
               {cat.nameVi}
@@ -226,11 +228,11 @@ export function AIFeaturesSettings() {
 
       {/* Features Config for Active Category */}
       <div className="space-y-3">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <h3 className="text-sm font-medium text-gray-800 dark:text-gray-200">
           Cài đặt AI cho {CATEGORIES_INFO.find(c => c.key === activeCategory)?.nameVi}
         </h3>
 
-        <div className="divide-y divide-gray-200 dark:divide-gray-700 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="divide-y divide-gray-200 dark:divide-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50">
           {AI_FEATURES_INFO.filter(f => f.key !== 'classification').map(feature => {
             const config = getFeatureConfig(activeCategory, feature.key);
 
@@ -243,7 +245,7 @@ export function AIFeaturesSettings() {
                   <p className="text-xs text-gray-600 dark:text-gray-400">{feature.descriptionVi}</p>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-6">
                   {/* Auto Enable Toggle */}
                   <label className="flex items-center gap-2 cursor-pointer">
                     <span className="text-xs text-gray-600 dark:text-gray-400">Tự động</span>
@@ -256,7 +258,7 @@ export function AIFeaturesSettings() {
                         'autoEnabled',
                         e.target.checked
                       )}
-                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 bg-white dark:bg-gray-700"
                     />
                   </label>
 
@@ -272,7 +274,7 @@ export function AIFeaturesSettings() {
                         'buttonVisible',
                         e.target.checked
                       )}
-                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 bg-white dark:bg-gray-700"
                       disabled={config.autoEnabled}
                     />
                   </label>
@@ -285,7 +287,7 @@ export function AIFeaturesSettings() {
 
       {/* VIP Senders */}
       <div className="space-y-3">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+        <h3 className="text-sm font-medium text-gray-800 dark:text-gray-200 flex items-center gap-2">
           <Star className="w-4 h-4 text-yellow-500" />
           VIP Senders (Bật tất cả AI)
         </h3>
@@ -299,9 +301,11 @@ export function AIFeaturesSettings() {
             onChange={(e) => setNewVipEmail(e.target.value)}
             className={cn(
               'flex-1 px-3 py-2 text-sm rounded-lg border',
-              'bg-white border-gray-300 text-gray-900',
-              'dark:bg-gray-800 dark:border-gray-700 dark:text-white',
-              'focus:outline-none focus:ring-2 focus:ring-blue-500'
+              'bg-white dark:bg-gray-800',
+              'border-gray-300 dark:border-gray-600',
+              'text-gray-900 dark:text-white',
+              'placeholder-gray-500 dark:placeholder-gray-400',
+              'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
             )}
           />
           <input
@@ -311,16 +315,18 @@ export function AIFeaturesSettings() {
             onChange={(e) => setNewVipDomain(e.target.value)}
             className={cn(
               'flex-1 px-3 py-2 text-sm rounded-lg border',
-              'bg-white border-gray-300 text-gray-900',
-              'dark:bg-gray-800 dark:border-gray-700 dark:text-white',
-              'focus:outline-none focus:ring-2 focus:ring-blue-500'
+              'bg-white dark:bg-gray-800',
+              'border-gray-300 dark:border-gray-600',
+              'text-gray-900 dark:text-white',
+              'placeholder-gray-500 dark:placeholder-gray-400',
+              'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
             )}
           />
           <button
             onClick={addVipSender}
             disabled={!newVipEmail && !newVipDomain}
             className={cn(
-              'px-4 py-2 rounded-lg text-sm font-medium',
+              'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
               'bg-blue-600 text-white hover:bg-blue-700',
               'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
@@ -331,7 +337,7 @@ export function AIFeaturesSettings() {
 
         {/* VIP List */}
         {vipSenders.length > 0 ? (
-          <div className="divide-y divide-gray-200 dark:divide-gray-700 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="divide-y divide-gray-200 dark:divide-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50">
             {vipSenders.map(vip => (
               <div key={vip.id} className="flex items-center justify-between p-3">
                 <div className="flex items-center gap-2">
@@ -342,7 +348,7 @@ export function AIFeaturesSettings() {
                 </div>
                 <button
                   onClick={() => removeVipSender(vip.id)}
-                  className="p-1.5 text-gray-400 hover:text-red-500 rounded"
+                  className="p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 rounded transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -350,7 +356,7 @@ export function AIFeaturesSettings() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-600 dark:text-gray-400 text-center py-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400 text-center py-4 bg-gray-50 dark:bg-gray-800/30 rounded-lg border border-gray-200 dark:border-gray-700">
             Chưa có VIP sender nào
           </p>
         )}
@@ -358,7 +364,7 @@ export function AIFeaturesSettings() {
 
       {/* Saving indicator */}
       {isSaving && (
-        <div className="fixed bottom-4 right-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm">
+        <div className="fixed bottom-4 right-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm shadow-lg">
           <Loader2 className="w-4 h-4 animate-spin" />
           Đang lưu...
         </div>
@@ -379,15 +385,20 @@ function StatCard({
 }) {
   return (
     <div className={cn(
-      'p-4 rounded-lg',
+      'p-4 rounded-lg border',
       highlight
-        ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
-        : 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
+        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+        : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
     )}>
-      <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+      <p className={cn(
+        'text-xs',
+        highlight ? 'text-green-700 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'
+      )}>
+        {label}
+      </p>
       <p className={cn(
         'text-lg font-semibold mt-1',
-        highlight ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'
+        highlight ? 'text-green-700 dark:text-green-400' : 'text-gray-900 dark:text-white'
       )}>
         {value}
       </p>
