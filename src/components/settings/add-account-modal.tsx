@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { X, Mail, Loader2, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ConnectGoogleButton } from './connect-google'
 
 interface AddAccountModalProps {
   isOpen: boolean
@@ -153,20 +154,40 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
         <div className="p-6">
           {/* Step 1: Select Provider */}
           {step === 'select-provider' && (
-            <div className="space-y-3">
-              <p className="text-[14px] text-[var(--muted-foreground)] mb-4">
-                Chọn nhà cung cấp email:
-              </p>
-              {PROVIDERS.map(p => (
-                <button
-                  key={p.id}
-                  onClick={() => handleSelectProvider(p.id)}
-                  className={`w-full flex items-center gap-4 p-4 rounded-lg border transition-colors hover:bg-[var(--hover)] ${p.color}`}
-                >
-                  <span className="text-2xl">{p.icon}</span>
-                  <span className="text-[15px] font-medium text-[var(--foreground)]">{p.name}</span>
-                </button>
-              ))}
+            <div className="space-y-4">
+              {/* OAuth Options */}
+              <div className="space-y-3">
+                <p className="text-[14px] text-[var(--muted-foreground)] text-center">
+                  Kết nối nhanh với 1 click
+                </p>
+                <ConnectGoogleButton />
+              </div>
+
+              {/* Divider */}
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-[var(--border)]" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-3 bg-[var(--card)] text-[var(--muted-foreground)]">
+                    hoặc dùng App Password
+                  </span>
+                </div>
+              </div>
+
+              {/* IMAP Providers */}
+              <div className="space-y-2">
+                {PROVIDERS.map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => handleSelectProvider(p.id)}
+                    className={`w-full flex items-center gap-4 p-3 rounded-lg border transition-colors hover:bg-[var(--hover)] ${p.color}`}
+                  >
+                    <span className="text-xl">{p.icon}</span>
+                    <span className="text-[14px] font-medium text-[var(--foreground)]">{p.name}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
