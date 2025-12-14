@@ -6,7 +6,9 @@ import { Star, Archive, Trash2, Reply, Forward, MoreHorizontal, X, AlertCircle, 
 import { cn, formatDate } from '@/lib/utils'
 import { useBehaviorTracker } from '@/hooks/use-behavior-tracker'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
-import { AIFeaturesPanel } from '@/components/ai'
+import { AISummary } from '@/components/email/ai-summary'
+import { SmartReply } from '@/components/email/smart-reply'
+import { ActionItemsCard } from '@/components/email/action-items-card'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import { PhishingWarning } from '@/components/email/phishing-warning'
 import type { Email } from '@/types'
@@ -285,19 +287,27 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
           </div>
         )}
 
-        {/* AI Features Panel - Smart Allocation + SWR Caching */}
-        <div className="p-4">
-          <AIFeaturesPanel
+        {/* AI Features - Using proven components like mobile */}
+        <div className="p-4 space-y-3">
+          {/* AI Summary */}
+          <AISummary
             emailId={email.id}
             category={email.category || 'personal'}
             priority={email.priority || 3}
-            onFeatureResult={(featureKey, result) => {
-              console.log('AI Feature result:', featureKey, result);
-              // Refresh email data when new AI results arrive
-              if (featureKey === 'smart_reply' || featureKey === 'action_items') {
-                onRefresh?.();
-              }
-            }}
+            bodyLength={(email.body_text || email.body_html || '').length}
+            existingSummary={email.summary}
+          />
+
+          {/* Smart Reply */}
+          <SmartReply
+            emailId={email.id}
+            onReply={handleSmartReply}
+          />
+
+          {/* Action Items */}
+          <ActionItemsCard
+            emailId={email.id}
+            onViewAll={() => router.push('/actions')}
           />
         </div>
 
