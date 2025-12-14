@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { User, Shield, Bell, Zap, Mail } from 'lucide-react'
 import { AISection } from '@/components/settings/ai-section'
+import { AIFeaturesSettings } from '@/components/ai'
 import { MailboxSection } from '@/components/settings/mailbox-section'
 import { RulesList } from '@/components/automation/rules-list'
 import { SourceAccountsSection } from '@/components/settings/source-accounts-section'
@@ -87,6 +88,20 @@ export default async function SettingsPage() {
 
         {/* AI Section */}
         <AISection />
+
+        {/* AI Features Settings - Smart Allocation */}
+        <section className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 mb-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+              <Zap className="w-5 h-5 text-white" strokeWidth={1.5} />
+            </div>
+            <div>
+              <h2 className="text-[18px] font-semibold text-[var(--foreground)]">AI Features</h2>
+              <p className="text-[14px] text-[var(--muted-foreground)]">Cấu hình tính năng AI theo loại email</p>
+            </div>
+          </div>
+          <AIFeaturesSettings />
+        </section>
 
         {/* Automation Section */}
         <section className="bg-[var(--card)] rounded-xl border border-[var(--border)] mb-6 overflow-hidden">
