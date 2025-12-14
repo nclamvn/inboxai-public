@@ -467,7 +467,7 @@ export function EmailListCompact({
           selectedId === email.id && !isSelecting
             ? 'bg-[var(--secondary)]'
             : emailIsSelected
-              ? 'bg-blue-100 dark:bg-blue-800/50'
+              ? 'bg-blue-100 text-gray-900 dark:bg-blue-600/40 dark:text-white'
               : 'hover:bg-[var(--hover)] active:bg-[var(--secondary)]',
           !email.is_read && !emailIsSelected && 'bg-blue-50/30 dark:bg-blue-900/10'
         )}
