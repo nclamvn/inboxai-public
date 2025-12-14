@@ -389,8 +389,8 @@ export class AIFeatureAllocationService {
         .eq('user_id', userId)
         .or(`category.eq.${category},category.is.null`);
 
-      // Build map with defaults
-      if (defaults) {
+      // Build map with defaults from DB
+      if (defaults && defaults.length > 0) {
         for (const d of defaults) {
           allocations.set(d.feature_key as AIFeatureKey, {
             auto: d.auto_enabled ?? false,
@@ -398,10 +398,20 @@ export class AIFeatureAllocationService {
             minPriority: d.min_priority_for_auto ?? 5,
           });
         }
+      } else {
+        // No DB defaults found, use hardcoded defaults
+        const categoryDefaults = DEFAULT_ALLOCATIONS[category] || DEFAULT_ALLOCATIONS.personal;
+        for (const [key, value] of Object.entries(categoryDefaults)) {
+          allocations.set(key as AIFeatureKey, {
+            auto: value.auto,
+            button: value.button,
+            minPriority: 5,
+          });
+        }
       }
 
       // Apply user overrides
-      if (overrides) {
+      if (overrides && overrides.length > 0) {
         for (const o of overrides) {
           const existing = allocations.get(o.feature_key as AIFeatureKey);
           if (existing) {
@@ -415,7 +425,7 @@ export class AIFeatureAllocationService {
       console.error('Error fetching allocations from DB, using defaults:', error);
 
       // Fallback to hardcoded defaults
-      const categoryDefaults = DEFAULT_ALLOCATIONS[category];
+      const categoryDefaults = DEFAULT_ALLOCATIONS[category] || DEFAULT_ALLOCATIONS.personal;
       for (const [key, value] of Object.entries(categoryDefaults)) {
         allocations.set(key as AIFeatureKey, {
           auto: value.auto,
