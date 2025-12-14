@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
+import { AIFeaturesPanel } from '@/components/ai'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import { AttachmentList } from './attachment-list'
 import type { Email } from '@/types'
@@ -467,6 +468,11 @@ export function EmailDetailFull({
             )}
           </div>
         )}
+      </div>
+
+      {/* AI Features Panel */}
+      <div className="px-6 py-4 border-b border-[var(--border)]">
+        <AIFeaturesPanel emailId={email.id} />
       </div>
 
       {/* Email Body */}
