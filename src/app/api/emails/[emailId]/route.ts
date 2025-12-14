@@ -100,7 +100,13 @@ export async function GET(
     email.is_read = true
   }
 
-  return NextResponse.json({ email })
+  // Add cache headers - cache for 30s, stale-while-revalidate for 60s
+  const response = NextResponse.json({ email })
+  response.headers.set(
+    'Cache-Control',
+    'private, s-maxage=30, stale-while-revalidate=60'
+  )
+  return response
 }
 
 export async function PATCH(

@@ -2,6 +2,7 @@
 
 import { Suspense, useMemo, useState, useCallback, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import {
   RefreshCw, MoreHorizontal, Inbox,
   ChevronLeft, Maximize2, Minimize2, Loader2,
@@ -11,12 +12,41 @@ import { cn } from '@/lib/utils'
 import { useEmails } from '@/hooks/use-emails'
 import { useEmail } from '@/hooks/use-email'
 import { FilterChips } from '@/components/email/filter-chips'
-import { EmailListCompact } from '@/components/email/email-list-compact'
 import { EmailListSkeleton } from '@/components/email/email-list-skeleton'
-import { EmailDetailFull } from '@/components/email/email-detail-full'
-import { EmailDetailMobile } from '@/components/email/email-detail-mobile'
 import { SelectionProvider } from '@/contexts/email-selection-context'
 import { SelectionToolbar } from '@/components/email/selection-toolbar'
+
+// Dynamic imports for code splitting - heavy components loaded on demand
+const EmailListCompact = dynamic(
+  () => import('@/components/email/email-list-compact').then(mod => ({ default: mod.EmailListCompact })),
+  {
+    loading: () => <EmailListSkeleton count={10} />,
+  }
+)
+
+const EmailDetailFull = dynamic(
+  () => import('@/components/email/email-detail-full').then(mod => ({ default: mod.EmailDetailFull })),
+  {
+    loading: () => (
+      <div className="flex-1 flex flex-col items-center justify-center bg-[var(--card)] gap-3">
+        <Loader2 className="w-6 h-6 animate-spin text-[var(--muted-foreground)]" strokeWidth={1.5} />
+        <p className="text-[13px] text-[var(--muted-foreground)]">Dang tai...</p>
+      </div>
+    ),
+  }
+)
+
+const EmailDetailMobile = dynamic(
+  () => import('@/components/email/email-detail-mobile').then(mod => ({ default: mod.EmailDetailMobile })),
+  {
+    loading: () => (
+      <div className="fixed inset-0 z-50 bg-[var(--card)] flex flex-col items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-[var(--muted-foreground)] mb-2" strokeWidth={1.5} />
+        <p className="text-[13px] text-[var(--muted-foreground)]">Dang tai...</p>
+      </div>
+    ),
+  }
+)
 
 type ViewMode = 'list' | 'split' | 'full'
 

@@ -3,7 +3,7 @@
  * Sync emails from Gmail API to database with batch processing
  */
 
-import { createClient } from '@/lib/supabase/server';
+import { createClient as createSupabaseAdmin } from '@supabase/supabase-js';
 import {
   refreshAccessToken,
   isTokenExpired
@@ -14,6 +14,14 @@ import {
   parseHeaders,
   extractBody,
 } from '@/lib/gmail/api';
+
+// Create admin client lazily to avoid edge runtime issues
+function getSupabaseAdmin() {
+  return createSupabaseAdmin(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 interface SyncResult {
   success: boolean;
@@ -59,7 +67,7 @@ async function parallelLimit<T, R>(
 export async function getValidAccessToken(
   accountId: string
 ): Promise<string | null> {
-  const supabase = await createClient();
+  const supabase = getSupabaseAdmin();
 
   const { data: account } = await supabase
     .from('source_accounts')
@@ -114,7 +122,7 @@ export async function syncGmailEmails(
     fullSync?: boolean;
   } = {}
 ): Promise<SyncResult> {
-  const supabase = await createClient();
+  const supabase = getSupabaseAdmin();
 
   try {
     // Get valid access token
@@ -134,19 +142,21 @@ export async function syncGmailEmails(
       return { success: false, syncedCount: 0, error: 'Account not found' };
     }
 
-    console.log(`[Gmail Sync] Starting for ${account.email_address}, maxResults=${options.maxResults || 50}`);
+    console.log(`[Gmail Sync] Starting for ${account.email_address}, maxResults=${options.maxResults || 50}, fullSync=${options.fullSync}, last_sync_at=${account.last_sync_at}`);
 
-    // Build query for new emails
-    let query = 'in:inbox';
+    // Build query for new emails - only use 'after:' filter, not 'in:inbox' since we use labelIds
+    let query = '';
     if (!options.fullSync && account.last_sync_at) {
       const afterDate = new Date(account.last_sync_at);
-      query += ` after:${Math.floor(afterDate.getTime() / 1000)}`;
+      query = `after:${Math.floor(afterDate.getTime() / 1000)}`;
     }
+
+    console.log(`[Gmail Sync] Query: "${query}", labelIds: INBOX`);
 
     // List messages
     const messageList = await listMessages(accessToken, {
       maxResults: options.maxResults || 50,
-      q: query,
+      q: query || undefined, // Don't send empty query
       labelIds: ['INBOX'],
     });
 
@@ -212,7 +222,8 @@ export async function syncGmailEmails(
             source_account_id: accountId,
             message_id: msg.id,
             original_uid: msg.id, // Use Gmail message ID as UID
-            thread_id: fullMessage.threadId,
+            // Note: Gmail threadId is hex string, not UUID. Store in original_uid for grouping
+            // thread_id column in DB expects UUID, so we skip it
             subject: headers['subject'] || '(Không có tiêu đề)',
             from_name: fromName,
             from_address: fromAddress,
@@ -256,8 +267,8 @@ export async function syncGmailEmails(
       }
     }
 
-    // Update last sync time
-    await supabase
+    // Update last sync time and increment total count
+    const { error: updateError } = await supabase
       .from('source_accounts')
       .update({
         last_sync_at: new Date().toISOString(),
@@ -265,6 +276,36 @@ export async function syncGmailEmails(
       })
       .eq('id', accountId);
 
+    if (updateError) {
+      console.error(`[Gmail Sync] Failed to update source_account:`, updateError);
+    }
+
+    // Increment total_emails_synced using raw SQL for atomic increment
+    if (syncedCount > 0) {
+      await supabase.rpc('increment_total_emails_synced', {
+        account_id: accountId,
+        count: syncedCount
+      }).then(({ error }) => {
+        if (error) {
+          console.log(`[Gmail Sync] RPC increment failed, trying direct update`);
+          // Fallback: Get current count and update
+          supabase
+            .from('source_accounts')
+            .select('total_emails_synced')
+            .eq('id', accountId)
+            .single()
+            .then(({ data }) => {
+              const currentCount = data?.total_emails_synced || 0;
+              supabase
+                .from('source_accounts')
+                .update({ total_emails_synced: currentCount + syncedCount })
+                .eq('id', accountId);
+            });
+        }
+      });
+    }
+
+    console.log(`[Gmail Sync] Complete: ${syncedCount} emails synced`);
     return { success: true, syncedCount };
 
   } catch (error) {

@@ -36,7 +36,8 @@ export function UrgentAlert({ onSelectEmail }: Props) {
     }
 
     checkUrgentEmails()
-    const interval = setInterval(checkUrgentEmails, 5 * 60 * 1000)
+    // Refresh every 10 minutes (was 5 minutes - performance optimization)
+    const interval = setInterval(checkUrgentEmails, 10 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
 

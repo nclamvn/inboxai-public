@@ -35,8 +35,8 @@ export function FollowUpBadge({ className, showLabel = false }: Props) {
     }
 
     fetchCounts()
-    // Refresh every 5 minutes
-    const interval = setInterval(fetchCounts, 5 * 60 * 1000)
+    // Refresh every 10 minutes (was 5 minutes - performance optimization)
+    const interval = setInterval(fetchCounts, 10 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
 
@@ -112,7 +112,8 @@ export function FollowUpInlineBadge() {
     }
 
     fetchCounts()
-    const interval = setInterval(fetchCounts, 5 * 60 * 1000)
+    // Refresh every 10 minutes (was 5 minutes - performance optimization)
+    const interval = setInterval(fetchCounts, 10 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
 

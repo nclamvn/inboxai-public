@@ -44,30 +44,36 @@ export async function listMessages(
 ): Promise<GmailMessageList> {
   const params = new URLSearchParams({
     maxResults: String(options.maxResults || 50),
-    ...(options.pageToken && { pageToken: options.pageToken }),
-    ...(options.q && { q: options.q }),
   });
 
+  if (options.pageToken) {
+    params.append('pageToken', options.pageToken);
+  }
+  if (options.q) {
+    params.append('q', options.q);
+  }
   if (options.labelIds) {
     options.labelIds.forEach(id => params.append('labelIds', id));
   }
 
-  const response = await fetch(
-    `${GMAIL_API_BASE}/users/me/messages?${params.toString()}`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
+  const url = `${GMAIL_API_BASE}/users/me/messages?${params.toString()}`;
+  console.log(`[Gmail API] listMessages URL: ${url.replace(accessToken, 'TOKEN')}`);
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
 
   if (!response.ok) {
     const error = await response.text();
-    console.error('Gmail API error:', error);
-    throw new Error('Failed to list messages');
+    console.error(`[Gmail API] listMessages error (${response.status}):`, error);
+    throw new Error(`Failed to list messages: ${response.status} - ${error}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  console.log(`[Gmail API] listMessages result: ${data.messages?.length || 0} messages, estimate: ${data.resultSizeEstimate}`);
+  return data;
 }
 
 /**

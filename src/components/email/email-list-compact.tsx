@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback, MouseEvent, TouchEvent } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo, MouseEvent, TouchEvent } from 'react'
 import { Star, Zap, Inbox, Newspaper, ChevronDown, ChevronRight, Loader2, Paperclip, Check, X, Archive, Trash2, Mail, MailOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSelection } from '@/contexts/email-selection-context'
@@ -184,7 +184,8 @@ export function EmailListCompact({
     return () => clearLongPressTimer()
   }, [clearLongPressTimer])
 
-  const formatTime = (date: string | null) => {
+  // Memoized helper functions
+  const formatTime = useCallback((date: string | null) => {
     if (!date) return ''
     const d = new Date(date)
     const now = new Date()
@@ -199,66 +200,72 @@ export function EmailListCompact({
     } else {
       return d.toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' })
     }
-  }
+  }, [])
 
-  const getCategoryStyle = (category: string | null) => {
+  // Static category styles - memoized
+  const categoryStyles = useMemo(() => ({
+    work: {
+      bg: 'bg-blue-50 dark:bg-blue-900/40',
+      text: 'text-gray-900 dark:text-white font-semibold',
+      hoverBg: 'hover:bg-blue-100 dark:hover:bg-blue-900/60'
+    },
+    personal: {
+      bg: 'bg-purple-50 dark:bg-purple-900/40',
+      text: 'text-gray-900 dark:text-white font-semibold',
+      hoverBg: 'hover:bg-purple-100 dark:hover:bg-purple-900/60'
+    },
+    transaction: {
+      bg: 'bg-emerald-50 dark:bg-emerald-900/40',
+      text: 'text-gray-900 dark:text-white font-semibold',
+      hoverBg: 'hover:bg-emerald-100 dark:hover:bg-emerald-900/60'
+    },
+    newsletter: {
+      bg: 'bg-gray-100 dark:bg-gray-800/60',
+      text: 'text-gray-900 dark:text-white font-semibold',
+      hoverBg: 'hover:bg-gray-200 dark:hover:bg-gray-800/80'
+    },
+    promotion: {
+      bg: 'bg-orange-50 dark:bg-orange-900/40',
+      text: 'text-gray-900 dark:text-white font-semibold',
+      hoverBg: 'hover:bg-orange-100 dark:hover:bg-orange-900/60'
+    },
+    social: {
+      bg: 'bg-cyan-50 dark:bg-cyan-900/40',
+      text: 'text-gray-900 dark:text-white font-semibold',
+      hoverBg: 'hover:bg-cyan-100 dark:hover:bg-cyan-900/60'
+    },
+    spam: {
+      bg: 'bg-red-50 dark:bg-red-900/40',
+      text: 'text-gray-900 dark:text-white font-semibold',
+      hoverBg: 'hover:bg-red-100 dark:hover:bg-red-900/60'
+    },
+  }), [])
+
+  const getCategoryStyle = useCallback((category: string | null) => {
     if (!category) return null
-    const styles: Record<string, { bg: string; text: string; hoverBg: string }> = {
-      work: {
-        bg: 'bg-blue-50 dark:bg-blue-900/40',
-        text: 'text-gray-900 dark:text-white font-semibold',
-        hoverBg: 'hover:bg-blue-100 dark:hover:bg-blue-900/60'
-      },
-      personal: {
-        bg: 'bg-purple-50 dark:bg-purple-900/40',
-        text: 'text-gray-900 dark:text-white font-semibold',
-        hoverBg: 'hover:bg-purple-100 dark:hover:bg-purple-900/60'
-      },
-      transaction: {
-        bg: 'bg-emerald-50 dark:bg-emerald-900/40',
-        text: 'text-gray-900 dark:text-white font-semibold',
-        hoverBg: 'hover:bg-emerald-100 dark:hover:bg-emerald-900/60'
-      },
-      newsletter: {
-        bg: 'bg-gray-100 dark:bg-gray-800/60',
-        text: 'text-gray-900 dark:text-white font-semibold',
-        hoverBg: 'hover:bg-gray-200 dark:hover:bg-gray-800/80'
-      },
-      promotion: {
-        bg: 'bg-orange-50 dark:bg-orange-900/40',
-        text: 'text-gray-900 dark:text-white font-semibold',
-        hoverBg: 'hover:bg-orange-100 dark:hover:bg-orange-900/60'
-      },
-      social: {
-        bg: 'bg-cyan-50 dark:bg-cyan-900/40',
-        text: 'text-gray-900 dark:text-white font-semibold',
-        hoverBg: 'hover:bg-cyan-100 dark:hover:bg-cyan-900/60'
-      },
-      spam: {
-        bg: 'bg-red-50 dark:bg-red-900/40',
-        text: 'text-gray-900 dark:text-white font-semibold',
-        hoverBg: 'hover:bg-red-100 dark:hover:bg-red-900/60'
-      },
-    }
-    return styles[category] || styles.newsletter
-  }
+    return categoryStyles[category as keyof typeof categoryStyles] || categoryStyles.newsletter
+  }, [categoryStyles])
 
-  const getCategoryLabel = (category: string | null) => {
+  // Static category labels - memoized
+  const categoryLabels = useMemo(() => ({
+    work: 'Công việc',
+    personal: 'Cá nhân',
+    transaction: 'Giao dịch',
+    newsletter: 'Newsletter',
+    promotion: 'Khuyến mãi',
+    social: 'Mạng XH',
+    spam: 'Spam',
+  }), [])
+
+  const getCategoryLabel = useCallback((category: string | null) => {
     if (!category) return ''
-    const labels: Record<string, string> = {
-      work: 'Công việc',
-      personal: 'Cá nhân',
-      transaction: 'Giao dịch',
-      newsletter: 'Newsletter',
-      promotion: 'Khuyến mãi',
-      social: 'Mạng XH',
-      spam: 'Spam',
-    }
-    return labels[category] || category
-  }
+    return categoryLabels[category as keyof typeof categoryLabels] || category
+  }, [categoryLabels])
 
-  // Group emails into sections for smart sort
-  const groupEmailsIntoSections = (emails: Email[]): EmailSection[] => {
+  // Group emails into sections for smart sort - memoized
+  const sections = useMemo(() => {
+    if (!smartSort) return []
+
     const needsAction: Email[] = []
     const primary: Email[] = []
     const readLater: Email[] = []
@@ -282,17 +289,17 @@ export function EmailListCompact({
       { id: 'primary', title: 'Hộp thư chính', icon: Inbox, emails: primary },
       { id: 'readLater', title: 'Đọc sau', icon: Newspaper, emails: readLater, defaultCollapsed: true }
     ].filter(section => section.emails.length > 0)
-  }
+  }, [emails, smartSort])
 
-  const toggleSection = (sectionId: string) => {
+  const toggleSection = useCallback((sectionId: string) => {
     setCollapsedSections(prev => ({
       ...prev,
       [sectionId]: !prev[sectionId]
     }))
-  }
+  }, [])
 
-  // Handle checkbox click (desktop)
-  const handleCheckboxClick = (e: MouseEvent, email: Email) => {
+  // Handle checkbox click (desktop) - memoized
+  const handleCheckboxClick = useCallback((e: MouseEvent, email: Email) => {
     e.stopPropagation()
 
     if (e.shiftKey && lastClickedId) {
@@ -311,11 +318,11 @@ export function EmailListCompact({
     }
 
     setLastClickedId(email.id)
-  }
+  }, [lastClickedId, emailIds, isSelected, toggleSelect])
 
-  // Handle right-click context menu (desktop only)
+  // Handle right-click context menu (desktop only) - memoized
   // On mobile, we use long press instead
-  const handleContextMenu = (e: MouseEvent, email: Email) => {
+  const handleContextMenu = useCallback((e: MouseEvent, email: Email) => {
     e.preventDefault()
     e.stopPropagation()
 
@@ -334,7 +341,7 @@ export function EmailListCompact({
       y: e.clientY,
       email
     })
-  }
+  }, [isSelected, clearSelection, toggleSelect])
 
   // Handle context menu action
   const handleAction = useCallback((action: string, data?: Record<string, unknown>) => {
@@ -355,14 +362,14 @@ export function EmailListCompact({
     setContextMenu(null)
   }, [selectedIds, onBulkAction, clearSelection, setIsSelecting])
 
-  // Handle category change from picker
-  const handleCategoryChange = (category: string) => {
+  // Handle category change from picker - memoized
+  const handleCategoryChange = useCallback((category: string) => {
     const ids = Array.from(selectedIds)
     onBulkAction?.('change-category', ids, { category })
     setShowCategoryPicker(false)
     clearSelection()
     if (setIsSelecting) setIsSelecting(false)
-  }
+  }, [selectedIds, onBulkAction, clearSelection, setIsSelecting])
 
   // Mobile Selection Toolbar Component
   const MobileSelectionToolbar = () => {
@@ -654,8 +661,7 @@ export function EmailListCompact({
   )
 
   if (smartSort) {
-    const sections = groupEmailsIntoSections(emails)
-
+    // sections is already memoized above
     return (
       <>
         <div className={cn(isSelecting && 'pb-32 md:pb-0')}>
