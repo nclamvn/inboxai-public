@@ -1,154 +1,300 @@
 /**
  * useAIFeatures Hook
- * SWR-based hook for fetching and caching AI features
- * Optimized: single batch API call + client-side caching
+ * With fallback mechanism: Batch API → Individual calls
  */
 
 'use client';
 
-import useSWR from 'swr';
-import { useCallback } from 'react';
-import type { AIFeatureKey } from '@/types/ai-features';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { AIFeatureKey } from '@/types/ai-features';
 
 interface FeatureResult {
-  status: 'success' | 'error';
+  status: 'idle' | 'loading' | 'success' | 'error';
   data?: unknown;
   error?: string;
-  cost?: number;
-  timeMs?: number;
-  cached?: boolean;
 }
 
-interface AIFeaturesResponse {
-  emailId: string;
-  allocation: {
-    category: string;
-    priority: number;
-    isVipSender: boolean;
-    contentTriggers: string[];
-  };
+interface AllocationInfo {
+  category: string;
+  priority: number;
+  isVipSender: boolean;
+  contentTriggers: string[];
+}
+
+interface UseAIFeaturesReturn {
+  // Results
   results: Record<string, FeatureResult>;
+  allocation: AllocationInfo | null;
   availableButtons: AIFeatureKey[];
-  totalCost: number;
-  totalTimeMs: number;
-  cached: boolean;
+
+  // State
+  isLoading: boolean;
+  error: string | null;
+  source: 'batch' | 'individual' | 'cache' | null;
+
+  // Actions
+  triggerFeature: (featureKey: AIFeatureKey) => Promise<void>;
+  refresh: () => void;
 }
 
-interface UseAIFeaturesOptions {
-  enabled?: boolean;
-}
+// Features to auto-load
+const AUTO_FEATURES: AIFeatureKey[] = ['summary', 'smart_reply', 'action_items'];
 
-const fetcher = async (url: string): Promise<AIFeaturesResponse> => {
-  console.log('[useAIFeatures] Fetching:', url);
+// Timeout for batch API
+const BATCH_TIMEOUT = 5000;
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-  });
+export function useAIFeatures(emailId: string | null): UseAIFeaturesReturn {
+  const [results, setResults] = useState<Record<string, FeatureResult>>({});
+  const [allocation, setAllocation] = useState<AllocationInfo | null>(null);
+  const [availableButtons, setAvailableButtons] = useState<AIFeatureKey[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [source, setSource] = useState<'batch' | 'individual' | 'cache' | null>(null);
 
-  console.log('[useAIFeatures] Response status:', response.status);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const hasLoadedRef = useRef<string | null>(null);
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('[useAIFeatures] Error response:', errorText);
-    throw new Error(`Failed to fetch AI features: ${response.status}`);
-  }
+  // Fetch with timeout
+  const fetchWithTimeout = useCallback(async (
+    url: string,
+    options: RequestInit,
+    timeout: number
+  ): Promise<Response> => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-  const data = await response.json();
-  console.log('[useAIFeatures] Response data:', JSON.stringify(data, null, 2));
-  return data;
-};
-
-export function useAIFeatures(
-  emailId: string | null,
-  options: UseAIFeaturesOptions = {}
-) {
-  const { enabled = true } = options;
-
-  const { data, error, isLoading, mutate } = useSWR<AIFeaturesResponse>(
-    enabled && emailId ? `/api/ai/features/${emailId}/auto` : null,
-    fetcher,
-    {
-      revalidateOnFocus: false,      // Don't refetch when tab gains focus
-      revalidateOnReconnect: false,  // Don't refetch when network reconnects
-      dedupingInterval: 60000,       // Dedupe requests within 60 seconds
-      errorRetryCount: 2,            // Retry failed requests twice
-      errorRetryInterval: 1000,      // Wait 1 second between retries
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (err) {
+      clearTimeout(timeoutId);
+      throw err;
     }
-  );
+  }, []);
+
+  // Try Batch API
+  const tryBatchAPI = useCallback(async (id: string): Promise<boolean> => {
+    try {
+      console.log('[useAIFeatures] Trying batch API for:', id);
+
+      const response = await fetchWithTimeout(
+        `/api/ai/features/${id}/auto`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        },
+        BATCH_TIMEOUT
+      );
+
+      if (!response.ok) {
+        console.warn('[useAIFeatures] Batch API failed:', response.status);
+        return false;
+      }
+
+      const data = await response.json();
+      console.log('[useAIFeatures] Batch API success:', data);
+
+      // Update state with batch results
+      const newResults: Record<string, FeatureResult> = {};
+      for (const [key, value] of Object.entries(data.results || {})) {
+        const result = value as { status: string; data?: unknown; error?: string };
+        newResults[key] = {
+          status: result.status === 'success' ? 'success' : 'error',
+          data: result.data,
+          error: result.error,
+        };
+      }
+
+      setResults(newResults);
+      setAllocation(data.allocation || null);
+      setAvailableButtons(data.availableButtons || []);
+      setSource('batch');
+
+      return true;
+    } catch (err) {
+      console.warn('[useAIFeatures] Batch API error:', err);
+      return false;
+    }
+  }, [fetchWithTimeout]);
+
+  // Fallback: Individual API calls
+  const fallbackIndividualCalls = useCallback(async (id: string): Promise<void> => {
+    console.log('[useAIFeatures] Falling back to individual calls');
+
+    // Set loading state for each feature
+    const loadingResults: Record<string, FeatureResult> = {};
+    AUTO_FEATURES.forEach(key => {
+      loadingResults[key] = { status: 'loading' };
+    });
+    setResults(loadingResults);
+
+    // Fetch each feature in parallel
+    const promises = AUTO_FEATURES.map(async (featureKey): Promise<[string, FeatureResult]> => {
+      try {
+        const response = await fetch(`/api/ai/features/${id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ featureKey }),
+        });
+
+        if (!response.ok) {
+          return [featureKey, { status: 'error', error: `HTTP ${response.status}` }];
+        }
+
+        const data = await response.json();
+
+        if (data.result?.success) {
+          return [featureKey, { status: 'success', data: data.result.data }];
+        } else {
+          return [featureKey, { status: 'error', error: data.result?.error || 'Unknown error' }];
+        }
+      } catch (err) {
+        return [featureKey, { status: 'error', error: String(err) }];
+      }
+    });
+
+    const settledResults = await Promise.allSettled(promises);
+
+    const finalResults: Record<string, FeatureResult> = {};
+    for (const result of settledResults) {
+      if (result.status === 'fulfilled') {
+        const [key, value] = result.value;
+        finalResults[key] = value;
+      }
+    }
+
+    setResults(finalResults);
+    setSource('individual');
+
+    // Set available buttons for features that failed or weren't auto-enabled
+    const failedFeatures = Object.entries(finalResults)
+      .filter(([, r]) => r.status === 'error')
+      .map(([k]) => k as AIFeatureKey);
+    setAvailableButtons(failedFeatures);
+  }, []);
+
+  // Main load function
+  const loadFeatures = useCallback(async (id: string) => {
+    // Prevent duplicate loads
+    if (hasLoadedRef.current === id) {
+      return;
+    }
+
+    // Cancel previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
+    setIsLoading(true);
+    setError(null);
+    hasLoadedRef.current = id;
+
+    try {
+      // Try batch API first
+      const batchSuccess = await tryBatchAPI(id);
+
+      if (!batchSuccess) {
+        // Fallback to individual calls
+        await fallbackIndividualCalls(id);
+      }
+    } catch (err) {
+      console.error('[useAIFeatures] Load error:', err);
+      setError('Không thể tải AI features');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [tryBatchAPI, fallbackIndividualCalls]);
 
   // Trigger a specific feature manually
   const triggerFeature = useCallback(async (featureKey: AIFeatureKey) => {
-    if (!emailId) return null;
+    if (!emailId) return;
+
+    // Set loading for this feature
+    setResults(prev => ({
+      ...prev,
+      [featureKey]: { status: 'loading' },
+    }));
 
     try {
       const response = await fetch(`/api/ai/features/${emailId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ featureKey }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to trigger feature');
+        throw new Error(`HTTP ${response.status}`);
       }
 
-      const result = await response.json();
+      const data = await response.json();
 
-      // Update cache with new result
-      mutate((current) => {
-        if (!current) return current;
-        return {
-          ...current,
-          results: {
-            ...current.results,
-            [featureKey]: {
-              status: result.result?.success ? 'success' : 'error',
-              data: result.result?.data,
-              error: result.result?.error,
-              cost: result.result?.cost || 0,
-              timeMs: result.result?.processingTimeMs || 0,
-            },
-          },
-          // Remove from available buttons if successful
-          availableButtons: result.result?.success
-            ? current.availableButtons.filter(k => k !== featureKey)
-            : current.availableButtons,
-        };
-      }, false); // false = don't revalidate from server
-
-      return result;
-    } catch (error) {
-      console.error('Error triggering feature:', error);
-      return null;
+      if (data.result?.success) {
+        setResults(prev => ({
+          ...prev,
+          [featureKey]: { status: 'success', data: data.result.data },
+        }));
+        // Remove from available buttons
+        setAvailableButtons(prev => prev.filter(k => k !== featureKey));
+      } else {
+        setResults(prev => ({
+          ...prev,
+          [featureKey]: { status: 'error', error: data.result?.error || 'Failed' },
+        }));
+      }
+    } catch (err) {
+      setResults(prev => ({
+        ...prev,
+        [featureKey]: { status: 'error', error: String(err) },
+      }));
     }
-  }, [emailId, mutate]);
+  }, [emailId]);
 
-  // Refresh all features (force refetch)
+  // Refresh function
   const refresh = useCallback(() => {
-    mutate();
-  }, [mutate]);
+    if (emailId) {
+      hasLoadedRef.current = null;
+      loadFeatures(emailId);
+    }
+  }, [emailId, loadFeatures]);
 
-  // Invalidate cache and refetch
-  const invalidate = useCallback(() => {
-    mutate(undefined, { revalidate: true });
-  }, [mutate]);
+  // Load on mount or emailId change
+  useEffect(() => {
+    if (emailId) {
+      loadFeatures(emailId);
+    } else {
+      // Reset state
+      setResults({});
+      setAllocation(null);
+      setAvailableButtons([]);
+      setError(null);
+      setSource(null);
+      hasLoadedRef.current = null;
+    }
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [emailId, loadFeatures]);
 
   return {
-    // Data
-    data,
-    results: data?.results || {},
-    allocation: data?.allocation,
-    availableButtons: data?.availableButtons || [],
-
-    // State
+    results,
+    allocation,
+    availableButtons,
     isLoading,
     error,
-    isCached: data?.cached || false,
-
-    // Actions
+    source,
     triggerFeature,
     refresh,
-    invalidate,
   };
 }
 

@@ -13,7 +13,7 @@ import { AIFeatureKey, AI_FEATURES_INFO } from '@/types/ai-features';
 interface AIFeatureButtonProps {
   featureKey: AIFeatureKey;
   emailId: string;
-  onTrigger?: (featureKey: AIFeatureKey, result?: unknown) => void | Promise<void>;
+  onTrigger: (featureKey: AIFeatureKey) => Promise<void>;
   disabled?: boolean;
   size?: 'sm' | 'md' | 'lg';
   variant?: 'default' | 'outline' | 'ghost';
@@ -42,7 +42,7 @@ export function AIFeatureButton({
     setIsLoading(true);
     try {
       // Let the parent handle the API call (useAIFeatures hook)
-      await onTrigger?.(featureKey);
+      await onTrigger(featureKey);
     } catch (error) {
       console.error('Error triggering AI feature:', error);
     } finally {
