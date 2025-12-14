@@ -177,11 +177,14 @@ export function EmailDetailMobile({
           </div>
         </div>
 
-        {/* AI Summary */}
+        {/* AI Summary - Smart Allocation */}
         <div className="px-4 pt-3">
           <AISummary
             emailId={email.id}
+            category={email.category || 'personal'}
+            priority={email.priority || 3}
             bodyLength={(email.body_text || email.body_html || '').length}
+            existingSummary={email.summary}
           />
         </div>
 
