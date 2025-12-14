@@ -29,22 +29,40 @@ export async function POST(
   { params }: { params: Promise<{ emailId: string }> }
 ) {
   const startTime = Date.now();
+  console.log('[BatchAPI] === START ===');
 
   try {
-    // Ensure AI module is initialized
+    // Step 1: Get params
+    const { emailId } = await params;
+    console.log('[BatchAPI] Step 1 - emailId:', emailId);
+
+    if (!emailId) {
+      console.log('[BatchAPI] ERROR: No emailId');
+      return NextResponse.json({ error: 'emailId is required' }, { status: 400 });
+    }
+
+    // Step 2: Ensure AI module is initialized
+    console.log('[BatchAPI] Step 2 - Initializing AI module...');
     await ensureAIModuleInitialized();
+    console.log('[BatchAPI] Step 2 - AI module initialized');
 
+    // Step 3: Create Supabase client
+    console.log('[BatchAPI] Step 3 - Creating Supabase client...');
     const supabase = await createClient();
+    console.log('[BatchAPI] Step 3 - Supabase client created');
 
-    // Get current user
+    // Step 4: Get current user
+    console.log('[BatchAPI] Step 4 - Getting user...');
     const { data: { user }, error: authError } = await supabase.auth.getUser();
+    console.log('[BatchAPI] Step 4 - User:', user?.id, 'AuthError:', authError?.message);
+
     if (authError || !user) {
+      console.log('[BatchAPI] ERROR: Unauthorized');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { emailId } = await params;
-
-    // Get email data
+    // Step 5: Get email data
+    console.log('[BatchAPI] Step 5 - Fetching email:', emailId);
     const { data: email, error: emailError } = await supabase
       .from('emails')
       .select(`
@@ -65,16 +83,19 @@ export async function POST(
       .eq('user_id', user.id)
       .single();
 
+    console.log('[BatchAPI] Step 5 - Email found:', !!email, 'Error:', emailError?.message);
+
     if (emailError || !email) {
+      console.log('[BatchAPI] ERROR: Email not found');
       return NextResponse.json({ error: 'Email not found' }, { status: 404 });
     }
 
-    // Get allocation
+    // Step 6: Get allocation
+    console.log('[BatchAPI] Step 6 - Getting allocation...');
     const allocation = await getFeatureAllocationForEmail(user.id, email);
-
-    // DEBUG: Log allocation
-    console.log('[BatchAPI] email.category:', email.category);
-    console.log('[BatchAPI] allocation:', JSON.stringify(allocation, null, 2));
+    console.log('[BatchAPI] Step 6 - Allocation category:', allocation.category);
+    console.log('[BatchAPI] Step 6 - Auto features:', allocation.autoEnabledFeatures);
+    console.log('[BatchAPI] Step 6 - Available buttons:', allocation.availableButtons);
 
     // Collect existing results from database (cached)
     const existingResults: Record<string, FeatureResultWithMeta> = {};
@@ -269,15 +290,19 @@ export async function POST(
       cached: featuresToRun.length === 0,
     };
 
-    // DEBUG: Log final response
-    console.log('[BatchAPI] Final response:', JSON.stringify(response, null, 2));
+    // Step 7: Return response
+    console.log('[BatchAPI] Step 7 - Success! Results count:', Object.keys(allResults).length);
+    console.log('[BatchAPI] === END (success) ===');
 
     return NextResponse.json(response);
 
   } catch (error) {
-    console.error('Error running batch AI features:', error);
+    console.error('[BatchAPI] === ERROR ===');
+    console.error('[BatchAPI] Error type:', error?.constructor?.name);
+    console.error('[BatchAPI] Error message:', error instanceof Error ? error.message : String(error));
+    console.error('[BatchAPI] Error stack:', error instanceof Error ? error.stack : 'N/A');
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
