@@ -26,7 +26,8 @@ export type EmailCategory =
   | 'newsletter'
   | 'promotion'
   | 'social'
-  | 'spam';
+  | 'spam'
+  | 'uncategorized';
 
 export type TriggerType =
   | 'auto_default'
@@ -156,6 +157,15 @@ const DEFAULT_ALLOCATIONS: Record<EmailCategory, Record<AIFeatureKey, { auto: bo
     follow_up: { auto: false, button: false },
     sentiment: { auto: false, button: false },
     translate: { auto: false, button: false },
+  },
+  uncategorized: {
+    classification: { auto: true, button: false },
+    summary: { auto: false, button: true },
+    smart_reply: { auto: false, button: true },
+    action_items: { auto: false, button: true },
+    follow_up: { auto: false, button: true },
+    sentiment: { auto: false, button: true },
+    translate: { auto: false, button: true },
   },
 };
 

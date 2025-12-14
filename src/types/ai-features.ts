@@ -18,7 +18,8 @@ export type EmailCategory =
   | 'newsletter'
   | 'promotion'
   | 'social'
-  | 'spam';
+  | 'spam'
+  | 'uncategorized';
 
 export type TriggerType =
   | 'auto_default'
@@ -116,6 +117,7 @@ export const CATEGORIES_INFO: CategoryInfo[] = [
   { key: 'promotion', name: 'Promotion', nameVi: 'Khuyến mãi', color: 'orange', icon: 'Tag' },
   { key: 'social', name: 'Social', nameVi: 'Mạng xã hội', color: 'pink', icon: 'Users' },
   { key: 'spam', name: 'Spam', nameVi: 'Thư rác', color: 'red', icon: 'AlertTriangle' },
+  { key: 'uncategorized', name: 'Uncategorized', nameVi: 'Chưa phân loại', color: 'gray', icon: 'HelpCircle' },
 ];
 
 // Trigger type display info
