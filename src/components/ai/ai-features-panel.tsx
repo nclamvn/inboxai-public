@@ -63,6 +63,46 @@ export function AIFeaturesPanel({
     fetchFeatureAllocation();
   }, [emailId]);
 
+  // Auto-trigger enabled features that don't have data yet
+  useEffect(() => {
+    const autoTriggerFeatures = async () => {
+      for (const feature of features) {
+        if (feature.isAutoEnabled && feature.status === 'idle') {
+          // Mark as loading
+          setFeatures(prev => prev.map(f =>
+            f.featureKey === feature.featureKey
+              ? { ...f, status: 'loading' as const }
+              : f
+          ));
+
+          try {
+            const response = await fetch(`/api/ai/features/${emailId}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ featureKey: feature.featureKey }),
+            });
+
+            if (!response.ok) throw new Error('Failed to trigger feature');
+
+            const data = await response.json();
+            handleFeatureTrigger(feature.featureKey, data.result);
+          } catch (error) {
+            console.error(`Error auto-triggering ${feature.featureKey}:`, error);
+            setFeatures(prev => prev.map(f =>
+              f.featureKey === feature.featureKey
+                ? { ...f, status: 'error' as const, error: 'Auto-trigger failed' }
+                : f
+            ));
+          }
+        }
+      }
+    };
+
+    if (features.length > 0 && !isLoading) {
+      autoTriggerFeatures();
+    }
+  }, [features.length, isLoading, emailId]);
+
   const fetchFeatureAllocation = async () => {
     setIsLoading(true);
     try {
@@ -132,8 +172,8 @@ export function AIFeaturesPanel({
   };
 
   // Filter features to show
-  const autoEnabledFeatures = features.filter(f => f.isAutoEnabled && f.status === 'success');
-  const availableButtons = features.filter(f => f.isButtonVisible && !f.isAutoEnabled);
+  const autoEnabledFeatures = features.filter(f => f.isAutoEnabled && (f.status === 'success' || f.status === 'loading'));
+  const availableButtons = features.filter(f => f.isButtonVisible && !f.isAutoEnabled && f.status !== 'loading');
 
   if (isLoading) {
     return (
@@ -215,10 +255,19 @@ export function AIFeaturesPanel({
 
 // Helper function to render feature content
 function renderFeatureContent(feature: FeatureState) {
+  if (feature.status === 'loading') {
+    return (
+      <div className="flex items-center gap-2 text-sm text-gray-500">
+        <Loader2 className="w-4 h-4 animate-spin" />
+        <span>Đang xử lý...</span>
+      </div>
+    );
+  }
+
   if (feature.status === 'error') {
     return (
       <div className="text-sm text-red-500">
-        Loi: {feature.error || 'Khong the xu ly'}
+        Lỗi: {feature.error || 'Không thể xử lý'}
       </div>
     );
   }
@@ -226,7 +275,7 @@ function renderFeatureContent(feature: FeatureState) {
   if (!feature.data) {
     return (
       <div className="text-sm text-gray-500">
-        Khong co du lieu
+        Không có dữ liệu
       </div>
     );
   }
