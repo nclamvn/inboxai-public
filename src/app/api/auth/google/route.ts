@@ -3,18 +3,25 @@
  * Initiate Google OAuth flow
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getGoogleAuthUrl } from '@/lib/oauth/google';
 
-export async function GET(request: NextRequest) {
+// Get base URL for redirects (Render uses internal proxy URLs)
+function getBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_APP_URL || 'https://inboxai.vn';
+}
+
+export async function GET() {
+  const baseUrl = getBaseUrl();
+
   try {
     const supabase = await createClient();
 
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.redirect(new URL('/login', request.url));
+      return NextResponse.redirect(new URL('/login', baseUrl));
     }
 
     // Generate state for CSRF protection
@@ -30,7 +37,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('OAuth initiation error:', error);
     return NextResponse.redirect(
-      new URL('/settings?error=oauth_failed', request.url)
+      new URL('/settings?error=oauth_failed', baseUrl)
     );
   }
 }

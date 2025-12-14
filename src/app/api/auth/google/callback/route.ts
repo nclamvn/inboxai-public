@@ -10,23 +10,29 @@ import {
   getGoogleUserInfo
 } from '@/lib/oauth/google';
 
+// Get base URL for redirects (Render uses internal proxy URLs)
+function getBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_APP_URL || 'https://inboxai.vn';
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get('code');
   const state = searchParams.get('state');
   const error = searchParams.get('error');
+  const baseUrl = getBaseUrl();
 
   // Handle OAuth errors
   if (error) {
     console.error('OAuth error:', error);
     return NextResponse.redirect(
-      new URL(`/settings?error=${error}`, request.url)
+      new URL(`/settings?error=${error}`, baseUrl)
     );
   }
 
   if (!code) {
     return NextResponse.redirect(
-      new URL('/settings?error=no_code', request.url)
+      new URL('/settings?error=no_code', baseUrl)
     );
   }
 
@@ -36,7 +42,7 @@ export async function GET(request: NextRequest) {
     // Verify user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.redirect(new URL('/login', request.url));
+      return NextResponse.redirect(new URL('/login', baseUrl));
     }
 
     // Verify state (CSRF protection)
@@ -53,7 +59,7 @@ export async function GET(request: NextRequest) {
       } catch (e) {
         console.error('State verification failed:', e);
         return NextResponse.redirect(
-          new URL('/settings?error=invalid_state', request.url)
+          new URL('/settings?error=invalid_state', baseUrl)
         );
       }
     }
@@ -110,13 +116,13 @@ export async function GET(request: NextRequest) {
 
     // Redirect to settings with success
     return NextResponse.redirect(
-      new URL('/settings?success=gmail_connected', request.url)
+      new URL('/settings?success=gmail_connected', baseUrl)
     );
 
   } catch (error) {
     console.error('OAuth callback error:', error);
     return NextResponse.redirect(
-      new URL('/settings?error=callback_failed', request.url)
+      new URL('/settings?error=callback_failed', getBaseUrl())
     );
   }
 }
