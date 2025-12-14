@@ -134,14 +134,21 @@ export function EmailListCompact({
     touchStartPos.current = null
   }, [clearLongPressTimer])
 
-  // Handle tap in selection mode
-  const handleTap = useCallback((email: Email) => {
+  // Handle tap/click - only fires if not long press
+  const handleTap = useCallback((email: Email, e?: MouseEvent) => {
+    // Prevent click from firing after long press
+    if (longPressTriggered.current) {
+      longPressTriggered.current = false
+      e?.preventDefault()
+      e?.stopPropagation()
+      return
+    }
+
     if (isSelecting) {
       toggleSelect(email.id)
-    } else if (!longPressTriggered.current) {
+    } else {
       onSelect(email.id)
     }
-    longPressTriggered.current = false
   }, [isSelecting, toggleSelect, onSelect])
 
   // Exit selection mode
@@ -306,9 +313,16 @@ export function EmailListCompact({
     setLastClickedId(email.id)
   }
 
-  // Handle right-click context menu (desktop)
+  // Handle right-click context menu (desktop only)
+  // On mobile, we use long press instead
   const handleContextMenu = (e: MouseEvent, email: Email) => {
     e.preventDefault()
+    e.stopPropagation()
+
+    // Skip on mobile - long press handles selection
+    if ('ontouchstart' in window) {
+      return
+    }
 
     if (!isSelected(email.id)) {
       clearSelection()
@@ -429,7 +443,7 @@ export function EmailListCompact({
     return (
       <div
         key={email.id}
-        onClick={() => handleTap(email)}
+        onClick={(e) => handleTap(email, e)}
         onContextMenu={(e) => handleContextMenu(e, email)}
         onTouchStart={(e) => handleTouchStart(e, email)}
         onTouchMove={handleTouchMove}
@@ -439,8 +453,13 @@ export function EmailListCompact({
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
-            handleTap(email)
+            handleTap(email, e as unknown as MouseEvent)
           }
+        }}
+        style={{
+          touchAction: 'manipulation',
+          WebkitTouchCallout: 'none',
+          WebkitUserSelect: 'none',
         }}
         className={cn(
           'w-full transition-colors cursor-pointer group select-none',
