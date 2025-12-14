@@ -79,9 +79,9 @@ export function AIFeaturesPanel({
   // Loading state
   if (isLoading) {
     return (
-      <div className={cn('flex items-center justify-center py-8', className)}>
+      <div className={cn('flex items-center justify-center py-8 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg', className)}>
         <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-        <span className="ml-2 text-sm text-gray-500">Đang xử lý AI...</span>
+        <span className="ml-2 text-sm text-gray-500">Đang tải AI features...</span>
       </div>
     );
   }
@@ -89,8 +89,20 @@ export function AIFeaturesPanel({
   // Error state
   if (error) {
     return (
-      <div className={cn('text-center py-6 text-red-500', className)}>
-        <p className="text-sm">Không thể tải AI features</p>
+      <div className={cn('text-center py-6 text-red-500 border border-red-200 dark:border-red-800 rounded-lg bg-red-50 dark:bg-red-900/10', className)}>
+        <p className="text-sm font-medium">Không thể tải AI features</p>
+        <p className="text-xs mt-1 text-red-400">{error?.message || 'Unknown error'}</p>
+      </div>
+    );
+  }
+
+  // No data yet (shouldn't happen, but safety check)
+  if (!data) {
+    return (
+      <div className={cn('text-center py-6 text-gray-500 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg', className)}>
+        <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-50" />
+        <p className="text-sm">Đang chờ dữ liệu AI...</p>
+        <p className="text-xs mt-1 text-gray-400">emailId: {emailId}</p>
       </div>
     );
   }

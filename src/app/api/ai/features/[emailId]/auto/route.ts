@@ -135,12 +135,19 @@ export async function POST(
       .filter(f => f.isAutoEnabled && !existingResults[f.featureKey])
       .map(f => f.featureKey);
 
+    // DEBUG: Log features to run
+    console.log('[BatchAPI] featuresToRun:', featuresToRun);
+    console.log('[BatchAPI] existingResults keys:', Object.keys(existingResults));
+
     // Run features in PARALLEL using Promise.allSettled
     const newResults: Record<string, FeatureResultWithMeta> = {};
 
     if (featuresToRun.length > 0) {
       const runner = getAIFeatureRunner();
       const service = getAIFeatureAllocationService();
+
+      // DEBUG: Log registered executors
+      console.log('[BatchAPI] Registered executors:', runner.getRegisteredFeatures());
 
       // Create parallel promises
       const featurePromises = featuresToRun.map(async (featureKey): Promise<[AIFeatureKey, FeatureResultWithMeta]> => {
@@ -183,6 +190,9 @@ export async function POST(
         if (result.status === 'fulfilled') {
           const [key, value] = result.value;
           newResults[key] = value;
+          console.log(`[BatchAPI] Feature ${key} result:`, value.status, value.error || 'OK');
+        } else {
+          console.error('[BatchAPI] Promise rejected:', result.reason);
         }
       }
 

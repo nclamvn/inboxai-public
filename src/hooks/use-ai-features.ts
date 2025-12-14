@@ -39,16 +39,24 @@ interface UseAIFeaturesOptions {
 }
 
 const fetcher = async (url: string): Promise<AIFeaturesResponse> => {
+  console.log('[useAIFeatures] Fetching:', url);
+
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
   });
 
+  console.log('[useAIFeatures] Response status:', response.status);
+
   if (!response.ok) {
-    throw new Error('Failed to fetch AI features');
+    const errorText = await response.text();
+    console.error('[useAIFeatures] Error response:', errorText);
+    throw new Error(`Failed to fetch AI features: ${response.status}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  console.log('[useAIFeatures] Response data:', JSON.stringify(data, null, 2));
+  return data;
 };
 
 export function useAIFeatures(
