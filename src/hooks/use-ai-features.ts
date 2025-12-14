@@ -91,12 +91,24 @@ export function useAIFeatures(emailId: string | null): UseAIFeaturesReturn {
         BATCH_TIMEOUT
       );
 
+      // Get response text first to handle non-JSON responses
+      const responseText = await response.text();
+      console.log('[useAIFeatures] Batch API response status:', response.status);
+
       if (!response.ok) {
-        console.warn('[useAIFeatures] Batch API failed:', response.status);
+        console.warn('[useAIFeatures] Batch API failed:', response.status, responseText.substring(0, 200));
         return false;
       }
 
-      const data = await response.json();
+      // Try to parse JSON
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('[useAIFeatures] Failed to parse JSON:', responseText.substring(0, 200));
+        return false;
+      }
+
       console.log('[useAIFeatures] Batch API success:', data);
 
       // Update state with batch results
@@ -143,11 +155,22 @@ export function useAIFeatures(emailId: string | null): UseAIFeaturesReturn {
           body: JSON.stringify({ featureKey }),
         });
 
+        // Get response text first to handle non-JSON responses
+        const responseText = await response.text();
+
         if (!response.ok) {
+          console.warn(`[useAIFeatures] Individual API failed for ${featureKey}:`, response.status, responseText.substring(0, 100));
           return [featureKey, { status: 'error', error: `HTTP ${response.status}` }];
         }
 
-        const data = await response.json();
+        // Try to parse JSON
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error(`[useAIFeatures] Failed to parse JSON for ${featureKey}:`, responseText.substring(0, 100));
+          return [featureKey, { status: 'error', error: 'Invalid JSON response' }];
+        }
 
         if (data.result?.success) {
           return [featureKey, { status: 'success', data: data.result.data }];
