@@ -5,6 +5,7 @@ import { createContext, useContext, useState, useCallback, ReactNode } from 'rea
 interface SelectionContextType {
   selectedIds: Set<string>
   isSelecting: boolean
+  setIsSelecting: (value: boolean) => void
   toggleSelect: (id: string) => void
   selectAll: (ids: string[]) => void
   clearSelection: () => void
@@ -16,6 +17,17 @@ const SelectionContext = createContext<SelectionContextType | null>(null)
 
 export function SelectionProvider({ children }: { children: ReactNode }) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [isSelectingMode, setIsSelectingMode] = useState(false)
+
+  // isSelecting is true if explicitly set OR if there are selected items
+  const isSelecting = isSelectingMode || selectedIds.size > 0
+
+  const setIsSelecting = useCallback((value: boolean) => {
+    setIsSelectingMode(value)
+    if (!value) {
+      setSelectedIds(new Set())
+    }
+  }, [])
 
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds(prev => {
@@ -61,7 +73,8 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
     <SelectionContext.Provider
       value={{
         selectedIds,
-        isSelecting: selectedIds.size > 0,
+        isSelecting,
+        setIsSelecting,
         toggleSelect,
         selectAll,
         clearSelection,
