@@ -1,6 +1,6 @@
 /**
- * Gmail Sync Service
- * Sync emails from Gmail API to database
+ * Gmail Sync Service - OPTIMIZED
+ * Sync emails from Gmail API to database with batch processing
  */
 
 import { createClient } from '@/lib/supabase/server';
@@ -19,6 +19,38 @@ interface SyncResult {
   success: boolean;
   syncedCount: number;
   error?: string;
+}
+
+// Parallel processing limit
+const PARALLEL_FETCH_LIMIT = 10;
+
+/**
+ * Process items with concurrency limit
+ */
+async function parallelLimit<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = [];
+  let index = 0;
+
+  async function worker(): Promise<void> {
+    while (index < items.length) {
+      const currentIndex = index++;
+      try {
+        const result = await fn(items[currentIndex]);
+        results[currentIndex] = result;
+      } catch (error) {
+        console.error(`[Gmail Parallel] Error at index ${currentIndex}:`, error);
+        results[currentIndex] = null as R;
+      }
+    }
+  }
+
+  const workers = Array(Math.min(limit, items.length)).fill(null).map(() => worker());
+  await Promise.all(workers);
+  return results;
 }
 
 /**
@@ -94,13 +126,15 @@ export async function syncGmailEmails(
     // Get account info
     const { data: account } = await supabase
       .from('source_accounts')
-      .select('email, last_sync_at')
+      .select('email_address, last_sync_at')
       .eq('id', accountId)
       .single();
 
     if (!account) {
       return { success: false, syncedCount: 0, error: 'Account not found' };
     }
+
+    console.log(`[Gmail Sync] Starting for ${account.email_address}, maxResults=${options.maxResults || 50}`);
 
     // Build query for new emails
     let query = 'in:inbox';
@@ -117,6 +151,7 @@ export async function syncGmailEmails(
     });
 
     if (!messageList.messages || messageList.messages.length === 0) {
+      console.log(`[Gmail Sync] No new messages found`);
       // Update last sync time even if no new messages
       await supabase
         .from('source_accounts')
@@ -129,54 +164,95 @@ export async function syncGmailEmails(
       return { success: true, syncedCount: 0 };
     }
 
+    console.log(`[Gmail Sync] Found ${messageList.messages.length} messages to sync`);
+
+    // Get existing message IDs to filter duplicates
+    const messageIds = messageList.messages.map(m => m.id);
+    const { data: existingEmails } = await supabase
+      .from('emails')
+      .select('message_id')
+      .eq('user_id', userId)
+      .in('message_id', messageIds);
+
+    const existingIds = new Set(existingEmails?.map(e => e.message_id) || []);
+    const newMessages = messageList.messages.filter(m => !existingIds.has(m.id));
+
+    console.log(`[Gmail Sync] ${newMessages.length} new messages (${existingIds.size} already exist)`);
+
+    if (newMessages.length === 0) {
+      await supabase
+        .from('source_accounts')
+        .update({
+          last_sync_at: new Date().toISOString(),
+          last_error: null,
+        })
+        .eq('id', accountId);
+      return { success: true, syncedCount: 0 };
+    }
+
+    // OPTIMIZED: Fetch messages in parallel
+    const startTime = Date.now();
+    const fetchedMessages = await parallelLimit(
+      newMessages,
+      PARALLEL_FETCH_LIMIT,
+      async (msg) => {
+        try {
+          const fullMessage = await getMessage(accessToken, msg.id);
+          const headers = parseHeaders(fullMessage.payload.headers);
+          const body = extractBody(fullMessage);
+
+          // Parse from address
+          const fromHeader = headers['from'] || '';
+          const fromMatch = fromHeader.match(/(?:"?([^"]*)"?\s)?<?([^>]+@[^>]+)>?/);
+          const fromName = fromMatch?.[1] || '';
+          const fromAddress = fromMatch?.[2] || fromHeader;
+
+          return {
+            user_id: userId,
+            source_account_id: accountId,
+            message_id: msg.id,
+            original_uid: msg.id, // Use Gmail message ID as UID
+            thread_id: fullMessage.threadId,
+            subject: headers['subject'] || '(Không có tiêu đề)',
+            from_name: fromName,
+            from_address: fromAddress,
+            to_addresses: [headers['to'] || ''],
+            body_text: body.text?.slice(0, 100000) || '',
+            body_html: body.html?.slice(0, 200000) || null,
+            body_fetched: true,
+            snippet: fullMessage.snippet,
+            received_at: new Date(parseInt(fullMessage.internalDate)).toISOString(),
+            is_read: !fullMessage.labelIds.includes('UNREAD'),
+            is_starred: fullMessage.labelIds.includes('STARRED'),
+            is_archived: false,
+            is_deleted: false,
+            direction: 'inbound',
+          };
+        } catch (err) {
+          console.error(`[Gmail Sync] Error fetching message ${msg.id}:`, err);
+          return null;
+        }
+      }
+    );
+
+    const validEmails = fetchedMessages.filter((e): e is NonNullable<typeof e> => e !== null);
+    console.log(`[Gmail Sync] Fetched ${validEmails.length} messages in ${Date.now() - startTime}ms`);
+
+    // Batch insert emails
     let syncedCount = 0;
-
-    // Fetch and save each message
-    for (const msg of messageList.messages) {
-      try {
-        // Check if already exists
-        const { data: existing } = await supabase
-          .from('emails')
-          .select('id')
-          .eq('message_id', msg.id)
-          .eq('user_id', userId)
-          .single();
-
-        if (existing) continue;
-
-        // Get full message
-        const fullMessage = await getMessage(accessToken, msg.id);
-        const headers = parseHeaders(fullMessage.payload.headers);
-        const body = extractBody(fullMessage);
-
-        // Parse from address
-        const fromHeader = headers['from'] || '';
-        const fromMatch = fromHeader.match(/(?:"?([^"]*)"?\s)?<?([^>]+@[^>]+)>?/);
-        const fromName = fromMatch?.[1] || '';
-        const fromAddress = fromMatch?.[2] || fromHeader;
-
-        // Insert email
-        await supabase.from('emails').insert({
-          user_id: userId,
-          source_account_id: accountId,
-          message_id: msg.id,
-          thread_id: fullMessage.threadId,
-          subject: headers['subject'] || '(Không có tiêu đề)',
-          from_name: fromName,
-          from_address: fromAddress,
-          to_address: headers['to'] || '',
-          body_text: body.text,
-          body_html: body.html,
-          snippet: fullMessage.snippet,
-          received_at: new Date(parseInt(fullMessage.internalDate)).toISOString(),
-          is_read: !fullMessage.labelIds.includes('UNREAD'),
-          is_starred: fullMessage.labelIds.includes('STARRED'),
-          labels: fullMessage.labelIds,
+    if (validEmails.length > 0) {
+      const { error: insertError, count } = await supabase
+        .from('emails')
+        .upsert(validEmails, {
+          onConflict: 'source_account_id,original_uid',
+          ignoreDuplicates: true
         });
 
-        syncedCount++;
-      } catch (msgError) {
-        console.error(`Error syncing message ${msg.id}:`, msgError);
+      if (insertError) {
+        console.error(`[Gmail Sync] Insert error:`, insertError);
+      } else {
+        syncedCount = validEmails.length;
+        console.log(`[Gmail Sync] Inserted ${syncedCount} emails`);
       }
     }
 
