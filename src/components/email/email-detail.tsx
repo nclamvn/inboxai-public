@@ -6,10 +6,9 @@ import { Star, Archive, Trash2, Reply, Forward, MoreHorizontal, X, AlertCircle, 
 import { cn, formatDate } from '@/lib/utils'
 import { useBehaviorTracker } from '@/hooks/use-behavior-tracker'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
-import { AISummary } from '@/components/email/ai-summary'
-import { SmartReply } from '@/components/email/smart-reply'
-import { ActionItemsCard } from '@/components/email/action-items-card'
+import { AIFeaturesPanel } from '@/components/ai'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
+import { PhishingWarning } from '@/components/email/phishing-warning'
 import type { Email } from '@/types'
 
 interface EmailDetailProps {
@@ -227,6 +226,31 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
           </div>
         </div>
 
+        {/* Phishing Warning */}
+        {email.phishing_score != null && email.phishing_score > 0 && email.phishing_risk && email.phishing_risk !== 'safe' && (
+          <div className="p-4 pb-0">
+            <PhishingWarning
+              score={email.phishing_score ?? 0}
+              risk={email.phishing_risk as 'safe' | 'low' | 'medium' | 'high' | 'critical'}
+              reasons={(email.phishing_reasons as Array<{type: string; pattern: string; severity: number; description: string}>) || []}
+              isPhishing={(email.phishing_score ?? 0) >= 70}
+              onMarkSafe={async () => {
+                // Mark email as reviewed (safe)
+                try {
+                  await fetch(`/api/emails/${email.id}/phishing-review`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ safe: true })
+                  })
+                  onRefresh?.()
+                } catch (err) {
+                  console.error('Failed to mark as safe:', err)
+                }
+              }}
+            />
+          </div>
+        )}
+
         {/* AI Summary & Meta */}
         {(email.summary || email.needs_reply || email.detected_deadline) && (
           <div className="p-4 bg-[var(--background)] border-b border-[var(--border)]">
@@ -261,27 +285,22 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
           </div>
         )}
 
-        {/* AI Summary - TL;DR */}
-        <div className="p-4 pb-0">
-          <AISummary
+        {/* AI Features Panel - Smart Allocation */}
+        <div className="p-4">
+          <AIFeaturesPanel
             emailId={email.id}
-            bodyLength={(email.body_text || email.body_html || '').length}
-          />
-        </div>
-
-        {/* Smart Reply */}
-        <div className="px-4">
-          <SmartReply
-            emailId={email.id}
-            onReply={handleSmartReply}
-          />
-        </div>
-
-        {/* Action Items */}
-        <div className="px-4">
-          <ActionItemsCard
-            emailId={email.id}
-            onViewAll={() => router.push('/actions')}
+            category={email.category || 'personal'}
+            priority={email.priority || 3}
+            existingResults={{
+              summary: email.summary ?? undefined,
+            }}
+            onFeatureResult={(featureKey, result) => {
+              console.log('AI Feature result:', featureKey, result);
+              // Refresh email data when new AI results arrive
+              if (featureKey === 'smart_reply' || featureKey === 'action_items') {
+                onRefresh?.();
+              }
+            }}
           />
         </div>
 
