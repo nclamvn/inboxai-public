@@ -97,7 +97,7 @@ export const removeDeliveredNotifications = async (notificationIds: string[]) =>
   if (!isNative()) return;
 
   await PushNotifications.removeDeliveredNotifications({
-    notifications: notificationIds.map(id => ({ id }))
+    notifications: notificationIds.map(id => ({ id, data: {} }))
   });
 };
 

@@ -22,10 +22,7 @@ const config: CapacitorConfig = {
       style: 'dark',
       backgroundColor: '#000000',
     },
-    Keyboard: {
-      resize: 'body',
-      resizeOnFullScreen: true,
-    },
+    // Keyboard config handled at runtime in native apps
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert'],
     },
