@@ -1,20 +1,21 @@
-/**
- * useAIFeatures Hook
- * With fallback mechanism: Batch API → Individual calls
- */
-
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+/**
+ * useAIFeatures Hook - Fixed Version
+ * Handles AI feature loading with proper abort handling
+ */
+
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { aiLogger } from '@/lib/logger';
 import { AIFeatureKey } from '@/types/ai-features';
 
-interface FeatureResult {
+export interface AIFeatureResult {
   status: 'idle' | 'loading' | 'success' | 'error';
-  data?: unknown;
+  data: unknown;
   error?: string;
 }
 
-interface AllocationInfo {
+export interface AIAllocation {
   category: string;
   priority: number;
   isVipSender: boolean;
@@ -22,39 +23,75 @@ interface AllocationInfo {
 }
 
 interface UseAIFeaturesReturn {
-  // Results
-  results: Record<string, FeatureResult>;
-  allocation: AllocationInfo | null;
+  results: Record<string, AIFeatureResult>;
+  allocation: AIAllocation | null;
   availableButtons: AIFeatureKey[];
-
-  // State
   isLoading: boolean;
   error: string | null;
   source: 'batch' | 'individual' | 'cache' | null;
-
-  // Actions
-  triggerFeature: (featureKey: AIFeatureKey) => Promise<void>;
+  triggerFeature: (feature: AIFeatureKey) => Promise<void>;
   refresh: () => void;
 }
 
-// Features to auto-load
-const AUTO_FEATURES: AIFeatureKey[] = ['summary', 'smart_reply', 'action_items'];
+// Constants
+const BATCH_TIMEOUT = 30000; // 30 seconds
+const INDIVIDUAL_TIMEOUT = 15000; // 15 seconds
+const DEBOUNCE_DELAY = 100; // 100ms debounce
 
-// Timeout for batch API
-const BATCH_TIMEOUT = 5000;
+// Initial state
+const initialResult: AIFeatureResult = { status: 'idle', data: null };
+
+const initialResults: Record<string, AIFeatureResult> = {
+  classification: { ...initialResult },
+  summary: { ...initialResult },
+  smart_reply: { ...initialResult },
+  action_items: { ...initialResult },
+  follow_up: { ...initialResult },
+  sentiment: { ...initialResult },
+  translate: { ...initialResult },
+};
 
 export function useAIFeatures(emailId: string | null): UseAIFeaturesReturn {
-  const [results, setResults] = useState<Record<string, FeatureResult>>({});
-  const [allocation, setAllocation] = useState<AllocationInfo | null>(null);
+  const [results, setResults] = useState<Record<string, AIFeatureResult>>(initialResults);
+  const [allocation, setAllocation] = useState<AIAllocation | null>(null);
   const [availableButtons, setAvailableButtons] = useState<AIFeatureKey[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [source, setSource] = useState<'batch' | 'individual' | 'cache' | null>(null);
 
+  // Track loaded emails to prevent duplicate fetches
+  const loadedEmailsRef = useRef<Set<string>>(new Set());
   const abortControllerRef = useRef<AbortController | null>(null);
-  const hasLoadedRef = useRef<string | null>(null);
+  const isMountedRef = useRef(true);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch with timeout
+  // Reset when emailId changes - IMMEDIATE
+  useEffect(() => {
+    if (emailId && !loadedEmailsRef.current.has(emailId)) {
+      // Immediately clear old data
+      setResults(initialResults);
+      setAllocation(null);
+      setAvailableButtons([]);
+      setError(null);
+      setSource(null);
+    }
+  }, [emailId]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Fetch with timeout helper
   const fetchWithTimeout = useCallback(async (
     url: string,
     options: RequestInit,
@@ -76,11 +113,35 @@ export function useAIFeatures(emailId: string | null): UseAIFeaturesReturn {
     }
   }, []);
 
-  // Try Batch API
-  const tryBatchAPI = useCallback(async (id: string): Promise<boolean> => {
-    try {
-      console.log('[useAIFeatures] Trying batch API for:', id);
+  // Load features for email
+  const loadFeatures = useCallback(async (id: string) => {
+    // Skip if already loaded
+    if (loadedEmailsRef.current.has(id)) {
+      aiLogger.debug('[useAIFeatures] Already loaded, skipping:', id);
+      return;
+    }
 
+    // Cancel any existing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
+    setIsLoading(true);
+    setError(null);
+
+    // Set main features to loading
+    setResults(prev => ({
+      ...prev,
+      summary: { status: 'loading', data: null },
+      smart_reply: { status: 'loading', data: null },
+      action_items: { status: 'loading', data: null },
+    }));
+
+    aiLogger.debug('[useAIFeatures] Loading features for:', id);
+
+    try {
+      // Try batch API first
       const response = await fetchWithTimeout(
         `/api/ai/features/${id}/auto`,
         {
@@ -91,227 +152,205 @@ export function useAIFeatures(emailId: string | null): UseAIFeaturesReturn {
         BATCH_TIMEOUT
       );
 
-      // Get response text first to handle non-JSON responses
-      const responseText = await response.text();
-      console.log('[useAIFeatures] Batch API response status:', response.status);
+      // Check if component still mounted
+      if (!isMountedRef.current) return;
 
       if (!response.ok) {
-        console.warn('[useAIFeatures] Batch API failed:', response.status, responseText.substring(0, 200));
-        return false;
+        const errorText = await response.text();
+        aiLogger.warn('[useAIFeatures] API error:', response.status, errorText.slice(0, 200));
+        throw new Error(`API error: ${response.status}`);
       }
 
-      // Try to parse JSON
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('[useAIFeatures] Failed to parse JSON:', responseText.substring(0, 200));
-        return false;
+      const data = await response.json();
+      aiLogger.debug('[useAIFeatures] Batch API response received');
+
+      // Check if component still mounted
+      if (!isMountedRef.current) return;
+
+      // Process results from batch API
+      const newResults: Record<string, AIFeatureResult> = { ...initialResults };
+
+      // Process results object from API
+      if (data.results) {
+        for (const [key, value] of Object.entries(data.results)) {
+          const result = value as { status: string; data?: unknown; error?: string };
+          newResults[key] = {
+            status: result.status === 'success' ? 'success' : result.status === 'error' ? 'error' : 'idle',
+            data: result.data || null,
+            error: result.error,
+          };
+        }
       }
 
-      console.log('[useAIFeatures] Batch API success:', data);
-
-      // Update state with batch results
-      const newResults: Record<string, FeatureResult> = {};
-      for (const [key, value] of Object.entries(data.results || {})) {
-        const result = value as { status: string; data?: unknown; error?: string };
-        newResults[key] = {
-          status: result.status === 'success' ? 'success' : 'error',
-          data: result.data,
-          error: result.error,
+      // Also check top-level data (backwards compatibility)
+      if (data.summary && !newResults.summary.data) {
+        newResults.summary = {
+          status: 'success',
+          data: typeof data.summary === 'string' ? data.summary : data.summary,
         };
       }
 
-      setResults(newResults);
-      setAllocation(data.allocation || null);
-      setAvailableButtons(data.availableButtons || []);
-      setSource('batch');
+      if ((data.smart_reply || data.smartReplies || data.replies) && !newResults.smart_reply.data) {
+        const replies = data.smart_reply || data.smartReplies || data.replies;
+        newResults.smart_reply = {
+          status: 'success',
+          data: Array.isArray(replies) ? replies : replies?.replies || [],
+        };
+      }
 
-      return true;
+      if ((data.action_items || data.actionItems || data.actions) && !newResults.action_items.data) {
+        const actions = data.action_items || data.actionItems || data.actions;
+        newResults.action_items = {
+          status: 'success',
+          data: Array.isArray(actions) ? actions : actions?.items || [],
+        };
+      }
+
+      // Update allocation
+      if (data.allocation) {
+        setAllocation(data.allocation);
+      }
+
+      // Update available buttons
+      if (data.availableButtons) {
+        setAvailableButtons(data.availableButtons);
+      }
+
+      // Check if we got any data
+      const hasData = newResults.summary.data ||
+                      (Array.isArray(newResults.smart_reply.data) && newResults.smart_reply.data.length > 0) ||
+                      (Array.isArray(newResults.action_items.data) && newResults.action_items.data.length > 0);
+
+      if (!hasData) {
+        aiLogger.warn('[useAIFeatures] No AI data returned for:', id);
+      } else {
+        aiLogger.debug('[useAIFeatures] Features loaded successfully');
+      }
+
+      setResults(newResults);
+      setSource(data.cached ? 'cache' : 'batch');
+      loadedEmailsRef.current.add(id);
+      setIsLoading(false);
+
     } catch (err) {
-      console.warn('[useAIFeatures] Batch API error:', err);
-      return false;
+      // Check if it's an abort error (user navigated away)
+      if (err instanceof Error && err.name === 'AbortError') {
+        aiLogger.debug('[useAIFeatures] Request aborted (expected on navigation)');
+        return;
+      }
+
+      // Check if component still mounted
+      if (!isMountedRef.current) return;
+
+      aiLogger.error('[useAIFeatures] Failed to load features:', err instanceof Error ? err.message : 'Unknown error');
+
+      // Set error state
+      setError(err instanceof Error ? err.message : 'Failed to load AI features');
+
+      // Mark main features as error
+      setResults(prev => ({
+        ...prev,
+        summary: { status: 'error', data: null, error: 'Failed to load' },
+        smart_reply: { status: 'error', data: null, error: 'Failed to load' },
+        action_items: { status: 'error', data: null, error: 'Failed to load' },
+      }));
+
+      setIsLoading(false);
     }
   }, [fetchWithTimeout]);
 
-  // Fallback: Individual API calls
-  const fallbackIndividualCalls = useCallback(async (id: string): Promise<void> => {
-    console.log('[useAIFeatures] Falling back to individual calls');
-
-    // Set loading state for each feature
-    const loadingResults: Record<string, FeatureResult> = {};
-    AUTO_FEATURES.forEach(key => {
-      loadingResults[key] = { status: 'loading' };
-    });
-    setResults(loadingResults);
-
-    // Fetch each feature in parallel
-    const promises = AUTO_FEATURES.map(async (featureKey): Promise<[string, FeatureResult]> => {
-      try {
-        const response = await fetch(`/api/ai/features/${id}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ featureKey }),
-        });
-
-        // Get response text first to handle non-JSON responses
-        const responseText = await response.text();
-
-        if (!response.ok) {
-          console.warn(`[useAIFeatures] Individual API failed for ${featureKey}:`, response.status, responseText.substring(0, 100));
-          return [featureKey, { status: 'error', error: `HTTP ${response.status}` }];
-        }
-
-        // Try to parse JSON
-        let data;
-        try {
-          data = JSON.parse(responseText);
-        } catch (parseError) {
-          console.error(`[useAIFeatures] Failed to parse JSON for ${featureKey}:`, responseText.substring(0, 100));
-          return [featureKey, { status: 'error', error: 'Invalid JSON response' }];
-        }
-
-        if (data.result?.success) {
-          return [featureKey, { status: 'success', data: data.result.data }];
-        } else {
-          return [featureKey, { status: 'error', error: data.result?.error || 'Unknown error' }];
-        }
-      } catch (err) {
-        return [featureKey, { status: 'error', error: String(err) }];
-      }
-    });
-
-    const settledResults = await Promise.allSettled(promises);
-
-    const finalResults: Record<string, FeatureResult> = {};
-    for (const result of settledResults) {
-      if (result.status === 'fulfilled') {
-        const [key, value] = result.value;
-        finalResults[key] = value;
-      }
-    }
-
-    setResults(finalResults);
-    setSource('individual');
-
-    // Set available buttons for features that failed or weren't auto-enabled
-    const failedFeatures = Object.entries(finalResults)
-      .filter(([, r]) => r.status === 'error')
-      .map(([k]) => k as AIFeatureKey);
-    setAvailableButtons(failedFeatures);
-  }, []);
-
-  // Main load function
-  const loadFeatures = useCallback(async (id: string) => {
-    // Prevent duplicate loads
-    if (hasLoadedRef.current === id) {
-      return;
-    }
-
-    // Cancel previous request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    abortControllerRef.current = new AbortController();
-
-    setIsLoading(true);
-    setError(null);
-    hasLoadedRef.current = id;
-
-    try {
-      // Try batch API first
-      const batchSuccess = await tryBatchAPI(id);
-
-      if (!batchSuccess) {
-        // Fallback to individual calls
-        await fallbackIndividualCalls(id);
-      }
-    } catch (err) {
-      console.error('[useAIFeatures] Load error:', err);
-      setError('Không thể tải AI features');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [tryBatchAPI, fallbackIndividualCalls]);
-
-  // Trigger a specific feature manually
-  const triggerFeature = useCallback(async (featureKey: AIFeatureKey) => {
+  // Trigger individual feature
+  const triggerFeature = useCallback(async (feature: AIFeatureKey) => {
     if (!emailId) return;
 
-    // Set loading for this feature
     setResults(prev => ({
       ...prev,
-      [featureKey]: { status: 'loading' },
+      [feature]: { status: 'loading', data: null },
     }));
 
     try {
-      const response = await fetch(`/api/ai/features/${emailId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ featureKey }),
-      });
+      const response = await fetchWithTimeout(
+        `/api/ai/features/${emailId}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ featureKey: feature }),
+        },
+        INDIVIDUAL_TIMEOUT
+      );
+
+      if (!isMountedRef.current) return;
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        throw new Error(`API error: ${response.status}`);
       }
 
       const data = await response.json();
 
+      if (!isMountedRef.current) return;
+
       if (data.result?.success) {
         setResults(prev => ({
           ...prev,
-          [featureKey]: { status: 'success', data: data.result.data },
+          [feature]: { status: 'success', data: data.result.data },
         }));
         // Remove from available buttons
-        setAvailableButtons(prev => prev.filter(k => k !== featureKey));
+        setAvailableButtons(prev => prev.filter(k => k !== feature));
       } else {
-        setResults(prev => ({
-          ...prev,
-          [featureKey]: { status: 'error', error: data.result?.error || 'Failed' },
-        }));
+        throw new Error(data.result?.error || 'Unknown error');
       }
+
     } catch (err) {
+      if (!isMountedRef.current) return;
+      if (err instanceof Error && err.name === 'AbortError') return;
+
+      aiLogger.error(`[useAIFeatures] Failed to trigger ${feature}:`, err);
+
       setResults(prev => ({
         ...prev,
-        [featureKey]: { status: 'error', error: String(err) },
+        [feature]: {
+          status: 'error',
+          data: null,
+          error: err instanceof Error ? err.message : 'Failed'
+        },
       }));
     }
-  }, [emailId]);
+  }, [emailId, fetchWithTimeout]);
 
-  // Refresh function
+  // Refresh all features
   const refresh = useCallback(() => {
     if (emailId) {
-      hasLoadedRef.current = null;
+      loadedEmailsRef.current.delete(emailId);
       loadFeatures(emailId);
     }
   }, [emailId, loadFeatures]);
 
-  // Load on mount or emailId change
+  // Load on emailId change with debounce
   useEffect(() => {
-    console.log('[useAIFeatures] useEffect triggered, emailId:', emailId);
-    if (emailId) {
-      console.log('[useAIFeatures] Calling loadFeatures...');
-      loadFeatures(emailId);
-    } else {
-      // Reset state
-      setResults({});
-      setAllocation(null);
-      setAvailableButtons([]);
-      setError(null);
-      setSource(null);
-      hasLoadedRef.current = null;
-    }
-
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+    if (emailId && !loadedEmailsRef.current.has(emailId)) {
+      // Clear any existing debounce timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
       }
-    };
+
+      // Debounce to prevent rapid successive calls (StrictMode, fast navigation)
+      debounceTimerRef.current = setTimeout(() => {
+        if (isMountedRef.current && !loadedEmailsRef.current.has(emailId)) {
+          loadFeatures(emailId);
+        }
+      }, DEBOUNCE_DELAY);
+
+      return () => {
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current);
+        }
+      };
+    }
   }, [emailId, loadFeatures]);
 
-  return {
+  // Memoize return value
+  return useMemo(() => ({
     results,
     allocation,
     availableButtons,
@@ -320,7 +359,7 @@ export function useAIFeatures(emailId: string | null): UseAIFeaturesReturn {
     source,
     triggerFeature,
     refresh,
-  };
+  }), [results, allocation, availableButtons, isLoading, error, source, triggerFeature, refresh]);
 }
 
 export default useAIFeatures;

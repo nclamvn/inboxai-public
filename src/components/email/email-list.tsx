@@ -67,7 +67,7 @@ export function EmailList({ emails, selectedId, onSelect, onStar }: EmailListPro
               <Star
                 className={cn(
                   'w-5 h-5 transition-colors',
-                  email.is_starred ? 'fill-amber-500 text-amber-500' : 'text-[var(--border)] hover:text-amber-500'
+                  email.is_starred ? 'fill-amber-500 text-amber-500' : 'text-gray-500 dark:text-gray-400 hover:text-amber-400'
                 )}
                 strokeWidth={1.5}
               />

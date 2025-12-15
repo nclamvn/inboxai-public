@@ -5,11 +5,11 @@ import { useRouter } from 'next/navigation'
 import {
   Star, Archive, Trash2, Reply, Forward, MoreHorizontal,
   Sparkles, ChevronDown, ChevronUp, Loader2, X, Mail,
-  Check, ShieldAlert, Ban
+  Check, ShieldAlert, Ban, Printer, Download, AlertTriangle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
-import { AIFeaturesPanel } from '@/components/ai'
+import { AIBottomBar } from './ai-bottom-bar'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import { AttachmentList } from './attachment-list'
 import type { Email } from '@/types'
@@ -49,7 +49,9 @@ export function EmailDetailFull({
   const [currentCategory, setCurrentCategory] = useState(email.category)
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const [showBlockMenu, setShowBlockMenu] = useState(false)
+  const [showMoreMenu, setShowMoreMenu] = useState(false)
   const blockMenuRef = useRef<HTMLDivElement>(null)
+  const moreMenuRef = useRef<HTMLDivElement>(null)
   const previousEmailId = useRef<string | null>(null)
 
   // Reset UI state when switching emails - instant feedback
@@ -62,6 +64,7 @@ export function EmailDetailFull({
       setCurrentCategory(email.category)
       setAttachments([])
       setShowBlockMenu(false)
+      setShowMoreMenu(false)
       previousEmailId.current = email.id
 
       // Fetch attachments if email has them
@@ -71,11 +74,14 @@ export function EmailDetailFull({
     }
   }, [email.id, email.category, email.attachment_count])
 
-  // Close block menu when clicking outside
+  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (blockMenuRef.current && !blockMenuRef.current.contains(event.target as Node)) {
         setShowBlockMenu(false)
+      }
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setShowMoreMenu(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -358,12 +364,82 @@ export function EmailDetailFull({
             )}
           </div>
 
-          <button
-            type="button"
-            className="p-2 rounded-lg text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors"
-          >
-            <MoreHorizontal className="w-5 h-5" strokeWidth={1.5} />
-          </button>
+          {/* More Menu Dropdown */}
+          <div className="relative" ref={moreMenuRef}>
+            <button
+              type="button"
+              onClick={() => setShowMoreMenu(!showMoreMenu)}
+              className="p-2 rounded-lg text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors"
+            >
+              <MoreHorizontal className="w-5 h-5" strokeWidth={1.5} />
+            </button>
+
+            {showMoreMenu && (
+              <div className="absolute right-0 top-full mt-1 w-48 bg-[var(--card)] rounded-lg border border-[var(--border)] shadow-lg z-50 py-1">
+                {/* Print */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMoreMenu(false)
+                    window.print()
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-left text-[13px] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors"
+                >
+                  <Printer className="w-4 h-4" strokeWidth={1.5} />
+                  In email
+                </button>
+
+                {/* Download */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMoreMenu(false)
+                    // Create email content for download
+                    const content = `From: ${email.from_name} <${email.from_address}>\nTo: ${email.to_address}\nDate: ${email.received_at}\nSubject: ${email.subject}\n\n${email.body_text || ''}`
+                    const blob = new Blob([content], { type: 'text/plain' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `${email.subject || 'email'}.eml`
+                    a.click()
+                    URL.revokeObjectURL(url)
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-left text-[13px] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors"
+                >
+                  <Download className="w-4 h-4" strokeWidth={1.5} />
+                  Tải xuống
+                </button>
+
+                <div className="my-1 border-t border-[var(--border)]" />
+
+                {/* Report Phishing */}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setShowMoreMenu(false)
+                    try {
+                      await fetch('/api/ai/feedback', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          emailId: email.id,
+                          feedbackType: 'report_phishing',
+                          context: { from: email.from_address, subject: email.subject }
+                        })
+                      })
+                      alert('Đã báo cáo email lừa đảo. Cảm ơn bạn!')
+                    } catch {
+                      alert('Không thể báo cáo. Vui lòng thử lại.')
+                    }
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-left text-[13px] text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  <AlertTriangle className="w-4 h-4" strokeWidth={1.5} />
+                  Báo cáo lừa đảo
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -470,11 +546,6 @@ export function EmailDetailFull({
         )}
       </div>
 
-      {/* AI Features Panel */}
-      <div className="px-6 py-4 border-b border-[var(--border)]">
-        <AIFeaturesPanel emailId={email.id} />
-      </div>
-
       {/* Email Body */}
       <div className="flex-1 overflow-y-auto px-6 py-6">
         {email.body_html && email.body_html.replace(/<[^>]*>/g, '').trim().length > 10 ? (
@@ -509,6 +580,16 @@ export function EmailDetailFull({
           <AttachmentList attachments={attachments} />
         )}
       </div>
+
+      {/* AI Bottom Bar */}
+      <AIBottomBar
+        emailId={email.id}
+        category={currentCategory}
+        priority={email.priority}
+        onReplySelect={(reply) => {
+          handleUseDraft(`Re: ${email.subject}`, reply)
+        }}
+      />
 
       {/* Quick Reply Bar */}
       {!showAIAssistant && (

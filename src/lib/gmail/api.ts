@@ -120,6 +120,43 @@ export function decodeBase64Url(data: string): string {
 }
 
 /**
+ * Strip HTML tags and decode entities to get plain text
+ */
+function stripHtml(html: string): string {
+  // Remove script and style tags with their content
+  let text = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+  text = text.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+
+  // Replace block elements with newlines
+  text = text.replace(/<\/(p|div|tr|li|h[1-6]|br)>/gi, '\n');
+  text = text.replace(/<br\s*\/?>/gi, '\n');
+
+  // Remove all remaining tags
+  text = text.replace(/<[^>]+>/g, ' ');
+
+  // Decode common HTML entities
+  text = text.replace(/&nbsp;/gi, ' ');
+  text = text.replace(/&amp;/gi, '&');
+  text = text.replace(/&lt;/gi, '<');
+  text = text.replace(/&gt;/gi, '>');
+  text = text.replace(/&quot;/gi, '"');
+  text = text.replace(/&#39;/gi, "'");
+  text = text.replace(/&rsquo;/gi, "'");
+  text = text.replace(/&lsquo;/gi, "'");
+  text = text.replace(/&rdquo;/gi, '"');
+  text = text.replace(/&ldquo;/gi, '"');
+  text = text.replace(/&mdash;/gi, '—');
+  text = text.replace(/&ndash;/gi, '–');
+
+  // Clean up whitespace
+  text = text.replace(/\n\s*\n/g, '\n\n');
+  text = text.replace(/[ \t]+/g, ' ');
+  text = text.trim();
+
+  return text;
+}
+
+/**
  * Extract email body from message
  */
 export function extractBody(message: GmailMessage): { text: string; html: string } {
@@ -144,6 +181,12 @@ export function extractBody(message: GmailMessage): { text: string; html: string
   }
 
   processPayload(message.payload);
+
+  // IMPORTANT: If no text/plain part, extract text from HTML
+  if (!text && html) {
+    text = stripHtml(html);
+    console.log('[extractBody] No text/plain, converted from HTML, length:', text.length);
+  }
 
   return { text, html };
 }

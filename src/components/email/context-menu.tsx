@@ -62,8 +62,12 @@ export function ContextMenu({
         newY = viewportHeight - rect.height - 20
       }
 
-      setPosition({ x: newX, y: newY })
+      // Only update if position changed to avoid cascading renders
+      if (newX !== position.x || newY !== position.y) {
+        setPosition({ x: newX, y: newY })
+      }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [x, y])
 
   // Close on outside click

@@ -14,6 +14,7 @@ import {
 } from '@/lib/ai/feature-allocation';
 import { getAIFeatureRunner } from '@/lib/ai/feature-runner';
 import { ensureAIModuleInitialized } from '@/lib/ai/setup';
+import { aiLogger } from '@/lib/logger';
 
 interface FeatureResultWithMeta {
   status: 'success' | 'error';
@@ -24,45 +25,83 @@ interface FeatureResultWithMeta {
   cached?: boolean;
 }
 
+/**
+ * Strip HTML tags and decode entities to get plain text
+ * Used for existing emails that have body_html but empty body_text
+ */
+function stripHtmlTags(html: string): string {
+  // Remove script and style tags with their content
+  let text = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+  text = text.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+
+  // Replace block elements with newlines
+  text = text.replace(/<\/(p|div|tr|li|h[1-6]|br)>/gi, '\n');
+  text = text.replace(/<br\s*\/?>/gi, '\n');
+
+  // Remove all remaining tags
+  text = text.replace(/<[^>]+>/g, ' ');
+
+  // Decode common HTML entities
+  text = text.replace(/&nbsp;/gi, ' ');
+  text = text.replace(/&amp;/gi, '&');
+  text = text.replace(/&lt;/gi, '<');
+  text = text.replace(/&gt;/gi, '>');
+  text = text.replace(/&quot;/gi, '"');
+  text = text.replace(/&#39;/gi, "'");
+  text = text.replace(/&rsquo;/gi, "'");
+  text = text.replace(/&lsquo;/gi, "'");
+  text = text.replace(/&rdquo;/gi, '"');
+  text = text.replace(/&ldquo;/gi, '"');
+  text = text.replace(/&mdash;/gi, '—');
+  text = text.replace(/&ndash;/gi, '–');
+
+  // Clean up whitespace
+  text = text.replace(/\n\s*\n/g, '\n\n');
+  text = text.replace(/[ \t]+/g, ' ');
+  text = text.trim();
+
+  return text;
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ emailId: string }> }
 ) {
   const startTime = Date.now();
-  console.log('[BatchAPI] === START ===');
+  aiLogger.debug('[BatchAPI] === START ===');
 
   try {
     // Step 1: Get params
     const { emailId } = await params;
-    console.log('[BatchAPI] Step 1 - emailId:', emailId);
+    aiLogger.debug('[BatchAPI] Step 1 - emailId:', emailId);
 
     if (!emailId) {
-      console.log('[BatchAPI] ERROR: No emailId');
+      aiLogger.debug('[BatchAPI] ERROR: No emailId');
       return NextResponse.json({ error: 'emailId is required' }, { status: 400 });
     }
 
     // Step 2: Ensure AI module is initialized
-    console.log('[BatchAPI] Step 2 - Initializing AI module...');
+    aiLogger.debug('[BatchAPI] Step 2 - Initializing AI module...');
     await ensureAIModuleInitialized();
-    console.log('[BatchAPI] Step 2 - AI module initialized');
+    aiLogger.debug('[BatchAPI] Step 2 - AI module initialized');
 
     // Step 3: Create Supabase client
-    console.log('[BatchAPI] Step 3 - Creating Supabase client...');
+    aiLogger.debug('[BatchAPI] Step 3 - Creating Supabase client...');
     const supabase = await createClient();
-    console.log('[BatchAPI] Step 3 - Supabase client created');
+    aiLogger.debug('[BatchAPI] Step 3 - Supabase client created');
 
     // Step 4: Get current user
-    console.log('[BatchAPI] Step 4 - Getting user...');
+    aiLogger.debug('[BatchAPI] Step 4 - Getting user...');
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    console.log('[BatchAPI] Step 4 - User:', user?.id, 'AuthError:', authError?.message);
+    aiLogger.debug('[BatchAPI] Step 4 - User:', user?.id, 'AuthError:', authError?.message);
 
     if (authError || !user) {
-      console.log('[BatchAPI] ERROR: Unauthorized');
+      aiLogger.debug('[BatchAPI] ERROR: Unauthorized');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Step 5: Get email data
-    console.log('[BatchAPI] Step 5 - Fetching email:', emailId);
+    aiLogger.debug('[BatchAPI] Step 5 - Fetching email:', emailId);
     const { data: email, error: emailError } = await supabase
       .from('emails')
       .select(`
@@ -83,19 +122,38 @@ export async function POST(
       .eq('user_id', user.id)
       .single();
 
-    console.log('[BatchAPI] Step 5 - Email found:', !!email, 'Error:', emailError?.message);
+    aiLogger.debug('[BatchAPI] Step 5 - Email found:', !!email, 'Error:', emailError?.message);
 
     if (emailError || !email) {
-      console.log('[BatchAPI] ERROR: Email not found');
+      aiLogger.debug('[BatchAPI] ERROR: Email not found');
       return NextResponse.json({ error: 'Email not found' }, { status: 404 });
     }
 
+    // FIX: If body_text is empty but body_html exists, extract text from HTML
+    let bodyText = email.body_text as string | null;
+    const bodyHtml = email.body_html as string | null;
+
+    aiLogger.debug('[BatchAPI] DEBUG body_text length:', bodyText?.length || 0);
+    aiLogger.debug('[BatchAPI] DEBUG body_html length:', bodyHtml?.length || 0);
+
+    if ((!bodyText || bodyText.trim().length < 20) && bodyHtml && bodyHtml.length > 0) {
+      aiLogger.debug('[BatchAPI] body_text empty/short, extracting from HTML...');
+      bodyText = stripHtmlTags(bodyHtml);
+      aiLogger.debug('[BatchAPI] Extracted text length:', bodyText.length);
+      aiLogger.debug('[BatchAPI] Extracted text preview:', bodyText.slice(0, 200));
+
+      // Update email object for processing (don't save to DB here, just for this request)
+      (email as Record<string, unknown>).body_text = bodyText;
+    }
+
+    aiLogger.debug('[BatchAPI] Final word count:', bodyText?.split(/\s+/).filter(w => w.length > 0).length || 0);
+
     // Step 6: Get allocation
-    console.log('[BatchAPI] Step 6 - Getting allocation...');
+    aiLogger.debug('[BatchAPI] Step 6 - Getting allocation...');
     const allocation = await getFeatureAllocationForEmail(user.id, email);
-    console.log('[BatchAPI] Step 6 - Allocation category:', allocation.category);
-    console.log('[BatchAPI] Step 6 - Auto features:', allocation.autoEnabledFeatures);
-    console.log('[BatchAPI] Step 6 - Available buttons:', allocation.availableButtons);
+    aiLogger.debug('[BatchAPI] Step 6 - Allocation category:', allocation.category);
+    aiLogger.debug('[BatchAPI] Step 6 - Auto features:', allocation.autoEnabledFeatures);
+    aiLogger.debug('[BatchAPI] Step 6 - Available buttons:', allocation.availableButtons);
 
     // Collect existing results from database (cached)
     const existingResults: Record<string, FeatureResultWithMeta> = {};
@@ -157,8 +215,8 @@ export async function POST(
       .map(f => f.featureKey);
 
     // DEBUG: Log features to run
-    console.log('[BatchAPI] featuresToRun:', featuresToRun);
-    console.log('[BatchAPI] existingResults keys:', Object.keys(existingResults));
+    aiLogger.debug('[BatchAPI] featuresToRun:', featuresToRun);
+    aiLogger.debug('[BatchAPI] existingResults keys:', Object.keys(existingResults));
 
     // Run features in PARALLEL using Promise.allSettled
     const newResults: Record<string, FeatureResultWithMeta> = {};
@@ -168,7 +226,7 @@ export async function POST(
       const service = getAIFeatureAllocationService();
 
       // DEBUG: Log registered executors
-      console.log('[BatchAPI] Registered executors:', runner.getRegisteredFeatures());
+      aiLogger.debug('[BatchAPI] Registered executors:', runner.getRegisteredFeatures());
 
       // Create parallel promises
       const featurePromises = featuresToRun.map(async (featureKey): Promise<[AIFeatureKey, FeatureResultWithMeta]> => {
@@ -193,7 +251,7 @@ export async function POST(
             timeMs,
           }];
         } catch (error) {
-          console.error(`Error running feature ${featureKey}:`, error);
+          aiLogger.error(`Error running feature ${featureKey}:`, error);
           return [featureKey, {
             status: 'error',
             error: error instanceof Error ? error.message : 'Unknown error',
@@ -211,9 +269,9 @@ export async function POST(
         if (result.status === 'fulfilled') {
           const [key, value] = result.value;
           newResults[key] = value;
-          console.log(`[BatchAPI] Feature ${key} result:`, value.status, value.error || 'OK');
+          aiLogger.debug(`[BatchAPI] Feature ${key} result:`, value.status, value.error || 'OK');
         } else {
-          console.error('[BatchAPI] Promise rejected:', result.reason);
+          aiLogger.error('[BatchAPI] Promise rejected:', result.reason);
         }
       }
 
@@ -291,16 +349,16 @@ export async function POST(
     };
 
     // Step 7: Return response
-    console.log('[BatchAPI] Step 7 - Success! Results count:', Object.keys(allResults).length);
-    console.log('[BatchAPI] === END (success) ===');
+    aiLogger.debug('[BatchAPI] Step 7 - Success! Results count:', Object.keys(allResults).length);
+    aiLogger.debug('[BatchAPI] === END (success) ===');
 
     return NextResponse.json(response);
 
   } catch (error) {
-    console.error('[BatchAPI] === ERROR ===');
-    console.error('[BatchAPI] Error type:', error?.constructor?.name);
-    console.error('[BatchAPI] Error message:', error instanceof Error ? error.message : String(error));
-    console.error('[BatchAPI] Error stack:', error instanceof Error ? error.stack : 'N/A');
+    aiLogger.error('[BatchAPI] === ERROR ===');
+    aiLogger.error('[BatchAPI] Error type:', error?.constructor?.name);
+    aiLogger.error('[BatchAPI] Error message:', error instanceof Error ? error.message : String(error));
+    aiLogger.error('[BatchAPI] Error stack:', error instanceof Error ? error.stack : 'N/A');
     return NextResponse.json(
       { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

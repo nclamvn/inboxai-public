@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { QueryProvider } from '@/providers/query-provider'
 import { ThemeProvider } from '@/contexts/theme-context'
+import { ErrorBoundary } from '@/components/error-boundary'
 
 const inter = Inter({
   subsets: ['latin', 'vietnamese'],
@@ -24,14 +25,36 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'InboxAI - Smart Email Hub',
-  description: 'AI-powered email management. One inbox to rule them all.',
-  keywords: ['email', 'ai', 'inbox', 'productivity', 'vietnam'],
+  title: {
+    default: 'InboxAI - Smart Email Hub',
+    template: '%s | InboxAI',
+  },
+  description: 'AI-powered email management. One inbox to rule them all. Quản lý email thông minh với AI.',
+  keywords: ['email', 'ai', 'inbox', 'productivity', 'vietnam', 'email management', 'smart inbox'],
+  authors: [{ name: 'InboxAI Team' }],
+  creator: 'InboxAI',
+  publisher: 'InboxAI',
+  robots: {
+    index: true,
+    follow: true,
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'vi_VN',
+    siteName: 'InboxAI',
+    title: 'InboxAI - Smart Email Hub',
+    description: 'AI-powered email management. One inbox to rule them all.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'InboxAI - Smart Email Hub',
+    description: 'AI-powered email management. One inbox to rule them all.',
+  },
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'AI Mailbox',
+    title: 'InboxAI',
   },
   formatDetection: {
     telephone: false,
@@ -75,9 +98,11 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} antialiased bg-[var(--background)] text-[var(--foreground)]`}>
         <ThemeProvider>
-          <QueryProvider>
-            {children}
-          </QueryProvider>
+          <ErrorBoundary>
+            <QueryProvider>
+              {children}
+            </QueryProvider>
+          </ErrorBoundary>
         </ThemeProvider>
       </body>
     </html>

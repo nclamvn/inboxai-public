@@ -40,10 +40,11 @@ const typeLabels: Record<string, string> = {
   follow_up: 'Theo dõi',
 }
 
+// Use CSS variables for text to ensure correct theme contrast
 const priorityColors: Record<string, string> = {
-  high: 'text-gray-900 dark:text-white bg-red-50 dark:bg-red-500/10',
-  medium: 'text-gray-900 dark:text-white bg-amber-50 dark:bg-amber-500/10',
-  low: 'text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-500/10',
+  high: 'text-[var(--foreground)] bg-red-100 dark:bg-red-500/10',
+  medium: 'text-[var(--foreground)] bg-amber-100 dark:bg-amber-500/10',
+  low: 'text-[var(--foreground)] bg-gray-100 dark:bg-gray-500/10',
 }
 
 const priorityLabels: Record<string, string> = {
@@ -162,7 +163,7 @@ export function ActionItemsCard({ emailId, onViewAll }: ActionItemsCardProps) {
             'w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl',
             'bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-500/10 dark:to-indigo-500/10',
             'border border-purple-100 dark:border-purple-500/20',
-            'text-gray-900 dark:text-white font-medium text-sm',
+            'text-[var(--foreground)] font-medium text-sm',
             'hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-500/20 dark:hover:to-indigo-500/20',
             'transition-all disabled:opacity-50'
           )}
@@ -201,21 +202,19 @@ export function ActionItemsCard({ emailId, onViewAll }: ActionItemsCardProps) {
         className="w-full flex items-center justify-between p-3 hover:bg-white/50 dark:hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className={cn(
-            'w-8 h-8 rounded-lg flex items-center justify-center',
+          <ListTodo className={cn(
+            'w-5 h-5',
             hasHighPriority
-              ? 'bg-gradient-to-br from-red-500 to-orange-500'
-              : 'bg-gradient-to-br from-purple-500 to-indigo-500'
-          )}>
-            <ListTodo className="w-4 h-4 text-white" />
-          </div>
+              ? 'text-red-500 dark:text-red-400'
+              : 'text-gray-500 dark:text-gray-400'
+          )} />
           <div className="text-left">
             <div className="flex items-center gap-2">
               <p className="text-sm font-semibold text-[var(--foreground)]">
                 Actions ({pendingActions.length})
               </p>
               {hasHighPriority && (
-                <span className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-red-100 dark:bg-red-500/20 text-gray-900 dark:text-white rounded">
+                <span className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-red-100 dark:bg-red-500/20 text-[var(--foreground)] rounded">
                   <AlertTriangle className="w-3 h-3" />
                   GẤP
                 </span>
@@ -308,7 +307,7 @@ export function ActionItemsCard({ emailId, onViewAll }: ActionItemsCardProps) {
                   {/* Context quote */}
                   {action.context && (
                     <p className="mt-2 text-xs text-[var(--foreground-subtle)] italic line-clamp-2 pl-2 border-l-2 border-[var(--border)]">
-                      "{action.context}"
+                      {`"${action.context}"`}
                     </p>
                   )}
                 </div>

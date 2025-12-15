@@ -68,7 +68,7 @@ export const AdminRequestsTab = memo(function AdminRequestsTab({
               <p className="text-[14px] text-[var(--muted)]">{request.email}</p>
               {request.reason && (
                 <p className="text-[13px] text-[var(--muted-foreground)] mt-1">
-                  "{request.reason}"
+                  {`"${request.reason}"`}
                 </p>
               )}
               <p className="text-[12px] text-[var(--muted-foreground)] mt-2">

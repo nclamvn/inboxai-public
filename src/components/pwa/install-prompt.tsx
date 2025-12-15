@@ -18,10 +18,12 @@ export function InstallPrompt() {
   useEffect(() => {
     // Check if already installed
     const standalone = window.matchMedia('(display-mode: standalone)').matches
-    setIsStandalone(standalone)
 
     // Check for iOS
     const ios = /iPad|iPhone|iPod/.test(navigator.userAgent)
+
+    // Batch state updates
+    setIsStandalone(standalone)
     setIsIOS(ios)
 
     // Check if prompt was dismissed recently

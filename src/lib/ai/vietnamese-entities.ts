@@ -782,7 +782,7 @@ export function detectMoneyAmounts(text: string): MoneyAmount[] {
     let match;
     while ((match = regex.exec(text)) !== null) {
       const fullMatch = match[0];
-      let numStr = match[1].replace(/[.,]/g, '');
+      const numStr = match[1].replace(/[.,]/g, '');
       const num = parseFloat(numStr);
       const amount = num * multiplier;
 

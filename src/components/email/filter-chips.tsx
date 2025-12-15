@@ -79,7 +79,7 @@ export const FilterChips = memo(function FilterChips({ activeFilter, onFilterCha
     } else {
       // Inactive state - subtle
       if (filter.color === 'spam') {
-        return 'bg-red-100 dark:bg-red-900/30 text-gray-900 dark:text-white hover:bg-red-200 dark:hover:bg-red-900/50'
+        return 'bg-red-100 dark:bg-red-900/30 text-[var(--foreground)] hover:bg-red-200 dark:hover:bg-red-900/50'
       }
       return 'bg-[var(--secondary)] text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'
     }
@@ -142,7 +142,7 @@ export const FilterChips = memo(function FilterChips({ activeFilter, onFilterCha
           disabled={reclassifying}
           className={cn(
             'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors whitespace-nowrap ml-2',
-            'bg-purple-100 dark:bg-purple-900/30 text-gray-900 dark:text-white hover:bg-purple-200 dark:hover:bg-purple-900/50',
+            'bg-purple-100 dark:bg-purple-900/30 text-[var(--foreground)] hover:bg-purple-200 dark:hover:bg-purple-900/50',
             reclassifying && 'opacity-50 cursor-not-allowed'
           )}
         >
@@ -158,7 +158,7 @@ export const FilterChips = memo(function FilterChips({ activeFilter, onFilterCha
           className={cn(
             'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors whitespace-nowrap ml-2',
             currentFilter.important
-              ? 'bg-orange-100 dark:bg-orange-900/30 text-gray-900 dark:text-white hover:bg-orange-200 dark:hover:bg-orange-900/50'
+              ? 'bg-orange-100 dark:bg-orange-900/30 text-[var(--foreground)] hover:bg-orange-200 dark:hover:bg-orange-900/50'
               : 'bg-red-600 text-white hover:bg-red-700'
           )}
         >

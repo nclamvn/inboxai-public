@@ -20,9 +20,9 @@ export function SectionHeader({
     <div className={cn('flex items-center justify-between', className)}>
       <div className="flex items-center gap-3">
         {icon && (
-          <div className="w-10 h-10 rounded-xl bg-[var(--foreground)] flex items-center justify-center text-[var(--background)]">
+          <span className="text-gray-500 dark:text-gray-400">
             {icon}
-          </div>
+          </span>
         )}
         <div>
           <h2 className="text-[18px] font-medium text-[var(--foreground)]">

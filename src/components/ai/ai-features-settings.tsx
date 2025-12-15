@@ -30,14 +30,27 @@ interface VipSender {
   priority_boost: number;
 }
 
+interface FeatureDefault {
+  category: string;
+  feature_key: string;
+  auto_enabled: boolean;
+  button_visible: boolean;
+}
+
+interface UsageStats {
+  totalEmails: number;
+  totalCost: number;
+  savingsEstimate: number;
+}
+
 export function AIFeaturesSettings() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [activeCategory, setActiveCategory] = useState<EmailCategory>('work');
-  const [defaults, setDefaults] = useState<any[]>([]);
-  const [userOverrides, setUserOverrides] = useState<Record<string, Record<string, any>>>({});
+  const [defaults, setDefaults] = useState<FeatureDefault[]>([]);
+  const [userOverrides, setUserOverrides] = useState<Record<string, Record<string, { auto?: boolean; button?: boolean }>>>({});
   const [vipSenders, setVipSenders] = useState<VipSender[]>([]);
-  const [usageStats, setUsageStats] = useState<any>(null);
+  const [usageStats, setUsageStats] = useState<UsageStats | null>(null);
 
   // New VIP sender form
   const [newVipEmail, setNewVipEmail] = useState('');

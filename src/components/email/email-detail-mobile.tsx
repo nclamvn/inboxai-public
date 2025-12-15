@@ -45,6 +45,17 @@ export function EmailDetailMobile({
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const previousId = useRef<string | null>(null)
 
+  // Fetch attachments - defined before useEffect to fix variable access order
+  const fetchAttachments = async (emailId: string) => {
+    try {
+      const res = await fetch(`/api/emails/${emailId}/attachments`)
+      const data = await res.json()
+      setAttachments(data.attachments || [])
+    } catch (error) {
+      console.error('Failed to fetch attachments:', error)
+    }
+  }
+
   // Reset on email change
   useEffect(() => {
     if (email.id !== previousId.current) {
@@ -59,18 +70,8 @@ export function EmailDetailMobile({
         fetchAttachments(email.id)
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [email.id, email.is_starred, email.attachment_count])
-
-  // Fetch attachments
-  const fetchAttachments = async (emailId: string) => {
-    try {
-      const res = await fetch(`/api/emails/${emailId}/attachments`)
-      const data = await res.json()
-      setAttachments(data.attachments || [])
-    } catch (error) {
-      console.error('Failed to fetch attachments:', error)
-    }
-  }
 
   const toggleStar = async () => {
     const newValue = !isStarred

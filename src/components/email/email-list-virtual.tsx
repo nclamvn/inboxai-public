@@ -50,12 +50,14 @@ const EmailRow = memo(function EmailRow({
   const getCategoryStyle = (category: string | null) => {
     if (!category) return null
     const styles: Record<string, { bg: string; text: string }> = {
-      work: { bg: 'bg-blue-100 dark:bg-blue-500/20', text: 'text-gray-900 dark:text-white' },
-      personal: { bg: 'bg-green-100 dark:bg-green-500/20', text: 'text-gray-900 dark:text-white' },
-      transaction: { bg: 'bg-red-100 dark:bg-red-500/20', text: 'text-gray-900 dark:text-white' },
-      newsletter: { bg: 'bg-[var(--secondary)]', text: 'text-[var(--muted-foreground)]' },
-      promotion: { bg: 'bg-amber-100 dark:bg-amber-500/20', text: 'text-gray-900 dark:text-white' },
-      social: { bg: 'bg-violet-100 dark:bg-violet-500/20', text: 'text-gray-900 dark:text-white' },
+      work: { bg: 'bg-blue-100 dark:bg-blue-500/20', text: 'text-[var(--foreground)] font-semibold' },
+      personal: { bg: 'bg-purple-100 dark:bg-purple-500/20', text: 'text-[var(--foreground)] font-semibold' },
+      transaction: { bg: 'bg-emerald-100 dark:bg-emerald-500/20', text: 'text-[var(--foreground)] font-semibold' },
+      newsletter: { bg: 'bg-gray-100 dark:bg-gray-800/60', text: 'text-[var(--foreground)] font-semibold' },
+      uncategorized: { bg: 'bg-gray-100 dark:bg-gray-800/40', text: 'text-[var(--foreground)] font-semibold' },
+      promotion: { bg: 'bg-amber-100 dark:bg-amber-500/20', text: 'text-[var(--foreground)] font-semibold' },
+      social: { bg: 'bg-cyan-100 dark:bg-cyan-500/20', text: 'text-[var(--foreground)] font-semibold' },
+      spam: { bg: 'bg-red-100 dark:bg-red-500/20', text: 'text-[var(--foreground)] font-semibold' },
     }
     return styles[category] || styles.newsletter
   }
@@ -69,6 +71,8 @@ const EmailRow = memo(function EmailRow({
       newsletter: 'Newsletter',
       promotion: 'Khuyến mãi',
       social: 'Mạng XH',
+      spam: 'Spam',
+      uncategorized: 'Chưa phân loại',
     }
     return labels[category] || category
   }
@@ -91,7 +95,7 @@ const EmailRow = memo(function EmailRow({
         }}
         className={cn(
           'mt-0.5 flex-shrink-0 transition-colors',
-          email.is_starred ? 'text-amber-500' : 'text-[var(--border)] hover:text-[var(--muted-foreground)]'
+          email.is_starred ? 'text-amber-500' : 'text-gray-500 dark:text-gray-400 hover:text-amber-400'
         )}
       >
         <Star

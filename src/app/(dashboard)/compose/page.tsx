@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Send, Paperclip, X, Loader2, Sparkles, ChevronDown } from 'lucide-react'
+import { Send, Paperclip, X, Loader2, Sparkles, ChevronDown, Wand2, FileText, Minus, Plus, Briefcase, Smile } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface SourceAccount {
   id: string
@@ -29,6 +30,57 @@ export default function ComposePage() {
   const [selectedAccountId, setSelectedAccountId] = useState<string>('')
   const [loadingAccounts, setLoadingAccounts] = useState(true)
   const [showAccountDropdown, setShowAccountDropdown] = useState(false)
+
+  // AI Compose
+  const [showAIPrompt, setShowAIPrompt] = useState(false)
+  const [aiPrompt, setAIPrompt] = useState('')
+  const [aiLoading, setAILoading] = useState(false)
+  const [aiAction, setAIAction] = useState<string | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // AI Compose handler
+  const handleAIAction = async (action: string, prompt?: string) => {
+    if (action !== 'write' && !body.trim()) {
+      return // Need content for non-write actions
+    }
+
+    setAILoading(true)
+    setAIAction(action)
+
+    try {
+      const response = await fetch('/api/ai/compose', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action,
+          prompt: action === 'write' ? prompt : undefined,
+          currentText: action !== 'write' ? body : undefined,
+          subject,
+          recipientName: to.split('@')[0],
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.success && result.text) {
+        setBody(result.text)
+        setIsFromAI(true)
+        setShowAIPrompt(false)
+        setAIPrompt('')
+      }
+    } catch (error) {
+      console.error('AI compose error:', error)
+    } finally {
+      setAILoading(false)
+      setAIAction(null)
+    }
+  }
+
+  const handleAIWrite = () => {
+    if (aiPrompt.trim()) {
+      handleAIAction('write', aiPrompt)
+    }
+  }
 
   // Fetch source accounts
   useEffect(() => {
@@ -247,18 +299,153 @@ export default function ComposePage() {
         </div>
 
         {/* Body */}
-        <div className="flex-1 p-4 bg-[var(--card)]">
-          {isFromAI && (
-            <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-[var(--secondary)] border border-[var(--border)] rounded-lg text-[14px] text-[var(--muted-foreground)]">
-              <Sparkles className="w-4 h-4 text-[var(--foreground)]" strokeWidth={1.5} />
-              <span>Nội dung được tạo bởi AI. Vui lòng xem lại trước khi gửi.</span>
+        <div className="flex-1 p-4 bg-[var(--card)] flex flex-col">
+          {/* AI Toolbar */}
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <div className="flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+              <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+              <span className="text-xs font-medium text-purple-600 dark:text-purple-400">AI</span>
+            </div>
+
+            {/* Write with AI */}
+            <button
+              type="button"
+              onClick={() => setShowAIPrompt(!showAIPrompt)}
+              disabled={aiLoading}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors",
+                showAIPrompt
+                  ? "bg-purple-500 text-white"
+                  : "bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--hover)]"
+              )}
+            >
+              <Wand2 className="w-3.5 h-3.5" />
+              Viết
+            </button>
+
+            {/* Improve */}
+            <button
+              type="button"
+              onClick={() => handleAIAction('improve')}
+              disabled={aiLoading || !body.trim()}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {aiLoading && aiAction === 'improve' ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <FileText className="w-3.5 h-3.5" />
+              )}
+              Cải thiện
+            </button>
+
+            {/* Shorter */}
+            <button
+              type="button"
+              onClick={() => handleAIAction('shorter')}
+              disabled={aiLoading || !body.trim()}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {aiLoading && aiAction === 'shorter' ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Minus className="w-3.5 h-3.5" />
+              )}
+              Ngắn hơn
+            </button>
+
+            {/* Longer */}
+            <button
+              type="button"
+              onClick={() => handleAIAction('longer')}
+              disabled={aiLoading || !body.trim()}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {aiLoading && aiAction === 'longer' ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Plus className="w-3.5 h-3.5" />
+              )}
+              Dài hơn
+            </button>
+
+            {/* Formal */}
+            <button
+              type="button"
+              onClick={() => handleAIAction('formal')}
+              disabled={aiLoading || !body.trim()}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {aiLoading && aiAction === 'formal' ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Briefcase className="w-3.5 h-3.5" />
+              )}
+              Trang trọng
+            </button>
+
+            {/* Friendly */}
+            <button
+              type="button"
+              onClick={() => handleAIAction('friendly')}
+              disabled={aiLoading || !body.trim()}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {aiLoading && aiAction === 'friendly' ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Smile className="w-3.5 h-3.5" />
+              )}
+              Thân thiện
+            </button>
+          </div>
+
+          {/* AI Write Prompt Input */}
+          {showAIPrompt && (
+            <div className="mb-3 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Wand2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <span className="text-sm font-medium text-purple-700 dark:text-purple-300">AI sẽ viết email cho bạn</span>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={aiPrompt}
+                  onChange={(e) => setAIPrompt(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAIWrite()}
+                  placeholder="Mô tả nội dung email cần viết... VD: Xin nghỉ phép 2 ngày vì lý do cá nhân"
+                  className="flex-1 px-3 py-2 text-sm border border-purple-200 dark:border-purple-700 rounded-lg bg-white dark:bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={handleAIWrite}
+                  disabled={aiLoading || !aiPrompt.trim()}
+                  className="px-4 py-2 bg-purple-500 text-white text-sm font-medium rounded-lg hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {aiLoading && aiAction === 'write' ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
+                  )}
+                  Viết
+                </button>
+              </div>
             </div>
           )}
+
+          {isFromAI && (
+            <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-[var(--secondary)] border border-[var(--border)] rounded-lg text-[14px] text-[var(--muted-foreground)]">
+              <Sparkles className="w-4 h-4 text-purple-500" strokeWidth={1.5} />
+              <span>Nội dung được tạo/chỉnh sửa bởi AI. Vui lòng xem lại trước khi gửi.</span>
+            </div>
+          )}
+
           <textarea
+            ref={textareaRef}
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder="Nội dung email..."
-            className="w-full h-full min-h-[300px] px-3 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent resize-none bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
+            className="flex-1 w-full min-h-[300px] px-3 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent resize-none bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
           />
         </div>
 

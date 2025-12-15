@@ -7,9 +7,7 @@ export default function InsightsPage() {
       <div className="max-w-4xl mx-auto py-8 px-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-[var(--primary)] flex items-center justify-center">
-            <BarChart3 className="w-5 h-5 text-[var(--primary-foreground)]" strokeWidth={1.5} />
-          </div>
+          <BarChart3 className="w-6 h-6 text-gray-500 dark:text-gray-400" strokeWidth={1.5} />
           <div>
             <h1 className="text-[20px] font-semibold text-[var(--foreground)]">
               Email Insights

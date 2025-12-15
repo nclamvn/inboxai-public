@@ -453,7 +453,7 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
           {/* Help text */}
           <div className="px-4 py-2 bg-[var(--background)] border-t border-[var(--border)]">
             <p className="text-[11px] text-[var(--muted-foreground)]">
-              Nhấn Enter để tìm · ↑↓ để chọn · Thử "email từ Shopee tuần trước"
+              {`Nhấn Enter để tìm · ↑↓ để chọn · Thử "email từ Shopee tuần trước"`}
             </p>
           </div>
         </div>

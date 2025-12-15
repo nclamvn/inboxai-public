@@ -53,17 +53,19 @@ export function EmailListCompact({
   })
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
-  // Selection state
-  const selection = selectionEnabled ? useSelection() : null
-  const { selectedIds, isSelecting, toggleSelect, isSelected, clearSelection, selectAll, setIsSelecting } = selection || {
-    selectedIds: new Set<string>(),
-    isSelecting: false,
-    toggleSelect: () => {},
-    isSelected: () => false,
-    clearSelection: () => {},
-    selectAll: () => {},
-    setIsSelecting: () => {}
-  }
+  // Selection state - always call hook to follow rules of hooks
+  const selectionHook = useSelection()
+  const { selectedIds, isSelecting, toggleSelect, isSelected, clearSelection, selectAll, setIsSelecting } = selectionEnabled
+    ? selectionHook
+    : {
+        selectedIds: new Set<string>(),
+        isSelecting: false,
+        toggleSelect: () => {},
+        isSelected: () => false,
+        clearSelection: () => {},
+        selectAll: () => {},
+        setIsSelecting: () => {}
+      }
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
@@ -203,41 +205,47 @@ export function EmailListCompact({
   }, [])
 
   // Static category styles - memoized
+  // Use CSS variables for text color to ensure correct theme contrast
   const categoryStyles = useMemo(() => ({
     work: {
-      bg: 'bg-blue-50 dark:bg-blue-900/40',
-      text: 'text-gray-900 dark:text-white font-semibold',
-      hoverBg: 'hover:bg-blue-100 dark:hover:bg-blue-900/60'
+      bg: 'bg-blue-100 dark:bg-blue-900/40',
+      text: 'text-[var(--foreground)] font-semibold',
+      hoverBg: 'hover:bg-blue-200 dark:hover:bg-blue-900/60'
     },
     personal: {
-      bg: 'bg-purple-50 dark:bg-purple-900/40',
-      text: 'text-gray-900 dark:text-white font-semibold',
-      hoverBg: 'hover:bg-purple-100 dark:hover:bg-purple-900/60'
+      bg: 'bg-purple-100 dark:bg-purple-900/40',
+      text: 'text-[var(--foreground)] font-semibold',
+      hoverBg: 'hover:bg-purple-200 dark:hover:bg-purple-900/60'
     },
     transaction: {
-      bg: 'bg-emerald-50 dark:bg-emerald-900/40',
-      text: 'text-gray-900 dark:text-white font-semibold',
-      hoverBg: 'hover:bg-emerald-100 dark:hover:bg-emerald-900/60'
+      bg: 'bg-emerald-100 dark:bg-emerald-900/40',
+      text: 'text-[var(--foreground)] font-semibold',
+      hoverBg: 'hover:bg-emerald-200 dark:hover:bg-emerald-900/60'
     },
     newsletter: {
       bg: 'bg-gray-100 dark:bg-gray-800/60',
-      text: 'text-gray-900 dark:text-white font-semibold',
+      text: 'text-[var(--foreground)] font-semibold',
       hoverBg: 'hover:bg-gray-200 dark:hover:bg-gray-800/80'
     },
     promotion: {
-      bg: 'bg-orange-50 dark:bg-orange-900/40',
-      text: 'text-gray-900 dark:text-white font-semibold',
-      hoverBg: 'hover:bg-orange-100 dark:hover:bg-orange-900/60'
+      bg: 'bg-orange-100 dark:bg-orange-900/40',
+      text: 'text-[var(--foreground)] font-semibold',
+      hoverBg: 'hover:bg-orange-200 dark:hover:bg-orange-900/60'
     },
     social: {
-      bg: 'bg-cyan-50 dark:bg-cyan-900/40',
-      text: 'text-gray-900 dark:text-white font-semibold',
-      hoverBg: 'hover:bg-cyan-100 dark:hover:bg-cyan-900/60'
+      bg: 'bg-cyan-100 dark:bg-cyan-900/40',
+      text: 'text-[var(--foreground)] font-semibold',
+      hoverBg: 'hover:bg-cyan-200 dark:hover:bg-cyan-900/60'
     },
     spam: {
-      bg: 'bg-red-50 dark:bg-red-900/40',
-      text: 'text-gray-900 dark:text-white font-semibold',
-      hoverBg: 'hover:bg-red-100 dark:hover:bg-red-900/60'
+      bg: 'bg-red-100 dark:bg-red-900/40',
+      text: 'text-[var(--foreground)] font-semibold',
+      hoverBg: 'hover:bg-red-200 dark:hover:bg-red-900/60'
+    },
+    uncategorized: {
+      bg: 'bg-gray-100 dark:bg-gray-800/40',
+      text: 'text-[var(--foreground)] font-semibold',
+      hoverBg: 'hover:bg-gray-200 dark:hover:bg-gray-800/60'
     },
   }), [])
 
@@ -255,6 +263,7 @@ export function EmailListCompact({
     promotion: 'Khuyến mãi',
     social: 'Mạng XH',
     spam: 'Spam',
+    uncategorized: 'Chưa phân loại',
   }), [])
 
   const getCategoryLabel = useCallback((category: string | null) => {
@@ -428,13 +437,13 @@ export function EmailListCompact({
         <div className="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800">
           <button
             onClick={() => selectAll(emailIds)}
-            className="text-sm text-blue-600 dark:text-blue-400 font-medium"
+            className="text-sm text-blue-700 dark:text-blue-400 font-semibold"
           >
             Chọn tất cả ({emails.length})
           </button>
           <button
             onClick={clearSelection}
-            className="text-sm text-gray-600 dark:text-gray-400"
+            className="text-sm text-gray-700 dark:text-gray-400 font-medium"
           >
             Bỏ chọn
           </button>
@@ -516,7 +525,7 @@ export function EmailListCompact({
               'w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all hidden md:flex',
               emailIsSelected
                 ? 'bg-[var(--primary)] border-[var(--primary)] text-white'
-                : 'border-[var(--border)] hover:border-[var(--primary)]',
+                : 'border-gray-500 dark:border-gray-400 hover:border-[var(--primary)]',
               !isSelecting && !emailIsSelected && 'opacity-0 group-hover:opacity-100'
             )}
           >
@@ -531,7 +540,7 @@ export function EmailListCompact({
             }}
             className={cn(
               'mt-0.5 flex-shrink-0 hidden md:block',
-              email.is_starred ? 'text-amber-500' : 'text-[var(--border)] hover:text-[var(--muted-foreground)]'
+              email.is_starred ? 'text-amber-500' : 'text-gray-500 dark:text-gray-400 hover:text-amber-400'
             )}
           >
             <Star

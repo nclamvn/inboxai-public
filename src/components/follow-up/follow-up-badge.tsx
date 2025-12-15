@@ -66,30 +66,23 @@ export function FollowUpBadge({ className, showLabel = false }: Props) {
     <button
       onClick={handleClick}
       className={cn(
-        'relative flex items-center gap-2 px-3 py-2 rounded-lg transition-colors',
+        'relative p-2 transition-colors hover:text-[var(--foreground)]',
         counts.high > 0
-          ? 'bg-red-50 dark:bg-red-500/10 text-gray-900 dark:text-white hover:bg-red-100 dark:hover:bg-red-500/20'
-          : 'bg-amber-50 dark:bg-amber-500/10 text-gray-900 dark:text-white hover:bg-amber-100 dark:hover:bg-amber-500/20',
+          ? 'text-red-500 dark:text-red-400'
+          : 'text-amber-500 dark:text-amber-400',
         className
       )}
     >
-      <Bell className="w-4 h-4" strokeWidth={1.5} />
-      {showLabel && <span className="text-[14px]">Follow-ups</span>}
+      <Bell className="w-5 h-5" strokeWidth={1.5} />
+      {showLabel && <span className="text-[14px] ml-2">Follow-ups</span>}
 
       {/* Badge count */}
       <span className={cn(
-        'flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-medium',
-        counts.high > 0
-          ? 'bg-red-500 text-white'
-          : 'bg-amber-500 text-white'
+        'absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-white',
+        counts.high > 0 ? 'bg-red-500' : 'bg-amber-500'
       )}>
         {counts.total > 99 ? '99+' : counts.total}
       </span>
-
-      {/* Pulse animation for high priority */}
-      {counts.high > 0 && (
-        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-      )}
     </button>
   )
 }

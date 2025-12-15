@@ -26,10 +26,10 @@ const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
 }
 
 const typeColors: Record<string, string> = {
-  new_email: 'bg-blue-100 dark:bg-blue-500/20 text-gray-900 dark:text-white',
-  sync_complete: 'bg-green-100 dark:bg-green-500/20 text-gray-900 dark:text-white',
-  ai_classified: 'bg-purple-100 dark:bg-purple-500/20 text-gray-900 dark:text-white',
-  important: 'bg-orange-100 dark:bg-orange-500/20 text-gray-900 dark:text-white',
+  new_email: 'text-blue-600 dark:text-blue-400',
+  sync_complete: 'text-green-600 dark:text-green-400',
+  ai_classified: 'text-purple-600 dark:text-purple-400',
+  important: 'text-orange-600 dark:text-orange-400',
 }
 
 export function NotificationDropdown() {
@@ -170,8 +170,8 @@ export function NotificationDropdown() {
                     )}
                   >
                     {/* Icon */}
-                    <div className={cn('w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0', colorClass)}>
-                      <Icon className="w-4 h-4" />
+                    <div className={cn('flex-shrink-0 mt-0.5', colorClass)}>
+                      <Icon className="w-5 h-5" />
                     </div>
 
                     {/* Content */}

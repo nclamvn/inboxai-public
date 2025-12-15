@@ -33,14 +33,15 @@ const intentIcons: Record<string, React.ComponentType<{ className?: string }>> =
   custom: Edit3,
 }
 
+// Use CSS variables for text to ensure correct theme contrast
 const intentColors: Record<string, string> = {
-  agree: 'bg-green-50 text-gray-900 dark:bg-green-500/20 dark:text-white hover:bg-green-100 dark:hover:bg-green-500/30',
-  confirm: 'bg-green-50 text-gray-900 dark:bg-green-500/20 dark:text-white hover:bg-green-100 dark:hover:bg-green-500/30',
-  decline: 'bg-red-50 text-gray-900 dark:bg-red-500/20 dark:text-white hover:bg-red-100 dark:hover:bg-red-500/30',
-  schedule: 'bg-blue-50 text-gray-900 dark:bg-blue-500/20 dark:text-white hover:bg-blue-100 dark:hover:bg-blue-500/30',
-  ask_more: 'bg-purple-50 text-gray-900 dark:bg-purple-500/20 dark:text-white hover:bg-purple-100 dark:hover:bg-purple-500/30',
-  thank: 'bg-pink-50 text-gray-900 dark:bg-pink-500/20 dark:text-white hover:bg-pink-100 dark:hover:bg-pink-500/30',
-  forward: 'bg-gray-100 text-gray-900 dark:bg-gray-500/20 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-500/30',
+  agree: 'bg-green-100 text-[var(--foreground)] dark:bg-green-500/20 hover:bg-green-200 dark:hover:bg-green-500/30',
+  confirm: 'bg-green-100 text-[var(--foreground)] dark:bg-green-500/20 hover:bg-green-200 dark:hover:bg-green-500/30',
+  decline: 'bg-red-100 text-[var(--foreground)] dark:bg-red-500/20 hover:bg-red-200 dark:hover:bg-red-500/30',
+  schedule: 'bg-blue-100 text-[var(--foreground)] dark:bg-blue-500/20 hover:bg-blue-200 dark:hover:bg-blue-500/30',
+  ask_more: 'bg-purple-100 text-[var(--foreground)] dark:bg-purple-500/20 hover:bg-purple-200 dark:hover:bg-purple-500/30',
+  thank: 'bg-pink-100 text-[var(--foreground)] dark:bg-pink-500/20 hover:bg-pink-200 dark:hover:bg-pink-500/30',
+  forward: 'bg-gray-200 text-[var(--foreground)] dark:bg-gray-500/20 hover:bg-gray-300 dark:hover:bg-gray-500/30',
 }
 
 export function SmartReply({ emailId, onReply }: SmartReplyProps) {
@@ -150,9 +151,7 @@ export function SmartReply({ emailId, onReply }: SmartReplyProps) {
         className="w-full flex items-center justify-between p-3 hover:bg-white/50 dark:hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
-            <Zap className="w-4 h-4 text-white" />
-          </div>
+          <Zap className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           <div className="text-left">
             <p className="text-sm font-semibold text-[var(--foreground)]">Gợi ý trả lời</p>
             <p className="text-xs text-[var(--foreground-muted)]">AI đề xuất - Click để chọn</p>

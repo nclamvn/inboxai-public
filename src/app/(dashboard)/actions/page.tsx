@@ -155,9 +155,7 @@ export default function ActionsPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
-              <ListTodo className="w-5 h-5 text-white" strokeWidth={1.5} />
-            </div>
+            <ListTodo className="w-6 h-6 text-gray-500 dark:text-gray-400" strokeWidth={1.5} />
             <div>
               <h1 className="text-[20px] font-semibold text-[var(--foreground)]">
                 Actions
@@ -246,7 +244,7 @@ export default function ActionsPage() {
               Chưa có action nào
             </h3>
             <p className="text-sm text-[var(--muted)] max-w-sm">
-              Mở một email và nhấn "Trích xuất Actions" để AI phân tích và tìm các việc cần làm
+              Mở một email và nhấn &quot;Trích xuất Actions&quot; để AI phân tích và tìm các việc cần làm
             </p>
           </div>
         )}
@@ -350,9 +348,7 @@ function ActionSection({
         className="w-full flex items-center justify-between p-4 hover:bg-[var(--hover)] transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', iconBg)}>
-            <Icon className={cn('w-4 h-4', iconColor)} />
-          </div>
+          <Icon className={cn('w-5 h-5', iconColor)} />
           <span className="font-semibold text-[var(--foreground)]">
             {title} ({actions.length})
           </span>
@@ -445,7 +441,7 @@ function ActionSection({
                   {/* Context quote */}
                   {action.context && (
                     <p className="mt-2 text-xs text-[var(--foreground-subtle)] italic line-clamp-2 pl-2 border-l-2 border-[var(--border)]">
-                      "{action.context}"
+                      {`"${action.context}"`}
                     </p>
                   )}
                 </div>

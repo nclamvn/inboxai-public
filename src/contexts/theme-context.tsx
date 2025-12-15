@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -17,6 +17,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('system')
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light')
   const [mounted, setMounted] = useState(false)
+  const initRef = useRef(false)
 
   // Get system preference
   const getSystemTheme = (): 'light' | 'dark' => {
@@ -51,6 +52,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Initialize on mount
   useEffect(() => {
+    // Skip if already initialized
+    if (initRef.current) return
+    initRef.current = true
+
     const savedTheme = localStorage.getItem('theme') as Theme | null
     const initialTheme = savedTheme || 'system'
     setThemeState(initialTheme)

@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { SearchBox } from '@/components/search/search-box'
 import { NotificationDropdown } from '@/components/notifications/notification-dropdown'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
@@ -39,10 +39,14 @@ export function Header() {
   const [briefing, setBriefing] = useState<BriefingData | null>(null)
   const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const supabase = createClient()
   const aiPopoverRef = useRef<HTMLDivElement>(null)
   const userMenuRef = useRef<HTMLDivElement>(null)
+
+  // Hide header on /inbox page - UnifiedTopBar handles it
+  const isInboxPage = pathname === '/inbox'
 
   // Hide header on mobile when viewing email detail
   const isViewingEmail = searchParams.get('email') !== null
@@ -140,6 +144,11 @@ export function Header() {
     return null
   }
 
+  // Hide header on inbox page - UnifiedTopBar handles everything
+  if (isInboxPage) {
+    return null
+  }
+
   return (
     <header className="h-14 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4 shadow-sm">
       {/* Search */}
@@ -160,16 +169,11 @@ export function Header() {
           <button
             type="button"
             onClick={() => setShowAIPopover(!showAIPopover)}
-            className={cn(
-              'flex items-center gap-2 h-9 px-3 rounded-lg transition-colors',
-              briefing && briefing.needsAttention > 0
-                ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
-                : 'text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'
-            )}
+            className="relative p-2 text-gray-500 dark:text-gray-400 hover:text-[var(--foreground)] transition-colors"
           >
-            <Sparkles className="w-4 h-4" strokeWidth={1.5} />
+            <Sparkles className="w-5 h-5" strokeWidth={1.5} />
             {briefing && briefing.needsAttention > 0 && (
-              <span className="text-[13px] font-medium">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
                 {briefing.needsAttention}
               </span>
             )}
@@ -210,16 +214,16 @@ export function Header() {
                         onClick={() => handleNavigateToInbox(item)}
                         className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--hover)] transition-colors text-left"
                       >
-                        <div className={cn(
-                          'w-8 h-8 rounded-lg flex items-center justify-center text-[13px] font-bold',
-                          item.type === 'urgent' && 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200',
-                          item.type === 'deadline' && 'bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200',
-                          item.type === 'waiting' && 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200',
-                          item.type === 'vip' && 'bg-violet-100 dark:bg-violet-900/50 text-violet-800 dark:text-violet-200',
-                          !['urgent', 'deadline', 'waiting', 'vip'].includes(item.type) && 'bg-[var(--secondary)] text-[var(--foreground)]'
+                        <span className={cn(
+                          'text-[14px] font-bold',
+                          item.type === 'urgent' && 'text-red-500 dark:text-red-400',
+                          item.type === 'deadline' && 'text-amber-500 dark:text-amber-400',
+                          item.type === 'waiting' && 'text-blue-500 dark:text-blue-400',
+                          item.type === 'vip' && 'text-violet-500 dark:text-violet-400',
+                          !['urgent', 'deadline', 'waiting', 'vip'].includes(item.type) && 'text-gray-500 dark:text-gray-400'
                         )}>
                           {item.count}
-                        </div>
+                        </span>
                         <span className="text-[14px] text-[var(--foreground)]">
                           {item.title}
                         </span>

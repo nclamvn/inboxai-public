@@ -4,6 +4,17 @@ import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tansta
 import { createClient } from '@/lib/supabase/client'
 import type { Email } from '@/types'
 
+interface EmailsQueryData {
+  emails: Email[]
+  total: number
+  hasMore: boolean
+}
+
+interface InfiniteEmailsData {
+  pages: EmailsQueryData[]
+  pageParams: number[]
+}
+
 interface FetchEmailsParams {
   folder?: 'inbox' | 'sent' | 'starred' | 'archive' | 'trash'
   category?: string | null
@@ -162,7 +173,7 @@ export function useUpdateEmailMutation() {
       const previousData = queryClient.getQueriesData({ queryKey: ['emails'] })
 
       // Optimistically update
-      queryClient.setQueriesData({ queryKey: ['emails'] }, (old: any) => {
+      queryClient.setQueriesData({ queryKey: ['emails'] }, (old: EmailsQueryData | undefined) => {
         if (!old) return old
         return {
           ...old,
@@ -173,11 +184,11 @@ export function useUpdateEmailMutation() {
       })
 
       // Update infinite query data too
-      queryClient.setQueriesData({ queryKey: ['emails-infinite'] }, (old: any) => {
+      queryClient.setQueriesData({ queryKey: ['emails-infinite'] }, (old: InfiniteEmailsData | undefined) => {
         if (!old?.pages) return old
         return {
           ...old,
-          pages: old.pages.map((page: any) => ({
+          pages: old.pages.map((page: EmailsQueryData) => ({
             ...page,
             emails: page.emails?.map((e: Email) =>
               e.id === emailId ? { ...e, ...updates } : e

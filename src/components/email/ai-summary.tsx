@@ -2,10 +2,10 @@
 
 /**
  * AI Summary Component
- * Fixed: Tuân theo Smart Allocation - chỉ auto cho categories phù hợp
+ * Fixed: Parse JSON summary data và hiển thị bullet points
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Sparkles, ChevronDown, ChevronUp, Loader2, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -16,6 +16,60 @@ interface AISummaryProps {
   bodyLength?: number;
   existingSummary?: string | null;
   className?: string;
+}
+
+// Parse summary data - có thể là string, JSON string, hoặc object
+function parseSummaryData(data: unknown): string[] | null {
+  if (!data) return null;
+
+  // Nếu đã là array of strings
+  if (Array.isArray(data)) {
+    return data.filter(item => typeof item === 'string');
+  }
+
+  // Nếu là string, thử parse JSON
+  if (typeof data === 'string') {
+    // Nếu bắt đầu bằng { hoặc [, thử parse JSON
+    if (data.startsWith('{') || data.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(data);
+        // Recursive call để xử lý parsed data
+        return parseSummaryData(parsed);
+      } catch {
+        // Không phải JSON, trả về như single item
+        return [data];
+      }
+    }
+    // Plain string - split by newlines hoặc trả về single item
+    if (data.includes('\n')) {
+      return data.split('\n').filter(line => line.trim());
+    }
+    return [data];
+  }
+
+  // Nếu là object
+  if (typeof data === 'object' && data !== null) {
+    const obj = data as Record<string, unknown>;
+
+    // Check các field phổ biến
+    if (Array.isArray(obj.summary)) {
+      return obj.summary.filter(item => typeof item === 'string');
+    }
+    if (typeof obj.summary === 'string') {
+      return [obj.summary];
+    }
+    if (Array.isArray(obj.bullets)) {
+      return obj.bullets.filter(item => typeof item === 'string');
+    }
+    if (Array.isArray(obj.points)) {
+      return obj.points.filter(item => typeof item === 'string');
+    }
+    if (typeof obj.text === 'string') {
+      return [obj.text];
+    }
+  }
+
+  return null;
 }
 
 // Categories that should AUTO-enable summary
@@ -237,8 +291,11 @@ export function AISummary({
     );
   }
 
+  // Parse summary into bullet points
+  const summaryBullets = useMemo(() => parseSummaryData(summary), [summary]);
+
   // Show summary
-  if (!summary) {
+  if (!summary || !summaryBullets || summaryBullets.length === 0) {
     return null;
   }
 
@@ -258,11 +315,11 @@ export function AISummary({
           <div className="p-1 rounded bg-blue-100 dark:bg-blue-900/30">
             <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
           </div>
-          <span className="text-sm font-medium text-gray-900 dark:text-white">
+          <span className="text-sm font-medium text-[var(--foreground)]">
             Tóm tắt AI
           </span>
           {category && (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+            <span className="text-xs px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-800 text-[var(--foreground)]">
               {category}
             </span>
           )}
@@ -274,12 +331,25 @@ export function AISummary({
         )}
       </button>
 
-      {/* Content */}
+      {/* Content - Bullet Points - Use CSS variables for theme-aware colors */}
       {isExpanded && (
         <div className="px-3 pb-3 pt-0">
-          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-            {summary}
-          </p>
+          {summaryBullets.length === 1 ? (
+            <p className="text-sm leading-relaxed font-semibold text-[var(--foreground)]">
+              {summaryBullets[0]}
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {summaryBullets.map((bullet, index) => (
+                <li key={index} className="flex items-start gap-2.5 text-sm">
+                  <span className="mt-0.5 flex-shrink-0 text-blue-600 dark:text-blue-400 font-bold text-base">•</span>
+                  <span className="leading-relaxed font-semibold text-[var(--foreground)]">
+                    {bullet}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </div>

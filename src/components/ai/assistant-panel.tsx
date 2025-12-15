@@ -111,9 +111,7 @@ export function AssistantPanel({ onSelectEmail, onRefresh }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]">
         <div className="flex items-center gap-3">
-          <IconBox variant="primary" size="sm">
-            <Sparkles className="w-4 h-4" strokeWidth={1.5} />
-          </IconBox>
+          <Sparkles className="w-5 h-5 text-gray-500 dark:text-gray-400" strokeWidth={1.5} />
           <div>
             <p className="text-[14px] font-semibold text-[var(--foreground)]">
               {data.greeting}, sếp!
@@ -155,9 +153,14 @@ export function AssistantPanel({ onSelectEmail, onRefresh }: Props) {
                   onClick={() => item.emailIds[0] && onSelectEmail?.(item.emailIds[0])}
                   className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--card)] border border-transparent hover:border-[var(--border)] transition-all text-left group"
                 >
-                  <IconBox variant={getVariant() as 'red' | 'amber' | 'blue' | 'violet' | 'default'} size="sm">
-                    <Icon className="w-4 h-4" strokeWidth={1.5} />
-                  </IconBox>
+                  <Icon className={cn(
+                    'w-5 h-5 flex-shrink-0',
+                    getVariant() === 'red' && 'text-red-500 dark:text-red-400',
+                    getVariant() === 'amber' && 'text-amber-500 dark:text-amber-400',
+                    getVariant() === 'blue' && 'text-blue-500 dark:text-blue-400',
+                    getVariant() === 'violet' && 'text-violet-500 dark:text-violet-400',
+                    getVariant() === 'default' && 'text-gray-500 dark:text-gray-400'
+                  )} strokeWidth={1.5} />
                   <div className="flex-1 min-w-0">
                     <p className="text-[14px] font-medium text-[var(--foreground)]">
                       {item.title}
@@ -187,13 +190,11 @@ export function AssistantPanel({ onSelectEmail, onRefresh }: Props) {
                 className="flex items-center justify-between p-3 rounded-xl bg-[var(--card)] border border-[var(--border)]"
               >
                 <div className="flex items-center gap-3">
-                  <IconBox variant="default" size="sm">
-                    {item.action === 'archive' ? (
-                      <Archive className="w-4 h-4" strokeWidth={1.5} />
-                    ) : (
-                      <Trash2 className="w-4 h-4" strokeWidth={1.5} />
-                    )}
-                  </IconBox>
+                  {item.action === 'archive' ? (
+                    <Archive className="w-5 h-5 text-gray-500 dark:text-gray-400" strokeWidth={1.5} />
+                  ) : (
+                    <Trash2 className="w-5 h-5 text-gray-500 dark:text-gray-400" strokeWidth={1.5} />
+                  )}
                   <div>
                     <p className="text-[14px] font-medium text-[var(--foreground)]">
                       {item.title}

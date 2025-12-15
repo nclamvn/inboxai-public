@@ -66,9 +66,7 @@ export function UrgentAlert({ onSelectEmail }: Props) {
           style={{ animationDelay: `${index * 100}ms` }}
         >
           <div className="flex items-start gap-3">
-            <IconBox variant="red" size="sm">
-              <AlertCircle className="w-4 h-4" strokeWidth={1.5} />
-            </IconBox>
+            <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
             <div className="flex-1 min-w-0">
               <p className="text-[12px] text-gray-900 dark:text-white font-medium mb-1">
                 Email quan trọng

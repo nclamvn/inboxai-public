@@ -455,3 +455,24 @@ p {
 .dark .email-content img {
   opacity: 0.95;
 }
+
+/* ========== AI BOTTOM BAR STYLING ========== */
+
+/* Hide AI bottom bar scrollbar but allow scroll */
+.ai-bottom-bar-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.ai-bottom-bar-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ai-bottom-bar-content::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.5);
+  border-radius: 2px;
+}
+
+.ai-bottom-bar-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.7);
+}

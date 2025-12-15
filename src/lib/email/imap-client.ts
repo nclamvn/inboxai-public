@@ -302,7 +302,7 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
       console.log(`[SYNC] UIDs to fetch: ${uidsToFetch.slice(0, 5).join(', ')}${uidsToFetch.length > 5 ? '...' : ''} (${uidsToFetch.length} total)`)
       console.log(`[SYNC] UID range: ${Math.min(...uidsToFetch)} to ${Math.max(...uidsToFetch)}`)
 
-      let highestUid: number = Math.max(...uidsToFetch)
+      const highestUid: number = Math.max(...uidsToFetch)
 
       // ========================================
       // OPTIMIZED: Process in batches

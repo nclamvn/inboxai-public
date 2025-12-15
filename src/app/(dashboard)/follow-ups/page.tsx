@@ -51,9 +51,9 @@ const typeIcons: Record<string, React.ComponentType<{ className?: string; stroke
 }
 
 const priorityColors: Record<string, { bg: string; text: string; badge: 'urgent' | 'warning' | 'info' }> = {
-  high: { bg: 'bg-red-50 dark:bg-red-500/10', text: 'text-gray-900 dark:text-white', badge: 'urgent' },
-  medium: { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-gray-900 dark:text-white', badge: 'warning' },
-  low: { bg: 'bg-blue-50 dark:bg-blue-500/10', text: 'text-gray-900 dark:text-white', badge: 'info' }
+  high: { bg: 'bg-red-100 dark:bg-red-500/20', text: 'text-red-500 dark:text-red-400', badge: 'urgent' },
+  medium: { bg: 'bg-amber-100 dark:bg-amber-500/20', text: 'text-amber-500 dark:text-amber-400', badge: 'warning' },
+  low: { bg: 'bg-blue-100 dark:bg-blue-500/20', text: 'text-blue-500 dark:text-blue-400', badge: 'info' }
 }
 
 export default function FollowUpsPage() {
@@ -168,9 +168,7 @@ export default function FollowUpsPage() {
       <div className="border-b border-[var(--border)] bg-[var(--card)] px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" strokeWidth={1.5} />
-            </div>
+            <Sparkles className="w-6 h-6 text-gray-500 dark:text-gray-400" strokeWidth={1.5} />
             <div>
               <h1 className="text-[20px] font-semibold text-[var(--foreground)]">
                 Follow-ups
@@ -220,7 +218,7 @@ export default function FollowUpsPage() {
               'px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors',
               filter === 'high'
                 ? 'bg-red-500 text-white'
-                : 'bg-red-50 dark:bg-red-500/10 text-gray-900 dark:text-white hover:bg-red-100 dark:hover:bg-red-500/20'
+                : 'bg-red-100 dark:bg-red-500/20 text-[var(--foreground)] hover:bg-red-200 dark:hover:bg-red-500/30'
             )}
           >
             Quan trọng ({counts.high})
@@ -231,7 +229,7 @@ export default function FollowUpsPage() {
               'px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors',
               filter === 'medium'
                 ? 'bg-amber-500 text-white'
-                : 'bg-amber-50 dark:bg-amber-500/10 text-gray-900 dark:text-white hover:bg-amber-100 dark:hover:bg-amber-500/20'
+                : 'bg-amber-100 dark:bg-amber-500/20 text-[var(--foreground)] hover:bg-amber-200 dark:hover:bg-amber-500/30'
             )}
           >
             Trung bình ({counts.medium})
@@ -242,7 +240,7 @@ export default function FollowUpsPage() {
               'px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors',
               filter === 'low'
                 ? 'bg-blue-500 text-white'
-                : 'bg-blue-50 dark:bg-blue-500/10 text-gray-900 dark:text-white hover:bg-blue-100 dark:hover:bg-blue-500/20'
+                : 'bg-blue-100 dark:bg-blue-500/20 text-[var(--foreground)] hover:bg-blue-200 dark:hover:bg-blue-500/30'
             )}
           >
             Thấp ({counts.low})
@@ -293,12 +291,7 @@ export default function FollowUpsPage() {
                 >
                   <div className="flex items-start gap-4">
                     {/* Type Icon */}
-                    <div className={cn(
-                      'w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0',
-                      colors.bg
-                    )}>
-                      <TypeIcon className={cn('w-5 h-5', colors.text)} strokeWidth={1.5} />
-                    </div>
+                    <TypeIcon className={cn('w-5 h-5 flex-shrink-0 mt-0.5', colors.text)} strokeWidth={1.5} />
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">

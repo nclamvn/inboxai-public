@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Star, Archive, Trash2, Reply, Forward, MoreHorizontal, X, AlertCircle, Clock, Sparkles, Loader2, MessageSquarePlus } from 'lucide-react'
+import { Star, Archive, Trash2, Reply, Forward, MoreHorizontal, X, AlertCircle, Clock, Sparkles, Loader2, MessageSquarePlus, Printer, Download, AlertTriangle } from 'lucide-react'
 import { cn, formatDate } from '@/lib/utils'
 import { useBehaviorTracker } from '@/hooks/use-behavior-tracker'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
@@ -42,6 +42,8 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
   const router = useRouter()
   const [classifying, setClassifying] = useState(false)
   const [showReplyAssistant, setShowReplyAssistant] = useState(false)
+  const [showMoreMenu, setShowMoreMenu] = useState(false)
+  const moreMenuRef = useRef<HTMLDivElement>(null)
   const priorityInfo = priorityLabels[email.priority || 3]
 
   // Behavior tracking
@@ -74,6 +76,17 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
       }
     }
   }, [trackRead])
+
+  // Close more menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setShowMoreMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const handleClassify = async () => {
     setClassifying(true)
@@ -191,9 +204,80 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
           >
             <MessageSquarePlus className="w-5 h-5" strokeWidth={1.5} />
           </button>
-          <button className="p-2 text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] rounded-lg transition-colors">
-            <MoreHorizontal className="w-5 h-5" strokeWidth={1.5} />
-          </button>
+          {/* More Menu Dropdown */}
+          <div className="relative" ref={moreMenuRef}>
+            <button
+              onClick={() => setShowMoreMenu(!showMoreMenu)}
+              className="p-2 text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] rounded-lg transition-colors"
+            >
+              <MoreHorizontal className="w-5 h-5" strokeWidth={1.5} />
+            </button>
+
+            {showMoreMenu && (
+              <div className="absolute right-0 top-full mt-1 w-48 bg-[var(--card)] rounded-lg border border-[var(--border)] shadow-lg z-50 py-1">
+                {/* Print */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMoreMenu(false)
+                    window.print()
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-left text-[13px] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors"
+                >
+                  <Printer className="w-4 h-4" strokeWidth={1.5} />
+                  In email
+                </button>
+
+                {/* Download */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMoreMenu(false)
+                    const content = `From: ${email.from_name} <${email.from_address}>\nTo: ${email.to_address}\nDate: ${email.received_at}\nSubject: ${email.subject}\n\n${email.body_text || ''}`
+                    const blob = new Blob([content], { type: 'text/plain' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `${email.subject || 'email'}.eml`
+                    a.click()
+                    URL.revokeObjectURL(url)
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-left text-[13px] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors"
+                >
+                  <Download className="w-4 h-4" strokeWidth={1.5} />
+                  Tải xuống
+                </button>
+
+                <div className="my-1 border-t border-[var(--border)]" />
+
+                {/* Report Phishing */}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setShowMoreMenu(false)
+                    try {
+                      await fetch('/api/ai/feedback', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          emailId: email.id,
+                          feedbackType: 'report_phishing',
+                          context: { from: email.from_address, subject: email.subject }
+                        })
+                      })
+                      alert('Đã báo cáo email lừa đảo. Cảm ơn bạn!')
+                    } catch {
+                      alert('Không thể báo cáo. Vui lòng thử lại.')
+                    }
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-left text-[13px] text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  <AlertTriangle className="w-4 h-4" strokeWidth={1.5} />
+                  Báo cáo lừa đảo
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

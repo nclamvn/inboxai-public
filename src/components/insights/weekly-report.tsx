@@ -112,23 +112,18 @@ export function WeeklyReportView() {
           </p>
         </div>
         <div className={cn(
-          "flex items-center gap-2 px-4 py-2 rounded-full",
-          report.productivity.grade === 'Xuất sắc' && "bg-green-100 dark:bg-green-900/30 text-gray-900 dark:text-white",
-          report.productivity.grade === 'Tốt' && "bg-blue-100 dark:bg-blue-900/30 text-gray-900 dark:text-white",
-          report.productivity.grade === 'Khá' && "bg-amber-100 dark:bg-amber-900/30 text-gray-900 dark:text-white",
-          report.productivity.grade === 'Cần cải thiện' && "bg-red-100 dark:bg-red-900/30 text-gray-900 dark:text-white"
+          "flex items-center gap-2 px-4 py-2 rounded-full !text-gray-900 dark:!text-gray-100",
+          report.productivity.grade === 'Xuất sắc' && "bg-green-100 dark:bg-green-900/30",
+          report.productivity.grade === 'Tốt' && "bg-blue-100 dark:bg-blue-900/30",
+          report.productivity.grade === 'Khá' && "bg-amber-100 dark:bg-amber-900/30",
+          report.productivity.grade === 'Cần cải thiện' && "bg-red-100 dark:bg-red-900/30"
         )}>
           <span className="text-[24px] font-semibold">{report.productivity.score}</span>
           <div className="text-left">
-            <p className="text-[11px] uppercase tracking-wide opacity-70">Điểm</p>
-            <p className="text-[13px] font-medium">{report.productivity.grade}</p>
+            <p className="text-[11px] uppercase tracking-wide font-semibold">Điểm</p>
+            <p className="text-[13px] font-semibold">{report.productivity.grade}</p>
           </div>
-          <TrendIcon className={cn(
-            "w-5 h-5 ml-2",
-            report.productivity.trend === 'up' && "text-gray-900 dark:text-white",
-            report.productivity.trend === 'down' && "text-gray-900 dark:text-white",
-            report.productivity.trend === 'stable' && "text-[var(--muted)]"
-          )} strokeWidth={1.5} />
+          <TrendIcon className="w-5 h-5 ml-2" strokeWidth={1.5} />
         </div>
       </div>
 
@@ -175,8 +170,8 @@ export function WeeklyReportView() {
                 </span>
                 <span className={cn(
                   "text-[13px] font-medium flex items-center",
-                  item.change > 0 && "text-gray-900 dark:text-white",
-                  item.change < 0 && "text-gray-900 dark:text-white",
+                  item.change > 0 && "text-green-700 dark:text-green-400",
+                  item.change < 0 && "text-red-700 dark:text-red-400",
                   item.change === 0 && "text-[var(--muted)]"
                 )}>
                   {item.change > 0 ? '+' : ''}{item.changePercent}%
@@ -251,12 +246,10 @@ export function WeeklyReportView() {
                   key={index}
                   className="flex items-center gap-4 p-4 rounded-xl border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--hover)] transition-colors cursor-pointer"
                 >
-                  <IconBox variant={getVariant() as 'red' | 'amber' | 'blue' | 'emerald' | 'default'} size="md">
-                    {suggestion.type === 'unsubscribe' && <UserX className="w-5 h-5" strokeWidth={1.5} />}
-                    {suggestion.type === 'vip' && <Star className="w-5 h-5" strokeWidth={1.5} />}
-                    {suggestion.type === 'rule' && <Zap className="w-5 h-5" strokeWidth={1.5} />}
-                    {suggestion.type === 'habit' && <Clock className="w-5 h-5" strokeWidth={1.5} />}
-                  </IconBox>
+                  {suggestion.type === 'unsubscribe' && <UserX className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0" strokeWidth={1.5} />}
+                  {suggestion.type === 'vip' && <Star className="w-5 h-5 text-amber-500 dark:text-amber-400 flex-shrink-0" strokeWidth={1.5} />}
+                  {suggestion.type === 'rule' && <Zap className="w-5 h-5 text-blue-500 dark:text-blue-400 flex-shrink-0" strokeWidth={1.5} />}
+                  {suggestion.type === 'habit' && <Clock className="w-5 h-5 text-emerald-500 dark:text-emerald-400 flex-shrink-0" strokeWidth={1.5} />}
                   <div className="flex-1">
                     <p className="text-[14px] font-medium text-[var(--foreground)]">
                       {suggestion.title}

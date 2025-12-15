@@ -137,7 +137,7 @@ export const TRIGGER_DISPLAY: Record<TriggerType, { label: string; labelVi: stri
 export interface AIFeatureUIState {
   featureKey: AIFeatureKey;
   status: 'idle' | 'loading' | 'success' | 'error';
-  data: any;
+  data: unknown;
   error?: string;
   isAutoTriggered: boolean;
   triggerReason?: TriggerType;

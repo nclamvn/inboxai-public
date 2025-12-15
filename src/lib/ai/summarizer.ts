@@ -1,4 +1,5 @@
 import OpenAI from 'openai'
+import { aiLogger } from '@/lib/logger'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!
@@ -62,8 +63,9 @@ export async function summarizeEmail(
   // Count words
   const wordCount = bodyText.split(/\s+/).filter(w => w.length > 0).length
 
-  // Don't summarize short emails
-  if (wordCount < 80) {
+  // Don't summarize very short emails
+  if (wordCount < 30) {
+    aiLogger.debug('[SUMMARIZER] Skipped - word count:', wordCount, '< 30');
     return null
   }
 
@@ -107,7 +109,7 @@ export async function summarizeEmail(
       }
     }
   } catch (error) {
-    console.error('[SUMMARIZER] Error:', error)
+    aiLogger.error('[SUMMARIZER] Error:', error)
   }
 
   return null
@@ -117,7 +119,7 @@ export async function summarizeEmail(
 export function needsSummary(bodyText: string | null): boolean {
   if (!bodyText) return false
   const wordCount = bodyText.split(/\s+/).filter(w => w.length > 0).length
-  return wordCount >= 80
+  return wordCount >= 30
 }
 
 // Check based on character count (for UI)
