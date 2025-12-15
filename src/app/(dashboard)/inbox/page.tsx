@@ -539,18 +539,18 @@ function InboxContent() {
       {briefingFilter && effectiveViewMode !== 'full' && (
         <div className="px-4 py-2 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800/50 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" strokeWidth={1.5} />
-            <span className="text-[13px] font-medium text-amber-800 dark:text-amber-200">
+            <Sparkles className="w-4 h-4 text-amber-700 dark:text-amber-400" strokeWidth={1.5} />
+            <span className="text-[13px] font-medium text-gray-900 dark:text-amber-200">
               {briefingFilter.title}
             </span>
-            <span className="text-[12px] text-amber-600 dark:text-amber-400">
+            <span className="text-[12px] text-gray-700 dark:text-amber-400">
               ({filteredEmails.length} email)
             </span>
           </div>
           <button
             type="button"
             onClick={handleClearBriefingFilter}
-            className="p-1 rounded hover:bg-amber-200/50 dark:hover:bg-amber-800/50 text-amber-600 dark:text-amber-400 transition-colors"
+            className="p-1 rounded hover:bg-amber-200/50 dark:hover:bg-amber-800/50 text-gray-600 dark:text-amber-400 transition-colors"
             title="Xóa bộ lọc"
           >
             <X className="w-4 h-4" strokeWidth={1.5} />
