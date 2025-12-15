@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
+import { createClient as createSupabaseAdmin, createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { fetchEmailBody } from '@/lib/email/imap-client'
 
 // Allow up to 30 seconds for IMAP fetch
@@ -11,12 +11,39 @@ const supabaseAdmin = createSupabaseAdmin(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Helper to get user from Bearer token (for mobile) or cookies (for web)
+async function getAuthenticatedUser(request: NextRequest) {
+  // First try Bearer token (mobile app)
+  const authHeader = request.headers.get('authorization')
+  const token = authHeader?.replace('Bearer ', '')
+
+  if (token) {
+    const supabase = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      }
+    )
+    const { data: { user }, error } = await supabase.auth.getUser()
+    if (user && !error) {
+      return { user, supabase }
+    }
+  }
+
+  // Fallback to cookie-based auth (web app)
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  return { user, supabase }
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ emailId: string }> }
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, supabase } = await getAuthenticatedUser(request)
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -113,8 +140,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ emailId: string }> }
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, supabase } = await getAuthenticatedUser(request)
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
