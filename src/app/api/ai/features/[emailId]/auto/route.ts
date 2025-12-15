@@ -2,10 +2,14 @@
  * POST /api/ai/features/[emailId]/auto
  * Batch run all auto-enabled AI features in PARALLEL
  * Optimized for single API call instead of multiple sequential calls
+ *
+ * Supports both:
+ * - Cookie-based auth (web)
+ * - Bearer token auth (mobile apps)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClientForRequest } from '@/lib/supabase/server';
 import {
   getFeatureAllocationForEmail,
   getAIFeatureAllocationService,
@@ -85,9 +89,9 @@ export async function POST(
     await ensureAIModuleInitialized();
     aiLogger.debug('[BatchAPI] Step 2 - AI module initialized');
 
-    // Step 3: Create Supabase client
+    // Step 3: Create Supabase client (supports both Bearer token and cookies)
     aiLogger.debug('[BatchAPI] Step 3 - Creating Supabase client...');
-    const supabase = await createClient();
+    const supabase = await createClientForRequest(request);
     aiLogger.debug('[BatchAPI] Step 3 - Supabase client created');
 
     // Step 4: Get current user

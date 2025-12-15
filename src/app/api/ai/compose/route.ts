@@ -1,10 +1,11 @@
 /**
  * POST /api/ai/compose
  * AI-assisted email composition
+ * Supports both mobile (Bearer token) and web (cookies) auth
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClientForRequest } from '@/lib/supabase/server';
 import OpenAI from 'openai';
 import { aiLogger } from '@/lib/logger';
 
@@ -73,8 +74,8 @@ CHỉ trả về nội dung đã chỉnh sửa, không giải thích.`,
 
 export async function POST(request: NextRequest) {
   try {
-    // Auth check
-    const supabase = await createClient();
+    // Auth check (supports both Bearer token and cookies)
+    const supabase = await createClientForRequest(request);
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {

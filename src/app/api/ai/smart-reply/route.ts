@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClientForRequest } from '@/lib/supabase/server'
 import { generateSmartReplies, composeFromBullets, ReplyTone } from '@/lib/ai/smart-reply'
 
 export const maxDuration = 30
 
-// GET - Generate smart reply suggestions
+// GET - Generate smart reply suggestions (supports mobile + web auth)
 export async function GET(request: NextRequest) {
-  const supabase = await createClient()
+  const supabase = await createClientForRequest(request)
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
@@ -60,9 +60,9 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(result)
 }
 
-// POST - Compose from bullets
+// POST - Compose from bullets (supports mobile + web auth)
 export async function POST(request: NextRequest) {
-  const supabase = await createClient()
+  const supabase = await createClientForRequest(request)
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
