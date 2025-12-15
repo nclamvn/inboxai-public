@@ -102,7 +102,7 @@ export const CategoryFilterSheet = memo(function CategoryFilterSheet({
         </div>
 
         {/* Categories */}
-        <div className="flex-1 overflow-y-auto py-2">
+        <div className="flex-1 overflow-y-auto py-2 pb-0">
           {CATEGORIES.map((category) => {
             const isActive = currentCategory === category.id;
             const count = emailCounts[category.id] || 0;
@@ -137,10 +137,10 @@ export const CategoryFilterSheet = memo(function CategoryFilterSheet({
               </button>
             );
           })}
-        </div>
 
-        {/* Safe area padding for iOS */}
-        <div className="h-8" />
+          {/* Safe area padding - inside scrollable for proper spacing */}
+          <div className="h-[calc(2rem+env(safe-area-inset-bottom,0px))]" />
+        </div>
       </div>
     </>
   );
