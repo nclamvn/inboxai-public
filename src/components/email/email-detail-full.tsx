@@ -395,7 +395,7 @@ export function EmailDetailFull({
                   onClick={() => {
                     setShowMoreMenu(false)
                     // Create email content for download
-                    const content = `From: ${email.from_name} <${email.from_address}>\nTo: ${email.to_address}\nDate: ${email.received_at}\nSubject: ${email.subject}\n\n${email.body_text || ''}`
+                    const content = `From: ${email.from_name} <${email.from_address}>\nTo: ${email.to_addresses?.join(', ') || ''}\nDate: ${email.received_at}\nSubject: ${email.subject}\n\n${email.body_text || ''}`
                     const blob = new Blob([content], { type: 'text/plain' })
                     const url = URL.createObjectURL(blob)
                     const a = document.createElement('a')
