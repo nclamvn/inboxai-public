@@ -138,8 +138,8 @@ export const CategoryFilterSheet = memo(function CategoryFilterSheet({
             );
           })}
 
-          {/* Safe area padding - inside scrollable for proper spacing */}
-          <div className="h-[calc(2rem+env(safe-area-inset-bottom,0px))]" />
+          {/* Safe area padding - large enough for mobile browsers */}
+          <div className="h-24" />
         </div>
       </div>
     </>
