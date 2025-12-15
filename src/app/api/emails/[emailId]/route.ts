@@ -173,3 +173,29 @@ export async function PATCH(
 
   return NextResponse.json({ email })
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ emailId: string }> }
+) {
+  const { user, supabase } = await getAuthenticatedUser(request)
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { emailId } = await params
+
+  // Soft delete - mark as deleted
+  const { error } = await supabase
+    .from('emails')
+    .update({ is_deleted: true })
+    .eq('id', emailId)
+    .eq('user_id', user.id)
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ success: true })
+}

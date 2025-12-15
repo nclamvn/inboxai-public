@@ -1,11 +1,38 @@
 /**
  * POST /api/emails/batch
  * Batch operations on multiple emails
- * Consolidates: mark-read, archive, delete, star, categorize
+ * Supports both simple format (mobile) and operations array format (web)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+
+// Helper to get user from Bearer token (for mobile) or cookies (for web)
+async function getAuthenticatedUser(request: NextRequest) {
+  const authHeader = request.headers.get('authorization');
+  const token = authHeader?.replace('Bearer ', '');
+
+  if (token) {
+    const supabase = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      }
+    );
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (user && !error) {
+      return { user, supabase };
+    }
+  }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  return { user, supabase };
+}
 
 type BatchOperation =
   | { action: 'mark_read'; emailIds: string[]; value: boolean }
@@ -19,7 +46,10 @@ type BatchOperation =
   | { action: 'set_priority'; emailIds: string[]; priority: number };
 
 interface BatchRequest {
-  operations: BatchOperation[];
+  operations?: BatchOperation[];
+  // Simple format for mobile
+  ids?: string[];
+  action?: 'archive' | 'delete' | 'read' | 'unread';
 }
 
 interface BatchResult {
@@ -33,17 +63,70 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
-    const supabase = await createClient();
+    const { user, supabase } = await getAuthenticatedUser(request);
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body: BatchRequest = await request.json();
 
+    // Handle simple format (mobile app)
+    if (body.ids && body.action) {
+      const now = new Date().toISOString();
+      let result;
+
+      switch (body.action) {
+        case 'archive':
+          result = await supabase
+            .from('emails')
+            .update({ is_archived: true, updated_at: now })
+            .eq('user_id', user.id)
+            .in('id', body.ids);
+          break;
+
+        case 'delete':
+          result = await supabase
+            .from('emails')
+            .update({ is_deleted: true, deleted_at: now })
+            .eq('user_id', user.id)
+            .in('id', body.ids);
+          break;
+
+        case 'read':
+          result = await supabase
+            .from('emails')
+            .update({ is_read: true, updated_at: now })
+            .eq('user_id', user.id)
+            .in('id', body.ids);
+          break;
+
+        case 'unread':
+          result = await supabase
+            .from('emails')
+            .update({ is_read: false, updated_at: now })
+            .eq('user_id', user.id)
+            .in('id', body.ids);
+          break;
+
+        default:
+          return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+      }
+
+      if (result.error) {
+        return NextResponse.json({ error: result.error.message }, { status: 500 });
+      }
+
+      return NextResponse.json({
+        success: true,
+        action: body.action,
+        affected: body.ids.length,
+      });
+    }
+
+    // Handle operations array format (web app)
     if (!body.operations || !Array.isArray(body.operations)) {
-      return NextResponse.json({ error: 'Invalid request: operations array required' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid request: operations array or ids/action required' }, { status: 400 });
     }
 
     if (body.operations.length === 0) {
@@ -119,7 +202,7 @@ export async function POST(request: NextRequest) {
               .from('emails')
               .delete()
               .eq('user_id', user.id)
-              .eq('is_deleted', true) // Only allow permanent delete if already in trash
+              .eq('is_deleted', true)
               .in('id', op.emailIds);
             break;
 
