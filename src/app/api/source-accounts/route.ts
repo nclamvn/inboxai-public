@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { testImapConnection, encryptPassword, EMAIL_PROVIDERS } from '@/lib/email/imap-client'
 import { testSmtpConnection } from '@/lib/email/smtp-client'
 
-// GET - List user's source accounts
+// GET - List user's source accounts with email counts
 export async function GET() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -14,15 +14,53 @@ export async function GET() {
 
   const { data: accounts, error } = await supabase
     .from('source_accounts')
-    .select('id, email_address, display_name, provider, is_active, last_sync_at, sync_error, total_emails_synced, created_at')
+    .select(`
+      id,
+      email_address,
+      display_name,
+      provider,
+      avatar_url,
+      is_primary,
+      color,
+      is_active,
+      last_sync_at,
+      sync_status,
+      sync_error,
+      total_emails_synced,
+      auth_type,
+      created_at
+    `)
     .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+    .order('is_primary', { ascending: false })
+    .order('created_at', { ascending: true })
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ accounts })
+  // Get email counts per account
+  const accountsWithCounts = await Promise.all(
+    (accounts || []).map(async (account) => {
+      const { count: totalCount } = await supabase
+        .from('emails')
+        .select('*', { count: 'exact', head: true })
+        .eq('source_account_id', account.id)
+
+      const { count: unreadCount } = await supabase
+        .from('emails')
+        .select('*', { count: 'exact', head: true })
+        .eq('source_account_id', account.id)
+        .eq('is_read', false)
+
+      return {
+        ...account,
+        email_count: totalCount || 0,
+        unread_count: unreadCount || 0,
+      }
+    })
+  )
+
+  return NextResponse.json({ accounts: accountsWithCounts })
 }
 
 // POST - Add new source account

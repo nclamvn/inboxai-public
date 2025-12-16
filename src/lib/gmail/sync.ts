@@ -63,6 +63,7 @@ async function parallelLimit<T, R>(
 
 /**
  * Get valid access token (refresh if expired)
+ * Supports both old (oauth_*) and new (access_token, etc.) column names
  */
 export async function getValidAccessToken(
   accountId: string
@@ -71,32 +72,37 @@ export async function getValidAccessToken(
 
   const { data: account } = await supabase
     .from('source_accounts')
-    .select('oauth_access_token, oauth_refresh_token, oauth_expires_at')
+    .select('access_token, refresh_token, token_expires_at, oauth_access_token, oauth_refresh_token, oauth_expires_at')
     .eq('id', accountId)
     .single();
 
   if (!account) return null;
 
+  // Support both old and new column names
+  const accessToken = account.access_token || account.oauth_access_token;
+  const refreshToken = account.refresh_token || account.oauth_refresh_token;
+  const expiresAt = account.token_expires_at || account.oauth_expires_at;
+
   // Check if token is expired
-  if (account.oauth_expires_at && isTokenExpired(new Date(account.oauth_expires_at))) {
-    if (!account.oauth_refresh_token) {
+  if (expiresAt && isTokenExpired(new Date(expiresAt))) {
+    if (!refreshToken) {
       console.error('No refresh token available');
       return null;
     }
 
     try {
       // Refresh the token
-      const newTokens = await refreshAccessToken(account.oauth_refresh_token);
-      const expiresAt = new Date(Date.now() + newTokens.expires_in * 1000);
+      const newTokens = await refreshAccessToken(refreshToken);
+      const newExpiresAt = new Date(Date.now() + newTokens.expires_in * 1000);
 
-      // Update in database
+      // Update in database using new column names
       await supabase
         .from('source_accounts')
         .update({
-          oauth_access_token: newTokens.access_token,
-          oauth_expires_at: expiresAt.toISOString(),
+          access_token: newTokens.access_token,
+          token_expires_at: newExpiresAt.toISOString(),
           ...(newTokens.refresh_token && {
-            oauth_refresh_token: newTokens.refresh_token
+            refresh_token: newTokens.refresh_token
           }),
         })
         .eq('id', accountId);
@@ -108,7 +114,7 @@ export async function getValidAccessToken(
     }
   }
 
-  return account.oauth_access_token;
+  return accessToken;
 }
 
 /**
@@ -124,10 +130,20 @@ export async function syncGmailEmails(
 ): Promise<SyncResult> {
   const supabase = getSupabaseAdmin();
 
+  // Set sync status to syncing
+  await supabase
+    .from('source_accounts')
+    .update({ sync_status: 'syncing', sync_error: null })
+    .eq('id', accountId);
+
   try {
     // Get valid access token
     const accessToken = await getValidAccessToken(accountId);
     if (!accessToken) {
+      await supabase
+        .from('source_accounts')
+        .update({ sync_status: 'error', sync_error: 'Invalid access token' })
+        .eq('id', accountId);
       return { success: false, syncedCount: 0, error: 'Invalid access token' };
     }
 
@@ -167,7 +183,8 @@ export async function syncGmailEmails(
         .from('source_accounts')
         .update({
           last_sync_at: new Date().toISOString(),
-          last_error: null,
+          sync_status: 'idle',
+          sync_error: null,
         })
         .eq('id', accountId);
 
@@ -194,7 +211,8 @@ export async function syncGmailEmails(
         .from('source_accounts')
         .update({
           last_sync_at: new Date().toISOString(),
-          last_error: null,
+          sync_status: 'idle',
+          sync_error: null,
         })
         .eq('id', accountId);
       return { success: true, syncedCount: 0 };
@@ -267,12 +285,13 @@ export async function syncGmailEmails(
       }
     }
 
-    // Update last sync time and increment total count
+    // Update last sync time, sync status and increment total count
     const { error: updateError } = await supabase
       .from('source_accounts')
       .update({
         last_sync_at: new Date().toISOString(),
-        last_error: null,
+        sync_status: 'idle',
+        sync_error: null,
       })
       .eq('id', accountId);
 
@@ -315,7 +334,8 @@ export async function syncGmailEmails(
     await supabase
       .from('source_accounts')
       .update({
-        last_error: error instanceof Error ? error.message : 'Sync failed',
+        sync_status: 'error',
+        sync_error: error instanceof Error ? error.message : 'Sync failed',
       })
       .eq('id', accountId);
 

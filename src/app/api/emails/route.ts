@@ -41,6 +41,8 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category')
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
+    const accountId = searchParams.get('account_id')
+    const accountIds = searchParams.get('account_ids')
 
     // Build query
     let query = supabase
@@ -49,9 +51,19 @@ export async function GET(request: NextRequest) {
         id, from_name, from_address, to_addresses, subject,
         received_at, is_read, is_starred, is_archived, is_deleted,
         priority, category, needs_reply, detected_deadline, direction,
-        summary, ai_confidence, snippet
+        summary, ai_confidence, snippet, source_account_id
       `)
       .eq('user_id', user.id)
+
+    // Filter by account(s) if specified
+    if (accountId) {
+      query = query.eq('source_account_id', accountId)
+    } else if (accountIds) {
+      const ids = accountIds.split(',').filter(Boolean)
+      if (ids.length > 0) {
+        query = query.in('source_account_id', ids)
+      }
+    }
 
     // Apply folder-specific filters
     switch (folder) {

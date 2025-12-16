@@ -7,9 +7,10 @@ import type { Email } from '@/types'
 interface UseEmailsOptions {
   folder?: 'inbox' | 'sent' | 'starred' | 'archive' | 'trash'
   pageSize?: number
+  accountIds?: string[] // Filter by specific account(s)
 }
 
-export function useEmails({ folder = 'inbox', pageSize = 200 }: UseEmailsOptions = {}) {
+export function useEmails({ folder = 'inbox', pageSize = 200, accountIds }: UseEmailsOptions = {}) {
   const [emails, setEmails] = useState<Email[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -27,9 +28,14 @@ export function useEmails({ folder = 'inbox', pageSize = 200 }: UseEmailsOptions
         id, from_name, from_address, to_addresses, subject,
         received_at, is_read, is_starred, is_archived, is_deleted,
         priority, category, needs_reply, detected_deadline, direction,
-        summary, ai_confidence
+        summary, ai_confidence, source_account_id
       `)
       .eq('user_id', userId)
+
+    // Apply account filter if specified
+    if (accountIds && accountIds.length > 0) {
+      query = query.in('source_account_id', accountIds)
+    }
 
     // Apply folder-specific filters
     switch (folder) {
@@ -60,7 +66,7 @@ export function useEmails({ folder = 'inbox', pageSize = 200 }: UseEmailsOptions
     }
 
     return query
-  }, [folder, supabase])
+  }, [folder, accountIds, supabase])
 
   // Fetch initial page
   const fetchEmails = useCallback(async () => {

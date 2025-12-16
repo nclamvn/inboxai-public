@@ -23,10 +23,12 @@ export interface GoogleUserInfo {
 
 /**
  * Generate OAuth authorization URL
+ * @param state - Optional state for CSRF protection
+ * @param customRedirectUri - Optional custom redirect URI (for add account flow)
  */
-export function getGoogleAuthUrl(state?: string): string {
+export function getGoogleAuthUrl(state?: string, customRedirectUri?: string): string {
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+  const redirectUri = customRedirectUri || process.env.GOOGLE_REDIRECT_URI;
 
   if (!clientId || !redirectUri) {
     throw new Error('Missing Google OAuth configuration');
@@ -55,11 +57,13 @@ export function getGoogleAuthUrl(state?: string): string {
 
 /**
  * Exchange authorization code for tokens
+ * @param code - Authorization code from OAuth callback
+ * @param customRedirectUri - Optional custom redirect URI (must match the one used in getGoogleAuthUrl)
  */
-export async function exchangeCodeForTokens(code: string): Promise<GoogleTokens> {
+export async function exchangeCodeForTokens(code: string, customRedirectUri?: string): Promise<GoogleTokens> {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+  const redirectUri = customRedirectUri || process.env.GOOGLE_REDIRECT_URI;
 
   if (!clientId || !clientSecret || !redirectUri) {
     throw new Error('Missing Google OAuth configuration');

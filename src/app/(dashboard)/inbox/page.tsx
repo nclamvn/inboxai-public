@@ -16,6 +16,7 @@ import { SelectionToolbar } from '@/components/email/selection-toolbar'
 import { UnifiedTopBar } from '@/components/layout/unified-top-bar'
 import { MobileInboxHeader } from '@/components/layout/mobile-inbox-header'
 import { CategoryFilterSheet } from '@/components/layout/category-filter-sheet'
+import { AccountSwitcher } from '@/components/email/account-switcher'
 
 // Dynamic imports for code splitting - heavy components loaded on demand
 const EmailListCompact = dynamic(
@@ -60,7 +61,14 @@ interface BriefingFilter {
 function InboxContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { emails, loading, loadingMore, hasMore, toggleStar, archiveEmail, deleteEmail, markAsRead, refetch, loadMore } = useEmails({ folder: 'inbox' })
+
+  // Account filter state
+  const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([])
+
+  const { emails, loading, loadingMore, hasMore, toggleStar, archiveEmail, deleteEmail, markAsRead, refetch, loadMore } = useEmails({
+    folder: 'inbox',
+    accountIds: selectedAccountIds.length > 0 ? selectedAccountIds : undefined
+  })
 
   // Use media query hook for responsive detection
   const isMobile = useMediaQuery('(max-width: 768px)')
@@ -524,15 +532,28 @@ function InboxContent() {
           title={activeFilter ? CATEGORY_LABELS[activeFilter] || 'Hộp thư' : 'Hộp thư'}
         />
       ) : (
-        <UnifiedTopBar
-          currentFilter={activeFilter || 'all'}
-          onFilterChange={handleFilterChange}
-          emailCounts={filterCounts}
-          totalEmails={filteredEmails.length}
-          onSearch={handleSearch}
-          onMenuClick={() => {/* TODO: Toggle sidebar */}}
-          onProfileClick={() => router.push('/settings')}
-        />
+        <div className="flex items-center border-b border-[var(--border)] bg-[var(--card)]">
+          {/* Account Switcher */}
+          <div className="pl-4 py-2 flex-shrink-0">
+            <AccountSwitcher
+              selectedAccountIds={selectedAccountIds}
+              onAccountChange={setSelectedAccountIds}
+            />
+          </div>
+          {/* Rest of top bar - remove its border since wrapper has it */}
+          <div className="flex-1">
+            <UnifiedTopBar
+              currentFilter={activeFilter || 'all'}
+              onFilterChange={handleFilterChange}
+              emailCounts={filterCounts}
+              totalEmails={filteredEmails.length}
+              onSearch={handleSearch}
+              onMenuClick={() => {/* TODO: Toggle sidebar */}}
+              onProfileClick={() => router.push('/settings')}
+              noBorder
+            />
+          </div>
+        </div>
       )}
 
       {/* Briefing Filter Banner - Show when filtering by AI Thư Ký */}
