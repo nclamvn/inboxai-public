@@ -5,6 +5,7 @@ import { QueryProvider } from '@/providers/query-provider'
 import { ThemeProvider } from '@/contexts/theme-context'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { OfflineBanner } from '@/components/offline-banner'
+import { WebVitalsReporter } from '@/components/web-vitals-reporter'
 
 const inter = Inter({
   subsets: ['latin', 'vietnamese'],
@@ -101,6 +102,7 @@ export default function RootLayout({
         <ThemeProvider>
           <ErrorBoundary>
             <OfflineBanner />
+            <WebVitalsReporter />
             <QueryProvider>
               {children}
             </QueryProvider>

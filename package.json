@@ -48,7 +48,8 @@
     "react-dom": "19.2.1",
     "resend": "^6.6.0",
     "swr": "^2.3.7",
-    "tailwind-merge": "^3.4.0"
+    "tailwind-merge": "^3.4.0",
+    "web-vitals": "^5.1.0"
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^16.0.10",
