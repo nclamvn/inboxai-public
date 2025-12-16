@@ -1,105 +1,242 @@
-'use client';
+'use client'
 
 /**
- * Global Error Boundary
- * Catches unhandled errors and displays a friendly fallback UI
+ * Global Error Boundary System
+ * - ErrorBoundary: Class component for catching unhandled errors
+ * - SectionErrorFallback: Reusable fallback UI for smaller sections
+ * - withErrorBoundary: HOC to wrap components with error boundary
  */
 
-import { Component, ReactNode, ErrorInfo } from 'react';
-import { AlertCircle, RefreshCw, RotateCcw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { Component, ReactNode, ErrorInfo } from 'react'
+import { AlertTriangle, RefreshCw, Home, Bug, RotateCcw } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { captureException, addBreadcrumb } from '@/lib/sentry'
 
-interface Props {
-  children: ReactNode;
-  fallback?: ReactNode;
+// =============================================================================
+// Types
+// =============================================================================
+
+interface ErrorBoundaryProps {
+  children: ReactNode
+  fallback?: ReactNode
+  onError?: (error: Error, errorInfo: ErrorInfo) => void
 }
 
-interface State {
-  hasError: boolean;
-  error?: Error;
-  errorInfo?: ErrorInfo;
+interface ErrorBoundaryState {
+  hasError: boolean
+  error?: Error
+  errorInfo?: ErrorInfo
 }
 
-export class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = { hasError: false };
+// =============================================================================
+// ErrorBoundary Class Component
+// =============================================================================
+
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props)
+    this.state = { hasError: false }
   }
 
-  static getDerivedStateFromError(error: Error): Partial<State> {
-    return { hasError: true, error };
+  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
+    return { hasError: true, error }
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Only log in development
+    this.setState({ errorInfo })
+
+    // Log error in development
     if (process.env.NODE_ENV === 'development') {
-      console.error('[ErrorBoundary] Error:', error);
-      console.error('[ErrorBoundary] Component stack:', errorInfo.componentStack);
+      console.error('[ErrorBoundary] Caught error:', error)
+      console.error('[ErrorBoundary] Component stack:', errorInfo.componentStack)
     }
 
-    this.setState({ errorInfo });
+    // Report to Sentry with context
+    captureException(error, {
+      tags: {
+        errorBoundary: 'global',
+      },
+      extra: {
+        componentStack: errorInfo.componentStack,
+        url: typeof window !== 'undefined' ? window.location.href : '',
+      },
+    })
 
-    // TODO: Send to error tracking service in production
-    // if (process.env.NODE_ENV === 'production') {
-    //   captureException(error, { extra: { componentStack: errorInfo.componentStack } });
-    // }
+    // Add breadcrumb for debugging
+    addBreadcrumb('Error caught by boundary', 'error', 'error', {
+      error: error.message,
+    })
+
+    // Call optional error handler
+    this.props.onError?.(error, errorInfo)
   }
 
-  handleReset = () => {
-    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
-  };
+  handleRetry = () => {
+    this.setState({ hasError: false, error: undefined, errorInfo: undefined })
+  }
 
   handleReload = () => {
-    window.location.reload();
-  };
+    window.location.reload()
+  }
+
+  handleGoHome = () => {
+    window.location.href = '/'
+  }
+
+  handleReportIssue = () => {
+    const subject = encodeURIComponent('Báo lỗi InboxAI')
+    const body = encodeURIComponent(
+      `Mô tả lỗi:\n\n` +
+      `Chi tiết kỹ thuật:\n` +
+      `- Error: ${this.state.error?.message || 'Unknown'}\n` +
+      `- URL: ${typeof window !== 'undefined' ? window.location.href : 'N/A'}\n` +
+      `- Time: ${new Date().toISOString()}\n` +
+      `- UserAgent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}`
+    )
+    window.open(`mailto:support@inboxai.vn?subject=${subject}&body=${body}`)
+  }
 
   render() {
     if (this.state.hasError) {
+      // Use custom fallback if provided
       if (this.props.fallback) {
-        return this.props.fallback;
+        return this.props.fallback
       }
 
+      // Default error UI
       return (
-        <div className="flex flex-col items-center justify-center min-h-[300px] p-6 text-[var(--muted-foreground)]">
-          <AlertCircle className="w-12 h-12 mb-4 text-red-600 dark:text-red-400" strokeWidth={1.5} />
-          <p className="text-[15px] font-medium text-[var(--foreground)]">Đã xảy ra lỗi</p>
-          <p className="text-[13px] mt-1 text-center max-w-md">
-            Ứng dụng gặp sự cố không mong muốn. Vui lòng thử lại.
-          </p>
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+          <div className="max-w-md w-full text-center space-y-6">
+            {/* Error Icon */}
+            <div className="mx-auto w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
+              <AlertTriangle className="w-8 h-8 text-destructive" />
+            </div>
 
-          {/* Show error details in development */}
-          {process.env.NODE_ENV === 'development' && this.state.error && (
-            <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded text-left overflow-auto max-h-24 max-w-md w-full">
-              <p className="text-xs font-mono text-red-600 dark:text-red-400">
-                {this.state.error.message}
+            {/* Error Message */}
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold text-foreground">
+                Đã xảy ra lỗi
+              </h1>
+              <p className="text-muted-foreground">
+                Ứng dụng gặp sự cố không mong muốn. Vui lòng thử lại hoặc quay về trang chủ.
               </p>
             </div>
-          )}
 
-          <div className="flex gap-3 mt-4">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={this.handleReset}
-            >
-              <RotateCcw className="w-4 h-4 mr-2" strokeWidth={1.5} />
-              Thử lại
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={this.handleReload}
-            >
-              <RefreshCw className="w-4 h-4 mr-2" strokeWidth={1.5} />
-              Tải lại trang
-            </Button>
+            {/* Error Details (development only) */}
+            {process.env.NODE_ENV === 'development' && this.state.error && (
+              <details className="text-left bg-muted/50 rounded-lg p-4 text-sm">
+                <summary className="cursor-pointer font-medium text-muted-foreground">
+                  Chi tiết lỗi (Development)
+                </summary>
+                <pre className="mt-2 overflow-auto text-xs text-destructive whitespace-pre-wrap max-h-48">
+                  {this.state.error.message}
+                  {'\n\n'}
+                  {this.state.error.stack}
+                </pre>
+              </details>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button onClick={this.handleRetry} variant="primary">
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Thử lại
+              </Button>
+              <Button onClick={this.handleReload} variant="secondary">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Tải lại trang
+              </Button>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button onClick={this.handleGoHome} variant="secondary">
+                <Home className="w-4 h-4 mr-2" />
+                Về trang chủ
+              </Button>
+              <Button onClick={this.handleReportIssue} variant="ghost">
+                <Bug className="w-4 h-4 mr-2" />
+                Báo lỗi
+              </Button>
+            </div>
           </div>
         </div>
-      );
+      )
     }
 
-    return this.props.children;
+    return this.props.children
   }
 }
 
-export default ErrorBoundary;
+// =============================================================================
+// SectionErrorFallback - For smaller component sections
+// =============================================================================
+
+interface SectionErrorFallbackProps {
+  title?: string
+  message?: string
+  onRetry?: () => void
+  compact?: boolean
+}
+
+export function SectionErrorFallback({
+  title = 'Không thể tải nội dung',
+  message = 'Đã xảy ra lỗi khi tải phần này. Vui lòng thử lại.',
+  onRetry,
+  compact = false
+}: SectionErrorFallbackProps) {
+  if (compact) {
+    return (
+      <div className="flex items-center gap-2 p-3 bg-destructive/10 rounded-lg text-sm">
+        <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />
+        <span className="text-destructive">{message}</span>
+        {onRetry && (
+          <Button size="sm" variant="ghost" onClick={onRetry} className="ml-auto h-7 px-2">
+            <RefreshCw className="w-3 h-3" />
+          </Button>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center p-8 text-center space-y-4 bg-muted/30 rounded-lg border border-border">
+      <div className="w-12 h-12 bg-destructive/10 rounded-full flex items-center justify-center">
+        <AlertTriangle className="w-6 h-6 text-destructive" />
+      </div>
+      <div className="space-y-1">
+        <h3 className="font-medium text-foreground">{title}</h3>
+        <p className="text-sm text-muted-foreground max-w-sm">{message}</p>
+      </div>
+      {onRetry && (
+        <Button size="sm" variant="secondary" onClick={onRetry}>
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Thử lại
+        </Button>
+      )}
+    </div>
+  )
+}
+
+// =============================================================================
+// withErrorBoundary HOC
+// =============================================================================
+
+export function withErrorBoundary<P extends object>(
+  WrappedComponent: React.ComponentType<P>,
+  fallback?: ReactNode
+) {
+  const displayName = WrappedComponent.displayName || WrappedComponent.name || 'Component'
+
+  const ComponentWithErrorBoundary = (props: P) => {
+    return (
+      <ErrorBoundary fallback={fallback}>
+        <WrappedComponent {...props} />
+      </ErrorBoundary>
+    )
+  }
+
+  ComponentWithErrorBoundary.displayName = `withErrorBoundary(${displayName})`
+
+  return ComponentWithErrorBoundary
+}
+
+export default ErrorBoundary

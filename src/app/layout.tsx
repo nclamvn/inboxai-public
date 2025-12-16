@@ -4,6 +4,7 @@ import './globals.css'
 import { QueryProvider } from '@/providers/query-provider'
 import { ThemeProvider } from '@/contexts/theme-context'
 import { ErrorBoundary } from '@/components/error-boundary'
+import { OfflineBanner } from '@/components/offline-banner'
 
 const inter = Inter({
   subsets: ['latin', 'vietnamese'],
@@ -99,6 +100,7 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased bg-[var(--background)] text-[var(--foreground)]`}>
         <ThemeProvider>
           <ErrorBoundary>
+            <OfflineBanner />
             <QueryProvider>
               {children}
             </QueryProvider>
