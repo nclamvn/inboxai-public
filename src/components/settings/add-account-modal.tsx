@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { X, Mail, Loader2, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { X, Mail, Loader2, CheckCircle, AlertCircle, Eye, EyeOff, Server } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ConnectGoogleButton } from './connect-google'
 
@@ -11,41 +11,38 @@ interface AddAccountModalProps {
   onSuccess: () => void
 }
 
-const PROVIDERS = [
-  {
-    id: 'gmail',
-    name: 'Gmail',
-    icon: '📧',
-    color: 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30',
-    instructions: 'Dùng App Password từ Google Account > Security > 2-Step Verification > App passwords'
-  },
-  {
-    id: 'outlook',
-    name: 'Outlook / Hotmail',
-    icon: '📨',
-    color: 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30',
-    instructions: 'Dùng mật khẩu thường hoặc App Password'
-  },
-  {
-    id: 'yahoo',
-    name: 'Yahoo Mail',
-    icon: '📩',
-    color: 'bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/30',
-    instructions: 'Dùng App Password từ Yahoo Account > Security'
-  },
-  {
-    id: 'custom',
-    name: 'IMAP/SMTP khác',
-    icon: '⚙️',
-    color: 'bg-[var(--secondary)] border-[var(--border)]',
-    instructions: 'Nhập thông tin server thủ công'
-  }
-]
+interface EmailProvider {
+  id: string
+  name: string
+  imap_host: string
+  imap_port: number
+  smtp_host: string
+  smtp_port: number
+  requires_app_password?: boolean
+  notes?: string
+  help_url?: string
+}
+
+// Provider icons and colors
+const PROVIDER_STYLES: Record<string, { icon: string; color: string }> = {
+  gmail: { icon: '📧', color: 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30' },
+  outlook: { icon: '📨', color: 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30' },
+  yahoo: { icon: '📩', color: 'bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/30' },
+  zoho: { icon: '🔷', color: 'bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/30' },
+  icloud: { icon: '☁️', color: 'bg-sky-50 dark:bg-sky-500/10 border-sky-200 dark:border-sky-500/30' },
+  yandex: { icon: '🔴', color: 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30' },
+  fastmail: { icon: '⚡', color: 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/30' },
+  hostinger: { icon: '🌐', color: 'bg-violet-50 dark:bg-violet-500/10 border-violet-200 dark:border-violet-500/30' },
+  namecheap: { icon: '🏷️', color: 'bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/30' },
+  custom: { icon: '⚙️', color: 'bg-[var(--secondary)] border-[var(--border)]' },
+}
 
 type Step = 'select-provider' | 'enter-credentials' | 'connecting' | 'success' | 'error'
 
 export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalProps) {
   const [step, setStep] = useState<Step>('select-provider')
+  const [providers, setProviders] = useState<EmailProvider[]>([])
+  const [loadingProviders, setLoadingProviders] = useState(false)
   const [provider, setProvider] = useState<string>('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -57,6 +54,24 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
   const [imapPort, setImapPort] = useState('993')
   const [smtpHost, setSmtpHost] = useState('')
   const [smtpPort, setSmtpPort] = useState('587')
+
+  // Fetch providers when modal opens
+  useEffect(() => {
+    if (isOpen && providers.length === 0) {
+      setLoadingProviders(true)
+      fetch('/api/email-providers')
+        .then(res => res.json())
+        .then(data => {
+          setProviders(data.providers || [])
+        })
+        .catch(err => {
+          console.error('Failed to load providers:', err)
+        })
+        .finally(() => {
+          setLoadingProviders(false)
+        })
+    }
+  }, [isOpen, providers.length])
 
   const resetForm = () => {
     setStep('select-provider')
@@ -77,8 +92,24 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
 
   const handleSelectProvider = (providerId: string) => {
     setProvider(providerId)
+    // Auto-fill IMAP/SMTP settings from provider preset
+    const selectedProvider = providers.find(p => p.id === providerId)
+    if (selectedProvider && providerId !== 'custom') {
+      setImapHost(selectedProvider.imap_host)
+      setImapPort(String(selectedProvider.imap_port))
+      setSmtpHost(selectedProvider.smtp_host)
+      setSmtpPort(String(selectedProvider.smtp_port))
+    }
     setStep('enter-credentials')
   }
+
+  // Get provider style (icon, color)
+  const getProviderStyle = (providerId: string) => {
+    return PROVIDER_STYLES[providerId] || PROVIDER_STYLES.custom
+  }
+
+  // Get selected provider object
+  const selectedProvider = providers.find(p => p.id === provider)
 
   const handleConnect = async () => {
     if (!email || !password) {
@@ -131,8 +162,6 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
 
   if (!isOpen) return null
 
-  const selectedProvider = PROVIDERS.find(p => p.id === provider)
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
@@ -176,17 +205,33 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
               </div>
 
               {/* IMAP Providers */}
-              <div className="space-y-2">
-                {PROVIDERS.map(p => (
-                  <button
-                    key={p.id}
-                    onClick={() => handleSelectProvider(p.id)}
-                    className={`w-full flex items-center gap-4 p-3 rounded-lg border transition-colors hover:bg-[var(--hover)] ${p.color}`}
-                  >
-                    <span className="text-xl">{p.icon}</span>
-                    <span className="text-[14px] font-medium text-[var(--foreground)]">{p.name}</span>
-                  </button>
-                ))}
+              <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                {loadingProviders ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="w-5 h-5 animate-spin text-[var(--muted-foreground)]" />
+                  </div>
+                ) : (
+                  providers.map(p => {
+                    const style = getProviderStyle(p.id)
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => handleSelectProvider(p.id)}
+                        className={`w-full flex items-center gap-4 p-3 rounded-lg border transition-colors hover:bg-[var(--hover)] ${style.color}`}
+                      >
+                        <span className="text-xl">{style.icon}</span>
+                        <div className="flex-1 text-left">
+                          <span className="text-[14px] font-medium text-[var(--foreground)]">{p.name}</span>
+                          {p.requires_app_password && (
+                            <span className="ml-2 text-[11px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                              App Password
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    )
+                  })
+                )}
               </div>
             </div>
           )}
@@ -201,13 +246,28 @@ export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalP
                 ← Quay lại
               </button>
 
-              <div className={`flex items-center gap-3 p-3 rounded-lg ${selectedProvider.color}`}>
-                <span className="text-xl">{selectedProvider.icon}</span>
-                <span className="font-medium text-[var(--foreground)]">{selectedProvider.name}</span>
-              </div>
+              {(() => {
+                const style = getProviderStyle(selectedProvider.id)
+                return (
+                  <div className={`flex items-center gap-3 p-3 rounded-lg ${style.color}`}>
+                    <span className="text-xl">{style.icon}</span>
+                    <span className="font-medium text-[var(--foreground)]">{selectedProvider.name}</span>
+                  </div>
+                )
+              })()}
 
               <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-lg p-3 text-[13px] text-gray-900 dark:text-white">
-                {selectedProvider.instructions}
+                {selectedProvider.notes || 'Nhập thông tin đăng nhập email của bạn'}
+                {selectedProvider.help_url && (
+                  <a
+                    href={selectedProvider.help_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-2 text-blue-600 dark:text-blue-400 underline"
+                  >
+                    Hướng dẫn
+                  </a>
+                )}
               </div>
 
               <div className="space-y-3">
