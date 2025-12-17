@@ -39,19 +39,8 @@ export function AIFeaturesPanel({
     refresh,
   } = useAIFeatures(emailId);
 
-  // DEBUG: Log state on every render
-  console.log('[AIFeaturesPanel] === RENDER ===');
-  console.log('[AIFeaturesPanel] emailId:', emailId);
-  console.log('[AIFeaturesPanel] isLoading:', isLoading);
-  console.log('[AIFeaturesPanel] error:', error);
-  console.log('[AIFeaturesPanel] source:', source);
-  console.log('[AIFeaturesPanel] results:', JSON.stringify(results));
-  console.log('[AIFeaturesPanel] allocation:', allocation?.category);
-  console.log('[AIFeaturesPanel] availableButtons:', availableButtons);
-
   // Initial loading state
   if (isLoading && Object.keys(results).length === 0) {
-    console.log('[AIFeaturesPanel] → Rendering: LoadingSkeleton');
     return (
       <div className={cn('space-y-3', className)}>
         <LoadingSkeleton />
@@ -61,7 +50,6 @@ export function AIFeaturesPanel({
 
   // Error state (all failed)
   if (error && Object.keys(results).length === 0) {
-    console.log('[AIFeaturesPanel] → Rendering: Error state');
     return (
       <div className={cn(
         'rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4',
@@ -95,13 +83,11 @@ export function AIFeaturesPanel({
 
   // Don't render for spam
   if (allocation?.category === 'spam') {
-    console.log('[AIFeaturesPanel] → Rendering: null (spam)');
     return null;
   }
 
   // No features available
   if (successfulFeatures.length === 0 && loadingFeatures.length === 0 && availableButtons.length === 0) {
-    console.log('[AIFeaturesPanel] → Rendering: No features message');
     return (
       <div className={cn('text-center py-6 text-gray-500', className)}>
         <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-50" />
@@ -110,7 +96,6 @@ export function AIFeaturesPanel({
     );
   }
 
-  console.log('[AIFeaturesPanel] → Rendering: Full panel with', successfulFeatures.length, 'features');
   return (
     <div className={cn('space-y-3', className)}>
       {/* Debug info in development */}

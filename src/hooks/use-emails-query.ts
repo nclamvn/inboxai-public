@@ -6,13 +6,13 @@ import type { Email } from '@/types'
 
 interface EmailsQueryData {
   emails: Email[]
-  total: number
+  nextCursor: string | null
   hasMore: boolean
 }
 
 interface InfiniteEmailsData {
   pages: EmailsQueryData[]
-  pageParams: number[]
+  pageParams: (string | null)[]
 }
 
 interface FetchEmailsParams {
@@ -21,16 +21,14 @@ interface FetchEmailsParams {
   pageSize?: number
 }
 
-// Fetch emails with pagination using Supabase directly (faster than API route)
-async function fetchEmails(params: FetchEmailsParams & { page: number }) {
+// Fetch emails with CURSOR-BASED pagination (O(1) with index vs O(n) with offset)
+async function fetchEmails(params: FetchEmailsParams & { cursor?: string | null }) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) throw new Error('Not authenticated')
 
-  const { folder = 'inbox', category, pageSize = 20, page } = params
-  const from = page * pageSize
-  const to = from + pageSize - 1
+  const { folder = 'inbox', category, pageSize = 30, cursor } = params
 
   let query = supabase
     .from('emails')
@@ -39,7 +37,7 @@ async function fetchEmails(params: FetchEmailsParams & { page: number }) {
       received_at, is_read, is_starred, is_archived, is_deleted,
       priority, category, needs_reply, detected_deadline, direction,
       summary, ai_confidence
-    `, { count: 'exact' })
+    `)
     .eq('user_id', user.id)
 
   // Folder filters
@@ -82,17 +80,30 @@ async function fetchEmails(params: FetchEmailsParams & { page: number }) {
       .or('priority.gte.4,needs_reply.eq.true,detected_deadline.not.is.null')
   }
 
-  const { data, error, count } = await query
+  // CURSOR-BASED pagination: Use received_at as cursor
+  // This is O(1) with a proper index, vs O(n) for offset-based
+  if (cursor) {
+    query = query.lt('received_at', cursor)
+  }
+
+  // Fetch one extra to check if there's more
+  const { data, error } = await query
     .order('received_at', { ascending: false })
-    .range(from, to)
+    .limit(pageSize + 1)
 
   if (error) throw error
 
+  const emails = data as Email[] || []
+  const hasMore = emails.length > pageSize
+  const items = hasMore ? emails.slice(0, pageSize) : emails
+
+  // Next cursor is the last item's timestamp
+  const nextCursor = items.length > 0 ? items[items.length - 1].received_at : null
+
   return {
-    emails: data as Email[] || [],
-    total: count || 0,
-    hasMore: (from + pageSize) < (count || 0),
-    nextPage: page + 1,
+    emails: items,
+    nextCursor,
+    hasMore,
   }
 }
 
@@ -125,33 +136,38 @@ async function updateEmail(emailId: string, updates: Partial<Email>) {
   if (error) throw error
 }
 
-// Infinite query for emails (for infinite scroll)
+// Infinite query for emails with CURSOR-BASED pagination (for infinite scroll)
 export function useEmailsInfinite(params: FetchEmailsParams = {}) {
   return useInfiniteQuery({
     queryKey: ['emails-infinite', params.folder, params.category],
-    queryFn: ({ pageParam = 0 }) => fetchEmails({ ...params, page: pageParam }),
-    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextPage : undefined,
-    initialPageParam: 0,
-    staleTime: 30 * 1000,
+    queryFn: ({ pageParam }) => fetchEmails({ ...params, cursor: pageParam }),
+    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextCursor : undefined,
+    initialPageParam: null as string | null,
+    staleTime: 60 * 1000, // 1 minute
+    gcTime: 5 * 60 * 1000, // 5 minutes cache
+    refetchOnMount: false, // Don't refetch if data is fresh
   })
 }
 
-// Simple query for emails (single page)
+// Simple query for emails (single page, first 30 emails)
 export function useEmailsQuery(params: FetchEmailsParams = {}) {
   return useQuery({
     queryKey: ['emails', params.folder, params.category],
-    queryFn: () => fetchEmails({ ...params, page: 0 }),
-    staleTime: 30 * 1000,
+    queryFn: () => fetchEmails({ ...params, cursor: null }),
+    staleTime: 60 * 1000, // 1 minute
+    gcTime: 5 * 60 * 1000, // 5 minutes cache
+    refetchOnMount: false,
   })
 }
 
-// Single email detail
+// Single email detail with longer cache
 export function useEmailDetailQuery(emailId: string | null) {
   return useQuery({
     queryKey: ['email-detail', emailId],
     queryFn: () => fetchEmailDetail(emailId!),
     enabled: !!emailId,
-    staleTime: 60 * 1000,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes cache
   })
 }
 
@@ -245,15 +261,33 @@ export function useDeleteEmail() {
   return (emailId: string) => mutation.mutate({ emailId, updates: { is_deleted: true } })
 }
 
-// Prefetch emails
+// Prefetch emails for instant navigation
 export function usePrefetchEmails() {
   const queryClient = useQueryClient()
 
   return (params: FetchEmailsParams) => {
     queryClient.prefetchQuery({
       queryKey: ['emails', params.folder, params.category],
-      queryFn: () => fetchEmails({ ...params, page: 0 }),
-      staleTime: 30 * 1000,
+      queryFn: () => fetchEmails({ ...params, cursor: null }),
+      staleTime: 60 * 1000,
+    })
+  }
+}
+
+// Prefetch common folders on dashboard load
+export function usePrefetchCommonFolders() {
+  const queryClient = useQueryClient()
+
+  return () => {
+    // Prefetch inbox, starred, and archive
+    const folders: Array<FetchEmailsParams['folder']> = ['inbox', 'starred', 'archive']
+
+    folders.forEach(folder => {
+      queryClient.prefetchQuery({
+        queryKey: ['emails', folder, null],
+        queryFn: () => fetchEmails({ folder, cursor: null }),
+        staleTime: 60 * 1000,
+      })
     })
   }
 }

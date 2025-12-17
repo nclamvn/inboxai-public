@@ -5,10 +5,11 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Menu, Pencil, Inbox, Send, Star, Archive, Trash2,
-  BarChart3, Settings, ChevronLeft, Newspaper, ListTodo, Bell
+  BarChart3, Settings, ChevronLeft, Newspaper, ListTodo, Bell, Sparkles
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { FollowUpInlineBadge } from '@/components/follow-up/follow-up-badge'
+import { AIQuickActions } from '@/components/ai/ai-quick-actions'
 
 const navItems = [
   { href: '/inbox', icon: Inbox, label: 'Hộp thư đến' },
@@ -19,10 +20,10 @@ const navItems = [
 ]
 
 const bottomItems = [
-  { href: '/follow-ups', icon: Bell, label: 'Follow-ups', hasBadge: true },
+  { href: '/follow-ups', icon: Bell, label: 'Follow-ups', hasBadge: true, isAI: true, aiTooltip: 'AI theo dõi email cần phản hồi' },
   { href: '/subscriptions', icon: Newspaper, label: 'Newsletters' },
-  { href: '/actions', icon: ListTodo, label: 'Actions' },
-  { href: '/insights', icon: BarChart3, label: 'Insights' },
+  { href: '/actions', icon: ListTodo, label: 'Actions', isAI: true, aiTooltip: 'AI trích xuất hành động từ email' },
+  { href: '/insights', icon: BarChart3, label: 'Insights', isAI: true, aiTooltip: 'AI phân tích và thống kê email' },
   { href: '/settings', icon: Settings, label: 'Cài đặt' },
 ]
 
@@ -119,6 +120,9 @@ export function Sidebar({ defaultCollapsed = true }: SidebarProps) {
         </ul>
       </nav>
 
+      {/* AI Quick Actions */}
+      <AIQuickActions collapsed={collapsed} />
+
       {/* Divider */}
       <div className={cn('border-t border-[var(--border)]', collapsed ? 'mx-2' : 'mx-3')} />
 
@@ -140,18 +144,30 @@ export function Sidebar({ defaultCollapsed = true }: SidebarProps) {
                       ? 'bg-[var(--secondary)] text-[var(--foreground)] font-medium'
                       : 'text-[var(--foreground-muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'
                   )}
-                  title={collapsed ? item.label : undefined}
+                  title={collapsed ? (item.isAI ? `✨ ${item.label} - ${item.aiTooltip}` : item.label) : undefined}
                 >
-                  <item.icon
-                    className={cn(
-                      'w-5 h-5 flex-shrink-0',
-                      isActive ? 'text-[var(--foreground)]' : ''
+                  <div className="relative flex-shrink-0">
+                    <item.icon
+                      className={cn(
+                        'w-5 h-5',
+                        isActive ? 'text-[var(--foreground)]' : ''
+                      )}
+                      strokeWidth={1.5}
+                    />
+                    {/* AI sparkle indicator on icon */}
+                    {item.isAI && collapsed && (
+                      <Sparkles className="absolute -top-1 -right-1 w-2.5 h-2.5 text-yellow-500" />
                     )}
-                    strokeWidth={1.5}
-                  />
+                  </div>
                   {!collapsed && (
                     <>
                       <span className="text-[14px] truncate flex-1">{item.label}</span>
+                      {/* AI sparkle indicator */}
+                      {item.isAI && (
+                        <span title={item.aiTooltip} className="flex-shrink-0">
+                          <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
+                        </span>
+                      )}
                       {item.hasBadge && <FollowUpInlineBadge />}
                     </>
                   )}

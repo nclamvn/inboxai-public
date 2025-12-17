@@ -117,7 +117,6 @@ async function loadPatternsAndDomains(): Promise<void> {
   }
 
   cacheTimestamp = now
-  console.log(`[PhishingDetector] Loaded ${patternsCache.size} pattern types, ${blacklistCache.size} blacklist, ${whitelistCache.size} whitelist`)
 }
 
 /**
@@ -448,8 +447,6 @@ export async function detectPhishing(email: EmailInput): Promise<PhishingResult>
 
   const risk = getRiskLevel(totalScore)
 
-  console.log(`[PhishingDetector] Score: ${totalScore}, Risk: ${risk}, Reasons: ${uniqueReasons.length}`)
-
   return {
     score: totalScore,
     risk,
@@ -478,9 +475,8 @@ export async function updateEmailPhishingStatus(
       })
       .eq('id', emailId)
 
-    console.log(`[PhishingDetector] Updated email ${emailId}: score=${result.score}, risk=${result.risk}`)
-  } catch (error) {
-    console.error('[PhishingDetector] Error updating email:', error)
+  } catch {
+    // Error updating email phishing status
   }
 }
 

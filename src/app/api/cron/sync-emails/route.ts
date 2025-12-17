@@ -2,12 +2,78 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { syncEmails } from '@/lib/email/imap-client'
 import { getUnsubscribeService } from '@/lib/email/unsubscribe-service'
+import { classifyEmail } from '@/lib/ai/classifier'
+import { notifySyncComplete, notifyAiClassified } from '@/lib/notifications/create'
 
 export const maxDuration = 300 // 5 minutes
 export const dynamic = 'force-dynamic'
 
 // OPTIMIZED CRON SETTINGS
 const CRON_EMAILS_PER_ACCOUNT = 100 // Increased from 30
+const CLASSIFY_BATCH_SIZE = 5 // Emails to classify per account
+
+// Classify newly synced emails for a user
+async function classifyUserEmails(
+  userId: string,
+  limit: number = CLASSIFY_BATCH_SIZE
+): Promise<number> {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  try {
+    const { data: emails } = await supabase
+      .from('emails')
+      .select('id, from_address, from_name, subject, body_text, body_html')
+      .eq('user_id', userId)
+      .or('category.is.null,category.eq.uncategorized')
+      .order('received_at', { ascending: false })
+      .limit(limit)
+
+    if (!emails || emails.length === 0) return 0
+
+    let classified = 0
+    for (const email of emails) {
+      try {
+        const classification = await classifyEmail({
+          email_id: email.id,
+          from_address: email.from_address,
+          from_name: email.from_name,
+          subject: email.subject,
+          body_text: email.body_text,
+          body_html: email.body_html,
+          user_id: userId
+        })
+
+        await supabase
+          .from('emails')
+          .update({
+            priority: classification.priority,
+            category: classification.category,
+            summary: classification.summary,
+            detected_deadline: classification.deadline,
+            needs_reply: classification.needs_reply,
+            ai_confidence: classification.confidence,
+            ai_suggestions: {
+              suggested_labels: classification.suggested_labels,
+              suggested_action: classification.suggested_action,
+              key_entities: classification.key_entities
+            }
+          })
+          .eq('id', email.id)
+
+        classified++
+      } catch {
+        // Continue with next email
+      }
+    }
+
+    return classified
+  } catch {
+    return 0
+  }
+}
 
 export async function GET(request: NextRequest) {
   // Verify cron secret
@@ -28,16 +94,19 @@ export async function GET(request: NextRequest) {
     const results: {
       processed: number
       synced: number
+      classified: number
       filtered: number
       errors: string[]
       accounts: Array<{
         email: string
         synced: number
+        classified: number
         errors: string[]
       }>
     } = {
       processed: 0,
       synced: 0,
+      classified: 0,
       filtered: 0,
       errors: [],
       accounts: []
@@ -76,6 +145,7 @@ export async function GET(request: NextRequest) {
       const accountResult = {
         email: account.email_address,
         synced: 0,
+        classified: 0,
         errors: [] as string[]
       }
 
@@ -102,6 +172,25 @@ export async function GET(request: NextRequest) {
           accountResult.synced = syncResult.synced
           results.synced += syncResult.synced
           console.log(`[CRON] Synced ${syncResult.synced} emails for ${account.email_address}`)
+
+          // Classify newly synced emails for this user
+          if (syncResult.synced > 0) {
+            const classified = await classifyUserEmails(
+              account.user_id,
+              Math.min(syncResult.synced, CLASSIFY_BATCH_SIZE)
+            )
+            accountResult.classified = classified
+            results.classified += classified
+            console.log(`[CRON] Classified ${classified} emails for ${account.email_address}`)
+
+            // Send notifications
+            if (syncResult.synced > 0) {
+              notifySyncComplete(account.user_id, syncResult.synced).catch(() => {})
+            }
+            if (classified > 0) {
+              notifyAiClassified(account.user_id, classified).catch(() => {})
+            }
+          }
         } else {
           accountResult.errors = syncResult.errors
           results.errors.push(`${account.email_address}: ${syncResult.errors.join(', ')}`)
@@ -138,6 +227,7 @@ export async function GET(request: NextRequest) {
       results: {
         processed: results.processed,
         synced: results.synced,
+        classified: results.classified,
         errors: results.errors.length
       },
       accounts: results.accounts,

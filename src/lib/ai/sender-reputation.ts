@@ -91,8 +91,7 @@ export async function getReputation(
       shouldUseReputation: shouldUse,
       suggestedCategory: shouldUse ? reputation.primary_category : null,
     };
-  } catch (error) {
-    console.error('[SenderReputation] Error getting reputation:', error);
+  } catch {
     return {
       found: false,
       reputation: null,
@@ -169,7 +168,6 @@ export async function updateReputation(
         })
         .eq('id', reputation.id);
 
-      console.log(`[SenderReputation] Updated: ${normalizedEmail} -> ${primaryCategory} (conf: ${newConfidence.toFixed(2)})`);
     } else {
       // Create new reputation record
       const categoryScores: Record<string, number> = {};
@@ -194,10 +192,9 @@ export async function updateReputation(
           confidence,
         });
 
-      console.log(`[SenderReputation] Created: ${normalizedEmail} -> ${category}`);
     }
-  } catch (error) {
-    console.error('[SenderReputation] Error updating reputation:', error);
+  } catch {
+    // Error updating reputation
   }
 }
 

@@ -14,6 +14,7 @@ import {
   parseHeaders,
   extractBody,
 } from '@/lib/gmail/api';
+import { gmailLogger } from '@/lib/logger';
 
 // Create admin client lazily to avoid edge runtime issues
 function getSupabaseAdmin() {
@@ -49,8 +50,7 @@ async function parallelLimit<T, R>(
       try {
         const result = await fn(items[currentIndex]);
         results[currentIndex] = result;
-      } catch (error) {
-        console.error(`[Gmail Parallel] Error at index ${currentIndex}:`, error);
+      } catch {
         results[currentIndex] = null as R;
       }
     }
@@ -86,7 +86,6 @@ export async function getValidAccessToken(
   // Check if token is expired
   if (expiresAt && isTokenExpired(new Date(expiresAt))) {
     if (!refreshToken) {
-      console.error('No refresh token available');
       return null;
     }
 
@@ -108,8 +107,7 @@ export async function getValidAccessToken(
         .eq('id', accountId);
 
       return newTokens.access_token;
-    } catch (error) {
-      console.error('Token refresh failed:', error);
+    } catch {
       return null;
     }
   }
@@ -158,7 +156,7 @@ export async function syncGmailEmails(
       return { success: false, syncedCount: 0, error: 'Account not found' };
     }
 
-    console.log(`[Gmail Sync] Starting for ${account.email_address}, maxResults=${options.maxResults || 50}, fullSync=${options.fullSync}, last_sync_at=${account.last_sync_at}`);
+    gmailLogger.info(`Starting sync for ${account.email_address}, maxResults=${options.maxResults || 50}`);
 
     // Build query for new emails - only use 'after:' filter, not 'in:inbox' since we use labelIds
     let query = '';
@@ -167,7 +165,7 @@ export async function syncGmailEmails(
       query = `after:${Math.floor(afterDate.getTime() / 1000)}`;
     }
 
-    console.log(`[Gmail Sync] Query: "${query}", labelIds: INBOX`);
+    gmailLogger.debug(`Query: "${query}", labelIds: INBOX`);
 
     // List messages
     const messageList = await listMessages(accessToken, {
@@ -177,7 +175,7 @@ export async function syncGmailEmails(
     });
 
     if (!messageList.messages || messageList.messages.length === 0) {
-      console.log(`[Gmail Sync] No new messages found`);
+      gmailLogger.debug('No new messages found');
       // Update last sync time even if no new messages
       await supabase
         .from('source_accounts')
@@ -191,7 +189,7 @@ export async function syncGmailEmails(
       return { success: true, syncedCount: 0 };
     }
 
-    console.log(`[Gmail Sync] Found ${messageList.messages.length} messages to sync`);
+    gmailLogger.info(`Found ${messageList.messages.length} messages to sync`);
 
     // Get existing message IDs to filter duplicates
     const messageIds = messageList.messages.map(m => m.id);
@@ -204,7 +202,7 @@ export async function syncGmailEmails(
     const existingIds = new Set(existingEmails?.map(e => e.message_id) || []);
     const newMessages = messageList.messages.filter(m => !existingIds.has(m.id));
 
-    console.log(`[Gmail Sync] ${newMessages.length} new messages (${existingIds.size} already exist)`);
+    gmailLogger.debug(`${newMessages.length} new messages (${existingIds.size} already exist)`);
 
     if (newMessages.length === 0) {
       await supabase
@@ -257,15 +255,14 @@ export async function syncGmailEmails(
             is_deleted: false,
             direction: 'inbound',
           };
-        } catch (err) {
-          console.error(`[Gmail Sync] Error fetching message ${msg.id}:`, err);
+        } catch {
           return null;
         }
       }
     );
 
     const validEmails = fetchedMessages.filter((e): e is NonNullable<typeof e> => e !== null);
-    console.log(`[Gmail Sync] Fetched ${validEmails.length} messages in ${Date.now() - startTime}ms`);
+    gmailLogger.debug(`Fetched ${validEmails.length} messages in ${Date.now() - startTime}ms`);
 
     // Batch insert emails
     let syncedCount = 0;
@@ -277,11 +274,8 @@ export async function syncGmailEmails(
           ignoreDuplicates: true
         });
 
-      if (insertError) {
-        console.error(`[Gmail Sync] Insert error:`, insertError);
-      } else {
+      if (!insertError) {
         syncedCount = validEmails.length;
-        console.log(`[Gmail Sync] Inserted ${syncedCount} emails`);
       }
     }
 
@@ -296,7 +290,7 @@ export async function syncGmailEmails(
       .eq('id', accountId);
 
     if (updateError) {
-      console.error(`[Gmail Sync] Failed to update source_account:`, updateError);
+      gmailLogger.error('Failed to update source_account:', updateError);
     }
 
     // Increment total_emails_synced using raw SQL for atomic increment
@@ -306,7 +300,6 @@ export async function syncGmailEmails(
         count: syncedCount
       }).then(({ error }) => {
         if (error) {
-          console.log(`[Gmail Sync] RPC increment failed, trying direct update`);
           // Fallback: Get current count and update
           supabase
             .from('source_accounts')
@@ -324,11 +317,11 @@ export async function syncGmailEmails(
       });
     }
 
-    console.log(`[Gmail Sync] Complete: ${syncedCount} emails synced`);
+    gmailLogger.info(`Sync complete: ${syncedCount} emails synced`);
     return { success: true, syncedCount };
 
   } catch (error) {
-    console.error('Gmail sync error:', error);
+    gmailLogger.error('Gmail sync error:', error);
 
     // Update error status
     await supabase

@@ -15,11 +15,8 @@ let isInitialized = false;
  */
 export async function initializeAIModule(): Promise<void> {
   if (isInitialized) {
-    console.log('[AI] Module already initialized');
     return;
   }
-
-  console.log('[AI] Initializing AI module...');
 
   try {
     // Register all feature executors
@@ -27,17 +24,13 @@ export async function initializeAIModule(): Promise<void> {
 
     // Verify runner has executors
     const runner = getAIFeatureRunner();
-    const registeredFeatures = runner.getRegisteredFeatures();
-    console.log('[AI] Registered features:', registeredFeatures);
+    runner.getRegisteredFeatures();
 
     // Get allocation service instance
-    const allocationService = getAIFeatureAllocationService();
-    console.log('[AI] Allocation service ready');
+    getAIFeatureAllocationService();
 
     isInitialized = true;
-    console.log('[AI] Module initialization complete');
   } catch (error) {
-    console.error('[AI] Module initialization failed:', error);
     throw error;
   }
 }

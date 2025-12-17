@@ -1,4 +1,5 @@
 import crypto from 'crypto'
+import { syncLogger } from '@/lib/logger'
 
 // Encryption helpers
 const IV_LENGTH = 16
@@ -120,8 +121,7 @@ async function parallelLimit<T, R>(
       try {
         const result = await fn(items[currentIndex])
         results[currentIndex] = result
-      } catch (error) {
-        console.error(`[Parallel] Error at index ${currentIndex}:`, error)
+      } catch {
         results[currentIndex] = null as R
       }
     }
@@ -231,9 +231,7 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
     return result
   }
 
-  console.log(`[SYNC] Starting OPTIMIZED sync for: ${account.email_address}`)
-  console.log(`[SYNC] Options: limit=${limit}, fullSync=${fullSync}, batchSize=${BATCH_SIZE}`)
-  console.log(`[SYNC] Last sync UID: ${account.last_sync_uid || 'none'}`)
+  syncLogger.info(`Starting sync for: ${account.email_address}`)
 
   try {
     const { ImapFlow } = await import('imapflow')
@@ -251,14 +249,12 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
     })
 
     await client.connect()
-    console.log(`[SYNC] Connected to ${account.imap_host}`)
 
     const mailbox = await client.getMailboxLock('INBOX')
 
     try {
       const status = await client.status('INBOX', { messages: true, uidNext: true })
       const totalMessages = status.messages || 0
-      console.log(`[SYNC] Total messages in INBOX: ${totalMessages}`)
 
       // ========================================
       // KEY FIX: Fetch emails với UID cao nhất (mới nhất) trước
@@ -268,12 +264,10 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
 
       if (fullSync) {
         // Full sync: lấy N email mới nhất
-        console.log(`[SYNC] Full sync mode - getting ${limit} newest emails`)
         uidsToFetch = await getNewestUIDs(client, limit)
       } else if (account.last_sync_uid) {
         // Incremental sync: chỉ lấy email mới hơn last_sync_uid
         const lastUid = parseInt(account.last_sync_uid)
-        console.log(`[SYNC] Incremental sync - fetching UIDs > ${lastUid}`)
 
         // Fetch all UIDs greater than lastUid
         const newUids: number[] = []
@@ -284,23 +278,17 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
         // Sort descending (newest first) and limit
         newUids.sort((a, b) => b - a)
         uidsToFetch = newUids.slice(0, limit)
-        console.log(`[SYNC] Found ${newUids.length} new emails, fetching ${uidsToFetch.length}`)
       } else {
         // First sync: lấy N email mới nhất
-        console.log(`[SYNC] First sync - getting ${limit} newest emails`)
         uidsToFetch = await getNewestUIDs(client, limit)
       }
 
       if (uidsToFetch.length === 0) {
-        console.log(`[SYNC] No emails to sync`)
         result.success = true
         mailbox.release()
         await client.logout()
         return result
       }
-
-      console.log(`[SYNC] UIDs to fetch: ${uidsToFetch.slice(0, 5).join(', ')}${uidsToFetch.length > 5 ? '...' : ''} (${uidsToFetch.length} total)`)
-      console.log(`[SYNC] UID range: ${Math.min(...uidsToFetch)} to ${Math.max(...uidsToFetch)}`)
 
       const highestUid: number = Math.max(...uidsToFetch)
 
@@ -308,7 +296,6 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
       // OPTIMIZED: Process in batches
       // ========================================
       const batches = chunkArray(uidsToFetch, BATCH_SIZE)
-      console.log(`[SYNC] Processing ${batches.length} batches of up to ${BATCH_SIZE} emails`)
 
       for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
         const batch = batches[batchIndex]
@@ -316,12 +303,9 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
 
         // Timeout check
         if (Date.now() - startTime > MAX_SYNC_DURATION) {
-          console.log(`[SYNC] Timeout after ${result.synced} emails, stopping`)
           result.errors.push(`Timeout after ${result.synced} emails`)
           break
         }
-
-        console.log(`[SYNC] Batch ${batchIndex + 1}/${batches.length}: fetching ${batch.length} emails`)
 
         try {
           // ========================================
@@ -351,7 +335,6 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
             }
           }
 
-          console.log(`[SYNC] Batch ${batchIndex + 1}: fetched ${rawMessages.length} raw messages in ${Date.now() - batchStartTime}ms`)
 
           // ========================================
           // STEP 2: Parallel parse emails
@@ -384,15 +367,13 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
                   isStarred: msg.flags.has('\\Flagged'),
                   attachments: extractAttachments(parsed)
                 }
-              } catch (parseErr) {
-                console.error(`[SYNC] Parse error for UID ${msg.uid}:`, parseErr)
+              } catch {
                 return null
               }
             }
           )
 
           const validEmails = parsedEmails.filter((e): e is ParsedEmailData => e !== null)
-          console.log(`[SYNC] Batch ${batchIndex + 1}: parsed ${validEmails.length} emails in ${Date.now() - parseStartTime}ms`)
 
           if (validEmails.length === 0) continue
 
@@ -431,7 +412,6 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
             .select('id, original_uid')
 
           if (batchError) {
-            console.error(`[SYNC] Batch ${batchIndex + 1} DB error:`, batchError.message)
             result.errors.push(`Batch ${batchIndex + 1}: ${batchError.message}`)
           } else {
             const insertedCount = savedEmails?.length || 0
@@ -471,25 +451,18 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
                     onConflict: 'email_id,filename',
                     ignoreDuplicates: true
                   })
-                console.log(`[SYNC] Batch ${batchIndex + 1}: saved ${allAttachments.length} attachments`)
               }
             }
-
-            console.log(`[SYNC] Batch ${batchIndex + 1}: inserted ${insertedCount} emails in ${Date.now() - dbStartTime}ms`)
           }
-
-          const batchTime = Date.now() - batchStartTime
-          console.log(`[SYNC] Batch ${batchIndex + 1}/${batches.length} completed in ${batchTime}ms (${Math.round(batchTime / batch.length)}ms/email)`)
 
         } catch (batchError) {
           const errMsg = batchError instanceof Error ? batchError.message : 'Batch error'
-          console.error(`[SYNC] Batch ${batchIndex + 1} error:`, errMsg)
           result.errors.push(`Batch ${batchIndex + 1}: ${errMsg}`)
           // Continue with next batch
         }
       }
 
-      console.log(`[SYNC] Synced ${result.synced} emails in ${Date.now() - startTime}ms`)
+      syncLogger.info(`Synced ${result.synced} emails in ${Date.now() - startTime}ms`)
 
       // Update account sync status - use highestUid to track progress
       if (highestUid > 0 || result.synced > 0) {
@@ -511,8 +484,6 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
           .from('source_accounts')
           .update(updateData)
           .eq('id', account.id)
-
-        console.log(`[SYNC] Updated: last_sync_uid=${highestUid}`)
       }
 
       result.success = true
@@ -522,12 +493,10 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
     }
 
     await client.logout()
-    console.log(`[SYNC] DONE in ${Date.now() - startTime}ms: ${result.synced} synced`)
 
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'Sync failed'
     result.errors.push(errorMsg)
-    console.error(`[SYNC] Error:`, errorMsg)
 
     const { createClient } = await import('@supabase/supabase-js')
     const supabase = createClient(
@@ -555,12 +524,9 @@ export async function fetchEmailBody(
   let password: string
   try {
     password = decryptPassword(account.password_encrypted)
-  } catch (e) {
-    console.error('[FETCH_BODY] Decrypt error')
+  } catch {
     return null
   }
-
-  console.log(`[FETCH_BODY] Fetching UID ${originalUid} from ${account.email_address}`)
 
   try {
     const { ImapFlow } = await import('imapflow')
@@ -586,7 +552,6 @@ export async function fetchEmailBody(
       }, { uid: true }) as { source?: Buffer } | false
 
       if (!message || !message.source) {
-        console.log(`[FETCH_BODY] No source for UID ${originalUid}`)
         return null
       }
 
@@ -598,8 +563,6 @@ export async function fetchEmailBody(
         skipImageLinks: true
       })
 
-      console.log(`[FETCH_BODY] Parsed UID ${originalUid}`)
-
       return {
         body_text: (parsed.text || '').slice(0, 50000),
         body_html: parsed.html ? (parsed.html as string).slice(0, 100000) : null
@@ -610,8 +573,7 @@ export async function fetchEmailBody(
       await client.logout()
     }
 
-  } catch (error) {
-    console.error('[FETCH_BODY] Error:', error)
+  } catch {
     return null
   }
 }

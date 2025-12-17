@@ -37,6 +37,7 @@ import {
 } from './phishing-detector'
 import { logClassification } from './classification-logger'
 import { updateDomainCategory } from './domain-reputation'
+import { aiLogger } from '@/lib/logger'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!
@@ -384,8 +385,8 @@ Body (500 chars): ${(email.body_text || '').slice(0, 500)}`
         }
       }
     }
-  } catch (error) {
-    console.error('[CLASSIFIER] AI error:', error)
+  } catch {
+    // AI classification failed, fall back to keyword-based
   }
 
   // Fallback to keyword-based
@@ -403,7 +404,7 @@ Body (500 chars): ${(email.body_text || '').slice(0, 500)}`
 // ============================================================
 
 export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassification> {
-  console.log(`[CLASSIFIER] Processing: ${(email.subject || '').slice(0, 50)}...`)
+  aiLogger.debug(`Processing: ${(email.subject || '').slice(0, 50)}...`)
 
   let classificationMethod: ClassificationMethod = { method: 'ai' }
 
@@ -414,10 +415,7 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
     subject: email.subject,
     body_text: email.body_text,
     body_html: email.body_html
-  }).catch(e => {
-    console.error('[CLASSIFIER] Phishing detection failed:', e)
-    return null
-  })
+  }).catch(() => null)
 
   // STEP 1: Get sender trust
   let senderTrust: SenderTrust | null = null
@@ -427,8 +425,8 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
     try {
       senderTrust = await getSenderTrust(email.user_id, email.from_address)
       trustScore = calculateTrustScore(senderTrust)
-    } catch (e) {
-      console.error('[CLASSIFIER] Trust lookup failed:', e)
+    } catch {
+      // Trust lookup failed
     }
   }
 
@@ -445,7 +443,6 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
       reputationResult = await getReputation(email.user_id, email.from_address)
 
       if (reputationResult.shouldUseReputation && reputationResult.suggestedCategory) {
-        console.log(`[CLASSIFIER] Using sender reputation: ${reputationResult.suggestedCategory} (conf: ${reputationResult.reputation?.confidence.toFixed(2)})`)
 
         const reputationCategory = reputationResult.suggestedCategory as Category
         const priority = determinePriority({
@@ -459,9 +456,7 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
         })
 
         // PHASE 5: Update reputation (track email even when using cached reputation)
-        updateReputation(email.user_id, email.from_address, reputationCategory, false).catch(e => {
-          console.error('[CLASSIFIER] Failed to update reputation:', e)
-        })
+        updateReputation(email.user_id, email.from_address, reputationCategory, false).catch(() => {})
 
         // Wait for phishing detection
         const phishingResult = await phishingPromise
@@ -479,8 +474,8 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
           phishing: phishingResult || undefined
         }
       }
-    } catch (e) {
-      console.error('[CLASSIFIER] Reputation lookup failed:', e)
+    } catch {
+      // Reputation lookup failed
     }
   }
 
@@ -489,7 +484,6 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
     try {
       const learned = await applyLearnedRules(email, email.user_id)
       if (learned.category && learned.confidence >= 0.8) {
-        console.log(`[CLASSIFIER] Learned rule: ${learned.category} (${learned.source})`)
         classificationMethod = { method: 'learned', reasoning: learned.source || undefined }
 
         const priority = determinePriority({
@@ -503,9 +497,7 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
         })
 
         // PHASE 5: Update sender reputation
-        updateReputation(email.user_id, email.from_address, learned.category, false).catch(e => {
-          console.error('[CLASSIFIER] Failed to update reputation:', e)
-        })
+        updateReputation(email.user_id, email.from_address, learned.category, false).catch(() => {})
 
         // Wait for phishing detection
         const phishingResult = await phishingPromise
@@ -523,8 +515,8 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
           phishing: phishingResult || undefined
         }
       }
-    } catch (e) {
-      console.error('[CLASSIFIER] Learned rules check failed:', e)
+    } catch {
+      // Learned rules check failed
     }
   }
 
@@ -534,7 +526,6 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
   const sameDomain = email.user_email ? isSameDomain(email.user_email, email.from_address) : false
 
   if (ruleResult && ruleResult.confidence >= 0.85) {
-    console.log(`[CLASSIFIER] Rule match: ${ruleResult.category} (${ruleResult.confidence.toFixed(2)}) - ${ruleResult.reasoning}`)
     classificationMethod = { method: 'rule', reasoning: ruleResult.reasoning }
 
     // Apply trust override if needed
@@ -559,9 +550,7 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
 
     // PHASE 5: Update sender reputation
     if (email.user_id) {
-      updateReputation(email.user_id, email.from_address, finalCategory, false).catch(e => {
-        console.error('[CLASSIFIER] Failed to update reputation:', e)
-      })
+      updateReputation(email.user_id, email.from_address, finalCategory, false).catch(() => {})
     }
 
     // Wait for phishing detection
@@ -632,13 +621,9 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
 
   const needsReplyFlag = needsReply(finalCategory, email.subject || '', email.body_text || '', email.from_address)
 
-  console.log(`[CLASSIFIER] Final: ${finalCategory} (${finalConfidence.toFixed(2)}) via ${classificationMethod.method}`)
-
   // PHASE 5: Update sender reputation with final classification
   if (email.user_id) {
-    updateReputation(email.user_id, email.from_address, finalCategory, false).catch(e => {
-      console.error('[CLASSIFIER] Failed to update reputation:', e)
-    })
+    updateReputation(email.user_id, email.from_address, finalCategory, false).catch(() => {})
   }
 
   // Wait for phishing detection result
@@ -646,8 +631,6 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
 
   // If high phishing score and classified as non-spam, consider overriding to spam
   if (phishingResult?.isPhishing && finalCategory !== 'spam') {
-    console.log(`[CLASSIFIER] Phishing detected (score: ${phishingResult.score}), overriding to spam`)
-
     // Log classification (async)
     if (email.user_id && email.email_id) {
       logClassification({
@@ -661,11 +644,10 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
         classificationSource: classificationMethod.method === 'ai' ? 'gpt' : classificationMethod.method === 'rule' ? 'rule_based' : classificationMethod.method,
         usedSenderReputation: false,
         senderReputationScore: reputationResult?.reputation?.confidence
-      }).catch(e => console.error('[CLASSIFIER] Logging failed:', e))
+      }).catch(() => {})
 
       // Update domain category
-      updateDomainCategory(email.user_id, email.from_address, 'spam')
-        .catch(e => console.error('[CLASSIFIER] Domain category update failed:', e))
+      updateDomainCategory(email.user_id, email.from_address, 'spam').catch(() => {})
     }
 
     return {
@@ -695,11 +677,10 @@ export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassi
       classificationSource: classificationMethod.method === 'ai' ? 'gpt' : classificationMethod.method === 'rule' ? 'rule_based' : classificationMethod.method,
       usedSenderReputation: false,
       senderReputationScore: reputationResult?.reputation?.confidence
-    }).catch(e => console.error('[CLASSIFIER] Logging failed:', e))
+    }).catch(() => {})
 
     // Update domain category
-    updateDomainCategory(email.user_id, email.from_address, finalCategory)
-      .catch(e => console.error('[CLASSIFIER] Domain category update failed:', e))
+    updateDomainCategory(email.user_id, email.from_address, finalCategory).catch(() => {})
   }
 
   return {

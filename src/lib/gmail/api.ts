@@ -57,7 +57,6 @@ export async function listMessages(
   }
 
   const url = `${GMAIL_API_BASE}/users/me/messages?${params.toString()}`;
-  console.log(`[Gmail API] listMessages URL: ${url.replace(accessToken, 'TOKEN')}`);
 
   const response = await fetch(url, {
     headers: {
@@ -66,14 +65,11 @@ export async function listMessages(
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    console.error(`[Gmail API] listMessages error (${response.status}):`, error);
-    throw new Error(`Failed to list messages: ${response.status} - ${error}`);
+    const errorText = await response.text();
+    throw new Error(`Failed to list messages: ${response.status} - ${errorText}`);
   }
 
-  const data = await response.json();
-  console.log(`[Gmail API] listMessages result: ${data.messages?.length || 0} messages, estimate: ${data.resultSizeEstimate}`);
-  return data;
+  return response.json();
 }
 
 /**
@@ -182,10 +178,9 @@ export function extractBody(message: GmailMessage): { text: string; html: string
 
   processPayload(message.payload);
 
-  // IMPORTANT: If no text/plain part, extract text from HTML
+  // If no text/plain part, extract text from HTML
   if (!text && html) {
     text = stripHtml(html);
-    console.log('[extractBody] No text/plain, converted from HTML, length:', text.length);
   }
 
   return { text, html };

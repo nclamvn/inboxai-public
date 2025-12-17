@@ -161,7 +161,8 @@ export function EmailListCompact({
     }
   }, [clearSelection, setIsSelecting])
 
-  // Infinite scroll: observe the load more sentinel
+  // Infinite scroll: observe the load more sentinel with PREFETCH
+  // rootMargin: '400px' triggers load 400px before reaching the end
   useEffect(() => {
     if (!onLoadMore || !hasMore) return
 
@@ -171,7 +172,10 @@ export function EmailListCompact({
           onLoadMore()
         }
       },
-      { threshold: 0.1 }
+      {
+        threshold: 0,
+        rootMargin: '400px', // Start loading 400px before reaching end (approx 5-6 emails)
+      }
     )
 
     if (loadMoreRef.current) {

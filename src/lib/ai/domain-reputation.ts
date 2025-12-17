@@ -82,7 +82,6 @@ export async function logEmailAction(
   const domain = extractDomain(senderEmail)
 
   if (!domain) {
-    console.warn('[DomainReputation] Cannot extract domain from:', senderEmail)
     return
   }
 
@@ -95,10 +94,8 @@ export async function logEmailAction(
         sender_domain: domain,
         action_type: actionType
       })
-
-    console.log(`[DomainReputation] Logged action: ${actionType} for ${domain}`)
-  } catch (error) {
-    console.error('[DomainReputation] Error logging action:', error)
+  } catch {
+    // Error logging action
   }
 }
 
@@ -286,10 +283,8 @@ export async function whitelistDomain(
       }, {
         onConflict: 'user_id,domain'
       })
-
-    console.log(`[DomainReputation] Whitelisted: ${domainLower}`)
-  } catch (error) {
-    console.error('[DomainReputation] Error whitelisting:', error)
+  } catch {
+    // Error whitelisting
   }
 }
 
@@ -316,10 +311,8 @@ export async function blacklistDomain(
       }, {
         onConflict: 'user_id,domain'
       })
-
-    console.log(`[DomainReputation] Blacklisted: ${domainLower}`)
-  } catch (error) {
-    console.error('[DomainReputation] Error blacklisting:', error)
+  } catch {
+    // Error blacklisting
   }
 }
 

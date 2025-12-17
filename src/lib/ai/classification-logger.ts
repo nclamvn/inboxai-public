@@ -99,9 +99,8 @@ export async function logClassification(input: ClassificationLogInput): Promise<
         processing_time_ms: input.processingTimeMs || null
       })
 
-    console.log(`[ClassificationLogger] Logged: ${input.emailId} → ${input.assignedCategory} (${input.classificationSource})`)
-  } catch (error) {
-    console.error('[ClassificationLogger] Error logging:', error)
+  } catch {
+    // Error logging classification
   }
 }
 
@@ -127,9 +126,8 @@ export async function recordClassificationFeedback(
       .eq('email_id', emailId)
       .eq('user_id', userId)
 
-    console.log(`[ClassificationLogger] Feedback recorded: ${emailId} → ${isCorrect ? 'correct' : 'incorrect'}`)
-  } catch (error) {
-    console.error('[ClassificationLogger] Error recording feedback:', error)
+  } catch {
+    // Error recording feedback
   }
 }
 
@@ -333,14 +331,11 @@ export async function aggregateDailyMetrics(date?: Date): Promise<{ success: boo
     })
 
     if (error) {
-      console.error('[ClassificationLogger] Error aggregating metrics:', error)
       return { success: false, count: 0 }
     }
 
-    console.log(`[ClassificationLogger] Aggregated ${data} metrics for ${targetDate.toISOString().split('T')[0]}`)
     return { success: true, count: data || 0 }
-  } catch (error) {
-    console.error('[ClassificationLogger] Error:', error)
+  } catch {
     return { success: false, count: 0 }
   }
 }
