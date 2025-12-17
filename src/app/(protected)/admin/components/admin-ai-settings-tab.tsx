@@ -38,7 +38,7 @@ export const AdminAISettingsTab = memo(function AdminAISettingsTab({
     return (
       <div className="p-6 text-center text-[var(--muted)] py-8">
         <Settings className="w-10 h-10 mx-auto mb-2 opacity-50" />
-        <p>Loading settings...</p>
+        <p>Đang tải cài đặt...</p>
       </div>
     )
   }
@@ -49,7 +49,7 @@ export const AdminAISettingsTab = memo(function AdminAISettingsTab({
         {settings.is_default && (
           <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-[13px] text-blue-700 dark:text-blue-300">
             <AlertTriangle className="w-4 h-4" />
-            Using default settings. Changes will be saved to your account.
+            Đang sử dụng cài đặt mặc định. Thay đổi sẽ được lưu vào tài khoản của bạn.
           </div>
         )}
 
@@ -57,11 +57,11 @@ export const AdminAISettingsTab = memo(function AdminAISettingsTab({
         <div>
           <h3 className="text-[14px] font-medium text-[var(--foreground)] mb-4 flex items-center gap-2">
             <UserCheck className="w-4 h-4" />
-            Sender Reputation
+            Độ uy tín người gửi
           </h3>
           <div className="space-y-4">
             <label className="flex items-center justify-between">
-              <span className="text-[13px] text-[var(--muted)]">Enable sender reputation</span>
+              <span className="text-[13px] text-[var(--muted)]">Bật độ uy tín người gửi</span>
               <button
                 onClick={() => onSettingsChange({...settings, sender_reputation_enabled: !settings.sender_reputation_enabled})}
                 className={cn(
@@ -77,7 +77,7 @@ export const AdminAISettingsTab = memo(function AdminAISettingsTab({
             </label>
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[13px] text-[var(--muted)]">Reputation threshold</span>
+                <span className="text-[13px] text-[var(--muted)]">Ngưỡng độ uy tín</span>
                 <span className="text-[13px] text-[var(--foreground)]">{settings.sender_reputation_threshold}</span>
               </div>
               <input
@@ -97,11 +97,11 @@ export const AdminAISettingsTab = memo(function AdminAISettingsTab({
         <div>
           <h3 className="text-[14px] font-medium text-[var(--foreground)] mb-4 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4" />
-            Phishing Detection
+            Phát hiện lừa đảo
           </h3>
           <div className="space-y-4">
             <label className="flex items-center justify-between">
-              <span className="text-[13px] text-[var(--muted)]">Auto-mark as spam</span>
+              <span className="text-[13px] text-[var(--muted)]">Tự động đánh dấu spam</span>
               <button
                 onClick={() => onSettingsChange({...settings, phishing_auto_spam: !settings.phishing_auto_spam})}
                 className={cn(
@@ -117,7 +117,7 @@ export const AdminAISettingsTab = memo(function AdminAISettingsTab({
             </label>
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[13px] text-[var(--muted)]">Phishing score threshold</span>
+                <span className="text-[13px] text-[var(--muted)]">Ngưỡng điểm lừa đảo</span>
                 <span className="text-[13px] text-[var(--foreground)]">{settings.phishing_score_threshold}</span>
               </div>
               <input
@@ -137,11 +137,11 @@ export const AdminAISettingsTab = memo(function AdminAISettingsTab({
         <div>
           <h3 className="text-[14px] font-medium text-[var(--foreground)] mb-4 flex items-center gap-2">
             <Target className="w-4 h-4" />
-            Classification Confidence
+            Độ tin cậy phân loại
           </h3>
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[13px] text-[var(--muted)]">Low confidence threshold</span>
+              <span className="text-[13px] text-[var(--muted)]">Ngưỡng độ tin cậy thấp</span>
               <span className="text-[13px] text-[var(--foreground)]">{settings.low_confidence_threshold}</span>
             </div>
             <input
@@ -160,16 +160,16 @@ export const AdminAISettingsTab = memo(function AdminAISettingsTab({
         <div>
           <h3 className="text-[14px] font-medium text-[var(--foreground)] mb-4 flex items-center gap-2">
             <Globe className="w-4 h-4" />
-            Domain Reputation Weights
+            Trọng số uy tín tên miền
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {[
-              { key: 'domain_weight_open', label: 'Open' },
-              { key: 'domain_weight_reply', label: 'Reply' },
-              { key: 'domain_weight_archive', label: 'Archive' },
-              { key: 'domain_weight_delete', label: 'Delete' },
+              { key: 'domain_weight_open', label: 'Mở' },
+              { key: 'domain_weight_reply', label: 'Trả lời' },
+              { key: 'domain_weight_archive', label: 'Lưu trữ' },
+              { key: 'domain_weight_delete', label: 'Xoá' },
               { key: 'domain_weight_spam', label: 'Spam' },
-              { key: 'domain_weight_phishing', label: 'Phishing' }
+              { key: 'domain_weight_phishing', label: 'Lừa đảo' }
             ].map(({ key, label }) => (
               <div key={key}>
                 <label className="text-[12px] text-[var(--muted)] block mb-1">{label}</label>
@@ -196,14 +196,14 @@ export const AdminAISettingsTab = memo(function AdminAISettingsTab({
             ) : (
               <Check className="w-4 h-4" />
             )}
-            Save Settings
+            Lưu cài đặt
           </button>
           <button
             onClick={onReset}
             className="flex items-center gap-2 px-4 py-2 border border-[var(--border)] text-[var(--muted)] rounded-lg text-[14px] font-medium hover:bg-[var(--hover)] transition-colors"
           >
             <RotateCcw className="w-4 h-4" />
-            Reset to Defaults
+            Khôi phục mặc định
           </button>
         </div>
       </div>

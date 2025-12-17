@@ -128,7 +128,7 @@ export default function AdminPage() {
 
       if (!whitelistRes.ok || !requestsRes.ok) {
         if (whitelistRes.status === 403 || requestsRes.status === 403) {
-          setError('Ban khong co quyen truy cap trang nay')
+          setError('Bạn không có quyền truy cập trang này')
           return
         }
         throw new Error('Failed to fetch data')
@@ -230,7 +230,7 @@ export default function AdminPage() {
         body: JSON.stringify({ id, action: 'approve', type: 'request' })
       })
       fetchWhitelistData()
-    } catch { setError('Co loi xay ra') }
+    } catch { setError('Có lỗi xảy ra') }
   }, [fetchWhitelistData])
 
   const handleReject = useCallback(async (id: string) => {
@@ -241,7 +241,7 @@ export default function AdminPage() {
         body: JSON.stringify({ id, action: 'reject', type: 'request' })
       })
       fetchWhitelistData()
-    } catch { setError('Co loi xay ra') }
+    } catch { setError('Có lỗi xảy ra') }
   }, [fetchWhitelistData])
 
   const handleToggle = useCallback(async (id: string) => {
@@ -252,15 +252,15 @@ export default function AdminPage() {
         body: JSON.stringify({ id, action: 'toggle' })
       })
       fetchWhitelistData()
-    } catch { setError('Co loi xay ra') }
+    } catch { setError('Có lỗi xảy ra') }
   }, [fetchWhitelistData])
 
   const handleDelete = useCallback(async (id: string) => {
-    if (!confirm('Ban co chac muon xoa?')) return
+    if (!confirm('Bạn có chắc muốn xoá?')) return
     try {
       await fetch(`/api/admin/whitelist?id=${id}`, { method: 'DELETE' })
       fetchWhitelistData()
-    } catch { setError('Co loi xay ra') }
+    } catch { setError('Có lỗi xảy ra') }
   }, [fetchWhitelistData])
 
   const handleDomainAction = useCallback(async (domain: string, action: 'whitelist' | 'blacklist') => {
@@ -271,11 +271,11 @@ export default function AdminPage() {
         body: JSON.stringify({ action, domain })
       })
       fetchDomains()
-    } catch { setError('Co loi xay ra') }
+    } catch { setError('Có lỗi xảy ra') }
   }, [fetchDomains])
 
   const handleRebuildReputation = async () => {
-    if (!confirm('Rebuild domain reputation? This may take a moment.')) return
+    if (!confirm('Xây dựng lại độ uy tín tên miền? Việc này có thể mất một lúc.')) return
     setIsSubmitting(true)
     try {
       await fetch('/api/admin/domain-reputation', {
@@ -284,7 +284,7 @@ export default function AdminPage() {
         body: JSON.stringify({ action: 'rebuild' })
       })
       fetchDomains()
-    } catch { setError('Co loi xay ra') }
+    } catch { setError('Có lỗi xảy ra') }
     finally { setIsSubmitting(false) }
   }
 
@@ -301,16 +301,16 @@ export default function AdminPage() {
         const data = await res.json()
         setAISettings({ ...data.settings, is_default: false })
       }
-    } catch { setError('Co loi xay ra khi luu cai dat') }
+    } catch { setError('Có lỗi xảy ra khi lưu cài đặt') }
     finally { setSavingSettings(false) }
   }
 
   const handleResetSettings = async () => {
-    if (!confirm('Reset to default settings?')) return
+    if (!confirm('Đặt lại về cài đặt mặc định?')) return
     try {
       await fetch('/api/admin/ai-settings', { method: 'DELETE' })
       fetchAISettings()
-    } catch { setError('Co loi xay ra') }
+    } catch { setError('Có lỗi xảy ra') }
   }
 
   // Filtered data
@@ -323,19 +323,19 @@ export default function AdminPage() {
   const filteredDomains = domains.filter(d => d.domain.toLowerCase().includes(searchQuery.toLowerCase()))
 
   // Access denied view
-  if (error === 'Ban khong co quyen truy cap trang nay') {
+  if (error === 'Bạn không có quyền truy cập trang này') {
     return (
       <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
         <div className="text-center">
           <Shield className="w-16 h-16 text-[var(--muted-foreground)] mx-auto mb-4" />
-          <h1 className="text-xl font-semibold text-[var(--foreground)] mb-2">Khong co quyen truy cap</h1>
-          <p className="text-[var(--muted)] mb-6">Ban khong phai la admin cua he thong.</p>
+          <h1 className="text-xl font-semibold text-[var(--foreground)] mb-2">Không có quyền truy cập</h1>
+          <p className="text-[var(--muted)] mb-6">Bạn không phải là admin của hệ thống.</p>
           <button
             onClick={() => router.push('/inbox')}
             className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg"
           >
             <ArrowLeft className="w-4 h-4" />
-            Quay lai Inbox
+            Quay lại Inbox
           </button>
         </div>
       </div>
@@ -355,9 +355,9 @@ export default function AdminPage() {
               <div>
                 <h1 className="text-lg font-semibold text-[var(--foreground)] flex items-center gap-2">
                   <Shield className="w-5 h-5" />
-                  Admin Dashboard
+                  Quản trị hệ thống
                 </h1>
-                <p className="text-[13px] text-[var(--muted)]">Quan ly he thong va AI settings</p>
+                <p className="text-[13px] text-[var(--muted)]">Quản lý người dùng và cài đặt AI</p>
               </div>
             </div>
             {activeTab === 'whitelist' && (
@@ -366,7 +366,7 @@ export default function AdminPage() {
                 className="flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg text-[14px] font-medium hover:opacity-90 transition-opacity"
               >
                 <Plus className="w-4 h-4" />
-                Them email
+                Thêm email
               </button>
             )}
             {activeTab === 'domains' && (
@@ -398,11 +398,11 @@ export default function AdminPage() {
           {/* Tabs */}
           <div className="flex border-b border-[var(--border)] overflow-x-auto">
             {[
-              { id: 'requests' as TabType, label: 'Yeu cau', icon: Clock, badge: pendingCount },
-              { id: 'whitelist' as TabType, label: 'Whitelist', icon: Users, badge: whitelist.length },
-              { id: 'ai-metrics' as TabType, label: 'AI Metrics', icon: BarChart3 },
-              { id: 'domains' as TabType, label: 'Domains', icon: Globe },
-              { id: 'ai-settings' as TabType, label: 'AI Settings', icon: Settings }
+              { id: 'requests' as TabType, label: 'Yêu cầu', icon: Clock, badge: pendingCount },
+              { id: 'whitelist' as TabType, label: 'Đã duyệt', icon: Users, badge: whitelist.length },
+              { id: 'ai-metrics' as TabType, label: 'Thống kê AI', icon: BarChart3 },
+              { id: 'domains' as TabType, label: 'Tên miền', icon: Globe },
+              { id: 'ai-settings' as TabType, label: 'Cài đặt AI', icon: Settings }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -438,7 +438,7 @@ export default function AdminPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Tim kiem..."
+                  placeholder="Tìm kiếm..."
                   className="w-full pl-10 pr-4 py-2 border border-[var(--border)] rounded-lg text-[14px] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)]"
                 />
               </div>
@@ -480,7 +480,7 @@ export default function AdminPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="w-full max-w-md bg-[var(--card)] rounded-xl overflow-hidden">
             <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
-              <h2 className="text-[16px] font-semibold text-[var(--foreground)]">Them email vao whitelist</h2>
+              <h2 className="text-[16px] font-semibold text-[var(--foreground)]">Thêm email vào danh sách</h2>
               <button onClick={() => setShowAddModal(false)} className="p-1 hover:bg-[var(--hover)] rounded">
                 <X className="w-5 h-5 text-[var(--muted)]" />
               </button>
@@ -498,7 +498,7 @@ export default function AdminPage() {
                 />
               </div>
               <div>
-                <label className="block text-[13px] font-medium text-[var(--foreground)] mb-1.5">Ghi chu (tuy chon)</label>
+                <label className="block text-[13px] font-medium text-[var(--foreground)] mb-1.5">Ghi chú (tuỳ chọn)</label>
                 <input
                   type="text"
                   value={newNotes}
@@ -513,14 +513,14 @@ export default function AdminPage() {
                   onClick={() => setShowAddModal(false)}
                   className="flex-1 py-2.5 border border-[var(--border)] rounded-lg text-[14px] font-medium text-[var(--muted)] hover:bg-[var(--hover)] transition-colors"
                 >
-                  Huy
+                  Huỷ
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || !newEmail}
                   className="flex-1 py-2.5 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg text-[14px] font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Dang them...' : 'Them'}
+                  {isSubmitting ? 'Đang thêm...' : 'Thêm'}
                 </button>
               </div>
             </form>

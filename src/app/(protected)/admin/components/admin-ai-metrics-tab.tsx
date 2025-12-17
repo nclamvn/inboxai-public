@@ -35,7 +35,7 @@ export const AdminAIMetricsTab = memo(function AdminAIMetricsTab({
     <div className="p-6">
       {/* Time Range Selector */}
       <div className="flex items-center gap-2 mb-6">
-        <span className="text-[13px] text-[var(--muted)]">Time range:</span>
+        <span className="text-[13px] text-[var(--muted)]">Khoảng thời gian:</span>
         {[7, 14, 30].map(days => (
           <button
             key={days}
@@ -47,7 +47,7 @@ export const AdminAIMetricsTab = memo(function AdminAIMetricsTab({
                 : 'bg-[var(--secondary)] text-[var(--muted)] hover:bg-[var(--hover)]'
             )}
           >
-            {days}d
+            {days} ngày
           </button>
         ))}
       </div>
@@ -59,7 +59,7 @@ export const AdminAIMetricsTab = memo(function AdminAIMetricsTab({
             <div className="bg-[var(--background)] rounded-lg p-4">
               <div className="flex items-center gap-2 text-[var(--muted)] mb-2">
                 <Zap className="w-4 h-4" />
-                <span className="text-[12px]">Total Classifications</span>
+                <span className="text-[12px]">Tổng phân loại</span>
               </div>
               <p className="text-2xl font-semibold text-[var(--foreground)]">
                 {metrics.totalClassifications}
@@ -68,7 +68,7 @@ export const AdminAIMetricsTab = memo(function AdminAIMetricsTab({
             <div className="bg-[var(--background)] rounded-lg p-4">
               <div className="flex items-center gap-2 text-[var(--muted)] mb-2">
                 <TrendingUp className="w-4 h-4" />
-                <span className="text-[12px]">Avg Confidence</span>
+                <span className="text-[12px]">Độ tin cậy TB</span>
               </div>
               <p className="text-2xl font-semibold text-[var(--foreground)]">
                 {metrics.averageConfidence ? `${(metrics.averageConfidence * 100).toFixed(1)}%` : '-'}
@@ -77,7 +77,7 @@ export const AdminAIMetricsTab = memo(function AdminAIMetricsTab({
             <div className="bg-[var(--background)] rounded-lg p-4">
               <div className="flex items-center gap-2 text-[var(--muted)] mb-2">
                 <Target className="w-4 h-4" />
-                <span className="text-[12px]">Accuracy Rate</span>
+                <span className="text-[12px]">Độ chính xác</span>
               </div>
               <p className="text-2xl font-semibold text-[var(--foreground)]">
                 {metrics.accuracyRate ? `${(metrics.accuracyRate * 100).toFixed(1)}%` : '-'}
@@ -86,7 +86,7 @@ export const AdminAIMetricsTab = memo(function AdminAIMetricsTab({
             <div className="bg-[var(--background)] rounded-lg p-4">
               <div className="flex items-center gap-2 text-[var(--muted)] mb-2">
                 <CheckCircle2 className="w-4 h-4" />
-                <span className="text-[12px]">Positive Feedback</span>
+                <span className="text-[12px]">Phản hồi tốt</span>
               </div>
               <p className="text-2xl font-semibold text-[var(--foreground)]">
                 {metrics.positiveRate ? `${(metrics.positiveRate * 100).toFixed(0)}%` : '-'}
@@ -98,7 +98,7 @@ export const AdminAIMetricsTab = memo(function AdminAIMetricsTab({
           {metrics.bySource && Object.keys(metrics.bySource).length > 0 && (
             <div>
               <h3 className="text-[14px] font-medium text-[var(--foreground)] mb-3">
-                Classification Sources
+                Nguồn phân loại
               </h3>
               <div className="space-y-2">
                 {Object.entries(metrics.bySource).map(([source, count]) => (
@@ -125,7 +125,7 @@ export const AdminAIMetricsTab = memo(function AdminAIMetricsTab({
           {metrics.accuracyByCategory && Object.keys(metrics.accuracyByCategory).length > 0 && (
             <div>
               <h3 className="text-[14px] font-medium text-[var(--foreground)] mb-3">
-                Accuracy by Category
+                Độ chính xác theo danh mục
               </h3>
               <div className="space-y-2">
                 {Object.entries(metrics.accuracyByCategory).map(([category, data]) => (
@@ -163,9 +163,9 @@ export const AdminAIMetricsTab = memo(function AdminAIMetricsTab({
                       <div className="mt-3 pt-3 border-t border-[var(--border)]">
                         <div className="flex items-center gap-2 text-[12px] text-[var(--muted)]">
                           <CheckCircle2 className="w-3 h-3 text-green-500" />
-                          <span>Accurate: {data.accurate}</span>
+                          <span>Chính xác: {data.accurate}</span>
                           <XCircle className="w-3 h-3 text-red-500 ml-4" />
-                          <span>Inaccurate: {data.total - data.accurate}</span>
+                          <span>Không chính xác: {data.total - data.accurate}</span>
                         </div>
                       </div>
                     )}
@@ -178,7 +178,7 @@ export const AdminAIMetricsTab = memo(function AdminAIMetricsTab({
       ) : (
         <div className="text-center text-[var(--muted)] py-8">
           <BarChart3 className="w-10 h-10 mx-auto mb-2 opacity-50" />
-          <p>No metrics data available</p>
+          <p>Không có dữ liệu thống kê</p>
         </div>
       )}
     </div>

@@ -39,7 +39,7 @@ export const AdminRequestsTab = memo(function AdminRequestsTab({
     return (
       <div className="p-8 text-center text-[var(--muted)]">
         <Clock className="w-10 h-10 mx-auto mb-2 opacity-50" />
-        <p>Khong co yeu cau nao</p>
+        <p>Không có yêu cầu nào</p>
       </div>
     )
   }
@@ -60,9 +60,9 @@ export const AdminRequestsTab = memo(function AdminRequestsTab({
                   request.status === 'approved' && 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
                   request.status === 'rejected' && 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                 )}>
-                  {request.status === 'pending' && 'Cho duyet'}
-                  {request.status === 'approved' && 'Da duyet'}
-                  {request.status === 'rejected' && 'Tu choi'}
+                  {request.status === 'pending' && 'Chờ duyệt'}
+                  {request.status === 'approved' && 'Đã duyệt'}
+                  {request.status === 'rejected' && 'Từ chối'}
                 </span>
               </div>
               <p className="text-[14px] text-[var(--muted)]">{request.email}</p>
@@ -79,17 +79,17 @@ export const AdminRequestsTab = memo(function AdminRequestsTab({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => onApprove(request.id)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg text-[13px] font-medium hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white rounded-lg text-[13px] font-medium hover:bg-green-600 transition-colors"
                 >
                   <Check className="w-4 h-4" />
-                  Duyet
+                  Duyệt
                 </button>
                 <button
                   onClick={() => onReject(request.id)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg text-[13px] font-medium hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500 text-white rounded-lg text-[13px] font-medium hover:bg-red-600 transition-colors"
                 >
                   <X className="w-4 h-4" />
-                  Tu choi
+                  Từ chối
                 </button>
               </div>
             )}

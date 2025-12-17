@@ -37,7 +37,7 @@ export const AdminWhitelistTab = memo(function AdminWhitelistTab({
     return (
       <div className="p-8 text-center text-[var(--muted)]">
         <Users className="w-10 h-10 mx-auto mb-2 opacity-50" />
-        <p>Whitelist trong</p>
+        <p>Danh sách trống</p>
       </div>
     )
   }
@@ -57,7 +57,7 @@ export const AdminWhitelistTab = memo(function AdminWhitelistTab({
                 </span>
                 {!entry.is_active && (
                   <span className="px-2 py-0.5 bg-[var(--secondary)] text-[var(--muted-foreground)] text-[11px] rounded-full">
-                    Inactive
+                    Không hoạt động
                   </span>
                 )}
               </div>
@@ -74,10 +74,10 @@ export const AdminWhitelistTab = memo(function AdminWhitelistTab({
                 className={cn(
                   'p-2 rounded-lg transition-colors',
                   entry.is_active
-                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/50'
+                    ? 'bg-green-500 text-white hover:bg-green-600'
                     : 'bg-[var(--secondary)] text-[var(--muted-foreground)] hover:bg-[var(--hover)]'
                 )}
-                title={entry.is_active ? 'Vo hieu hoa' : 'Kich hoat'}
+                title={entry.is_active ? 'Vô hiệu hoá' : 'Kích hoạt'}
               >
                 {entry.is_active ? (
                   <UserCheck className="w-4 h-4" />
@@ -87,8 +87,8 @@ export const AdminWhitelistTab = memo(function AdminWhitelistTab({
               </button>
               <button
                 onClick={() => onDelete(entry.id)}
-                className="p-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
-                title="Xoa"
+                className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                title="Xoá"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
