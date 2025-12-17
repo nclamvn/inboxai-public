@@ -38,9 +38,9 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]" suppressHydrationWarning>
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[var(--background)]/80 backdrop-blur-lg border-b border-[var(--border)]">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[var(--background)]/80 backdrop-blur-lg border-b border-[var(--border)]" suppressHydrationWarning>
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -59,7 +59,7 @@ export default function LandingPage() {
               <a href="#how-it-works" className="text-[14px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
                 Cách hoạt động
               </a>
-              <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-[var(--secondary)] text-[var(--muted)]">
+              <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-[var(--secondary)] text-[var(--muted)]" suppressHydrationWarning>
                 {resolvedTheme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
               <Link
@@ -72,7 +72,7 @@ export default function LandingPage() {
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center gap-2">
-              <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-[var(--secondary)] text-[var(--muted)]">
+              <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-[var(--secondary)] text-[var(--muted)]" suppressHydrationWarning>
                 {resolvedTheme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
               <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2">

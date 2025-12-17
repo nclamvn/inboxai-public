@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { QueryProvider } from '@/providers/query-provider'
 import { ThemeProvider } from '@/contexts/theme-context'
+import { ToastProvider } from '@/components/ui/toast'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { OfflineBanner } from '@/components/offline-banner'
 import { WebVitalsReporter } from '@/components/web-vitals-reporter'
@@ -79,10 +80,17 @@ export const metadata: Metadata = {
 // Script to prevent flash of wrong theme
 const themeScript = `
   (function() {
-    const theme = localStorage.getItem('theme') || 'system';
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const resolved = theme === 'system' ? (systemDark ? 'dark' : 'light') : theme;
-    document.documentElement.classList.add(resolved);
+    try {
+      var mode = localStorage.getItem('inboxai-theme-mode') || localStorage.getItem('theme');
+      var theme = mode;
+
+      if (mode === 'system' || !mode) {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+
+      document.documentElement.classList.add(theme);
+      document.documentElement.style.colorScheme = theme;
+    } catch (e) {}
   })();
 `
 
@@ -100,13 +108,15 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} antialiased bg-[var(--background)] text-[var(--foreground)]`}>
         <ThemeProvider>
-          <ErrorBoundary>
-            <OfflineBanner />
-            <WebVitalsReporter />
-            <QueryProvider>
-              {children}
-            </QueryProvider>
-          </ErrorBoundary>
+          <ToastProvider position="bottom-right">
+            <ErrorBoundary>
+              <OfflineBanner />
+              <WebVitalsReporter />
+              <QueryProvider>
+                {children}
+              </QueryProvider>
+            </ErrorBoundary>
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>

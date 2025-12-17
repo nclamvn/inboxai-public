@@ -3,7 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 import { Sidebar } from '@/components/layout/sidebar'
 import { Header } from '@/components/layout/header'
 import { MobileNav } from '@/components/layout/mobile-nav'
-import { ToastProvider } from '@/components/providers/toast-provider'
 import { UrgentAlertWrapper } from '@/components/ai/urgent-alert-wrapper'
 
 export default async function DashboardLayout({
@@ -34,7 +33,6 @@ export default async function DashboardLayout({
       {/* Mobile Bottom Navigation */}
       <MobileNav />
 
-      <ToastProvider />
       <UrgentAlertWrapper />
     </div>
   )
