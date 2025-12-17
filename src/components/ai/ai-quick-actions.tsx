@@ -10,10 +10,10 @@ interface AIQuickActionsProps {
 
 const quickActions = [
   {
-    href: '/insights/daily',
+    href: '/insights',
     icon: FileText,
-    label: 'Tóm tắt',
-    description: 'Tóm tắt inbox hôm nay'
+    label: 'Insights',
+    description: 'Báo cáo & phân tích email'
   },
   {
     href: '/compose?ai=true',
