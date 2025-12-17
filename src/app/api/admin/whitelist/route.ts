@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient, SupabaseClient } from '@supabase/supabase-js'
+import { sendWaitlistApproval } from '@/lib/resend/waitlist-emails'
 
 // Admin emails that can manage whitelist
 const ADMIN_EMAILS = ['nclamvn@gmail.com']
@@ -139,7 +140,7 @@ export async function PATCH(request: NextRequest) {
       // Get request details
       const { data: requestData } = await getSupabaseAdmin()
         .from('access_requests')
-        .select('email, full_name')
+        .select('email, full_name, name')
         .eq('id', id)
         .single()
 
@@ -152,7 +153,7 @@ export async function PATCH(request: NextRequest) {
         .from('whitelist')
         .insert({
           email: requestData.email,
-          notes: `Auto-approved from request. Name: ${requestData.full_name}`,
+          notes: `Auto-approved from request. Name: ${requestData.full_name || requestData.name}`,
           added_by: user?.id
         })
 
@@ -166,7 +167,17 @@ export async function PATCH(request: NextRequest) {
         })
         .eq('id', id)
 
-      return NextResponse.json({ success: true, message: 'Đã phê duyệt' })
+      // Send approval email notification
+      const userName = requestData.full_name || requestData.name
+      const emailResult = await sendWaitlistApproval(requestData.email, userName)
+
+      console.log(`[ADMIN] Approved ${requestData.email}, email sent: ${emailResult.success}`)
+
+      return NextResponse.json({
+        success: true,
+        message: 'Đã phê duyệt và gửi email thông báo',
+        emailSent: emailResult.success
+      })
     }
 
     if (action === 'reject') {

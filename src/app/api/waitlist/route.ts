@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { checkRateLimit, getClientIP } from '@/lib/rate-limit'
+import { sendWaitlistConfirmation } from '@/lib/resend/waitlist-emails'
 
 let supabaseInstance: SupabaseClient | null = null
 
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest) {
       .from('access_requests')
       .insert({
         email: emailLower,
-        name: name?.trim() || null,
+        full_name: name?.trim() || 'Waitlist User',
         status: 'pending'
       })
 
@@ -93,9 +94,14 @@ export async function POST(request: NextRequest) {
 
     console.log(`[WAITLIST] New signup: ${emailLower}`)
 
+    // Send confirmation email (non-blocking)
+    sendWaitlistConfirmation(emailLower, name?.trim()).catch(err => {
+      console.error('[WAITLIST] Failed to send confirmation email:', err)
+    })
+
     return NextResponse.json({
       success: true,
-      message: 'Bạn đã được thêm vào danh sách chờ của InboxAI. Chúng tôi sẽ liên hệ khi có slot mới!'
+      message: 'Đăng ký thành công! Chúng tôi sẽ gửi email khi có slot mới.'
     })
 
   } catch (error) {
