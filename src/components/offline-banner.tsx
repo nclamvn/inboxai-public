@@ -14,6 +14,12 @@ export function OfflineBanner() {
   const { isOnline, wasOffline } = useNetworkStatus()
   const [showBackOnline, setShowBackOnline] = useState(false)
   const [dismissed, setDismissed] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  // Wait for client-side hydration to prevent flash
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Show "back online" message when connection restored
   useEffect(() => {
@@ -33,6 +39,9 @@ export function OfflineBanner() {
       setDismissed(false)
     }
   }, [isOnline])
+
+  // Don't render until client-side hydration is complete (prevents flash)
+  if (!mounted) return null
 
   // Don't show anything if online and not showing "back online" message
   if (isOnline && !showBackOnline) return null
