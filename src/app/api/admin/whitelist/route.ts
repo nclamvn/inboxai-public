@@ -227,6 +227,17 @@ export async function PATCH(request: NextRequest) {
   return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
 }
 
+// OPTIONS - Handle CORS preflight
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  })
+}
+
 // DELETE - Remove from whitelist
 export async function DELETE(request: NextRequest) {
   if (!await isAdmin(request)) {
