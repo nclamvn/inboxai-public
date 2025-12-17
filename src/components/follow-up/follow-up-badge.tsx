@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Bell } from 'lucide-react'
+import { Clock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface FollowUpCounts {
@@ -54,7 +54,7 @@ export function FollowUpBadge({ className, showLabel = false }: Props) {
             className
           )}
         >
-          <Bell className="w-4 h-4" strokeWidth={1.5} />
+          <Clock className="w-4 h-4" strokeWidth={1.5} />
           <span className="text-[14px]">Follow-ups</span>
         </button>
       )
@@ -73,7 +73,7 @@ export function FollowUpBadge({ className, showLabel = false }: Props) {
         className
       )}
     >
-      <Bell className="w-5 h-5" strokeWidth={1.5} />
+      <Clock className="w-5 h-5" strokeWidth={1.5} />
       {showLabel && <span className="text-[14px] ml-2">Follow-ups</span>}
 
       {/* Badge count */}
