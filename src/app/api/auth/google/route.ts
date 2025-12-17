@@ -9,7 +9,7 @@ import { getGoogleAuthUrl } from '@/lib/oauth/google';
 
 // Get base URL for redirects (Render uses internal proxy URLs)
 function getBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL || 'https://inboxai.vn';
+  return process.env.NEXT_PUBLIC_APP_URL || 'https://www.inboxai.vn';
 }
 
 export async function GET() {

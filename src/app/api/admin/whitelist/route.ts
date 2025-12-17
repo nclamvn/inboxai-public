@@ -20,7 +20,9 @@ function getSupabaseAdmin(): SupabaseClient {
 
 async function isAdmin(request: NextRequest): Promise<boolean> {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user }, error } = await supabase.auth.getUser()
+
+  console.log(`[ADMIN] Auth check - user: ${user?.email}, error: ${error?.message}`)
 
   if (!user?.email) return false
   return ADMIN_EMAILS.includes(user.email.toLowerCase())
@@ -138,11 +140,20 @@ export async function PATCH(request: NextRequest) {
   if (type === 'request') {
     if (action === 'approve') {
       // Get request details
-      const { data: requestData } = await getSupabaseAdmin()
+      console.log(`[ADMIN] Approving request ID: ${id}`)
+
+      const { data: requestData, error: fetchError } = await getSupabaseAdmin()
         .from('access_requests')
         .select('email, full_name, name')
         .eq('id', id)
         .single()
+
+      console.log(`[ADMIN] Query result:`, { requestData, fetchError })
+
+      if (fetchError) {
+        console.error(`[ADMIN] Fetch error:`, fetchError)
+        return NextResponse.json({ error: `Database error: ${fetchError.message}` }, { status: 500 })
+      }
 
       if (!requestData) {
         return NextResponse.json({ error: 'Request not found' }, { status: 404 })
