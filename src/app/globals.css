@@ -478,14 +478,31 @@ p {
 
 .email-content table {
   border-collapse: collapse;
-  width: 100%;
-  margin: 1em 0;
+  border: none !important;
+  width: auto;
+  margin: 0.5em 0;
+  background: transparent !important;
+}
+
+.email-content table,
+.email-content tbody,
+.email-content tr,
+.email-content td,
+.email-content th {
+  border: none !important;
+  border-width: 0 !important;
+  background: transparent !important;
 }
 
 .email-content td,
 .email-content th {
-  border: 1px solid var(--border);
-  padding: 8px;
+  padding: 6px 8px;
+}
+
+/* Hide empty table cells that create blank boxes */
+.email-content td:empty,
+.email-content div:empty {
+  display: none;
 }
 
 .email-content blockquote {

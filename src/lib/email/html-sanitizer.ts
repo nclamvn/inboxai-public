@@ -30,6 +30,22 @@ export function sanitizeEmailHtml(
   // Sanitize
   let sanitized = DOMPurify.sanitize(html, config)
 
+  // Remove ugly table borders
+  sanitized = sanitized.replace(/\s+border\s*=\s*["'][^"']*["']/gi, '')
+  sanitized = sanitized.replace(/\s+bordercolor\s*=\s*["'][^"']*["']/gi, '')
+  sanitized = sanitized.replace(/\s+frame\s*=\s*["'][^"']*["']/gi, '')
+  sanitized = sanitized.replace(/\s+rules\s*=\s*["'][^"']*["']/gi, '')
+  sanitized = sanitized.replace(/\s+cellspacing\s*=\s*["'][^"']*["']/gi, '')
+  sanitized = sanitized.replace(/\s+cellpadding\s*=\s*["'][^"']*["']/gi, '')
+  sanitized = sanitized.replace(/\s+bgcolor\s*=\s*["'][^"']*["']/gi, '')
+
+  // Remove border CSS from inline styles
+  sanitized = sanitized.replace(/border(-width|-style|-color|-top|-right|-bottom|-left|-collapse|-spacing)?\s*:\s*[^;}"']+[;]?/gi, '')
+
+  // Remove empty tables/divs that create blank boxes
+  sanitized = sanitized.replace(/<table[^>]*>\s*(<tbody[^>]*>)?\s*<tr[^>]*>\s*<td[^>]*>\s*(&nbsp;|\s)*\s*<\/td>\s*<\/tr>\s*(<\/tbody>)?\s*<\/table>/gi, '')
+  sanitized = sanitized.replace(/<div[^>]*>\s*(&nbsp;|\s)*\s*<\/div>/gi, '')
+
   // Fix image issues
   if (allowImages) {
     // Remove cid: image references (inline attachments we can't display)
