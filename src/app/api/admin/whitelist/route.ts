@@ -144,7 +144,7 @@ export async function PATCH(request: NextRequest) {
 
       const { data: requestData, error: fetchError } = await getSupabaseAdmin()
         .from('access_requests')
-        .select('email, full_name, name')
+        .select('email, full_name')
         .eq('id', id)
         .single()
 
@@ -164,7 +164,7 @@ export async function PATCH(request: NextRequest) {
         .from('whitelist')
         .insert({
           email: requestData.email,
-          notes: `Auto-approved from request. Name: ${requestData.full_name || requestData.name}`,
+          notes: `Auto-approved from request. Name: ${requestData.full_name}`,
           added_by: user?.id
         })
 
@@ -179,7 +179,7 @@ export async function PATCH(request: NextRequest) {
         .eq('id', id)
 
       // Send approval email notification
-      const userName = requestData.full_name || requestData.name
+      const userName = requestData.full_name
       const emailResult = await sendWaitlistApproval(requestData.email, userName)
 
       console.log(`[ADMIN] Approved ${requestData.email}, email sent: ${emailResult.success}`)
