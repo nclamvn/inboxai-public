@@ -10,13 +10,14 @@ interface UseEmailsOptions {
   accountIds?: string[] // Filter by specific account(s)
 }
 
-export function useEmails({ folder = 'inbox', pageSize = 200, accountIds }: UseEmailsOptions = {}) {
+export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEmailsOptions = {}) {
   const [emails, setEmails] = useState<Email[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState(true)
-  const pageRef = useRef(0)
+  // CURSOR-BASED: Track cursor (received_at timestamp) instead of page number
+  const cursorRef = useRef<string | null>(null)
 
   const supabase = createClient()
 
@@ -68,26 +69,34 @@ export function useEmails({ folder = 'inbox', pageSize = 200, accountIds }: UseE
     return query
   }, [folder, accountIds, supabase])
 
-  // Fetch initial page
+  // Fetch initial page - CURSOR-BASED O(1) vs O(n) offset
   const fetchEmails = useCallback(async () => {
     setLoading(true)
     setError(null)
-    pageRef.current = 0
+    cursorRef.current = null
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
+      // Fetch pageSize + 1 to check if there's more
       const { data, error: fetchError } = await buildQuery(user.id)
         .order('received_at', { ascending: false })
-        .range(0, pageSize - 1)
+        .limit(pageSize + 1)
 
       if (fetchError) throw fetchError
 
-      const fetchedEmails = data as Email[] || []
+      const allData = data as Email[] || []
+      // Check if there's more by seeing if we got extra item
+      const hasMoreItems = allData.length > pageSize
+      const fetchedEmails = hasMoreItems ? allData.slice(0, pageSize) : allData
+
       setEmails(fetchedEmails)
-      setHasMore(fetchedEmails.length === pageSize)
-      pageRef.current = 1
+      setHasMore(hasMoreItems)
+      // Set cursor to last item's timestamp for next page
+      cursorRef.current = fetchedEmails.length > 0
+        ? fetchedEmails[fetchedEmails.length - 1].received_at
+        : null
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch emails')
     } finally {
@@ -95,30 +104,34 @@ export function useEmails({ folder = 'inbox', pageSize = 200, accountIds }: UseE
     }
   }, [buildQuery, pageSize, supabase])
 
-  // Load more emails (pagination)
+  // Load more emails - CURSOR-BASED O(1) pagination
   const loadMore = useCallback(async () => {
-    if (loadingMore || !hasMore) return
+    if (loadingMore || !hasMore || !cursorRef.current) return
 
     setLoadingMore(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      const from = pageRef.current * pageSize
-      const to = from + pageSize - 1
-
+      // CURSOR-BASED: Use .lt() on received_at instead of .range()
+      // This is O(1) with index vs O(n) with offset
       const { data, error: fetchError } = await buildQuery(user.id)
+        .lt('received_at', cursorRef.current)
         .order('received_at', { ascending: false })
-        .range(from, to)
+        .limit(pageSize + 1)
 
       if (fetchError) throw fetchError
 
-      const newEmails = data as Email[] || []
+      const allData = data as Email[] || []
+      const hasMoreItems = allData.length > pageSize
+      const newEmails = hasMoreItems ? allData.slice(0, pageSize) : allData
+
       if (newEmails.length > 0) {
         setEmails(prev => [...prev, ...newEmails])
-        pageRef.current += 1
+        // Update cursor to last item's timestamp
+        cursorRef.current = newEmails[newEmails.length - 1].received_at
       }
-      setHasMore(newEmails.length === pageSize)
+      setHasMore(hasMoreItems)
     } catch (err) {
       console.error('Load more error:', err)
     } finally {
