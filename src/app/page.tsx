@@ -6,50 +6,13 @@ import {
   Mail, Sparkles, Shield, Zap, Clock, Brain,
   ChevronRight, Check, Moon, Sun, Menu, X,
   Inbox, Tag, Trash2, Star, ArrowRight,
-  Smartphone, Lock, RefreshCw, AlertCircle
+  Smartphone, Lock, RefreshCw
 } from 'lucide-react'
 import { useTheme } from '@/contexts/theme-context'
 
 export default function LandingPage() {
-  const [email, setEmail] = useState('')
-  const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [successMessage, setSuccessMessage] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { toggleTheme, resolvedTheme } = useTheme()
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!email) return
-
-    setLoading(true)
-    setError('')
-
-    try {
-      const res = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.toLowerCase().trim() })
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error || 'Có lỗi xảy ra, vui lòng thử lại')
-        setLoading(false)
-        return
-      }
-
-      setSuccessMessage(data.message || 'Đăng ký thành công!')
-      setSubmitted(true)
-      setEmail('')
-    } catch (err) {
-      console.error(err)
-      setError('Không thể kết nối server. Vui lòng thử lại.')
-    }
-    setLoading(false)
-  }
 
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]" suppressHydrationWarning>
@@ -131,45 +94,17 @@ export default function LandingPage() {
               Tiết kiệm hàng giờ mỗi tuần.
             </p>
 
-            {/* CTA Form */}
-            {submitted ? (
-              <div className="inline-flex items-center gap-3 px-6 py-4 bg-green-500/10 border border-green-500/30 rounded-2xl">
-                <Check className="w-6 h-6 text-green-500" />
-                <span className="text-[15px] font-medium text-[var(--foreground)]">
-                  {successMessage || 'Cảm ơn! Bạn đã được thêm vào danh sách chờ.'}
-                </span>
-              </div>
-            ) : (
-              <div className="max-w-md mx-auto">
-                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => { setEmail(e.target.value); setError('') }}
-                    placeholder="Email của bạn"
-                    required
-                    className={`flex-1 px-5 py-3.5 bg-[var(--secondary)] border rounded-xl text-[15px] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${error ? 'border-red-500' : 'border-[var(--border)]'}`}
-                  />
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="px-6 py-3.5 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-xl text-[15px] font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center justify-center gap-2 whitespace-nowrap"
-                  >
-                    {loading ? 'Đang xử lý...' : 'Đăng ký waitlist'}
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </form>
-                {error && (
-                  <div className="flex items-center justify-center gap-2 mt-3 text-red-500 text-[14px]">
-                    <AlertCircle className="w-4 h-4" />
-                    <span>{error}</span>
-                  </div>
-                )}
-              </div>
-            )}
+            {/* CTA Button */}
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-xl text-[16px] font-semibold hover:opacity-90 transition-opacity"
+            >
+              Đăng ký ngay
+              <ArrowRight className="w-5 h-5" />
+            </Link>
 
             <p className="text-[13px] text-[var(--muted-foreground)] mt-4">
-              Miễn phí trong Private Beta • Không cần thẻ tín dụng
+              Miễn phí trong Open Beta • Không cần thẻ tín dụng
             </p>
           </div>
 
@@ -430,44 +365,16 @@ export default function LandingPage() {
               Sẵn sàng tiết kiệm thời gian?
             </h2>
             <p className="text-[16px] text-[var(--muted)] mb-8 max-w-lg mx-auto">
-              Tham gia Private Beta ngay hôm nay và trải nghiệm cách quản lý email thông minh hơn.
+              Tham gia Open Beta ngay hôm nay và trải nghiệm cách quản lý email thông minh hơn.
             </p>
 
-            {submitted ? (
-              <div className="inline-flex items-center gap-3 px-6 py-4 bg-green-500/10 border border-green-500/30 rounded-2xl">
-                <Check className="w-6 h-6 text-green-500" />
-                <span className="text-[15px] font-medium text-[var(--foreground)]">
-                  {successMessage || 'Bạn đã đăng ký! Chúng tôi sẽ liên hệ sớm.'}
-                </span>
-              </div>
-            ) : (
-              <div className="max-w-md mx-auto">
-                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => { setEmail(e.target.value); setError('') }}
-                    placeholder="Email của bạn"
-                    required
-                    className={`flex-1 px-5 py-3.5 bg-[var(--background)] border rounded-xl text-[15px] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${error ? 'border-red-500' : 'border-[var(--border)]'}`}
-                  />
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="px-6 py-3.5 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-xl text-[15px] font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center justify-center gap-2"
-                  >
-                    {loading ? 'Đang xử lý...' : 'Tham gia ngay'}
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </form>
-                {error && (
-                  <div className="flex items-center justify-center gap-2 mt-3 text-red-500 text-[14px]">
-                    <AlertCircle className="w-4 h-4" />
-                    <span>{error}</span>
-                  </div>
-                )}
-              </div>
-            )}
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-xl text-[16px] font-semibold hover:opacity-90 transition-opacity"
+            >
+              Đăng ký miễn phí
+              <ChevronRight className="w-5 h-5" />
+            </Link>
           </div>
         </div>
       </section>
