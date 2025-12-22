@@ -1,6 +1,22 @@
 # InboxAI - Bản ghi nhớ công việc
 
-## Cập nhật lần cuối: 2025-12-17
+## Cập nhật lần cuối: 2025-12-22
+
+---
+
+## Trạng thái hiện tại: OPEN BETA
+
+Đang cho phép đăng ký tự do, giới hạn **100 accounts** test.
+
+### Cách bật/tắt Open Beta
+Sửa 2 file sau, đổi `OPEN_BETA_ENABLED`:
+- `src/app/api/check-whitelist/route.ts`
+- `src/app/api/signup-whitelist/route.ts`
+
+```typescript
+const OPEN_BETA_ENABLED = true  // true = đăng ký tự do, false = cần whitelist
+const MAX_BETA_USERS = 100
+```
 
 ---
 
@@ -22,7 +38,13 @@
 - [x] Nếu chưa approved → hiện form đăng ký waitlist
 - [x] User được duyệt tự động confirm email (không cần verify)
 
-### 3. Bugs đã fix
+### 3. Open Beta Mode (DONE - 2025-12-22)
+- [x] Cho phép đăng ký tự do không cần whitelist
+- [x] Giới hạn tối đa 100 accounts test
+- [x] Khi đầy → tự động redirect sang waitlist form
+- [x] Dễ dàng tắt/bật qua config `OPEN_BETA_ENABLED`
+
+### 4. Bugs đã fix
 - [x] Cột `name` không tồn tại → đổi thành `full_name`
 - [x] NOT NULL constraint trên `full_name` → default 'Waitlist User'
 - [x] CORS OPTIONS handler cho PATCH requests

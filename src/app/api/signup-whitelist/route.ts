@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
+// ============================================
+// OPEN BETA CONFIG - Set to false to require whitelist
+// ============================================
+const OPEN_BETA_ENABLED = true
+const MAX_BETA_USERS = 100
+// ============================================
+
 let supabaseAdmin: SupabaseClient | null = null
 
 function getSupabaseAdmin(): SupabaseClient {
@@ -34,26 +41,37 @@ export async function POST(request: NextRequest) {
     const emailLower = email.toLowerCase().trim()
     const supabase = getSupabaseAdmin()
 
-    // Check if email is whitelisted
-    const { data: whitelisted } = await supabase
-      .from('whitelist')
-      .select('id, is_active')
-      .eq('email', emailLower)
-      .eq('is_active', true)
-      .maybeSingle()
+    // OPEN BETA: Allow signup if under limit
+    if (OPEN_BETA_ENABLED) {
+      const { count } = await supabase.auth.admin.listUsers()
+      const userCount = count || 0
 
-    // Also check access_requests for approved status
-    const { data: accessRequest } = await supabase
-      .from('access_requests')
-      .select('id, status')
-      .eq('email', emailLower)
-      .eq('status', 'approved')
-      .maybeSingle()
+      if (userCount >= MAX_BETA_USERS) {
+        return NextResponse.json({
+          error: `Đã đạt giới hạn ${MAX_BETA_USERS} người dùng beta. Vui lòng đăng ký waitlist.`
+        }, { status: 403 })
+      }
+    } else {
+      // Original whitelist check (when OPEN_BETA_ENABLED = false)
+      const { data: whitelisted } = await supabase
+        .from('whitelist')
+        .select('id, is_active')
+        .eq('email', emailLower)
+        .eq('is_active', true)
+        .maybeSingle()
 
-    if (!whitelisted && !accessRequest) {
-      return NextResponse.json({
-        error: 'Email chưa được duyệt. Vui lòng đăng ký waitlist.'
-      }, { status: 403 })
+      const { data: accessRequest } = await supabase
+        .from('access_requests')
+        .select('id, status')
+        .eq('email', emailLower)
+        .eq('status', 'approved')
+        .maybeSingle()
+
+      if (!whitelisted && !accessRequest) {
+        return NextResponse.json({
+          error: 'Email chưa được duyệt. Vui lòng đăng ký waitlist.'
+        }, { status: 403 })
+      }
     }
 
     // Check if user already exists

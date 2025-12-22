@@ -32,8 +32,17 @@ export default function SignupPage() {
       const data = await res.json()
 
       if (data.allowed) {
-        // Email is approved - show signup form
+        // Email is approved or open beta - show signup form
+        setMessage(data.message || '')
         setStep('signup_form')
+      } else if (data.status === 'exists') {
+        // User already registered
+        setError(data.message)
+      } else if (data.status === 'beta_full') {
+        // Beta is full - show waitlist form
+        setWaitlistStatus('beta_full')
+        setMessage(data.message)
+        setStep('waitlist_form')
       } else if (data.status === 'pending') {
         // Already on waitlist, pending
         setWaitlistStatus('pending')
@@ -222,8 +231,10 @@ export default function SignupPage() {
     )
   }
 
-  // Step 2a: Real signup form (for approved users)
+  // Step 2a: Real signup form (for approved users or open beta)
   if (step === 'signup_form') {
+    const isOpenBeta = message.includes('Open Beta')
+
     return (
       <div className="bg-[var(--card)] rounded-2xl shadow-executive-lg border border-[var(--border)] p-8">
         <div className="text-center mb-6">
@@ -231,10 +242,10 @@ export default function SignupPage() {
             <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" strokeWidth={1.5} />
           </div>
           <h1 className="text-[24px] font-bold text-[var(--foreground)] mb-2">
-            Email đã được duyệt!
+            {isOpenBeta ? 'Tạo tài khoản' : 'Email đã được duyệt!'}
           </h1>
           <p className="text-[var(--muted)]">
-            Hoàn tất đăng ký để sử dụng InboxAI
+            {isOpenBeta ? message : 'Hoàn tất đăng ký để sử dụng InboxAI'}
           </p>
         </div>
 
@@ -334,6 +345,15 @@ export default function SignupPage() {
               </h1>
               <p className="text-[var(--muted)]">
                 {message || 'Yêu cầu của bạn đang được xem xét'}
+              </p>
+            </>
+          ) : waitlistStatus === 'beta_full' ? (
+            <>
+              <h1 className="text-[24px] font-bold text-[var(--foreground)] mb-2">
+                Beta đã đầy
+              </h1>
+              <p className="text-[var(--muted)]">
+                {message || 'Đăng ký waitlist để được thông báo'}
               </p>
             </>
           ) : (
