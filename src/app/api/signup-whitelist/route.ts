@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
 
     // OPEN BETA: Allow signup if under limit
     if (OPEN_BETA_ENABLED) {
-      const { count } = await supabase.auth.admin.listUsers()
-      const userCount = count || 0
+      const { data: usersData } = await supabase.auth.admin.listUsers()
+      const userCount = usersData?.users?.length || 0
 
       if (userCount >= MAX_BETA_USERS) {
         return NextResponse.json({

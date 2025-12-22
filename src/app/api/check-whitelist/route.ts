@@ -33,9 +33,10 @@ export async function POST(request: NextRequest) {
 
     // OPEN BETA: Allow anyone if under limit
     if (OPEN_BETA_ENABLED) {
-      // Count existing users
-      const { count } = await supabase.auth.admin.listUsers()
-      const userCount = count || 0
+      // Get existing users
+      const { data: usersData } = await supabase.auth.admin.listUsers()
+      const users = usersData?.users || []
+      const userCount = users.length
 
       if (userCount >= MAX_BETA_USERS) {
         return NextResponse.json({
@@ -46,8 +47,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Check if user already exists
-      const { data: existingUsers } = await supabase.auth.admin.listUsers()
-      const existingUser = existingUsers?.users?.find(u => u.email?.toLowerCase() === emailLower)
+      const existingUser = users.find(u => u.email?.toLowerCase() === emailLower)
 
       if (existingUser) {
         return NextResponse.json({
