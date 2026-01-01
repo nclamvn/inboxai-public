@@ -59,6 +59,8 @@ npm install
    - `service_role` key → `SUPABASE_SERVICE_ROLE_KEY`
 
 3. Chạy migrations để tạo database schema:
+
+   **Cách 1: Dùng Supabase CLI (khuyến nghị)**
    ```bash
    # Cài Supabase CLI nếu chưa có
    npm install -g supabase
@@ -72,6 +74,12 @@ npm install
    # Push migrations
    supabase db push
    ```
+
+   **Cách 2: Chạy SQL thủ công**
+   - Vào **Supabase Dashboard** > **SQL Editor**
+   - Chạy các file theo thứ tự:
+     1. `supabase/migrations/00000000000000_initial_schema.sql` (BẮT BUỘC - tạo bảng cơ bản)
+     2. Các file migration khác trong `supabase/migrations/` (theo thứ tự ngày)
 
 ### Bước 4: Thiết Lập OpenAI API
 
