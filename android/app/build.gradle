@@ -19,9 +19,9 @@ android {
     signingConfigs {
         release {
             storeFile file('../inboxai-release.keystore')
-            storePassword 'inboxai2024'
-            keyAlias 'inboxai'
-            keyPassword 'inboxai2024'
+            storePassword System.getenv("KEYSTORE_PASSWORD") ?: ""
+            keyAlias System.getenv("KEY_ALIAS") ?: "inboxai"
+            keyPassword System.getenv("KEY_PASSWORD") ?: ""
         }
     }
     buildTypes {

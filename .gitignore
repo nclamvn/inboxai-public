@@ -32,9 +32,26 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+!.env.local.example
+!.env.production.example
 
 # vercel
 .vercel
+
+# Android sensitive files
+*.keystore
+*.jks
+google-services.json
+
+# iOS sensitive files
+GoogleService-Info.plist
+
+# Secrets
+*.pem
+*.key
+secrets/
+credentials/
 
 # typescript
 *.tsbuildinfo
