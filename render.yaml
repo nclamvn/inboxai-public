@@ -4,10 +4,11 @@ services:
     name: inboxai
     runtime: node
     region: singapore
-    plan: free
+    plan: starter
     buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /
+    autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
@@ -26,22 +27,24 @@ services:
       - key: RESEND_WEBHOOK_SECRET
         sync: false
       - key: NEXT_PUBLIC_APP_URL
-        sync: false
+        value: https://mail.prismy.in
       - key: ENCRYPTION_KEY
         sync: false
       - key: CRON_SECRET
         sync: false
+    domains:
+      - mail.prismy.in
 
   # Background Worker for Email Sync
   - type: worker
     name: inboxai-sync
     runtime: node
     region: singapore
-    plan: free
+    plan: starter
     buildCommand: npm install
     startCommand: node scripts/sync-worker.js
     envVars:
       - key: NEXT_PUBLIC_APP_URL
-        sync: false
+        value: https://mail.prismy.in
       - key: CRON_SECRET
         sync: false
