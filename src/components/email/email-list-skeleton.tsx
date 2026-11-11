@@ -9,13 +9,13 @@ interface Props {
 
 export function EmailListSkeleton({ count = 8, compact = false }: Props) {
   return (
-    <div className="animate-pulse">
+    <div aria-hidden="true">
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
           className={cn(
             'border-b border-[var(--border)]',
-            compact ? 'px-3 py-2.5' : 'px-4 py-3'
+            compact ? 'px-3 py-2' : 'px-4 py-3'
           )}
         >
           <div className="flex items-start gap-3">
@@ -31,11 +31,11 @@ export function EmailListSkeleton({ count = 8, compact = false }: Props) {
               </div>
 
               {/* Row 2: Subject */}
-              <div className="h-4 bg-[var(--secondary)] rounded w-3/4 mt-1.5" />
+              <div className="h-4 bg-[var(--secondary)] rounded w-3/4 mt-2" />
 
               {/* Row 3: Preview (only in full mode) */}
               {!compact && (
-                <div className="h-3 bg-[var(--secondary)] rounded w-full mt-1.5" />
+                <div className="h-3 bg-[var(--secondary)] rounded w-full mt-2" />
               )}
             </div>
 

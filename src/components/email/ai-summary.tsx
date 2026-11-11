@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Sparkles, ChevronDown, ChevronUp, Loader2, RefreshCw } from 'lucide-react';
+import { FileText, ChevronDown, ChevronUp, Loader2, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface AISummaryProps {
@@ -236,17 +236,16 @@ export function AISummary({
           onClick={fetchSummary}
           disabled={isLoading}
           className={cn(
-            'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-            'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
-            'hover:bg-blue-100 dark:hover:bg-blue-900/30',
-            'border border-blue-200 dark:border-blue-800',
+            'neo-target flex items-center gap-2 px-3 py-2 rounded-[var(--radius-control)] text-sm font-medium',
+            'bg-[var(--surface)] text-[var(--accent-foreground)] hover:bg-[var(--hover)]',
+            'border border-[var(--border-strong)]',
             'disabled:opacity-50 disabled:cursor-not-allowed'
           )}
         >
           {isLoading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <Sparkles className="w-4 h-4" />
+            <FileText className="w-4 h-4" />
           )}
           <span>Tóm tắt AI</span>
         </button>
@@ -258,12 +257,10 @@ export function AISummary({
   if (isLoading && !summary) {
     return (
       <div className={cn(
-        'rounded-lg border p-3',
-        'bg-blue-50/50 dark:bg-blue-900/10',
-        'border-blue-100 dark:border-blue-900/30',
+        'rounded-[var(--radius-panel)] border border-[var(--border)] bg-[var(--surface)] p-3',
         className
       )}>
-        <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+        <div className="flex items-center gap-2 text-[var(--accent-foreground)]">
           <Loader2 className="w-4 h-4 animate-spin" />
           <span className="text-sm">Đang tóm tắt...</span>
         </div>
@@ -275,16 +272,15 @@ export function AISummary({
   if (error && !summary) {
     return (
       <div className={cn(
-        'rounded-lg border p-3',
-        'bg-red-50 dark:bg-red-900/10',
-        'border-red-100 dark:border-red-900/30',
+        'rounded-[var(--radius-panel)] border border-[var(--border)] bg-[var(--surface)] p-3',
         className
       )}>
         <div className="flex items-center justify-between">
-          <span className="text-sm text-red-600 dark:text-red-400">{error}</span>
+          <span className="text-sm text-[var(--error)]">{error}</span>
           <button
             onClick={fetchSummary}
-            className="p-1 text-red-500 hover:text-red-700 dark:hover:text-red-300"
+            aria-label="Thử tóm tắt lại"
+            className="neo-icon-button"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -302,25 +298,22 @@ export function AISummary({
 
   return (
     <div className={cn(
-      'rounded-lg border transition-all',
-      'bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10',
-      'border-blue-100 dark:border-blue-900/30',
+      'rounded-[var(--radius-panel)] border border-[var(--border)] bg-[var(--surface)]',
       className
     )}>
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-3 text-left"
+        aria-expanded={isExpanded}
+        className="neo-target flex w-full items-center justify-between p-3 text-start hover:bg-[var(--hover)]"
       >
         <div className="flex items-center gap-2">
-          <div className="p-1 rounded bg-blue-100 dark:bg-blue-900/30">
-            <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-          </div>
+          <FileText size={16} strokeWidth={1.5} aria-hidden="true" className="text-[var(--accent-foreground)]" />
           <span className="text-sm font-medium text-[var(--foreground)]">
             Tóm tắt AI
           </span>
           {category && (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-800 text-[var(--foreground)]">
+            <span className="text-xs px-2 py-1 rounded-[var(--radius-control)] bg-[var(--secondary)] text-[var(--foreground-muted)]">
               {category}
             </span>
           )}
@@ -343,7 +336,7 @@ export function AISummary({
             <ul className="space-y-2">
               {summaryBullets.map((bullet, index) => (
                 <li key={index} className="flex items-start gap-2.5 text-sm">
-                  <span className="mt-0.5 flex-shrink-0 text-blue-600 dark:text-blue-400 font-bold text-base">•</span>
+                  <span className="mt-0.5 flex-shrink-0 text-[var(--accent-foreground)] font-bold text-base">•</span>
                   <span className="leading-relaxed font-semibold text-[var(--foreground)]">
                     {bullet}
                   </span>

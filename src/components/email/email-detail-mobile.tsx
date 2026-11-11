@@ -117,11 +117,12 @@ export function EmailDetailMobile({
   return (
     <div className="fixed inset-0 z-50 bg-[var(--card)] flex flex-col">
       {/* COMPACT HEADER - single row */}
-      <header className="flex items-center h-12 px-2 border-b border-[var(--border)] bg-[var(--card)] safe-area-top flex-shrink-0">
+      <header className="flex items-center min-h-12 px-2 border-b border-[var(--border)] bg-[var(--card)] safe-area-top flex-shrink-0">
         {/* Back */}
         <button
           onClick={onBack}
-          className="p-2 -ml-1 rounded-full active:bg-[var(--hover)]"
+          aria-label="Về hộp thư"
+          className="neo-icon-button"
         >
           <ChevronLeft className="w-6 h-6 text-[var(--foreground)]" />
         </button>
@@ -134,7 +135,9 @@ export function EmailDetailMobile({
         {/* Star */}
         <button
           onClick={toggleStar}
-          className="p-2 rounded-full active:bg-[var(--hover)]"
+          aria-label="Gắn sao"
+          aria-pressed={isStarred}
+          className="neo-icon-button"
         >
           <Star
             className={cn(
@@ -147,7 +150,9 @@ export function EmailDetailMobile({
         {/* More actions */}
         <button
           onClick={() => setShowActions(true)}
-          className="p-2 rounded-full active:bg-[var(--hover)]"
+          aria-label="Thêm thao tác"
+          aria-expanded={showActions}
+          className="neo-icon-button"
         >
           <MoreVertical className="w-5 h-5 text-[var(--muted)]" />
         </button>
@@ -158,7 +163,7 @@ export function EmailDetailMobile({
         {/* Sender info - compact 2 lines max */}
         <div className="flex items-start gap-3 px-4 py-3 border-b border-[var(--border)]">
           {/* Avatar */}
-          <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-[15px] font-medium text-blue-600 dark:text-blue-400 flex-shrink-0">
+          <div className="w-10 h-10 rounded-[var(--radius-control)] bg-[var(--secondary)] flex items-center justify-center text-[15px] font-medium text-[var(--accent-foreground)] flex-shrink-0">
             {(email.from_name || email.from_address || 'U')[0].toUpperCase()}
           </div>
 
@@ -251,7 +256,7 @@ export function EmailDetailMobile({
               })
               window.location.href = `/compose?${params}`
             }}
-            className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-full active:opacity-80 max-w-[160px]"
+            className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-[var(--radius-control)] active:opacity-80 max-w-[160px]"
           >
             <Reply className="w-4 h-4" />
             <span className="text-[14px] font-medium">Trả lời</span>

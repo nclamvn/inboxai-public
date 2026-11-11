@@ -21,14 +21,15 @@ export default async function DashboardLayout({
 
   return (
     <AutoSyncProvider enabled={true} interval={30000}>
-      <div className="h-screen flex bg-[var(--background)]">
+      <div className="h-dvh flex bg-[var(--background)]">
         {/* Sidebar - Hidden on mobile */}
-        <Sidebar defaultCollapsed={true} />
+        <a className="skip-link" href="#main-content">Đến nội dung chính</a>
+        <Sidebar />
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <Header />
-          <main className="flex-1 overflow-auto pb-16 md:pb-0">
+          <main id="main-content" tabIndex={-1} className="min-h-0 flex-1 overflow-auto pb-[calc(var(--mobile-nav-height)+env(safe-area-inset-bottom))] md:pb-0">
             {children}
           </main>
         </div>

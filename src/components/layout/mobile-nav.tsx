@@ -2,65 +2,37 @@
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { Inbox, Send, Star, Archive, Settings, Pencil } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Inbox, Send, Star, Settings, Pencil } from 'lucide-react'
 
 const navItems = [
-  { href: '/inbox', icon: Inbox, label: 'Inbox' },
-  { href: '/sent', icon: Send, label: 'Gửi' },
-  { href: '/compose', icon: Pencil, label: 'Soạn', isCompose: true },
-  { href: '/starred', icon: Star, label: 'Sao' },
+  { href: '/inbox', icon: Inbox, label: 'Hộp thư' },
+  { href: '/sent', icon: Send, label: 'Đã gửi' },
+  { href: '/compose', icon: Pencil, label: 'Soạn thư' },
+  { href: '/starred', icon: Star, label: 'Gắn sao' },
   { href: '/settings', icon: Settings, label: 'Cài đặt' },
 ]
 
 export function MobileNav() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
-
-  // Hide bottom nav when viewing email detail on mobile
-  const isViewingEmail = searchParams.get('email') !== null
-
-  if (isViewingEmail) {
-    return null
-  }
+  if (pathname === '/inbox' && searchParams.has('email')) return null
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[var(--card)] border-t border-[var(--border)] flex items-center justify-around px-2 z-50 pb-safe" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
-      {navItems.map((item) => {
-        const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-
-        if (item.isCompose) {
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex flex-col items-center justify-center w-14 h-14 -mt-4 bg-[var(--primary)] rounded-full text-[var(--primary-foreground)] shadow-lg"
-            >
-              <item.icon className="w-5 h-5" strokeWidth={1.5} />
-            </Link>
-          )
-        }
-
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              'flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-lg transition-colors',
-              isActive
-                ? 'text-[var(--foreground)]'
-                : 'text-[var(--muted-foreground)]'
-            )}
-          >
-            <item.icon
-              className="w-5 h-5"
-              strokeWidth={1.5}
-              fill={isActive && item.icon === Star ? 'currentColor' : 'none'}
-            />
-            <span className="text-[10px] font-medium">{item.label}</span>
-          </Link>
-        )
-      })}
+    <nav
+      aria-label="Điều hướng di động"
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-[var(--border)] bg-[var(--surface)] pb-[env(safe-area-inset-bottom)] md:hidden"
+    >
+      {navItems.map(({ href, icon: Icon, label }) => (
+        <Link
+          key={href}
+          href={href}
+          aria-current={pathname === href ? 'page' : undefined}
+          className="neo-nav-item neo-nav-inline h-[var(--mobile-nav-height)] min-w-0 flex-col justify-center gap-1 text-center text-[11px] leading-4"
+        >
+          <Icon size={20} strokeWidth={1.5} aria-hidden="true" />
+          {label}
+        </Link>
+      ))}
     </nav>
   )
 }

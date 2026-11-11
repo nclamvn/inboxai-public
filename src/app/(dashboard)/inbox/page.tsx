@@ -3,12 +3,12 @@
 import { Suspense, useMemo, useState, useCallback, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import { Loader2, X, Sparkles } from 'lucide-react'
+import { Loader2, X, ListFilter } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
 import { useEmails } from '@/hooks/use-emails'
 import { useEmail } from '@/hooks/use-email'
-import { useMediaQuery } from '@/hooks/use-media-query'
+import { useIsMobile } from '@/hooks/use-media-query'
 // FilterChips removed - replaced by UnifiedTopBar dropdown
 import { EmailListSkeleton } from '@/components/email/email-list-skeleton'
 import { SelectionProvider } from '@/contexts/email-selection-context'
@@ -65,13 +65,13 @@ function InboxContent() {
   // Account filter state
   const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([])
 
-  const { emails, loading, loadingMore, hasMore, toggleStar, archiveEmail, deleteEmail, markAsRead, refetch, loadMore } = useEmails({
+  const { emails, error, loading, loadingMore, hasMore, toggleStar, archiveEmail, deleteEmail, markAsRead, refetch, loadMore } = useEmails({
     folder: 'inbox',
     accountIds: selectedAccountIds.length > 0 ? selectedAccountIds : undefined
   })
 
   // Use media query hook for responsive detection
-  const isMobile = useMediaQuery('(max-width: 768px)')
+  const isMobile = useIsMobile()
 
   // URL-based state - selectedId from URL
   const selectedId = searchParams.get('email')
@@ -461,7 +461,7 @@ function InboxContent() {
   // Show skeleton while loading initial data
   if (loading) {
     return (
-      <div className="flex-1 flex flex-col h-full overflow-hidden bg-[var(--card)]">
+      <div role="status" aria-label="Đang tải hộp thư" className="flex h-full flex-col overflow-hidden bg-[var(--surface)]">
         {/* Header skeleton */}
         {isMobile ? (
           <div className="bg-[var(--card)] px-4 py-3">
@@ -480,15 +480,6 @@ function InboxContent() {
           <EmailListSkeleton count={10} />
         </div>
       </div>
-    )
-  }
-
-  if (emails.length === 0) {
-    return (
-      <EmptyState
-        type="no-emails"
-        className="h-full bg-[var(--card)]"
-      />
     )
   }
 
@@ -527,52 +518,46 @@ function InboxContent() {
           unreadCount={filterCounts.unread || 0}
           importantCount={filterCounts.important || 0}
           onSearch={handleSearch}
-          onCompose={() => router.push('/compose')}
           onFilterClick={() => setIsCategorySheetOpen(true)}
           title={activeFilter ? CATEGORY_LABELS[activeFilter] || 'Hộp thư' : 'Hộp thư'}
         />
       ) : (
-        <div className="flex items-center border-b border-[var(--border)] bg-[var(--card)]">
-          {/* Account Switcher */}
-          <div className="pl-4 py-2 flex-shrink-0">
-            <AccountSwitcher
-              selectedAccountIds={selectedAccountIds}
-              onAccountChange={setSelectedAccountIds}
-            />
+        <header className="border-b border-[var(--border)] bg-[var(--surface)]">
+          <div className="flex min-h-16 items-center justify-between gap-4 border-b border-[var(--border)] px-5">
+            <div className="flex min-w-0 items-baseline gap-3">
+              <h1 className="neo-title shrink-0">Hộp thư</h1>
+              <span className="truncate text-xs tabular-nums text-[var(--foreground-muted)]">{filterCounts.unread || 0} chưa đọc</span>
+            </div>
+            <AccountSwitcher selectedAccountIds={selectedAccountIds} onAccountChange={setSelectedAccountIds} />
           </div>
-          {/* Rest of top bar - remove its border since wrapper has it */}
-          <div className="flex-1">
-            <UnifiedTopBar
-              currentFilter={activeFilter || 'all'}
-              onFilterChange={handleFilterChange}
-              emailCounts={filterCounts}
-              totalEmails={filteredEmails.length}
-              onSearch={handleSearch}
-              onMenuClick={() => {/* TODO: Toggle sidebar */}}
-              onProfileClick={() => router.push('/settings')}
-              noBorder
-            />
-          </div>
-        </div>
+          <UnifiedTopBar
+            currentFilter={activeFilter || 'all'}
+            onFilterChange={handleFilterChange}
+            emailCounts={filterCounts}
+            onSearch={handleSearch}
+            onProfileClick={() => router.push('/settings')}
+            noBorder
+          />
+        </header>
       )}
 
       {/* Briefing Filter Banner - Show when filtering by AI Thư Ký */}
       {briefingFilter && effectiveViewMode !== 'full' && (
-        <div className="px-4 py-2 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800/50 flex items-center justify-between">
+        <div className="flex items-center justify-between border-b border-s-2 border-[var(--border)] border-s-[var(--selection-line)] px-4 py-2">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-700 dark:text-amber-400" strokeWidth={1.5} />
-            <span className="text-[13px] font-medium text-gray-900 dark:text-amber-200">
+            <ListFilter className="w-4 h-4 text-[var(--accent-foreground)]" strokeWidth={1.5} />
+            <span className="text-[13px] font-medium text-[var(--foreground)]">
               {briefingFilter.title}
             </span>
-            <span className="text-[12px] text-gray-700 dark:text-amber-400">
+            <span className="text-[12px] text-[var(--foreground-muted)]">
               ({filteredEmails.length} email)
             </span>
           </div>
           <button
             type="button"
             onClick={handleClearBriefingFilter}
-            className="p-1 rounded hover:bg-amber-200/50 dark:hover:bg-amber-800/50 text-gray-600 dark:text-amber-400 transition-colors"
-            title="Xóa bộ lọc"
+            className="neo-icon-button"
+            aria-label="Xóa bộ lọc"
           >
             <X className="w-4 h-4" strokeWidth={1.5} />
           </button>
@@ -584,17 +569,23 @@ function InboxContent() {
         {/* Email List - Hidden on mobile when viewing email detail */}
         {effectiveViewMode !== 'full' && (
           <div className={cn(
-            'border-r border-[var(--border)] overflow-hidden transition-all duration-200 bg-[var(--card)] flex flex-col',
-            effectiveViewMode === 'list' ? 'flex-1' : 'hidden lg:flex lg:w-[30%] lg:min-w-[280px] lg:max-w-[380px]'
+            'overflow-hidden bg-[var(--surface)] flex flex-col',
+            effectiveViewMode === 'list' ? 'flex-1' : 'hidden border-e border-[var(--border)] lg:flex lg:w-[34%] lg:min-w-[320px] lg:max-w-[440px]'
           )}>
             {/* Selection Toolbar - shows when emails are selected */}
             <SelectionToolbar onAction={handleBulkAction} />
 
             {/* Email List */}
             <div className="flex-1 overflow-y-auto">
-              {filteredEmails.length === 0 ? (
+              {error && emails.length === 0 ? (
+                <EmptyState type="error" title="Chưa tải được hộp thư"
+                  description="Kiểm tra kết nối rồi thử tải lại."
+                  action={{ label: 'Tải lại', onClick: refetch }}
+                />
+              ) : filteredEmails.length === 0 ? (
                 <EmptyState
-                  type={searchQuery ? 'no-results' : 'empty-folder'}
+                  type={searchQuery ? 'no-results' : emails.length === 0 ? 'no-emails' : 'empty-folder'}
+                  description={emails.length === 0 && !searchQuery ? 'Thư mới sẽ xuất hiện sau khi đồng bộ.' : undefined}
                   className="py-8"
                   action={(activeFilter || briefingFilter || searchQuery) ? {
                     label: 'Xóa bộ lọc',
@@ -607,7 +598,7 @@ function InboxContent() {
                         setActiveFilter(null)
                       }
                     }
-                  } : undefined}
+                  } : emails.length === 0 ? { label: 'Quản lý tài khoản', onClick: () => router.push('/settings') } : undefined}
                 />
               ) : (
                 <EmailListCompact
@@ -630,7 +621,7 @@ function InboxContent() {
 
         {/* Email Detail - Takes 70% in split mode */}
         {(effectiveViewMode === 'split' || effectiveViewMode === 'full') && selectedEmail && (
-          <div className="flex-1 lg:min-w-[500px] overflow-hidden bg-[var(--card)]">
+          <div className="min-w-0 flex-1 overflow-hidden bg-[var(--card)]">
             <EmailDetailFull
               email={selectedEmail}
               onBack={handleCloseEmail}

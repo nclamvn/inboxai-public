@@ -17,10 +17,11 @@ export function ThemeToggle({ variant = 'icon', className }: ThemeToggleProps) {
       <button
         onClick={toggleTheme}
         className={cn(
-          'p-2 rounded-lg transition-colors',
-          'text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]',
+          'neo-icon-button',
           className
         )}
+        type="button"
+        aria-label={theme === 'dark' ? 'Chuyển sang sáng' : 'Chuyển sang tối'}
         title={theme === 'dark' ? 'Chuyển sang sáng' : 'Chuyển sang tối'}
       >
         {theme === 'dark' ? (

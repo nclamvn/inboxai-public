@@ -7,7 +7,6 @@
 
 import { memo, useState, useCallback } from 'react';
 import {
-  Sparkles,
   FileText,
   MessageSquare,
   CheckSquare,
@@ -16,9 +15,7 @@ import {
   Loader2,
   Copy,
   Check,
-  Zap,
   X,
-  AlertCircle,
   RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -27,7 +24,6 @@ import { useAIFeatures } from '@/hooks/use-ai-features';
 interface AIBottomBarProps {
   emailId: string;
   category?: string | null;
-  priority?: number | null;
   onReplySelect?: (reply: string) => void;
   className?: string;
 }
@@ -37,7 +33,6 @@ type ExpandedSection = 'summary' | 'replies' | 'actions' | null;
 export const AIBottomBar = memo(function AIBottomBar({
   emailId,
   category,
-  priority,
   onReplySelect,
   className,
 }: AIBottomBarProps) {
@@ -48,7 +43,6 @@ export const AIBottomBar = memo(function AIBottomBar({
     results,
     isLoading,
     triggerFeature,
-    refresh,
   } = useAIFeatures(emailId);
 
   // ALL useCallback hooks MUST be called before any early returns (React rules of hooks)
@@ -159,29 +153,13 @@ export const AIBottomBar = memo(function AIBottomBar({
   const repliesLoading = results.smart_reply?.status === 'loading' || (isLoading && !results.smart_reply);
   const actionsLoading = results.action_items?.status === 'loading' || (isLoading && !results.action_items);
 
-  // Check if any AI features are available or loading
-  const hasAnyData = summary || (smartReplies && smartReplies.length > 0) || (actionItems && actionItems.length > 0);
-  const anyLoading = isLoading || summaryLoading || repliesLoading || actionsLoading;
-
-  // Always show bar - either loading or has data
-  // Only hide if definitely no data and not loading
-  if (!hasAnyData && !anyLoading && Object.keys(results).length > 0) {
-    // API returned but no useful data - still show empty bar for consistency
-  }
-
   return (
     <div className={cn(
-      'flex-shrink-0 border-t border-[var(--border)] bg-[var(--secondary)]',
+      'flex-shrink-0 border-t border-[var(--border)] bg-[var(--surface)]',
       className
     )}>
       {/* Collapsed Bar */}
       <div className="flex items-center gap-1 px-4 py-2">
-        {/* AI Icon */}
-        <div className="flex items-center gap-2 mr-2">
-          <Sparkles className="w-4 h-4 text-purple-500" />
-          <span className="text-xs font-medium text-purple-500">AI</span>
-        </div>
-
         {/* Summary Button */}
         <FeatureButton
           icon={FileText}
@@ -210,7 +188,7 @@ export const AIBottomBar = memo(function AIBottomBar({
         {/* Action Items Button */}
         <FeatureButton
           icon={CheckSquare}
-          label="Actions"
+          label="Việc cần làm"
           isLoading={actionsLoading}
           hasData={!!actionItems && Array.isArray(actionItems) && actionItems.length > 0}
           hasError={results.action_items?.status === 'error'}
@@ -219,14 +197,6 @@ export const AIBottomBar = memo(function AIBottomBar({
           onRetry={handleRetryActions}
           count={Array.isArray(actionItems) ? actionItems.length : undefined}
         />
-
-        {/* Priority indicator */}
-        {(priority || 0) >= 4 && (
-          <div className="ml-auto flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900/30 rounded text-xs text-red-600 dark:text-red-400">
-            <Zap className="w-3 h-3" />
-            <span>Quan trọng</span>
-          </div>
-        )}
       </div>
 
       {/* Expanded Content */}
@@ -244,7 +214,7 @@ export const AIBottomBar = memo(function AIBottomBar({
                 <ul className="space-y-1.5">
                   {summaryBullets.map((bullet, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm text-[var(--foreground)]">
-                      <span className="text-purple-500 mt-1">•</span>
+                      <span className="text-[var(--accent-foreground)]">•</span>
                       <span>{bullet}</span>
                     </li>
                   ))}
@@ -296,7 +266,7 @@ export const AIBottomBar = memo(function AIBottomBar({
                 <ul className="space-y-2">
                   {actionItems.map((item: unknown, index: number) => (
                     <li key={index} className="flex items-start gap-2">
-                      <CheckSquare className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <CheckSquare className="w-4 h-4 text-[var(--success)] mt-0.5 flex-shrink-0" />
                       <span className="text-sm text-[var(--foreground)]">
                         {typeof item === 'string' ? item : (item as { task?: string; description?: string })?.task || (item as { task?: string; description?: string })?.description || ''}
                       </span>
@@ -349,17 +319,14 @@ const FeatureButton = memo(function FeatureButton({
 
   return (
     <button
-      onClick={handleClick}
+      type="button" onClick={handleClick}
       disabled={isLoading}
+      aria-expanded={hasError ? undefined : isExpanded}
+      aria-label={hasError ? `Thử lại: ${label}` : undefined}
       className={cn(
-        'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
-        isExpanded
-          ? 'bg-purple-100 dark:bg-purple-900/30 text-[var(--foreground)]'
-          : hasError
-            ? 'bg-red-100 dark:bg-red-900/20 text-[var(--foreground)] hover:bg-red-200 dark:hover:bg-red-900/30'
-            : hasData
-              ? 'bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--hover)] shadow-sm'
-              : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]',
+        'neo-nav-item neo-nav-inline neo-target min-h-8 gap-2 px-3 py-1 text-xs',
+        isExpanded && 'bg-[var(--accent)] text-[var(--accent-foreground)]',
+        hasError && 'text-[var(--error)]',
         isLoading && 'opacity-50 cursor-wait'
       )}
     >
@@ -404,8 +371,9 @@ const ExpandedPanel = memo(function ExpandedPanel({
           {title}
         </h4>
         <button
-          onClick={onClose}
-          className="p-1 hover:bg-[var(--hover)] rounded"
+          type="button" onClick={onClose}
+          aria-label="Đóng phần hỗ trợ"
+          className="neo-icon-button h-8 w-8"
         >
           <X className="w-4 h-4 text-[var(--muted-foreground)]" />
         </button>
@@ -442,11 +410,11 @@ const SmartReplyChip = memo(function SmartReplyChip({
       </button>
       <button
         onClick={onCopy}
-        className="p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[var(--hover)] rounded"
-        title="Sao chép"
+        className="p-1 hover:bg-[var(--hover)] rounded"
+        aria-label="Sao chép gợi ý"
       >
         {isCopied ? (
-          <Check className="w-3 h-3 text-green-500" />
+          <Check className="w-3 h-3 text-[var(--success)]" />
         ) : (
           <Copy className="w-3 h-3 text-[var(--muted-foreground)]" />
         )}

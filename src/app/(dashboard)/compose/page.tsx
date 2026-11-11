@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Send, Paperclip, X, Loader2, Sparkles, ChevronDown, Wand2, FileText, Minus, Plus, Briefcase, Smile } from 'lucide-react'
+import { Send, Paperclip, X, Loader2, ListChecks, ChevronDown, FilePenLine, FileText, Minus, Plus, Briefcase, Smile } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Alert } from '@/components/ui/alert'
 import { composeFingerprint, readComposeKey, saveComposeKey } from '@/lib/mail-send/compose-key'
 
 interface SourceAccount {
@@ -33,7 +35,6 @@ export default function ComposePage() {
   const [accounts, setAccounts] = useState<SourceAccount[]>([])
   const [selectedAccountId, setSelectedAccountId] = useState<string>('')
   const [loadingAccounts, setLoadingAccounts] = useState(true)
-  const [showAccountDropdown, setShowAccountDropdown] = useState(false)
 
   // AI Compose
   const [showAIPrompt, setShowAIPrompt] = useState(false)
@@ -95,9 +96,9 @@ export default function ComposePage() {
           const data = await res.json()
           const activeAccounts = (data.accounts || []).filter((a: SourceAccount) => a.is_active)
           setAccounts(activeAccounts)
-          if (activeAccounts.length > 0) {
-            setSelectedAccountId(activeAccounts[0].id)
-          }
+          setSelectedAccountId(current =>
+            activeAccounts.some((account: SourceAccount) => account.id === current) ? current : activeAccounts[0]?.id || '',
+          )
         }
       } catch (error) {
         console.error('Failed to fetch accounts:', error)
@@ -121,8 +122,6 @@ export default function ComposePage() {
       setIsFromAI(true)
     }
   }, [searchParams])
-
-  const selectedAccount = accounts.find(a => a.id === selectedAccountId)
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -200,13 +199,13 @@ export default function ComposePage() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-[var(--background)]">
+    <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col border-x border-[var(--border)] bg-[var(--surface)]">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--card)]">
-        <h1 className="text-[18px] font-semibold text-[var(--foreground)]">Soạn thư mới</h1>
+        <h1 className="neo-title">Soạn thư mới</h1>
         <button
-          onClick={handleDiscard}
-          className="p-2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)] rounded-lg transition-colors"
+          type="button" onClick={handleDiscard} aria-label="Đóng soạn thư"
+          className="neo-icon-button"
         >
           <X className="w-5 h-5" strokeWidth={1.5} />
         </button>
@@ -215,77 +214,49 @@ export default function ComposePage() {
       {/* Form */}
       <form onSubmit={handleSend} className="flex-1 flex flex-col">
         {error && (
-          <div role="status" className="mx-4 mt-4 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg text-red-600 dark:text-red-400 text-[14px]">
-            {error}
-          </div>
+          <Alert variant="error" className="mx-4 mt-4">{error}</Alert>
         )}
 
         <div className="p-4 space-y-3 border-b border-[var(--border)] bg-[var(--card)]">
           {/* From (Account Selector) */}
           <div className="flex items-center gap-3">
-            <label className="w-16 text-[14px] text-[var(--muted-foreground)]">Từ</label>
-            <div className="relative flex-1">
-              {loadingAccounts ? (
-                <div className="flex items-center gap-2 px-3 py-2 border border-[var(--border)] rounded-lg text-[var(--muted-foreground)]">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-[14px]">Đang tải...</span>
-                </div>
-              ) : accounts.length === 0 ? (
-                <div className="px-3 py-2 border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 rounded-lg text-red-600 dark:text-red-400 text-[14px]">
-                  Chưa có tài khoản email. <a href="/settings" className="underline">Thêm ngay</a>
-                </div>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setShowAccountDropdown(!showAccountDropdown)}
-                    className="w-full flex items-center justify-between px-3 py-2 border border-[var(--border)] rounded-lg hover:border-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-colors bg-[var(--background)]"
-                  >
-                    <span className="text-[14px] text-[var(--foreground)]">
-                      {selectedAccount?.email_address || 'Chọn tài khoản'}
-                    </span>
-                    <ChevronDown className={`w-4 h-4 text-[var(--muted-foreground)] transition-transform ${showAccountDropdown ? 'rotate-180' : ''}`} />
-                  </button>
-                  {showAccountDropdown && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--card)] border border-[var(--border)] rounded-lg shadow-lg z-50 py-1">
-                      {accounts.map(account => (
-                        <button
-                          key={account.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedAccountId(account.id)
-                            setShowAccountDropdown(false)
-                          }}
-                          className={`w-full px-3 py-2 text-left text-[14px] hover:bg-[var(--secondary)] transition-colors ${
-                            account.id === selectedAccountId ? 'bg-[var(--secondary)] text-[var(--foreground)]' : 'text-[var(--muted-foreground)]'
-                          }`}
-                        >
-                          {account.email_address}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </>
+            <label htmlFor="compose-from" className="w-16 shrink-0 text-sm text-[var(--foreground-muted)]">Từ</label>
+            <div className="relative min-w-0 flex-1">
+              <select
+                id="compose-from"
+                value={selectedAccountId}
+                onChange={event => setSelectedAccountId(event.target.value)}
+                disabled={loadingAccounts || accounts.length === 0}
+                className="focus-ring min-h-11 w-full appearance-none rounded-[var(--radius-control)] border border-[var(--input-border)] bg-[var(--surface)] ps-3 pe-8 text-sm"
+              >
+                {accounts.length === 0 && <option value="">{loadingAccounts ? 'Đang tải…' : 'Chưa có tài khoản email'}</option>}
+                {accounts.map(account => <option key={account.id} value={account.id}>{account.email_address}</option>)}
+              </select>
+              <ChevronDown size={16} aria-hidden="true" className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-[var(--foreground-muted)]" />
+              {!loadingAccounts && accounts.length === 0 && (
+                <a href="/settings" className="mt-2 inline-block text-sm text-[var(--accent-foreground)] underline">Thêm tài khoản gửi</a>
               )}
             </div>
           </div>
 
           {/* To */}
           <div className="flex items-center gap-3">
-            <label className="w-16 text-[14px] text-[var(--muted-foreground)]">Đến</label>
+            <label htmlFor="compose-to" className="w-16 shrink-0 text-sm text-[var(--foreground-muted)]">Đến</label>
             <input
               type="text"
+              inputMode="email"
+              id="compose-to"
               value={to}
               onChange={(e) => setTo(e.target.value)}
               placeholder="email@example.com"
               required
-              className="flex-1 px-3 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
+              className="min-h-11 min-w-0 flex-1 px-3 py-2 border border-[var(--input-border)] rounded-[var(--radius-control)] focus-ring bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
             />
             {!showCc && (
               <button
                 type="button"
                 onClick={() => setShowCc(true)}
-                className="text-[14px] text-[var(--foreground)] hover:underline"
+                className="neo-target rounded-[var(--radius-control)] px-2 text-sm hover:bg-[var(--hover)]"
               >
                 Cc
               </button>
@@ -295,26 +266,29 @@ export default function ComposePage() {
           {/* Cc */}
           {showCc && (
             <div className="flex items-center gap-3">
-              <label className="w-16 text-[14px] text-[var(--muted-foreground)]">Cc</label>
+              <label htmlFor="compose-cc" className="w-16 shrink-0 text-sm text-[var(--foreground-muted)]">Cc</label>
               <input
-                type="email"
-                value={cc}
+                type="text"
+                inputMode="email"
+                id="compose-cc"
+              value={cc}
                 onChange={(e) => setCc(e.target.value)}
                 placeholder="email@example.com"
-                className="flex-1 px-3 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
+                className="min-h-11 min-w-0 flex-1 px-3 py-2 border border-[var(--input-border)] rounded-[var(--radius-control)] focus-ring bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
               />
             </div>
           )}
 
           {/* Subject */}
           <div className="flex items-center gap-3">
-            <label className="w-16 text-[14px] text-[var(--muted-foreground)]">Tiêu đề</label>
+            <label htmlFor="compose-subject" className="w-16 shrink-0 text-sm text-[var(--foreground-muted)]">Tiêu đề</label>
             <input
               type="text"
+              id="compose-subject"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Tiêu đề email"
-              className="flex-1 px-3 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
+              className="min-h-11 min-w-0 flex-1 px-3 py-2 border border-[var(--input-border)] rounded-[var(--radius-control)] focus-ring bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
             />
           </div>
         </div>
@@ -323,24 +297,20 @@ export default function ComposePage() {
         <div className="flex-1 p-4 bg-[var(--card)] flex flex-col">
           {/* AI Toolbar */}
           <div className="flex items-center gap-2 mb-3 flex-wrap">
-            <div className="flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-              <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-              <span className="text-xs font-medium text-purple-600 dark:text-purple-400">AI</span>
-            </div>
-
             {/* Write with AI */}
             <button
               type="button"
               onClick={() => setShowAIPrompt(!showAIPrompt)}
               disabled={aiLoading}
+              aria-expanded={showAIPrompt}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors",
+                "neo-target flex min-h-8 items-center gap-1 px-3 py-1 text-xs font-medium rounded-[var(--radius-control)] transition-colors",
                 showAIPrompt
-                  ? "bg-purple-500 text-white"
+                  ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
                   : "bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--hover)]"
               )}
             >
-              <Wand2 className="w-3.5 h-3.5" />
+              <FilePenLine className="w-3.5 h-3.5" />
               Viết
             </button>
 
@@ -349,7 +319,7 @@ export default function ComposePage() {
               type="button"
               onClick={() => handleAIAction('improve')}
               disabled={aiLoading || !body.trim()}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="neo-target flex min-h-8 items-center gap-1 px-3 py-1 text-xs font-medium rounded-[var(--radius-control)] bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {aiLoading && aiAction === 'improve' ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -364,7 +334,7 @@ export default function ComposePage() {
               type="button"
               onClick={() => handleAIAction('shorter')}
               disabled={aiLoading || !body.trim()}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="neo-target flex min-h-8 items-center gap-1 px-3 py-1 text-xs font-medium rounded-[var(--radius-control)] bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {aiLoading && aiAction === 'shorter' ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -379,7 +349,7 @@ export default function ComposePage() {
               type="button"
               onClick={() => handleAIAction('longer')}
               disabled={aiLoading || !body.trim()}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="neo-target flex min-h-8 items-center gap-1 px-3 py-1 text-xs font-medium rounded-[var(--radius-control)] bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {aiLoading && aiAction === 'longer' ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -394,7 +364,7 @@ export default function ComposePage() {
               type="button"
               onClick={() => handleAIAction('formal')}
               disabled={aiLoading || !body.trim()}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="neo-target flex min-h-8 items-center gap-1 px-3 py-1 text-xs font-medium rounded-[var(--radius-control)] bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {aiLoading && aiAction === 'formal' ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -409,7 +379,7 @@ export default function ComposePage() {
               type="button"
               onClick={() => handleAIAction('friendly')}
               disabled={aiLoading || !body.trim()}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="neo-target flex min-h-8 items-center gap-1 px-3 py-1 text-xs font-medium rounded-[var(--radius-control)] bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {aiLoading && aiAction === 'friendly' ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -422,31 +392,37 @@ export default function ComposePage() {
 
           {/* AI Write Prompt Input */}
           {showAIPrompt && (
-            <div className="mb-3 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+            <div className="mb-3 p-3 bg-[var(--canvas)] border border-[var(--border)] rounded-[var(--radius-control)]">
               <div className="flex items-center gap-2 mb-2">
-                <Wand2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                <span className="text-sm font-medium text-purple-700 dark:text-purple-300">AI sẽ viết email cho bạn</span>
+                <FilePenLine className="w-4 h-4 text-[var(--accent-foreground)]" />
+                <span className="text-sm font-medium text-[var(--accent-foreground)]">Yêu cầu soạn bản nháp</span>
               </div>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={aiPrompt}
                   onChange={(e) => setAIPrompt(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAIWrite()}
+                  onKeyDown={event => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault()
+                      handleAIWrite()
+                    }
+                  }}
+                  aria-label="Yêu cầu soạn bản nháp"
                   placeholder="Mô tả nội dung email cần viết... VD: Xin nghỉ phép 2 ngày vì lý do cá nhân"
-                  className="flex-1 px-3 py-2 text-sm border border-purple-200 dark:border-purple-700 rounded-lg bg-white dark:bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="min-w-0 flex-1 px-3 py-2 text-sm border border-[var(--input-border)] rounded-[var(--radius-control)] bg-white dark:bg-[var(--background)] focus-ring"
                   autoFocus
                 />
                 <button
                   type="button"
                   onClick={handleAIWrite}
                   disabled={aiLoading || !aiPrompt.trim()}
-                  className="px-4 py-2 bg-purple-500 text-white text-sm font-medium rounded-lg hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-4 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] text-sm font-medium rounded-[var(--radius-control)] hover:bg-[var(--primary-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {aiLoading && aiAction === 'write' ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Sparkles className="w-4 h-4" />
+                    <ListChecks className="w-4 h-4" />
                   )}
                   Viết
                 </button>
@@ -455,18 +431,19 @@ export default function ComposePage() {
           )}
 
           {isFromAI && (
-            <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-[var(--secondary)] border border-[var(--border)] rounded-lg text-[14px] text-[var(--muted-foreground)]">
-              <Sparkles className="w-4 h-4 text-purple-500" strokeWidth={1.5} />
+            <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-[var(--secondary)] border border-[var(--border)] rounded-[var(--radius-control)] text-[14px] text-[var(--muted-foreground)]">
+              <ListChecks className="w-4 h-4 text-[var(--accent-foreground)]" strokeWidth={1.5} />
               <span>Nội dung được tạo/chỉnh sửa bởi AI. Vui lòng xem lại trước khi gửi.</span>
             </div>
           )}
 
           <textarea
             ref={textareaRef}
+            aria-label="Nội dung thư"
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder="Nội dung email..."
-            className="flex-1 w-full min-h-[300px] px-3 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent resize-none bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
+            className="flex-1 w-full min-h-48 sm:min-h-[300px] px-3 py-2 border border-[var(--border)] rounded-[var(--radius-control)] focus-ring resize-none bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
           />
         </div>
 
@@ -475,8 +452,8 @@ export default function ComposePage() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              className="p-2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] rounded-lg transition-colors"
-              title="Đính kèm file"
+              className="neo-icon-button"
+              aria-label="Đính kèm tệp"
             >
               <Paperclip className="w-5 h-5" strokeWidth={1.5} />
             </button>
@@ -485,24 +462,13 @@ export default function ComposePage() {
             <button
               type="button"
               onClick={handleDiscard}
-              className="px-4 py-2 text-[var(--muted-foreground)] hover:bg-[var(--hover)] rounded-lg transition-colors"
+              className="px-4 py-2 text-[var(--muted-foreground)] hover:bg-[var(--hover)] rounded-[var(--radius-control)] transition-colors"
             >
               Hủy
             </button>
-            <button
-              type="submit"
-              disabled={loading || !to}
-              className="flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg font-medium hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" strokeWidth={1.5} />
-              ) : (
-                <>
-                  <Send className="w-5 h-5" strokeWidth={1.5} />
-                  {sendAction === 'check' ? 'Kiểm tra trạng thái' : sendAction === 'retry' ? 'Thử lại yêu cầu' : 'Gửi'}
-                </>
-              )}
-            </button>
+            <Button type="submit" loading={loading} disabled={!to} leftIcon={<Send size={18} aria-hidden="true" />}>
+              {sendAction === 'check' ? 'Kiểm tra trạng thái' : sendAction === 'retry' ? 'Thử lại yêu cầu' : 'Gửi'}
+            </Button>
           </div>
         </div>
       </form>

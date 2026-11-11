@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import {
-  Sparkles, Check, Calendar, HelpCircle, Heart,
+  FilePenLine, Check, Calendar, HelpCircle, Heart,
   Send, ChevronDown, ChevronUp, Loader2,
-  MessageSquare, Zap, X, Edit3
+  MessageSquare, X, Edit3
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -31,17 +31,6 @@ const intentIcons: Record<string, React.ComponentType<{ className?: string }>> =
   thank: Heart,
   forward: Send,
   custom: Edit3,
-}
-
-// Use CSS variables for text to ensure correct theme contrast
-const intentColors: Record<string, string> = {
-  agree: 'bg-green-100 text-[var(--foreground)] dark:bg-green-500/20 hover:bg-green-200 dark:hover:bg-green-500/30',
-  confirm: 'bg-green-100 text-[var(--foreground)] dark:bg-green-500/20 hover:bg-green-200 dark:hover:bg-green-500/30',
-  decline: 'bg-red-100 text-[var(--foreground)] dark:bg-red-500/20 hover:bg-red-200 dark:hover:bg-red-500/30',
-  schedule: 'bg-blue-100 text-[var(--foreground)] dark:bg-blue-500/20 hover:bg-blue-200 dark:hover:bg-blue-500/30',
-  ask_more: 'bg-purple-100 text-[var(--foreground)] dark:bg-purple-500/20 hover:bg-purple-200 dark:hover:bg-purple-500/30',
-  thank: 'bg-pink-100 text-[var(--foreground)] dark:bg-pink-500/20 hover:bg-pink-200 dark:hover:bg-pink-500/30',
-  forward: 'bg-gray-200 text-[var(--foreground)] dark:bg-gray-500/20 hover:bg-gray-300 dark:hover:bg-gray-500/30',
 }
 
 export function SmartReply({ emailId, onReply }: SmartReplyProps) {
@@ -127,7 +116,7 @@ export function SmartReply({ emailId, onReply }: SmartReplyProps) {
     return (
       <div className="mb-4 p-4 bg-[var(--secondary)] rounded-xl border border-[var(--border)]">
         <div className="flex items-center gap-3">
-          <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
+          <Loader2 className="w-5 h-5 animate-spin text-[var(--accent-foreground)]" />
           <span className="text-sm text-[var(--foreground-secondary)]">Đang tạo gợi ý trả lời...</span>
         </div>
       </div>
@@ -140,21 +129,18 @@ export function SmartReply({ emailId, onReply }: SmartReplyProps) {
 
   return (
     <div className={cn(
-      'mb-4 rounded-xl border overflow-hidden transition-all duration-200',
-      'bg-gradient-to-r from-blue-50/50 to-indigo-50/50',
-      'dark:from-blue-500/5 dark:to-indigo-500/5',
-      'border-blue-100 dark:border-blue-500/20'
+      'mb-4 rounded-[var(--radius-panel)] border border-[var(--border)] bg-[var(--surface)]'
     )}>
       {/* Header */}
       <button
+        aria-expanded={expanded}
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between p-3 hover:bg-white/50 dark:hover:bg-white/5 transition-colors"
+        className="neo-target flex w-full items-center justify-between p-3 hover:bg-[var(--hover)]"
       >
         <div className="flex items-center gap-3">
-          <Zap className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+          <MessageSquare size={18} strokeWidth={1.5} aria-hidden="true" className="text-[var(--accent-foreground)]" />
           <div className="text-left">
             <p className="text-sm font-semibold text-[var(--foreground)]">Gợi ý trả lời</p>
-            <p className="text-xs text-[var(--foreground-muted)]">AI đề xuất - Click để chọn</p>
           </div>
         </div>
         {expanded ? (
@@ -171,18 +157,17 @@ export function SmartReply({ emailId, onReply }: SmartReplyProps) {
           <div className="flex flex-wrap gap-2 mb-4">
             {suggestions.map((suggestion, index) => {
               const Icon = intentIcons[suggestion.intent] || MessageSquare
-              const colorClass = intentColors[suggestion.intent] || intentColors.forward
               const isSelected = selectedSuggestion?.intent === suggestion.intent
 
               return (
                 <button
+                  type="button"
                   key={index}
                   onClick={() => handleSuggestionClick(suggestion)}
+                  aria-pressed={isSelected}
                   className={cn(
-                    'flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold',
-                    'transition-all duration-150',
-                    colorClass,
-                    isSelected && 'ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-gray-900'
+                    'neo-target flex items-center gap-2 rounded-[var(--radius-control)] border border-[var(--border-strong)] px-3 py-2 text-sm font-semibold hover:bg-[var(--hover)]',
+                    isSelected && 'border-[var(--selection-line)] bg-[var(--accent)] text-[var(--accent-foreground)]'
                   )}
                 >
                   <Icon className="w-4 h-4" />
@@ -230,7 +215,7 @@ export function SmartReply({ emailId, onReply }: SmartReplyProps) {
               <div className="w-full border-t border-[var(--border)]"></div>
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="px-2 bg-blue-50/80 dark:bg-[var(--background)] text-[var(--foreground-muted)]">hoặc</span>
+              <span className="px-2 bg-[var(--surface)] text-[var(--foreground-muted)]">hoặc</span>
             </div>
           </div>
 
@@ -284,7 +269,7 @@ export function SmartReply({ emailId, onReply }: SmartReplyProps) {
                     'w-full px-3 py-2 rounded-lg text-sm',
                     'bg-white dark:bg-white/5 border border-[var(--border)]',
                     'placeholder:text-[var(--foreground-subtle)]',
-                    'focus:outline-none focus:ring-2 focus:ring-blue-500/50'
+                    'focus-ring'
                   )}
                 />
 
@@ -305,7 +290,7 @@ export function SmartReply({ emailId, onReply }: SmartReplyProps) {
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4" />
+                      <FilePenLine className="w-4 h-4" />
                       Soạn email
                     </>
                   )}

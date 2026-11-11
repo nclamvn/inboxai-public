@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import {
-  Sparkles, ChevronDown, LogOut,
+  ClipboardList, ChevronDown, LogOut,
   Settings, X
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -150,7 +150,7 @@ export function Header() {
   }
 
   return (
-    <header className="h-14 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4 shadow-sm">
+    <header className="h-14 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4 ">
       {/* Search */}
       <div className="flex-1 max-w-xl">
         <SearchBox />
@@ -168,12 +168,14 @@ export function Header() {
         <div className="relative" ref={aiPopoverRef}>
           <button
             type="button"
+            aria-label="Bản tin hộp thư"
+            aria-expanded={showAIPopover}
             onClick={() => setShowAIPopover(!showAIPopover)}
             className="relative p-2 text-gray-500 dark:text-gray-400 hover:text-[var(--foreground)] transition-colors"
           >
-            <Sparkles className="w-5 h-5" strokeWidth={1.5} />
+            <ClipboardList className="w-5 h-5" strokeWidth={1.5} />
             {briefing && briefing.needsAttention > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold text-[var(--primary-foreground)] bg-[var(--primary)] rounded-full">
                 {briefing.needsAttention}
               </span>
             )}
@@ -181,17 +183,18 @@ export function Header() {
 
           {/* AI Popover */}
           {showAIPopover && (
-            <div className="absolute right-0 top-full mt-2 w-80 bg-[var(--card)] rounded-xl border border-[var(--border)] shadow-lg z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-2 w-80 bg-[var(--card)] rounded-[var(--radius-panel)] border border-[var(--border)]  z-50 overflow-hidden">
               <div className="p-4 border-b border-[var(--border)] bg-[var(--secondary)]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-[var(--foreground)]" strokeWidth={1.5} />
+                    <ClipboardList className="w-4 h-4 text-[var(--foreground)]" strokeWidth={1.5} />
                     <span className="text-[14px] font-medium text-[var(--foreground)]">
-                      AI Thư Ký
+                      Bản tin hộp thư
                     </span>
                   </div>
                   <button
                     type="button"
+                    aria-label="Đóng bản tin"
                     onClick={() => setShowAIPopover(false)}
                     className="p-1 rounded text-[var(--muted-foreground)] hover:text-[var(--muted)]"
                   >
@@ -216,10 +219,10 @@ export function Header() {
                       >
                         <span className={cn(
                           'text-[14px] font-bold',
-                          item.type === 'urgent' && 'text-red-500 dark:text-red-400',
+                          item.type === 'urgent' && 'text-[var(--warning)]',
                           item.type === 'deadline' && 'text-amber-500 dark:text-amber-400',
                           item.type === 'waiting' && 'text-blue-500 dark:text-blue-400',
-                          item.type === 'vip' && 'text-violet-500 dark:text-violet-400',
+                          item.type === 'vip' && 'text-[var(--accent-foreground)]',
                           !['urgent', 'deadline', 'waiting', 'vip'].includes(item.type) && 'text-gray-500 dark:text-gray-400'
                         )}>
                           {item.count}
@@ -242,7 +245,7 @@ export function Header() {
                   onClick={handleNavigateToInsights}
                   className="block w-full text-center py-2 text-[13px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
                 >
-                  Xem Insights →
+                  Xem phân tích
                 </button>
               </div>
             </div>
@@ -256,6 +259,8 @@ export function Header() {
         <div className="relative ml-2" ref={userMenuRef}>
           <button
             type="button"
+            aria-label="Tài khoản của bạn"
+            aria-expanded={showUserMenu}
             onClick={() => setShowUserMenu(!showUserMenu)}
             className="flex items-center gap-2 h-9 pl-1 pr-2 rounded-lg hover:bg-[var(--hover)] transition-colors"
           >
@@ -266,7 +271,7 @@ export function Header() {
           </button>
 
           {showUserMenu && (
-            <div className="absolute right-0 top-full mt-2 w-56 bg-[var(--card)] rounded-xl border border-[var(--border)] shadow-lg z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-2 w-56 bg-[var(--card)] rounded-[var(--radius-panel)] border border-[var(--border)]  z-50 overflow-hidden">
               <div className="p-3 border-b border-[var(--border)]">
                 <p className="text-[14px] font-semibold text-[var(--foreground)]">
                   {user?.profile?.full_name || 'User'}

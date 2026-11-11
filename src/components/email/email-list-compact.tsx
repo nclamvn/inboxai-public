@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback, useMemo, MouseEvent, TouchEvent } from 'react'
-import { Star, Zap, Inbox, Newspaper, ChevronDown, ChevronRight, Loader2, Paperclip, Check, X, Archive, Trash2, Mail, MailOpen } from 'lucide-react'
+import { Star, ListTodo, Inbox, Newspaper, ChevronDown, ChevronRight, Loader2, Paperclip, Check, X, Archive, Trash2, Mail, MailOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSelection } from '@/contexts/email-selection-context'
 import { ContextMenu } from './context-menu'
@@ -208,56 +208,6 @@ export function EmailListCompact({
     }
   }, [])
 
-  // Static category styles - memoized
-  // Use CSS variables for text color to ensure correct theme contrast
-  const categoryStyles = useMemo(() => ({
-    work: {
-      bg: 'bg-blue-100 dark:bg-blue-900/40',
-      text: 'text-[var(--foreground)] font-semibold',
-      hoverBg: 'hover:bg-blue-200 dark:hover:bg-blue-900/60'
-    },
-    personal: {
-      bg: 'bg-purple-100 dark:bg-purple-900/40',
-      text: 'text-[var(--foreground)] font-semibold',
-      hoverBg: 'hover:bg-purple-200 dark:hover:bg-purple-900/60'
-    },
-    transaction: {
-      bg: 'bg-emerald-100 dark:bg-emerald-900/40',
-      text: 'text-[var(--foreground)] font-semibold',
-      hoverBg: 'hover:bg-emerald-200 dark:hover:bg-emerald-900/60'
-    },
-    newsletter: {
-      bg: 'bg-gray-100 dark:bg-gray-800/60',
-      text: 'text-[var(--foreground)] font-semibold',
-      hoverBg: 'hover:bg-gray-200 dark:hover:bg-gray-800/80'
-    },
-    promotion: {
-      bg: 'bg-orange-100 dark:bg-orange-900/40',
-      text: 'text-[var(--foreground)] font-semibold',
-      hoverBg: 'hover:bg-orange-200 dark:hover:bg-orange-900/60'
-    },
-    social: {
-      bg: 'bg-cyan-100 dark:bg-cyan-900/40',
-      text: 'text-[var(--foreground)] font-semibold',
-      hoverBg: 'hover:bg-cyan-200 dark:hover:bg-cyan-900/60'
-    },
-    spam: {
-      bg: 'bg-red-100 dark:bg-red-900/40',
-      text: 'text-[var(--foreground)] font-semibold',
-      hoverBg: 'hover:bg-red-200 dark:hover:bg-red-900/60'
-    },
-    uncategorized: {
-      bg: 'bg-gray-100 dark:bg-gray-800/40',
-      text: 'text-[var(--foreground)] font-semibold',
-      hoverBg: 'hover:bg-gray-200 dark:hover:bg-gray-800/60'
-    },
-  }), [])
-
-  const getCategoryStyle = useCallback((category: string | null) => {
-    if (!category) return null
-    return categoryStyles[category as keyof typeof categoryStyles] || categoryStyles.newsletter
-  }, [categoryStyles])
-
   // Static category labels - memoized
   const categoryLabels = useMemo(() => ({
     work: 'Công việc',
@@ -298,7 +248,7 @@ export function EmailListCompact({
     })
 
     return [
-      { id: 'needsAction', title: 'Cần xử lý', icon: Zap, emails: needsAction },
+      { id: 'needsAction', title: 'Cần xử lý', icon: ListTodo, emails: needsAction },
       { id: 'primary', title: 'Hộp thư chính', icon: Inbox, emails: primary },
       { id: 'readLater', title: 'Đọc sau', icon: Newspaper, emails: readLater, defaultCollapsed: true }
     ].filter(section => section.emails.length > 0)
@@ -389,12 +339,13 @@ export function EmailListCompact({
     if (!isSelecting || selectedIds.size === 0) return null
 
     return (
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg safe-area-bottom">
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[var(--surface)] border-t border-[var(--border)] safe-area-bottom">
         <div className="flex items-center justify-between px-4 py-3">
           {/* Left: Cancel + Count */}
           <div className="flex items-center gap-3">
             <button
               onClick={exitSelectionMode}
+              aria-label="Thoát chế độ chọn thư"
               className="p-2 -m-2 text-gray-600 dark:text-gray-400"
             >
               <X className="w-5 h-5" />
@@ -438,10 +389,10 @@ export function EmailListCompact({
         </div>
 
         {/* Select All bar */}
-        <div className="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between px-4 py-2 bg-[var(--canvas)] border-t border-[var(--border)]">
           <button
             onClick={() => selectAll(emailIds)}
-            className="text-sm text-blue-700 dark:text-blue-400 font-semibold"
+            className="text-sm text-[var(--accent-foreground)] font-semibold"
           >
             Chọn tất cả ({emails.length})
           </button>
@@ -457,168 +408,89 @@ export function EmailListCompact({
   }
 
   const renderEmailItem = (email: Email) => {
-    const categoryStyle = email.category ? getCategoryStyle(email.category) : null
-    const emailIsSelected = isSelected(email.id)
+    const selected = isSelected(email.id)
+    const open = selectedId === email.id && !isSelecting
+    const subject = email.subject || '(Không có tiêu đề)'
+    const sender = email.from_name || email.from_address || 'Người gửi'
+    const label = getCategoryLabel(email.category)
 
     return (
       <div
         key={email.id}
-        onClick={(e) => handleTap(email, e)}
-        onContextMenu={(e) => handleContextMenu(e, email)}
-        onTouchStart={(e) => handleTouchStart(e, email)}
+        data-active={open || selected}
+        className={cn(
+          'neo-mail-row group flex items-start gap-2 hover:bg-[var(--hover)]',
+          compact ? 'px-3 py-2' : 'px-4 py-3'
+        )}
+        onContextMenu={event => handleContextMenu(event, email)}
+        onTouchStart={event => handleTouchStart(event, email)}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            handleTap(email, e as unknown as MouseEvent)
-          }
-        }}
-        style={{
-          touchAction: 'manipulation',
-          WebkitTouchCallout: 'none',
-          WebkitUserSelect: 'none',
-        }}
-        className={cn(
-          'w-full transition-colors cursor-pointer group select-none',
-          compact ? 'px-3 py-2.5' : 'px-4 py-3',
-          selectedId === email.id && !isSelecting
-            ? 'bg-[var(--secondary)]'
-            : emailIsSelected
-              ? 'bg-blue-100 text-gray-900 dark:bg-blue-600/40 dark:text-white'
-              : 'hover:bg-[var(--hover)] active:bg-[var(--secondary)]',
-          !email.is_read && !emailIsSelected && 'bg-blue-50/30 dark:bg-blue-900/10'
-        )}
       >
-        <div className="flex items-start gap-3">
-          {/* Mobile: Checkbox when selecting, Avatar when not */}
-          <div className="md:hidden flex-shrink-0">
-            {isSelecting ? (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  toggleSelect(email.id)
-                }}
-                className={cn(
-                  'w-10 h-10 rounded-full flex items-center justify-center transition-all',
-                  emailIsSelected
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600'
-                )}
-              >
-                {emailIsSelected && <Check className="w-5 h-5" strokeWidth={2.5} />}
-              </button>
-            ) : (
-              <div className={cn(
-                'w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-medium',
-                !email.is_read
-                  ? 'bg-blue-100 dark:bg-blue-900/30 text-gray-900 dark:text-white'
-                  : 'bg-[var(--secondary)] text-[var(--muted)]'
-              )}>
-                {(email.from_name || email.from_address || 'U')[0].toUpperCase()}
-              </div>
-            )}
-          </div>
-
-          {/* Desktop: Checkbox */}
+        {selectionEnabled && (
           <button
-            onClick={(e) => handleCheckboxClick(e, email)}
-            className={cn(
-              'w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all hidden md:flex',
-              emailIsSelected
-                ? 'bg-[var(--primary)] border-[var(--primary)] text-white'
-                : 'border-gray-500 dark:border-gray-400 hover:border-[var(--primary)]',
-              !isSelecting && !emailIsSelected && 'opacity-0 group-hover:opacity-100'
-            )}
+            type="button"
+            aria-label={`Chọn thư: ${subject}`}
+            aria-pressed={selected}
+            className={cn('neo-icon-button h-8 w-8', isSelecting ? 'inline-flex' : 'hidden md:inline-flex')}
+            onClick={event => handleCheckboxClick(event, email)}
           >
-            {emailIsSelected && <Check className="w-3 h-3" strokeWidth={2.5} />}
+            <span className={cn(
+              'flex size-4 items-center justify-center rounded-xs border border-[var(--border-strong)]',
+              selected && 'border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)]'
+            )}>
+              {selected && <Check size={12} strokeWidth={2} aria-hidden="true" />}
+            </span>
           </button>
-
-          {/* Star - desktop only */}
+        )}
+        {!isSelecting && (
+          <span aria-hidden="true" className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-[var(--secondary)] text-xs font-semibold text-[var(--foreground-muted)] md:hidden">
+            {sender[0].toUpperCase()}
+          </span>
+        )}
+        {onStar && (
           <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onStar?.(email.id)
-            }}
-            className={cn(
-              'mt-0.5 flex-shrink-0 hidden md:block',
-              email.is_starred ? 'text-amber-500' : 'text-gray-500 dark:text-gray-400 hover:text-amber-400'
-            )}
+            type="button" aria-label={`Gắn sao: ${subject}`} aria-pressed={email.is_starred}
+            onClick={() => onStar(email.id)}
+            className={cn('neo-icon-button hidden h-8 w-8 md:inline-flex', email.is_starred && 'text-[var(--warning)]')}
           >
-            <Star
-              className="w-4 h-4"
-              strokeWidth={1.5}
-              fill={email.is_starred ? 'currentColor' : 'none'}
-            />
+            <Star size={16} strokeWidth={1.5} fill={email.is_starred ? 'currentColor' : 'none'} aria-hidden="true" />
           </button>
+        )}
 
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            {/* Row 1: Sender + Time */}
-            <div className="flex items-center justify-between gap-2">
-              <span className={cn(
-                'text-[14px] truncate',
-                email.is_read ? 'text-[var(--muted)] font-medium' : 'text-[var(--foreground)] font-semibold'
-              )}>
-                {email.from_name || email.from_address?.split('@')[0]}
-              </span>
-              <span className="text-[12px] text-[var(--muted-foreground)] flex-shrink-0">
-                {formatTime(email.received_at)}
-              </span>
-            </div>
+        <button
+          type="button"
+          onClick={event => handleTap(email, event)}
+          aria-current={open ? 'true' : undefined}
+          aria-label={`${isSelecting ? 'Chọn' : 'Mở'} thư: ${subject}, ${sender}${email.is_read ? '' : ', chưa đọc'}${(email.priority || 0) >= 4 ? ', quan trọng' : ''}`}
+          className="flex min-h-11 min-w-0 flex-1 flex-col items-stretch gap-1 text-start focus-visible:outline-none"
+        >
+          <span className="flex items-center justify-between gap-2">
+            <span className={cn('truncate text-sm leading-5', email.is_read ? 'font-medium text-[var(--foreground-secondary)]' : 'font-semibold')}>
+              {sender}
+            </span>
+            <span className="shrink-0 text-xs leading-5 tabular-nums text-[var(--foreground-muted)]">{formatTime(email.received_at)}</span>
+          </span>
+          <span className="flex min-w-0 items-center gap-2 text-sm leading-5">
+            {!email.is_read && <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-[var(--selection-line)]" />}
+            <span className={cn('truncate', !email.is_read && 'font-semibold')}>{subject}</span>
+            {(email.attachment_count || 0) > 0 && <Paperclip size={14} className="shrink-0 text-[var(--foreground-muted)]" aria-label="Có tệp đính kèm" />}
+          </span>
+          <span className="truncate text-xs leading-4 text-[var(--foreground-muted)]">
+            {(email.body_text || email.snippet || '').replace(/\s+/g, ' ').slice(0, 120)}
+          </span>
+        </button>
 
-            {/* Row 2: Priority + Subject + Attachment */}
-            <div className="flex items-center gap-1.5 mt-0.5">
-              {(email.priority || 0) >= 4 && (
-                <span className="w-1.5 h-1.5 rounded-full bg-red-600 flex-shrink-0" />
-              )}
-              <span className={cn(
-                'text-[14px] truncate',
-                email.is_read ? 'text-[var(--muted)]' : 'text-[var(--foreground)]'
-              )}>
-                {email.subject || '(Không có tiêu đề)'}
-              </span>
-              {(email.attachment_count || 0) > 0 && (
-                <span className="flex items-center gap-0.5 text-[var(--muted-foreground)] flex-shrink-0">
-                  <Paperclip className="w-3.5 h-3.5" strokeWidth={1.5} />
-                  {(email.attachment_count || 0) > 1 && (
-                    <span className="text-[11px]">{email.attachment_count}</span>
-                  )}
-                </span>
-              )}
-            </div>
-
-            {/* Row 3: Preview */}
-            <p className="text-[13px] text-[var(--muted-foreground)] truncate mt-0.5">
-              {(email.body_text || email.snippet || '')?.replace(/\\n/g, ' ').slice(0, 80)}
-            </p>
-          </div>
-
-          {/* Unread indicator - mobile (when not selecting) */}
-          {!email.is_read && !isSelecting && (
-            <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2 md:hidden" />
-          )}
-
-          {/* Category Tag - desktop only */}
-          {email.category && categoryStyle && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onCategoryClick?.(email.category!)
-              }}
-              className={cn(
-                'px-2 py-0.5 rounded text-[11px] font-medium flex-shrink-0 transition-colors hidden md:block',
-                categoryStyle.bg,
-                categoryStyle.text,
-                categoryStyle.hoverBg
-              )}
-            >
-              {getCategoryLabel(email.category)}
-            </button>
-          )}
-        </div>
+        {!compact && email.category && onCategoryClick && (
+          <button
+            type="button" onClick={() => onCategoryClick(email.category!)}
+            aria-label={`Lọc danh mục ${label}`}
+            className="hidden h-8 shrink-0 items-center rounded-[var(--radius-control)] px-2 text-xs text-[var(--foreground-muted)] hover:bg-[var(--secondary)] lg:inline-flex"
+          >
+            {label}
+          </button>
+        )}
       </div>
     )
   }
@@ -685,8 +557,10 @@ export function EmailListCompact({
             return (
               <div key={section.id}>
                 <button
+                  type="button"
+                  aria-expanded={!isCollapsed}
                   onClick={() => toggleSection(section.id)}
-                  className="w-full flex items-center gap-2 px-4 py-2 bg-[var(--secondary)] border-b border-[var(--border)] hover:bg-[var(--hover)]"
+                  className="flex min-h-11 w-full items-center gap-2 border-b border-[var(--border)] bg-[var(--canvas)] px-4 py-2 text-start hover:bg-[var(--hover)]"
                 >
                   {isCollapsed ? (
                     <ChevronRight className="w-4 h-4 text-[var(--muted-foreground)]" strokeWidth={1.5} />
@@ -696,13 +570,13 @@ export function EmailListCompact({
                   <Icon
                     className={cn(
                       'w-4 h-4',
-                      section.id === 'needsAction' ? 'text-red-600 dark:text-red-400' : 'text-[var(--muted)]'
+                      section.id === 'needsAction' ? 'text-[var(--accent-foreground)]' : 'text-[var(--muted)]'
                     )}
                     strokeWidth={1.5}
                   />
                   <span className={cn(
                     'text-[13px] font-medium',
-                    section.id === 'needsAction' ? 'text-red-600 dark:text-red-400' : 'text-[var(--foreground)]'
+                    section.id === 'needsAction' ? 'text-[var(--accent-foreground)]' : 'text-[var(--foreground)]'
                   )}>
                     {section.title}
                   </span>

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  Bell, Mail, RefreshCw, Sparkles, AlertCircle,
+  Bell, Mail, RefreshCw, ClipboardList, AlertCircle,
   CheckCheck
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -21,15 +21,15 @@ interface Notification {
 const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   new_email: Mail,
   sync_complete: RefreshCw,
-  ai_classified: Sparkles,
+  ai_classified: ClipboardList,
   important: AlertCircle,
 }
 
 const typeColors: Record<string, string> = {
-  new_email: 'text-blue-600 dark:text-blue-400',
-  sync_complete: 'text-green-600 dark:text-green-400',
-  ai_classified: 'text-purple-600 dark:text-purple-400',
-  important: 'text-orange-600 dark:text-orange-400',
+  new_email: 'text-[var(--accent-foreground)]',
+  sync_complete: 'text-[var(--success)]',
+  ai_classified: 'text-[var(--accent-foreground)]',
+  important: 'text-[var(--warning)]',
 }
 
 export function NotificationDropdown() {
@@ -114,14 +114,17 @@ export function NotificationDropdown() {
     <div className="relative" ref={dropdownRef}>
       {/* Bell button */}
       <button
+        type="button"
+        aria-label="Thông báo"
+        aria-expanded={isOpen}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg hover:bg-[var(--hover)] text-[var(--muted)] transition-colors"
+        className="neo-icon-button relative"
       >
         <Bell className="w-5 h-5" strokeWidth={1.5} />
 
         {/* Unread badge */}
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-[11px] font-medium rounded-full flex items-center justify-center">
+          <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-[var(--primary)] text-[var(--primary-foreground)] text-[11px] font-medium rounded-full flex items-center justify-center">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -129,14 +132,14 @@ export function NotificationDropdown() {
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 bg-[var(--card)] rounded-xl shadow-lg border border-[var(--border)] overflow-hidden z-50 animate-fadeIn">
+        <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-32px)] bg-[var(--surface)] rounded-[var(--radius-panel)] border border-[var(--border-strong)] overflow-hidden z-50 animate-fadeIn">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
             <h3 className="text-[15px] font-semibold text-[var(--foreground)]">Thông báo</h3>
             {unreadCount > 0 && (
               <button
                 onClick={() => markAsRead()}
-                className="text-[13px] text-blue-600 hover:underline flex items-center gap-1"
+                className="text-[13px] text-[var(--accent-foreground)] hover:underline flex items-center gap-1"
               >
                 <CheckCheck className="w-4 h-4" />
                 Đọc tất cả
@@ -166,7 +169,7 @@ export function NotificationDropdown() {
                     onClick={() => handleClick(notification)}
                     className={cn(
                       'w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-[var(--hover)] transition-colors',
-                      !notification.is_read && 'bg-blue-50/50 dark:bg-blue-900/20'
+                      !notification.is_read && 'bg-[var(--canvas)]'
                     )}
                   >
                     {/* Icon */}
@@ -184,7 +187,7 @@ export function NotificationDropdown() {
                           {notification.title}
                         </span>
                         {!notification.is_read && (
-                          <span className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5" />
+                          <span className="w-2 h-2 bg-[var(--selection-line)] rounded-full flex-shrink-0 mt-1.5" />
                         )}
                       </div>
 
