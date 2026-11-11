@@ -1,3 +1,4 @@
+import type { DetectionCommand, DetectionPage } from './detection'
 import type { BoardPage, CommitmentGroup, LedgerDetail } from './view'
 import type { CommitmentEvidence, CommitmentState } from './contracts'
 
@@ -37,5 +38,19 @@ export function confirmCommitment(id: string, key: string, draft: CommitmentConf
     headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key },
     body: JSON.stringify({ operation: 'revise', ...draft }),
     signal: AbortSignal.timeout(15_000),
+  })
+}
+
+export function loadCommitmentDetections(before: string | null, signal: AbortSignal) {
+  const params = before ? '?' + new URLSearchParams({ beforeId: before }) : ''
+  return ledgerRequest<DetectionPage>('/detections' + params, { signal })
+}
+
+export function confirmCommitmentDetection(key: string, command: DetectionCommand) {
+  return ledgerRequest<{ id: string; version: number; replayed: boolean }>('/detections', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key },
+    body: JSON.stringify(command),
+    signal: AbortSignal.timeout(20_000),
   })
 }

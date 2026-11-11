@@ -4,17 +4,18 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { ChevronRight, ClipboardList, RotateCw } from 'lucide-react'
+import { ChevronRight, ClipboardList, FileText, RotateCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { cn } from '@/lib/utils'
-import { loadCommitmentBoard, loadCommitmentDetail, LedgerApiError } from '@/lib/commitments/client'
+import { loadCommitmentBoard, loadCommitmentDetail, loadCommitmentDetections, LedgerApiError } from '@/lib/commitments/client'
 import {
   commitmentsHref, formatCommitmentDue, groupLabels, isCommitmentGroup,
   ownerLabel, statusLabels, validCommitmentId, type BoardItem, type CommitmentGroup,
 } from '@/lib/commitments/view'
 import { CommitmentDetail } from './commitment-detail'
 import { CommitmentConfirmationDialog } from './commitment-confirmation'
+import { CommitmentProposals } from './commitment-proposals'
 
 const groups = Object.entries(groupLabels) as [CommitmentGroup, string][]
 
@@ -57,8 +58,9 @@ export function CommitmentLedger({ userId }: { userId: string }) {
   const params = useSearchParams()
   const groupParam = params.get('group')
   const group = isCommitmentGroup(groupParam) ? groupParam : 'mine'
+  const showProposals = params.get('view') === 'proposals'
   const idParam = params.get('id')
-  const id = validCommitmentId(idParam) ? idParam.toLowerCase() : null
+  const id = !showProposals && validCommitmentId(idParam) ? idParam.toLowerCase() : null
   const cache = useQueryClient()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saved, setSaved] = useState<{ id: string; version: number } | null>(null)
@@ -83,6 +85,16 @@ export function CommitmentLedger({ userId }: { userId: string }) {
     enabled: id !== null,
     retry: false,
   })
+  const detections = useInfiniteQuery({
+    queryKey: ['commitments', userId, 'detections'],
+    queryFn: ({ pageParam, signal }) => loadCommitmentDetections(pageParam, signal),
+    initialPageParam: null as string | null,
+    getNextPageParam: last => last.nextBeforeId,
+    staleTime: 30_000,
+    refetchInterval: query => (query.state.data?.pages.length ?? 0) < 2 ? 60_000 : false,
+    refetchOnWindowFocus: false,
+    retry: false,
+  })
 
   useEffect(() => {
     if (previousId.current && !id) listHeading.current?.focus()
@@ -93,6 +105,8 @@ export function CommitmentLedger({ userId }: { userId: string }) {
   const history = detail.data?.pages.flatMap(page => page.history) ?? []
   const items = board.data?.pages.flatMap(page => page.items) ?? []
   const totals = board.data?.pages.at(-1)?.totals
+  const proposals = [...new Map(detections.data?.pages.flatMap(page => page.proposals)
+    .map(proposal => [proposal.emailId, proposal])).values()]
   const refresh = () => void cache.invalidateQueries({ queryKey: ['commitments', userId] })
   const reloadDetail = () => {
     setEditingId(null)
@@ -106,11 +120,28 @@ export function CommitmentLedger({ userId }: { userId: string }) {
           <h1 className="neo-title" ref={listHeading} tabIndex={-1}>Cam kết</h1>
           <p className="mt-1 text-xs text-[var(--foreground-muted)]">Hạn chót theo giờ Việt Nam (UTC+7)</p>
         </div>
-        <button type="button" onClick={refresh} disabled={board.isFetching}
-          className="neo-icon-button disabled:opacity-50" aria-label="Làm mới sổ cam kết" title="Làm mới sổ cam kết">
-          <RotateCw size={18} aria-hidden="true" strokeWidth={1.5} />
-        </button>
+        <div className="flex min-w-0 items-center gap-2">
+          <Link href={commitmentsHref(group) + '&view=proposals'} prefetch={false}
+            aria-current={showProposals ? 'page' : undefined}
+            className="neo-nav-item neo-nav-inline neo-target gap-2 px-2 text-sm">
+            <FileText size={16} aria-hidden="true" /> Đề xuất từ email
+            {proposals.some(proposal => proposal.review) && <>
+              <span aria-hidden="true" className="size-2 shrink-0 bg-[var(--accent)]" />
+              <span className="sr-only">Có đề xuất cần duyệt</span>
+            </>}
+          </Link>
+          <button type="button" onClick={refresh} disabled={board.isFetching || detections.isFetching}
+            className="neo-icon-button disabled:opacity-50" aria-label="Làm mới sổ cam kết" title="Làm mới sổ cam kết">
+            <RotateCw size={18} aria-hidden="true" strokeWidth={1.5} />
+          </button>
+        </div>
       </header>
+      {showProposals ? (
+        <CommitmentProposals group={group} proposals={proposals}
+          hasMore={detections.hasNextPage} loading={detections.isPending} fetching={detections.isFetching}
+          failed={detections.isError} refresh={refresh}
+          load={() => { if (detections.isFetchNextPageError || !detections.isError) void detections.fetchNextPage(); else void detections.refetch() }} />
+      ) : <>
       <nav aria-label="Nhóm cam kết" className={cn('grid grid-cols-3 gap-x-1 border-b border-[var(--border)] bg-[var(--surface)] px-3 sm:px-5 md:flex md:flex-wrap', id && 'hidden md:hidden lg:flex')}>
         {groups.map(([key, label]) => (
           <Link key={key} href={commitmentsHref(key)} scroll={false} prefetch={false} aria-current={key === group ? 'page' : undefined}
@@ -183,6 +214,7 @@ export function CommitmentLedger({ userId }: { userId: string }) {
             refresh()
           }} />
       )}
+      </>}
     </div>
   )
 }

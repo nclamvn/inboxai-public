@@ -16,7 +16,9 @@ const actionInbox = process.argv.includes('--action-inbox')
 const design = actionInbox || process.argv.includes('--design')
 const commitments = process.argv.includes('--commitment-ledger')
 const commitmentUi = process.argv.includes('--commitment-ui')
-const evidenceFile = commitmentUi ? 'docs/phase-2/evidence/m3b-browser-run.json'
+const commitmentDetection = process.argv.includes('--commitment-detection')
+const evidenceFile = commitmentDetection ? 'docs/phase-2/evidence/m3c-browser-run.json'
+  : commitmentUi ? 'docs/phase-2/evidence/m3b-browser-run.json'
   : commitments ? 'docs/phase-2/evidence/m3a-local-auth.json'
   : actionInbox ? 'docs/phase-2/evidence/m2b-browser-run.json'
   : design ? 'docs/phase-2/evidence/m2a-browser-run.json' : 'docs/phase-2/evidence/m1c-local-auth.json'
@@ -174,7 +176,14 @@ try {
   record('admin revocation is enforced on the next request', (await appFetch('/api/admin/whitelist')).status === 403)
   sql("UPDATE public.registration_policy SET enabled=false;")
   record('closed policy rejects subsequent Next signups', (await appFetch('/api/signup-whitelist', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({email:'later@example.test',password,fullName:'Later'}) })).status === 503)
-  if (commitmentUi) {
+  if (commitmentDetection) {
+    const legacyLogin = createClient(base, anon, { auth: { persistSession: false, autoRefreshToken: false } })
+    const foreignSession = await legacyLogin.auth.signInWithPassword({ email: 'preupgrade@example.test', password })
+    assert.equal(foreignSession.error, null)
+    const { rehearseCommitmentDetection } = await import('../tests/design/detections.mjs')
+    await rehearseCommitmentDetection({ app, appFetch, cookies, admin, userId, foreignId: previousId,
+      foreignToken: foreignSession.data.session.access_token, loopbackFetch, record })
+  } else if (commitmentUi) {
     const { rehearseCommitmentUi } = await import('../tests/design/commitments.mjs')
     await rehearseCommitmentUi({ app, appFetch, cookies, admin, userId, record })
   } else if (commitments) {
@@ -200,7 +209,8 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = commitmentUi ? 'Authenticated local Chromium and real ledger API with synthetic mail only'
+  const provenance = commitmentDetection ? 'Local Chromium, Next, GoTrue, PostgREST and PostgreSQL with synthetic commitment sources'
+    : commitmentUi ? 'Authenticated local Chromium and real ledger API with synthetic mail only'
     : commitments ? 'Local Next/GoTrue/PostgREST/PostgreSQL, synthetic mail and .test accounts'
     : design ? 'Authenticated local Chromium with synthetic mail, loopback only'
     : 'Real local GoTrue/PostgREST/Next; synthetic Gmail/IMAP readers and loopback Gmail HTTP/SMTP TLS send; internal verification SMTP sink; .test identities; not hosted/provider interoperability'
