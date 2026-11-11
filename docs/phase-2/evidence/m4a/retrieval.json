@@ -1,0 +1,215 @@
+{
+  "corpus": "25 authored synthetic visible messages across two owner accounts, and foreign/deleted controls",
+  "provenance": "Held-out from direct encoder calibration. Local Next dev HTTP to actual PostgREST/Postgres, real E5 quantized CPU.",
+  "coldMs": 1859,
+  "secondBatchMs": 163,
+  "summarized": {
+    "keyword": {
+      "top5": 4,
+      "relevantQueries": 9,
+      "paraphraseTop5": 1,
+      "mrr": 0.3888888888888889,
+      "noSourceEmpty": 2,
+      "medianMs": 102,
+      "p95Ms": 113
+    },
+    "hybrid": {
+      "top5": 6,
+      "relevantQueries": 9,
+      "paraphraseTop5": 3,
+      "mrr": 0.5277777777777778,
+      "noSourceEmpty": 1,
+      "medianMs": 115,
+      "p95Ms": 123
+    }
+  },
+  "comparison": [
+    {
+      "kind": "exact",
+      "query": "RZ-4927",
+      "expected": "transfer",
+      "keyword": {
+        "rank": 1,
+        "latencyMs": 85,
+        "hits": 1,
+        "semanticOnly": false
+      },
+      "hybrid": {
+        "rank": 1,
+        "latencyMs": 93,
+        "hits": 1,
+        "semanticOnly": false
+      }
+    },
+    {
+      "kind": "exact",
+      "query": "FM-128",
+      "expected": "maintenance",
+      "keyword": {
+        "rank": 1,
+        "latencyMs": 94,
+        "hits": 1,
+        "semanticOnly": false
+      },
+      "hybrid": {
+        "rank": 1,
+        "latencyMs": 105,
+        "hits": 1,
+        "semanticOnly": false
+      }
+    },
+    {
+      "kind": "exact",
+      "query": "bao cao bao tri",
+      "expected": "maintenance",
+      "keyword": {
+        "rank": 1,
+        "latencyMs": 91,
+        "hits": 5,
+        "semanticOnly": false
+      },
+      "hybrid": {
+        "rank": 1,
+        "latencyMs": 108,
+        "hits": 14,
+        "semanticOnly": false
+      }
+    },
+    {
+      "kind": "paraphrase",
+      "query": "nhà cung cấp hoãn lịch giao hàng",
+      "expected": "freight",
+      "keyword": {
+        "rank": 6,
+        "latencyMs": 107,
+        "hits": 11,
+        "semanticOnly": false
+      },
+      "hybrid": {
+        "rank": 4,
+        "latencyMs": 120,
+        "hits": 13,
+        "semanticOnly": false
+      }
+    },
+    {
+      "kind": "paraphrase",
+      "query": "Ai xác nhận đã trả tiền?",
+      "expected": "transfer",
+      "keyword": {
+        "rank": null,
+        "latencyMs": 113,
+        "hits": 9,
+        "semanticOnly": false
+      },
+      "hybrid": {
+        "rank": 2,
+        "latencyMs": 123,
+        "hits": 10,
+        "semanticOnly": true
+      }
+    },
+    {
+      "kind": "paraphrase",
+      "query": "paid leave for a family medical emergency",
+      "expected": "family",
+      "keyword": {
+        "rank": null,
+        "latencyMs": 104,
+        "hits": 0,
+        "semanticOnly": false
+      },
+      "hybrid": {
+        "rank": null,
+        "latencyMs": 115,
+        "hits": 0,
+        "semanticOnly": false
+      }
+    },
+    {
+      "kind": "paraphrase",
+      "query": "renew the subscription without interruption",
+      "expected": "subscription",
+      "keyword": {
+        "rank": null,
+        "latencyMs": 104,
+        "hits": 0,
+        "semanticOnly": false
+      },
+      "hybrid": {
+        "rank": null,
+        "latencyMs": 119,
+        "hits": 0,
+        "semanticOnly": false
+      }
+    },
+    {
+      "kind": "paraphrase",
+      "query": "where did the team reject nonconforming parts",
+      "expected": "quality",
+      "keyword": {
+        "rank": null,
+        "latencyMs": 101,
+        "hits": 0,
+        "semanticOnly": false
+      },
+      "hybrid": {
+        "rank": null,
+        "latencyMs": 115,
+        "hits": 0,
+        "semanticOnly": false
+      }
+    },
+    {
+      "kind": "paraphrase",
+      "query": "cách lấy lại quyền vào hệ thống",
+      "expected": "recovery",
+      "keyword": {
+        "rank": 3,
+        "latencyMs": 113,
+        "hits": 6,
+        "semanticOnly": false
+      },
+      "hybrid": {
+        "rank": 1,
+        "latencyMs": 122,
+        "hits": 11,
+        "semanticOnly": false
+      }
+    },
+    {
+      "kind": "no-source",
+      "query": "ZYQ882091404",
+      "expected": null,
+      "keyword": {
+        "rank": null,
+        "latencyMs": 102,
+        "hits": 0,
+        "semanticOnly": false
+      },
+      "hybrid": {
+        "rank": null,
+        "latencyMs": 111,
+        "hits": 0,
+        "semanticOnly": false
+      }
+    },
+    {
+      "kind": "no-source",
+      "query": "vắc-xin sốt xuất huyết",
+      "expected": null,
+      "keyword": {
+        "rank": null,
+        "latencyMs": 102,
+        "hits": 0,
+        "semanticOnly": false
+      },
+      "hybrid": {
+        "rank": null,
+        "latencyMs": 116,
+        "hits": 8,
+        "semanticOnly": false
+      }
+    }
+  ]
+}

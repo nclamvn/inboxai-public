@@ -1,0 +1,112 @@
+{
+  "date": "2026-11-11T16:25:34.498Z",
+  "provenance": "Local Chromium and authenticated Next/PostgREST/PostgreSQL with real local E5 embeddings and synthetic mail",
+  "images": {
+    "auth": "supabase/gotrue:v2.197.0",
+    "rest": "postgrest/postgrest:v14.18",
+    "mail": "axllent/mailpit:v1.28.1",
+    "db": "postgres:16"
+  },
+  "outcomes": [
+    {
+      "name": "upgrade preserves existing profile",
+      "status": "PASS"
+    },
+    {
+      "name": "direct Auth API cannot bypass closed registration policy",
+      "status": "PASS"
+    },
+    {
+      "name": "Next signup requires email verification",
+      "status": "PASS"
+    },
+    {
+      "name": "signup sets no authenticated access-token cookie",
+      "status": "PASS"
+    },
+    {
+      "name": "unverified signup has no admin access",
+      "status": "PASS"
+    },
+    {
+      "name": "password login rejected before verification",
+      "status": "PASS"
+    },
+    {
+      "name": "PKCE email callback creates a verified session",
+      "status": "PASS"
+    },
+    {
+      "name": "verified admitted user can open the inbox page",
+      "status": "PASS"
+    },
+    {
+      "name": "non-admin verified user cannot access global whitelist",
+      "status": "PASS"
+    },
+    {
+      "name": "real PostgREST JWT/RLS returns only own email",
+      "status": "PASS"
+    },
+    {
+      "name": "anonymous PostgREST cannot read tenant email",
+      "status": "PASS"
+    },
+    {
+      "name": "server-provisioned admin role grants whitelist access",
+      "status": "PASS"
+    },
+    {
+      "name": "admin revocation is enforced on the next request",
+      "status": "PASS"
+    },
+    {
+      "name": "closed policy rejects subsequent Next signups",
+      "status": "PASS"
+    },
+    {
+      "name": "real local embeddings populate a bounded first batch and the exact code ranks first",
+      "status": "PASS"
+    },
+    {
+      "name": "incremental indexing covers the second batch without duplicates or deleted sources",
+      "status": "PASS"
+    },
+    {
+      "name": "account, sender, UTC+7 date and attachment intersect before retrieval",
+      "status": "PASS"
+    },
+    {
+      "name": "multiple selected accounts are a union scoped to the signed-in tenant",
+      "status": "PASS"
+    },
+    {
+      "name": "lexical lookup cites a verbatim passage deep in the source body",
+      "status": "PASS"
+    },
+    {
+      "name": "anonymous callers and foreign account selectors are denied and another tenant sees only its own match",
+      "status": "PASS"
+    },
+    {
+      "name": "strict requests reject injected tenant fields and treat filter punctuation literally",
+      "status": "PASS"
+    },
+    {
+      "name": "holdout preserves exact-code ranking and retrieves a semantic-only source missed by keywords",
+      "status": "PASS"
+    },
+    {
+      "name": "saving the textual search persists it through the existing history endpoint",
+      "status": "PASS"
+    },
+    {
+      "name": "desktop and mobile navigation reach the cited source, and back restores the search",
+      "status": "PASS"
+    },
+    {
+      "name": "untrusted email text stays literal and sampled desktop, tablet and mobile states have no axe violations",
+      "status": "PASS"
+    }
+  ]
+}

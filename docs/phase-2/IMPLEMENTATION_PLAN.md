@@ -124,3 +124,13 @@ See the [M3-B handoff](M3B_LOCAL_HANDOFF.md) for browser evidence and scope.
 | M3-C3 | M3-C2 | Local synthetic rehearsal | Two tenants, stale source, competing approvals, accessible review, stable receipt on retry |
 
 See the [M3-C handoff](M3C_LOCAL_HANDOFF.md) for the supported language and verification.
+
+## M4-A local review units
+
+| Unit | Dependency | Scope | Acceptance |
+| --- | --- | --- | --- |
+| M4-A1 | M3-A | Tenant-scoped filters, keyword index and embedding lifecycle | Account ownership, bounded writes, source deletion and edits, literal evidence |
+| M4-A2 | M4-A1 | Local multilingual encoding and hybrid ranking | Verified local assets, exact lexical matches retained, explicit fallback and visible indexing scope |
+| M4-A3 | M4-A2 | Ask Inbox search surface and local evidence | Accessible filters, source opening and return, held-out keyword comparison, recorded misses and latency |
+
+See the [M4-A handoff](M4A_LOCAL_HANDOFF.md) for setup and local verification.

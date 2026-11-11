@@ -1,7 +1,8 @@
 # Verification record
 
-Latest: [M3-C local commitment detection evidence](M3C_LOCAL_HANDOFF.md).
-Previous: [M3-B local commitment workflow evidence](M3B_LOCAL_HANDOFF.md) and
+Latest: [M4-A local Ask Inbox evidence](M4A_LOCAL_HANDOFF.md).
+Previous: [M3-C local commitment detection evidence](M3C_LOCAL_HANDOFF.md),
+[M3-B local commitment workflow evidence](M3B_LOCAL_HANDOFF.md) and
 [M3-A local Commitment Ledger evidence](M3A_LOCAL_HANDOFF.md).
 Previous: [M2-B local Action Inbox evidence](M2B_LOCAL_HANDOFF.md).
 Previous: [M2-A local design system evidence](M2A_LOCAL_HANDOFF.md).
