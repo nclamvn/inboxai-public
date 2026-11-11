@@ -1,6 +1,7 @@
 # Verification record
 
-Latest: [M2-A local design system evidence](M2A_LOCAL_HANDOFF.md).
+Latest: [M2-B local Action Inbox evidence](M2B_LOCAL_HANDOFF.md).
+Previous: [M2-A local design system evidence](M2A_LOCAL_HANDOFF.md).
 Previous: [M1-C local send evidence](M1C_LOCAL_HANDOFF.md).
 Previous: [M1-B local sync evidence](M1B_LOCAL_HANDOFF.md).
 Previous: [M1-A local credential vault evidence](M1A_LOCAL_HANDOFF.md). The M0 record

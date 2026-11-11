@@ -1,0 +1,140 @@
+
+> ai-mailbox@0.1.0 test:action-inbox
+> npm run test:local-auth -- --action-inbox
+
+
+> ai-mailbox@0.1.0 test:local-auth
+> node --import tsx --conditions=react-server scripts/test-local-auth.mjs --action-inbox
+
+ Network inboxai-m0e-local_host_access Creating
+ Network inboxai-m0e-local_isolated Creating
+ Network inboxai-m0e-local_isolated Creating
+ Network inboxai-m0e-local_host_access Creating
+ Network inboxai-m0e-local_host_access Created
+ Network inboxai-m0e-local_host_access Created
+ Network inboxai-m0e-local_isolated Created
+ Network inboxai-m0e-local_isolated Created
+ Container inboxai-m0e-local-gateway-1 Creating
+ Container inboxai-m0e-local-mail-1 Creating
+ Container inboxai-m0e-local-db-1 Creating
+ Container inboxai-m0e-local-mail-1 Created
+ Container inboxai-m0e-local-gateway-1 Created
+ Container inboxai-m0e-local-db-1 Created
+ Container inboxai-m0e-local-rest-1 Creating
+ Container inboxai-m0e-local-auth-1 Creating
+ Container inboxai-m0e-local-auth-1 Created
+ Container inboxai-m0e-local-rest-1 Created
+ Container inboxai-m0e-local-db-1 Starting
+ Container inboxai-m0e-local-mail-1 Starting
+ Container inboxai-m0e-local-gateway-1 Starting
+ Container inboxai-m0e-local-db-1 Started
+ Container inboxai-m0e-local-db-1 Waiting
+ Container inboxai-m0e-local-db-1 Waiting
+ Container inboxai-m0e-local-mail-1 Started
+ Container inboxai-m0e-local-gateway-1 Started
+ Container inboxai-m0e-local-db-1 Healthy
+ Container inboxai-m0e-local-db-1 Healthy
+ Container inboxai-m0e-local-auth-1 Starting
+ Container inboxai-m0e-local-rest-1 Starting
+ Container inboxai-m0e-local-auth-1 Started
+ Container inboxai-m0e-local-rest-1 Started
+NOTICE:  trigger "on_auth_user_created" for relation "auth.users" does not exist, skipping
+NOTICE:  trigger "update_profiles_updated_at" for relation "profiles" does not exist, skipping
+NOTICE:  trigger "update_emails_updated_at" for relation "emails" does not exist, skipping
+NOTICE:  trigger "update_source_accounts_updated_at" for relation "source_accounts" does not exist, skipping
+NOTICE:  trigger "update_action_items_updated_at" for relation "action_items" does not exist, skipping
+NOTICE:  trigger "update_follow_ups_updated_at" for relation "follow_ups" does not exist, skipping
+NOTICE:  trigger "update_automation_rules_updated_at" for relation "automation_rules" does not exist, skipping
+NOTICE:  trigger "trigger_update_domain_reputation" for relation "email_action_logs" does not exist, skipping
+NOTICE:  column "phishing_score" of relation "emails" already exists, skipping
+NOTICE:  column "phishing_risk" of relation "emails" already exists, skipping
+NOTICE:  column "phishing_reasons" of relation "emails" already exists, skipping
+NOTICE:  column "is_phishing_reviewed" of relation "emails" already exists, skipping
+NOTICE:  trigger "trigger_update_phishing_risk" for relation "emails" does not exist, skipping
+NOTICE:  policy "Users can view own sender_reputation" for relation "sender_reputation" does not exist, skipping
+NOTICE:  policy "Users can insert own sender_reputation" for relation "sender_reputation" does not exist, skipping
+NOTICE:  policy "Users can update own sender_reputation" for relation "sender_reputation" does not exist, skipping
+NOTICE:  policy "Users can delete own sender_reputation" for relation "sender_reputation" does not exist, skipping
+NOTICE:  trigger "trigger_sender_reputation_updated_at" for relation "sender_reputation" does not exist, skipping
+NOTICE:  policy "Anyone can read feature definitions" for relation "ai_feature_definitions" does not exist, skipping
+NOTICE:  policy "Anyone can read feature defaults" for relation "ai_feature_defaults" does not exist, skipping
+NOTICE:  policy "Users can manage own config" for relation "ai_feature_user_config" does not exist, skipping
+NOTICE:  policy "Users can manage own VIP senders" for relation "ai_vip_senders" does not exist, skipping
+NOTICE:  policy "Users can read global or own triggers" for relation "ai_content_triggers" does not exist, skipping
+NOTICE:  policy "Users can manage own triggers" for relation "ai_content_triggers" does not exist, skipping
+NOTICE:  policy "Users can manage own usage" for relation "ai_feature_usage" does not exist, skipping
+NOTICE:  policy "Users can view own costs" for relation "ai_cost_daily" does not exist, skipping
+NOTICE:  column "access_token" of relation "source_accounts" already exists, skipping
+NOTICE:  column "refresh_token" of relation "source_accounts" already exists, skipping
+NOTICE:  column "token_expires_at" of relation "source_accounts" already exists, skipping
+NOTICE:  trigger "trigger_auto_primary" for relation "source_accounts" does not exist, skipping
+NOTICE:  column "imap_host" of relation "source_accounts" already exists, skipping
+NOTICE:  column "imap_port" of relation "source_accounts" already exists, skipping
+NOTICE:  column "imap_secure" of relation "source_accounts" already exists, skipping
+NOTICE:  column "smtp_host" of relation "source_accounts" already exists, skipping
+NOTICE:  column "smtp_port" of relation "source_accounts" already exists, skipping
+NOTICE:  column "smtp_secure" of relation "source_accounts" already exists, skipping
+NOTICE:  column "message_id" of relation "emails" already exists, skipping
+NOTICE:  trigger "guard_profile_admin" for relation "public.profiles" does not exist, skipping
+PASS: upgrade preserves existing profile
+PASS: direct Auth API cannot bypass closed registration policy
+PASS: Next signup requires email verification
+PASS: signup sets no authenticated access-token cookie
+PASS: unverified signup has no admin access
+PASS: password login rejected before verification
+PASS: PKCE email callback creates a verified session
+PASS: verified admitted user can open the inbox page
+PASS: non-admin verified user cannot access global whitelist
+PASS: real PostgREST JWT/RLS returns only own email
+PASS: anonymous PostgREST cannot read tenant email
+PASS: server-provisioned admin role grants whitelist access
+PASS: admin revocation is enforced on the next request
+PASS: closed policy rejects subsequent Next signups
+PASS: upgrade keeps legacy message automatic and derives its plaintext preview
+PASS: PostgREST computed preview and RPC reject foreign and anonymous access
+PASS: email evidence route opens an owned source and conceals a foreign source
+PASS: concurrent PostgREST corrections from one revision yield one save and one conflict
+PASS: replay converges without a new revision and reset returns to automatic
+PASS: desktop Inbox renders tokens, Inter and current navigation without horizontal overflow
+PASS: desktop keyboard skip, focus outline and split reading selection
+PASS: read low-priority incident rises above manual and classifier hints; high-priority receipt stays in Read later
+PASS: same-sender learned tie-break cites and opens the actual historical email
+PASS: losing a committed save response permits retry of the same correction without a new revision
+PASS: correction survives reload and resetting to automatic restores incident priority
+PASS: unavailable evidence shows a recoverable source state
+PASS: an empty search can retry a failed page and reveal an older source
+PASS: Inbox loads all messages across a timestamp tie and legacy null timestamps with no duplicates
+PASS: tablet Inbox renders tokens, Inter and current navigation without horizontal overflow
+PASS: tablet expands the rail and uses a single reading pane
+PASS: mobile Inbox renders tokens, Inter and current navigation without horizontal overflow
+PASS: mobile reading opens cited priority and returns focus on Escape
+PASS: mobile touch targets, dialog focus and Escape, search, persisted theme and reading navigation
+PASS: offline and recovered network statuses are announced
+PASS: mobile compose selects a sender and generates a stub draft without attempting to send
+PASS: dark Inbox renders tokens, Inter and current navigation without horizontal overflow
+PASS: empty mailbox and recoverable load error remain distinct
+PASS: axe reports no WCAG-tagged violations across sampled Inbox states
+ Container inboxai-m0e-local-auth-1 Stopping
+ Container inboxai-m0e-local-mail-1 Stopping
+ Container inboxai-m0e-local-gateway-1 Stopping
+ Container inboxai-m0e-local-rest-1 Stopping
+ Container inboxai-m0e-local-rest-1 Stopped
+ Container inboxai-m0e-local-rest-1 Removing
+ Container inboxai-m0e-local-auth-1 Stopped
+ Container inboxai-m0e-local-auth-1 Removing
+ Container inboxai-m0e-local-rest-1 Removed
+ Container inboxai-m0e-local-auth-1 Removed
+ Container inboxai-m0e-local-db-1 Stopping
+ Container inboxai-m0e-local-gateway-1 Stopped
+ Container inboxai-m0e-local-gateway-1 Removing
+ Container inboxai-m0e-local-gateway-1 Removed
+ Container inboxai-m0e-local-mail-1 Stopped
+ Container inboxai-m0e-local-mail-1 Removing
+ Container inboxai-m0e-local-db-1 Stopped
+ Container inboxai-m0e-local-db-1 Removing
+ Container inboxai-m0e-local-mail-1 Removed
+ Container inboxai-m0e-local-db-1 Removed
+ Network inboxai-m0e-local_isolated Removing
+ Network inboxai-m0e-local_host_access Removing
+ Network inboxai-m0e-local_host_access Removed
+ Network inboxai-m0e-local_isolated Removed

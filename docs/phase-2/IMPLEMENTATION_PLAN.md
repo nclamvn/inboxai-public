@@ -81,3 +81,14 @@ The [local handoff](M1C_LOCAL_HANDOFF.md) records evidence and provider limitati
 
 See [the local M2-A handoff](M2A_LOCAL_HANDOFF.md). M2-B uses the Inbox
 components to expose contextual ranking, source evidence and corrections.
+
+## M2-B local review units
+
+| Unit | Dependency | Scope | Acceptance |
+| --- | --- | --- | --- |
+| M2-B1 | M2-A | Ranking, bounded evidence and saved priority | Read state independent of priority, low-priority incidents visible, receipt suppression, tenant checks, reset and replay |
+| M2-B2 | M2-B1 | Inbox list and source dialog across viewports | Reason links open scoped mail, saved choices survive reload, failed loads retry, same-account feedback affects ordering |
+| M2-B3 | M2-B2 | Local verification and comparative evidence | Fresh and upgrade SQL, Auth/PostgREST and browser runs, false positives and misses documented |
+
+The [M2-B handoff](M2B_LOCAL_HANDOFF.md) records behavior and evaluation limits.
+M3-A owns persistent commitment identity, revisions and lifecycle evidence.

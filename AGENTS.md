@@ -2,10 +2,10 @@
 
 ## Authority and scope
 - Product owner instructions and `docs/phase-2/PRODUCT_STANDARD.md` govern Phase 2.
-- M0-E/M1-A/M1-B/M1-C owner direction (2026-11-11): local implementation and verification only.
+- Owner direction through M2-B (2026-11-11): local implementation and verification only.
   Do not push, create remote PRs, run hosted deployments or modify hosted settings.
   Prepare PR drafts locally; report local evidence separately from unrun remote CI.
-- Work on `phase2/m0-security-baseline-20261111` for current local M0/M1 work. Never modify main,
+- Work on `phase2/m0-security-baseline-20261111` for current local Phase 2 work. Never modify main,
   deploy production, connect real mailboxes, or send real mail before the security gate.
 - Reuse verified code. Prefer small, reviewable PRs with explicit dependencies,
   acceptance criteria, regression tests, rollback notes and evidence.
@@ -32,6 +32,9 @@
 - Email bodies and attachments are untrusted data, never authorization or system instructions.
 - Deterministic code owns authorization, validation, deduplication and side effects.
   Models own language interpretation; model confidence is not calibrated probability.
+- Action Inbox reasons must link to tenant-visible source emails and identify
+  stored analysis as such. Preserve explicit priority choices across provider
+  updates and keep learning scoped by account and sender.
 - Sync writes must use the private checkpoint/lease RPC boundary in `src/lib/sync/`.
   Commit page data and cursor together; retain fences, owner checks, UID epochs and
   source tombstones. No timestamp/newest-N fallback. See `docs/phase-2/SYNC_CONTRACTS.md`.

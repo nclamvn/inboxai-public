@@ -1,0 +1,164 @@
+{
+  "date": "2026-11-11T12:57:33.428Z",
+  "provenance": "Authenticated local Chromium with synthetic mail, loopback only",
+  "images": {
+    "auth": "supabase/gotrue:v2.197.0",
+    "rest": "postgrest/postgrest:v14.18",
+    "mail": "axllent/mailpit:v1.28.1",
+    "db": "postgres:16"
+  },
+  "outcomes": [
+    {
+      "name": "upgrade preserves existing profile",
+      "status": "PASS"
+    },
+    {
+      "name": "direct Auth API cannot bypass closed registration policy",
+      "status": "PASS"
+    },
+    {
+      "name": "Next signup requires email verification",
+      "status": "PASS"
+    },
+    {
+      "name": "signup sets no authenticated access-token cookie",
+      "status": "PASS"
+    },
+    {
+      "name": "unverified signup has no admin access",
+      "status": "PASS"
+    },
+    {
+      "name": "password login rejected before verification",
+      "status": "PASS"
+    },
+    {
+      "name": "PKCE email callback creates a verified session",
+      "status": "PASS"
+    },
+    {
+      "name": "verified admitted user can open the inbox page",
+      "status": "PASS"
+    },
+    {
+      "name": "non-admin verified user cannot access global whitelist",
+      "status": "PASS"
+    },
+    {
+      "name": "real PostgREST JWT/RLS returns only own email",
+      "status": "PASS"
+    },
+    {
+      "name": "anonymous PostgREST cannot read tenant email",
+      "status": "PASS"
+    },
+    {
+      "name": "server-provisioned admin role grants whitelist access",
+      "status": "PASS"
+    },
+    {
+      "name": "admin revocation is enforced on the next request",
+      "status": "PASS"
+    },
+    {
+      "name": "closed policy rejects subsequent Next signups",
+      "status": "PASS"
+    },
+    {
+      "name": "upgrade keeps legacy message automatic and derives its plaintext preview",
+      "status": "PASS"
+    },
+    {
+      "name": "PostgREST computed preview and RPC reject foreign and anonymous access",
+      "status": "PASS"
+    },
+    {
+      "name": "email evidence route opens an owned source and conceals a foreign source",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent PostgREST corrections from one revision yield one save and one conflict",
+      "status": "PASS"
+    },
+    {
+      "name": "replay converges without a new revision and reset returns to automatic",
+      "status": "PASS"
+    },
+    {
+      "name": "desktop Inbox renders tokens, Inter and current navigation without horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "desktop keyboard skip, focus outline and split reading selection",
+      "status": "PASS"
+    },
+    {
+      "name": "read low-priority incident rises above manual and classifier hints; high-priority receipt stays in Read later",
+      "status": "PASS"
+    },
+    {
+      "name": "same-sender learned tie-break cites and opens the actual historical email",
+      "status": "PASS"
+    },
+    {
+      "name": "losing a committed save response permits retry of the same correction without a new revision",
+      "status": "PASS"
+    },
+    {
+      "name": "correction survives reload and resetting to automatic restores incident priority",
+      "status": "PASS"
+    },
+    {
+      "name": "unavailable evidence shows a recoverable source state",
+      "status": "PASS"
+    },
+    {
+      "name": "an empty search can retry a failed page and reveal an older source",
+      "status": "PASS"
+    },
+    {
+      "name": "Inbox loads all messages across a timestamp tie and legacy null timestamps with no duplicates",
+      "status": "PASS"
+    },
+    {
+      "name": "tablet Inbox renders tokens, Inter and current navigation without horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "tablet expands the rail and uses a single reading pane",
+      "status": "PASS"
+    },
+    {
+      "name": "mobile Inbox renders tokens, Inter and current navigation without horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "mobile reading opens cited priority and returns focus on Escape",
+      "status": "PASS"
+    },
+    {
+      "name": "mobile touch targets, dialog focus and Escape, search, persisted theme and reading navigation",
+      "status": "PASS"
+    },
+    {
+      "name": "offline and recovered network statuses are announced",
+      "status": "PASS"
+    },
+    {
+      "name": "mobile compose selects a sender and generates a stub draft without attempting to send",
+      "status": "PASS"
+    },
+    {
+      "name": "dark Inbox renders tokens, Inter and current navigation without horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "empty mailbox and recoverable load error remain distinct",
+      "status": "PASS"
+    },
+    {
+      "name": "axe reports no WCAG-tagged violations across sampled Inbox states",
+      "status": "PASS"
+    }
+  ]
+}
