@@ -11,16 +11,21 @@ export interface GmailMessage {
   snippet: string;
   payload: {
     mimeType?: string;
+    filename?: string;
+    partId?: string;
     headers: { name: string; value: string }[];
-    body?: { data?: string };
+    body?: { data?: string; size?:number; attachmentId?:string };
     parts?: GmailMessagePart[];
   };
   internalDate: string;
 }
 
 export interface GmailMessagePart {
+  filename?: string;
+  partId?: string;
+  headers?: { name: string; value: string }[];
   mimeType?: string;
-  body?: { data?: string };
+  body?: { data?: string; size?:number; attachmentId?:string };
   parts?: GmailMessagePart[];
 }
 
@@ -160,6 +165,7 @@ export function extractBody(message: GmailMessage): { text: string; html: string
   let html = '';
 
   function processPayload(payload: GmailMessagePart) {
+    if(payload.filename) return; // Attached text is not the message body.
     if (payload.body?.data) {
       const content = decodeBase64Url(payload.body.data);
       const mimeType = payload.mimeType || '';
