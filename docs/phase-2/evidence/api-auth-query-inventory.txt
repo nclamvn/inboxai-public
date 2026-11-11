@@ -1,0 +1,639 @@
+src/app/api/automation/run/route.ts:7:  const supabase = await createClient()
+src/app/api/automation/run/route.ts:8:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/automation/run/route.ts:24:        .eq('user_id', user.id)
+src/app/api/cron/sync-emails/route.ts:20:  const supabase = createClient(
+src/app/api/cron/sync-emails/route.ts:22:    process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/cron/sync-emails/route.ts:29:      .eq('user_id', userId)
+src/app/api/cron/sync-emails/route.ts:46:          user_id: userId
+src/app/api/cron/sync-emails/route.ts:87:  const supabase = createClient(
+src/app/api/cron/sync-emails/route.ts:89:    process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/cron/sync-emails/route.ts:179:              account.user_id,
+src/app/api/cron/sync-emails/route.ts:188:              notifySyncComplete(account.user_id, syncResult.synced).catch(() => {})
+src/app/api/cron/sync-emails/route.ts:191:              notifyAiClassified(account.user_id, classified).catch(() => {})
+src/app/api/emails/send/route.ts:5:import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
+src/app/api/emails/send/route.ts:8:const supabaseAdmin = createSupabaseAdmin(
+src/app/api/emails/send/route.ts:10:  process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/emails/send/route.ts:14:  const supabase = await createClient()
+src/app/api/emails/send/route.ts:15:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/send/route.ts:44:      .eq('user_id', user.id)
+src/app/api/emails/send/route.ts:164:      user_id: user.id,
+src/app/api/cron/classify-emails/route.ts:27:  const supabase = createClient(
+src/app/api/cron/classify-emails/route.ts:29:    process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/cron/classify-emails/route.ts:44:      .select('id, user_id, from_address, from_name, subject, body_text, body_html')
+src/app/api/cron/classify-emails/route.ts:76:            user_id: email.user_id
+src/app/api/cron/classify-emails/route.ts:103:          results.byUser[email.user_id] = (results.byUser[email.user_id] || 0) + 1
+src/app/api/emails/bulk-action/route.ts:8:  emailIds?: string[]
+src/app/api/emails/bulk-action/route.ts:17:  const supabase = await createClient()
+src/app/api/emails/bulk-action/route.ts:18:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/bulk-action/route.ts:26:    const { action, emailIds, filter } = body
+src/app/api/emails/bulk-action/route.ts:38:      .eq('user_id', user.id)
+src/app/api/emails/bulk-action/route.ts:41:    if (emailIds && emailIds.length > 0) {
+src/app/api/emails/bulk-action/route.ts:43:      if (emailIds.length > 500) {
+src/app/api/emails/bulk-action/route.ts:48:      query = query.in('id', emailIds)
+src/app/api/emails/bulk-action/route.ts:90:    if (!emailIds && idsToUpdate.length > 500) {
+src/app/api/emails/bulk-action/route.ts:127:      .eq('user_id', user.id) // Extra safety check
+src/app/api/emails/bulk-action/route.ts:138:      emailIds: idsToUpdate
+src/app/api/emails/route.ts:6:  const supabase = createClient(
+src/app/api/emails/route.ts:31:    const { data: { user }, error: authError } = await supabase.auth.getUser()
+src/app/api/emails/route.ts:44:    const accountId = searchParams.get('account_id')
+src/app/api/emails/route.ts:45:    const accountIds = searchParams.get('account_ids')
+src/app/api/emails/route.ts:56:      .eq('user_id', user.id)
+src/app/api/emails/route.ts:59:    if (accountId) {
+src/app/api/emails/route.ts:60:      query = query.eq('source_account_id', accountId)
+src/app/api/emails/route.ts:61:    } else if (accountIds) {
+src/app/api/emails/route.ts:62:      const ids = accountIds.split(',').filter(Boolean)
+src/app/api/source-accounts/sync/route.ts:14:    process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/source-accounts/sync/route.ts:22:      .eq('user_id', userId)
+src/app/api/source-accounts/sync/route.ts:39:          user_id: userId
+src/app/api/source-accounts/sync/route.ts:74:  const supabase = await createClient()
+src/app/api/source-accounts/sync/route.ts:75:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/source-accounts/sync/route.ts:96:    .eq('user_id', user.id)
+src/app/api/source-accounts/sync/route.ts:179:  const supabase = await createClient()
+src/app/api/source-accounts/sync/route.ts:180:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/source-accounts/sync/route.ts:189:    .eq('user_id', user.id)
+src/app/api/track/route.ts:9:  process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/track/route.ts:24:  const supabase = await createClient()
+src/app/api/track/route.ts:25:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/track/route.ts:31:  const { emailId, action, readDuration } = await request.json()
+src/app/api/track/route.ts:33:  if (!emailId || !action) {
+src/app/api/track/route.ts:47:      emailId,
+src/app/api/track/route.ts:61:            .eq('id', emailId)
+src/app/api/track/route.ts:64:            await logEmailAction(user.id, emailId, email.from_address, domainAction)
+src/app/api/source-accounts/route.ts:8:  const supabase = await createClient()
+src/app/api/source-accounts/route.ts:9:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/source-accounts/route.ts:33:    .eq('user_id', user.id)
+src/app/api/source-accounts/route.ts:68:  const supabase = await createClient()
+src/app/api/source-accounts/route.ts:69:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/source-accounts/route.ts:148:      user_id: user.id,
+src/app/api/settings/vip-senders/route.ts:19:    const supabase = await createClient();
+src/app/api/settings/vip-senders/route.ts:21:    const { data: { user }, error: authError } = await supabase.auth.getUser();
+src/app/api/settings/vip-senders/route.ts:29:      .eq('user_id', user.id)
+src/app/api/settings/vip-senders/route.ts:48:    const supabase = await createClient();
+src/app/api/settings/vip-senders/route.ts:50:    const { data: { user }, error: authError } = await supabase.auth.getUser();
+src/app/api/settings/vip-senders/route.ts:100:    const supabase = await createClient();
+src/app/api/settings/vip-senders/route.ts:102:    const { data: { user }, error: authError } = await supabase.auth.getUser();
+src/app/api/settings/vip-senders/route.ts:122:      .eq('user_id', user.id);
+src/app/api/settings/ai-features/route.ts:21:    const supabase = await createClient();
+src/app/api/settings/ai-features/route.ts:24:    const { data: { user }, error: authError } = await supabase.auth.getUser();
+src/app/api/settings/ai-features/route.ts:32:    const settings = await service.getUserSettings(user.id);
+src/app/api/settings/ai-features/route.ts:71:    const supabase = await createClient();
+src/app/api/settings/ai-features/route.ts:74:    const { data: { user }, error: authError } = await supabase.auth.getUser();
+src/app/api/settings/ai-features/route.ts:122:    const supabase = await createClient();
+src/app/api/settings/ai-features/route.ts:125:    const { data: { user }, error: authError } = await supabase.auth.getUser();
+src/app/api/settings/ai-features/route.ts:137:      .eq('user_id', user.id);
+src/app/api/automation/rules/route.ts:7:  const supabase = await createClient()
+src/app/api/automation/rules/route.ts:8:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/automation/rules/route.ts:17:    .eq('user_id', user.id)
+src/app/api/automation/rules/route.ts:32:        .eq('user_id', user.id)
+src/app/api/automation/rules/route.ts:46:  const supabase = await createClient()
+src/app/api/automation/rules/route.ts:47:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/automation/rules/route.ts:63:      user_id: user.id,
+src/app/api/waitlist/route.ts:10:    supabaseInstance = createClient(
+src/app/api/waitlist/route.ts:12:      process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/cron/aggregate-ai-costs/route.ts:20:    const supabase = await createClient();
+src/app/api/cron/aggregate-ai-costs/route.ts:30:      .select('user_id')
+src/app/api/cron/aggregate-ai-costs/route.ts:42:    const userIds = [...new Set(users.map(u => u.user_id))];
+src/app/api/cron/aggregate-ai-costs/route.ts:51:        .eq('user_id', userId)
+src/app/api/cron/aggregate-ai-costs/route.ts:80:        user_id: userId,
+src/app/api/cron/aggregate-ai-costs/route.ts:99:        onConflict: 'user_id,cost_date',
+src/app/api/emails/smart-views/route.ts:5:  const supabase = await createClient()
+src/app/api/emails/smart-views/route.ts:6:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/smart-views/route.ts:16:    .eq('user_id', user.id)
+src/app/api/emails/batch/route.ts:26:    const { data: { user }, error } = await supabase.auth.getUser();
+src/app/api/emails/batch/route.ts:32:  const supabase = await createClient();
+src/app/api/emails/batch/route.ts:33:  const { data: { user } } = await supabase.auth.getUser();
+src/app/api/emails/batch/route.ts:38:  | { action: 'mark_read'; emailIds: string[]; value: boolean }
+src/app/api/emails/batch/route.ts:39:  | { action: 'archive'; emailIds: string[] }
+src/app/api/emails/batch/route.ts:40:  | { action: 'unarchive'; emailIds: string[] }
+src/app/api/emails/batch/route.ts:41:  | { action: 'delete'; emailIds: string[] }
+src/app/api/emails/batch/route.ts:42:  | { action: 'restore'; emailIds: string[] }
+src/app/api/emails/batch/route.ts:43:  | { action: 'permanent_delete'; emailIds: string[] }
+src/app/api/emails/batch/route.ts:44:  | { action: 'star'; emailIds: string[]; value: boolean }
+src/app/api/emails/batch/route.ts:45:  | { action: 'categorize'; emailIds: string[]; category: string }
+src/app/api/emails/batch/route.ts:46:  | { action: 'set_priority'; emailIds: string[]; priority: number };
+src/app/api/emails/batch/route.ts:84:            .eq('user_id', user.id)
+src/app/api/emails/batch/route.ts:92:            .eq('user_id', user.id)
+src/app/api/emails/batch/route.ts:100:            .eq('user_id', user.id)
+src/app/api/emails/batch/route.ts:108:            .eq('user_id', user.id)
+src/app/api/emails/batch/route.ts:144:      // Validate emailIds
+src/app/api/emails/batch/route.ts:145:      if (!op.emailIds || !Array.isArray(op.emailIds) || op.emailIds.length === 0) {
+src/app/api/emails/batch/route.ts:146:        results.push({ operation: op.action, success: false, affected: 0, error: 'No emailIds provided' });
+src/app/api/emails/batch/route.ts:150:      if (op.emailIds.length > 100) {
+src/app/api/emails/batch/route.ts:164:              .eq('user_id', user.id)
+src/app/api/emails/batch/route.ts:165:              .in('id', op.emailIds);
+src/app/api/emails/batch/route.ts:172:              .eq('user_id', user.id)
+src/app/api/emails/batch/route.ts:173:              .in('id', op.emailIds);
+src/app/api/emails/batch/route.ts:180:              .eq('user_id', user.id)
+src/app/api/emails/batch/route.ts:181:              .in('id', op.emailIds);
+src/app/api/emails/batch/route.ts:188:              .eq('user_id', user.id)
+src/app/api/emails/batch/route.ts:189:              .in('id', op.emailIds);
+src/app/api/emails/batch/route.ts:196:              .eq('user_id', user.id)
+src/app/api/emails/batch/route.ts:197:              .in('id', op.emailIds);
+src/app/api/emails/batch/route.ts:204:              .eq('user_id', user.id)
+src/app/api/emails/batch/route.ts:206:              .in('id', op.emailIds);
+src/app/api/emails/batch/route.ts:213:              .eq('user_id', user.id)
+src/app/api/emails/batch/route.ts:214:              .in('id', op.emailIds);
+src/app/api/emails/batch/route.ts:221:              .eq('user_id', user.id)
+src/app/api/emails/batch/route.ts:222:              .in('id', op.emailIds);
+src/app/api/emails/batch/route.ts:229:              .eq('user_id', user.id)
+src/app/api/emails/batch/route.ts:230:              .in('id', op.emailIds);
+src/app/api/emails/batch/route.ts:254:            affected: op.emailIds.length
+src/app/api/emails/refetch-bodies/route.ts:3:import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
+src/app/api/emails/refetch-bodies/route.ts:8:const supabaseAdmin = createSupabaseAdmin(
+src/app/api/emails/refetch-bodies/route.ts:10:  process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/emails/refetch-bodies/route.ts:14:  const supabase = await createClient()
+src/app/api/emails/refetch-bodies/route.ts:15:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/refetch-bodies/route.ts:21:  const { accountId, limit = 20 } = await request.json()
+src/app/api/emails/refetch-bodies/route.ts:23:  if (!accountId) {
+src/app/api/emails/refetch-bodies/route.ts:31:    .eq('id', accountId)
+src/app/api/emails/refetch-bodies/route.ts:32:    .eq('user_id', user.id)
+src/app/api/emails/refetch-bodies/route.ts:43:    .eq('source_account_id', accountId)
+src/app/api/emails/refetch-bodies/route.ts:44:    .eq('user_id', user.id)
+src/app/api/emails/refetch-bodies/route.ts:62:  console.log(`[REFETCH] Found ${emails.length} emails without body for account ${accountId}`)
+src/app/api/notifications/route.ts:6:  const supabase = await createClient()
+src/app/api/notifications/route.ts:7:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/notifications/route.ts:20:    .eq('user_id', user.id)
+src/app/api/notifications/route.ts:45:    .eq('user_id', user.id)
+src/app/api/notifications/route.ts:56:  const supabase = await createClient()
+src/app/api/notifications/route.ts:57:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/notifications/route.ts:68:      user_id: user.id,
+src/app/api/notifications/route.ts:86:  const supabase = await createClient()
+src/app/api/notifications/route.ts:87:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/notifications/route.ts:99:      .eq('user_id', user.id)
+src/app/api/notifications/route.ts:105:      .eq('user_id', user.id)
+src/app/api/notifications/route.ts:114:  const supabase = await createClient()
+src/app/api/notifications/route.ts:115:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/notifications/route.ts:130:    .eq('user_id', user.id)
+src/app/api/debug/gmail-sync/route.ts:8:import { createClient as createSupabaseAdmin } from '@supabase/supabase-js';
+src/app/api/debug/gmail-sync/route.ts:13:  return createSupabaseAdmin(
+src/app/api/debug/gmail-sync/route.ts:15:    process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/debug/gmail-sync/route.ts:33:    const supabase = await createClient();
+src/app/api/debug/gmail-sync/route.ts:34:    const { data: { user }, error: authError } = await supabase.auth.getUser();
+src/app/api/debug/gmail-sync/route.ts:58:      .eq('user_id', user.id)
+src/app/api/debug/gmail-sync/route.ts:283:          .eq('user_id', user.id)
+src/app/api/emails/search/route.ts:6:  const supabase = await createClient()
+src/app/api/emails/search/route.ts:7:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/search/route.ts:30:      .eq('user_id', user.id)
+src/app/api/emails/search/route.ts:93:        const emailIds = [...new Set(emailsWithAttachments.map(a => a.email_id))]
+src/app/api/emails/search/route.ts:94:        dbQuery = dbQuery.in('id', emailIds)
+src/app/api/auth/google/route.ts:19:    const supabase = await createClient();
+src/app/api/auth/google/route.ts:22:    const { data: { user }, error: authError } = await supabase.auth.getUser();
+src/app/api/webhooks/resend/route.ts:10:    supabaseInstance = createClient(
+src/app/api/webhooks/resend/route.ts:12:      process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/webhooks/resend/route.ts:137:      user_id: profile.id,
+src/app/api/webhooks/resend/route.ts:192:async function classifyEmailAsync(emailId: string) {
+src/app/api/webhooks/resend/route.ts:197:      body: JSON.stringify({ emailId })
+src/app/api/emails/[emailId]/unread/route.ts:19:    const { data: { user }, error } = await supabase.auth.getUser()
+src/app/api/emails/[emailId]/unread/route.ts:25:  const supabase = await createClient()
+src/app/api/emails/[emailId]/unread/route.ts:26:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/[emailId]/unread/route.ts:32:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/emails/[emailId]/unread/route.ts:40:  const { emailId } = await params
+src/app/api/emails/[emailId]/unread/route.ts:45:    .eq('id', emailId)
+src/app/api/emails/[emailId]/unread/route.ts:46:    .eq('user_id', user.id)
+src/app/api/emails/bulk/route.ts:5:  const supabase = await createClient()
+src/app/api/emails/bulk/route.ts:6:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/bulk/route.ts:12:  const { action, emailIds, data } = await request.json()
+src/app/api/emails/bulk/route.ts:14:  if (!action || !emailIds || !Array.isArray(emailIds) || emailIds.length === 0) {
+src/app/api/emails/bulk/route.ts:18:  console.log(`[BULK] Action: ${action} on ${emailIds.length} emails`)
+src/app/api/emails/bulk/route.ts:89:      .eq('user_id', user.id)
+src/app/api/emails/bulk/route.ts:90:      .in('id', emailIds)
+src/app/api/emails/bulk/route.ts:97:    console.log(`[BULK] Updated ${emailIds.length} emails with:`, updateData)
+src/app/api/emails/bulk/route.ts:102:      count: emailIds.length
+src/app/api/attachments/[attachmentId]/route.ts:12:  const supabase = await createClient()
+src/app/api/attachments/[attachmentId]/route.ts:13:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/attachments/[attachmentId]/route.ts:25:        id, original_uid, user_id,
+src/app/api/attachments/[attachmentId]/route.ts:40:  const emailData = attachment.emails as { user_id: string }
+src/app/api/attachments/[attachmentId]/route.ts:41:  if (emailData.user_id !== user.id) {
+src/app/api/emails/[emailId]/summary/route.ts:9:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/emails/[emailId]/summary/route.ts:11:  const supabase = await createClient()
+src/app/api/emails/[emailId]/summary/route.ts:12:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/[emailId]/summary/route.ts:18:  const { emailId } = await params
+src/app/api/emails/[emailId]/summary/route.ts:24:    .eq('id', emailId)
+src/app/api/emails/[emailId]/summary/route.ts:25:    .eq('user_id', user.id)
+src/app/api/emails/[emailId]/summary/route.ts:81:    .eq('id', emailId)
+src/app/api/emails/[emailId]/summary/route.ts:82:    .eq('user_id', user.id)
+src/app/api/emails/[emailId]/summary/route.ts:93:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/emails/[emailId]/summary/route.ts:95:  const supabase = await createClient()
+src/app/api/emails/[emailId]/summary/route.ts:96:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/[emailId]/summary/route.ts:102:  const { emailId } = await params
+src/app/api/emails/[emailId]/summary/route.ts:111:    .eq('id', emailId)
+src/app/api/emails/[emailId]/summary/route.ts:112:    .eq('user_id', user.id)
+src/app/api/emails/[emailId]/summary/route.ts:118:    .eq('id', emailId)
+src/app/api/emails/[emailId]/summary/route.ts:119:    .eq('user_id', user.id)
+src/app/api/emails/[emailId]/summary/route.ts:155:    .eq('id', emailId)
+src/app/api/emails/[emailId]/summary/route.ts:156:    .eq('user_id', user.id)
+src/app/api/emails/[emailId]/extract-actions/route.ts:10:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/emails/[emailId]/extract-actions/route.ts:12:  const supabase = await createClient()
+src/app/api/emails/[emailId]/extract-actions/route.ts:13:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/[emailId]/extract-actions/route.ts:19:  const { emailId } = await params
+src/app/api/emails/[emailId]/extract-actions/route.ts:25:    .eq('id', emailId)
+src/app/api/emails/[emailId]/extract-actions/route.ts:26:    .eq('user_id', user.id)
+src/app/api/emails/[emailId]/extract-actions/route.ts:54:    user_id: user.id,
+src/app/api/emails/[emailId]/extract-actions/route.ts:55:    email_id: emailId,
+src/app/api/emails/[emailId]/extract-actions/route.ts:96:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/emails/[emailId]/extract-actions/route.ts:98:  const supabase = await createClient()
+src/app/api/emails/[emailId]/extract-actions/route.ts:99:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/[emailId]/extract-actions/route.ts:105:  const { emailId } = await params
+src/app/api/emails/[emailId]/extract-actions/route.ts:110:    .eq('email_id', emailId)
+src/app/api/emails/[emailId]/extract-actions/route.ts:111:    .eq('user_id', user.id)
+src/app/api/email/sync/gmail/route.ts:12:    const supabase = await createClient();
+src/app/api/email/sync/gmail/route.ts:14:    const { data: { user }, error: authError } = await supabase.auth.getUser();
+src/app/api/email/sync/gmail/route.ts:19:    const { accountId } = await request.json();
+src/app/api/email/sync/gmail/route.ts:21:    if (!accountId) {
+src/app/api/email/sync/gmail/route.ts:29:      .eq('id', accountId)
+src/app/api/email/sync/gmail/route.ts:30:      .eq('user_id', user.id)
+src/app/api/email/sync/gmail/route.ts:42:    const result = await syncGmailEmails(user.id, accountId);
+src/app/api/emails/[emailId]/read/route.ts:20:    const { data: { user }, error } = await supabase.auth.getUser()
+src/app/api/emails/[emailId]/read/route.ts:26:  const supabase = await createClient()
+src/app/api/emails/[emailId]/read/route.ts:27:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/[emailId]/read/route.ts:33:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/emails/[emailId]/read/route.ts:41:  const { emailId } = await params
+src/app/api/emails/[emailId]/read/route.ts:46:    .eq('id', emailId)
+src/app/api/emails/[emailId]/read/route.ts:47:    .eq('user_id', user.id)
+src/app/api/emails/[emailId]/archive/route.ts:19:    const { data: { user }, error } = await supabase.auth.getUser()
+src/app/api/emails/[emailId]/archive/route.ts:25:  const supabase = await createClient()
+src/app/api/emails/[emailId]/archive/route.ts:26:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/[emailId]/archive/route.ts:32:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/emails/[emailId]/archive/route.ts:40:  const { emailId } = await params
+src/app/api/emails/[emailId]/archive/route.ts:45:    .eq('id', emailId)
+src/app/api/emails/[emailId]/archive/route.ts:46:    .eq('user_id', user.id)
+src/app/api/signup-whitelist/route.ts:15:    supabaseAdmin = createClient(
+src/app/api/signup-whitelist/route.ts:17:      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+src/app/api/emails/[emailId]/attachments/route.ts:6:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/emails/[emailId]/attachments/route.ts:8:  const { emailId } = await params
+src/app/api/emails/[emailId]/attachments/route.ts:9:  const supabase = await createClient()
+src/app/api/emails/[emailId]/attachments/route.ts:10:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/[emailId]/attachments/route.ts:20:    .eq('id', emailId)
+src/app/api/emails/[emailId]/attachments/route.ts:21:    .eq('user_id', user.id)
+src/app/api/emails/[emailId]/attachments/route.ts:31:    .eq('email_id', emailId)
+src/app/api/emails/[emailId]/phishing-review/route.ts:3:import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
+src/app/api/emails/[emailId]/phishing-review/route.ts:5:const supabaseAdmin = createSupabaseAdmin(
+src/app/api/emails/[emailId]/phishing-review/route.ts:7:  process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/emails/[emailId]/phishing-review/route.ts:11: * POST /api/emails/[emailId]/phishing-review
+src/app/api/emails/[emailId]/phishing-review/route.ts:16:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/emails/[emailId]/phishing-review/route.ts:18:  const { emailId } = await params
+src/app/api/emails/[emailId]/phishing-review/route.ts:19:  const supabase = await createClient()
+src/app/api/emails/[emailId]/phishing-review/route.ts:20:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/[emailId]/phishing-review/route.ts:33:    .eq('id', emailId)
+src/app/api/emails/[emailId]/phishing-review/route.ts:34:    .eq('user_id', user.id)
+src/app/api/emails/[emailId]/phishing-review/route.ts:56:    .eq('id', emailId)
+src/app/api/emails/[emailId]/route.ts:3:import { createClient as createSupabaseAdmin, createClient as createSupabaseClient } from '@supabase/supabase-js'
+src/app/api/emails/[emailId]/route.ts:9:const supabaseAdmin = createSupabaseAdmin(
+src/app/api/emails/[emailId]/route.ts:11:  process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/emails/[emailId]/route.ts:30:    const { data: { user }, error } = await supabase.auth.getUser()
+src/app/api/emails/[emailId]/route.ts:37:  const supabase = await createClient()
+src/app/api/emails/[emailId]/route.ts:38:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/[emailId]/route.ts:44:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/emails/[emailId]/route.ts:52:  const { emailId } = await params
+src/app/api/emails/[emailId]/route.ts:58:    .eq('id', emailId)
+src/app/api/emails/[emailId]/route.ts:59:    .eq('user_id', user.id)
+src/app/api/emails/[emailId]/route.ts:126:      .eq('id', emailId)
+src/app/api/emails/[emailId]/route.ts:141:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/emails/[emailId]/route.ts:149:  const { emailId } = await params
+src/app/api/emails/[emailId]/route.ts:165:    .eq('id', emailId)
+src/app/api/emails/[emailId]/route.ts:166:    .eq('user_id', user.id)
+src/app/api/emails/[emailId]/route.ts:179:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/emails/[emailId]/route.ts:187:  const { emailId } = await params
+src/app/api/emails/[emailId]/route.ts:193:    .eq('id', emailId)
+src/app/api/emails/[emailId]/route.ts:194:    .eq('user_id', user.id)
+src/app/api/cron/recalculate-reputation/route.ts:24:  const supabase = createClient(
+src/app/api/cron/recalculate-reputation/route.ts:26:    process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/admin/ai-metrics/route.ts:15:    const supabase = await createClient()
+src/app/api/admin/ai-metrics/route.ts:16:    const { data: { user } } = await supabase.auth.getUser()
+src/app/api/auth/google/callback/route.ts:40:    const supabase = await createClient();
+src/app/api/auth/google/callback/route.ts:43:    const { data: { user }, error: authError } = await supabase.auth.getUser();
+src/app/api/auth/google/callback/route.ts:80:      .eq('user_id', user.id)
+src/app/api/auth/google/callback/route.ts:104:          user_id: user.id,
+src/app/api/action-items/[itemId]/route.ts:9:  const supabase = await createClient()
+src/app/api/action-items/[itemId]/route.ts:10:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/action-items/[itemId]/route.ts:44:    .eq('user_id', user.id)
+src/app/api/action-items/[itemId]/route.ts:61:  const supabase = await createClient()
+src/app/api/action-items/[itemId]/route.ts:62:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/action-items/[itemId]/route.ts:74:    .eq('user_id', user.id)
+src/app/api/action-items/[itemId]/route.ts:89:  const supabase = await createClient()
+src/app/api/action-items/[itemId]/route.ts:90:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/action-items/[itemId]/route.ts:105:    .eq('user_id', user.id)
+src/app/api/emails/[emailId]/star/route.ts:19:    const { data: { user }, error } = await supabase.auth.getUser()
+src/app/api/emails/[emailId]/star/route.ts:25:  const supabase = await createClient()
+src/app/api/emails/[emailId]/star/route.ts:26:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/[emailId]/star/route.ts:32:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/emails/[emailId]/star/route.ts:40:  const { emailId } = await params
+src/app/api/emails/[emailId]/star/route.ts:47:    .eq('id', emailId)
+src/app/api/emails/[emailId]/star/route.ts:48:    .eq('user_id', user.id)
+src/app/api/admin/ai-settings/route.ts:7:  process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/admin/ai-settings/route.ts:30:    const supabase = await createClient()
+src/app/api/admin/ai-settings/route.ts:31:    const { data: { user } } = await supabase.auth.getUser()
+src/app/api/admin/ai-settings/route.ts:41:      .or(`user_id.eq.${user.id},user_id.is.null`)
+src/app/api/admin/ai-settings/route.ts:42:      .order('user_id', { ascending: false, nullsFirst: false })
+src/app/api/admin/ai-settings/route.ts:66:      is_default: settings.user_id === null
+src/app/api/admin/ai-settings/route.ts:80:    const supabase = await createClient()
+src/app/api/admin/ai-settings/route.ts:81:    const { data: { user } } = await supabase.auth.getUser()
+src/app/api/admin/ai-settings/route.ts:110:        user_id: user.id,
+src/app/api/admin/ai-settings/route.ts:114:        onConflict: 'user_id'
+src/app/api/admin/ai-settings/route.ts:140:    const supabase = await createClient()
+src/app/api/admin/ai-settings/route.ts:141:    const { data: { user } } = await supabase.auth.getUser()
+src/app/api/admin/ai-settings/route.ts:150:      .eq('user_id', user.id)
+src/app/api/subscriptions/unsubscribe/route.ts:6:  const supabase = await createClient()
+src/app/api/subscriptions/unsubscribe/route.ts:7:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/subscriptions/unsubscribe/route.ts:23:        .eq('user_id', user.id)
+src/app/api/subscriptions/unsubscribe/route.ts:36:        .eq('user_id', user.id)
+src/app/api/emails/[emailId]/feedback/route.ts:3:import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
+src/app/api/emails/[emailId]/feedback/route.ts:7:const supabaseAdmin = createSupabaseAdmin(
+src/app/api/emails/[emailId]/feedback/route.ts:9:  process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/emails/[emailId]/feedback/route.ts:21:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/emails/[emailId]/feedback/route.ts:23:  const { emailId } = await params
+src/app/api/emails/[emailId]/feedback/route.ts:24:  const supabase = await createClient()
+src/app/api/emails/[emailId]/feedback/route.ts:25:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/emails/[emailId]/feedback/route.ts:42:    .eq('id', emailId)
+src/app/api/emails/[emailId]/feedback/route.ts:43:    .eq('user_id', user.id)
+src/app/api/emails/[emailId]/feedback/route.ts:63:          .eq('id', emailId)
+src/app/api/emails/[emailId]/feedback/route.ts:69:        await logFeedback(user.id, emailId, originalCategory, targetCategory, 'not_spam')
+src/app/api/emails/[emailId]/feedback/route.ts:85:          .eq('id', emailId)
+src/app/api/emails/[emailId]/feedback/route.ts:91:        await logFeedback(user.id, emailId, originalCategory, 'spam', 'is_spam')
+src/app/api/emails/[emailId]/feedback/route.ts:107:          .eq('id', emailId)
+src/app/api/emails/[emailId]/feedback/route.ts:113:          .eq('user_id', user.id)
+src/app/api/emails/[emailId]/feedback/route.ts:134:          .eq('id', emailId)
+src/app/api/emails/[emailId]/feedback/route.ts:149:        await logFeedback(user.id, emailId, originalCategory, newCategory, 'recategorize')
+src/app/api/emails/[emailId]/feedback/route.ts:172:  emailId: string,
+src/app/api/emails/[emailId]/feedback/route.ts:181:        user_id: userId,
+src/app/api/emails/[emailId]/feedback/route.ts:182:        email_id: emailId,
+src/app/api/ai/urgent-check/route.ts:5:  const supabase = await createClient()
+src/app/api/ai/urgent-check/route.ts:6:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/urgent-check/route.ts:18:    .eq('user_id', user.id)
+src/app/api/ai/compose/route.ts:79:    const { data: { user }, error: authError } = await supabase.auth.getUser();
+src/app/api/subscriptions/route.ts:6:  const supabase = await createClient()
+src/app/api/subscriptions/route.ts:7:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/subscriptions/route.ts:17:    .eq('user_id', user.id)
+src/app/api/ai/sender-insights/route.ts:22:  const supabase = await createClient()
+src/app/api/ai/sender-insights/route.ts:23:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/sender-insights/route.ts:33:    .eq('user_id', user.id)
+src/app/api/ai/sender-insights/route.ts:80:  const supabase = await createClient()
+src/app/api/ai/sender-insights/route.ts:81:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/sender-insights/route.ts:106:    .eq('user_id', user.id)
+src/app/api/ai/reclassify/route.ts:8:  const supabase = await createClient()
+src/app/api/ai/reclassify/route.ts:9:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/reclassify/route.ts:21:    .eq('user_id', user.id)
+src/app/api/ai/reclassify/route.ts:32:    .eq('user_id', user.id)
+src/app/api/ai/reclassify/route.ts:63:        user_id: user.id,
+src/app/api/search/route.ts:6:  const supabase = await createClient()
+src/app/api/search/route.ts:7:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/search/route.ts:44:      .eq('user_id', user.id)
+src/app/api/search/route.ts:197:      .eq('user_id', userId)
+src/app/api/search/route.ts:208:        user_id: userId,
+src/app/api/search/route.ts:219:  const supabase = await createClient()
+src/app/api/search/route.ts:220:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/analyze/route.ts:7:    const supabase = await createClient()
+src/app/api/ai/analyze/route.ts:8:    const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/analyze/route.ts:14:    const { emailId } = await request.json()
+src/app/api/ai/analyze/route.ts:16:    if (!emailId) {
+src/app/api/ai/analyze/route.ts:24:      .eq('id', emailId)
+src/app/api/ai/analyze/route.ts:25:      .eq('user_id', user.id)
+src/app/api/ai/classify-batch/route.ts:7:  const supabase = await createClient()
+src/app/api/ai/classify-batch/route.ts:8:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/classify-batch/route.ts:18:    .eq('user_id', user.id)
+src/app/api/ai/classify-batch/route.ts:29:    .eq('user_id', user.id)
+src/app/api/ai/classify-batch/route.ts:50:      // Classify with full context (user_id for sender trust lookup)
+src/app/api/ai/classify-batch/route.ts:57:        user_id: user.id,
+src/app/api/automation/rules/[ruleId]/route.ts:9:  const supabase = await createClient()
+src/app/api/automation/rules/[ruleId]/route.ts:10:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/automation/rules/[ruleId]/route.ts:21:    .eq('user_id', user.id)
+src/app/api/automation/rules/[ruleId]/route.ts:36:  const supabase = await createClient()
+src/app/api/automation/rules/[ruleId]/route.ts:37:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/automation/rules/[ruleId]/route.ts:53:    .eq('user_id', user.id)
+src/app/api/automation/rules/[ruleId]/route.ts:70:  const supabase = await createClient()
+src/app/api/automation/rules/[ruleId]/route.ts:71:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/automation/rules/[ruleId]/route.ts:82:    .eq('user_id', user.id)
+src/app/api/access-request/route.ts:9:    supabaseInstance = createClient(
+src/app/api/access-request/route.ts:11:      process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/admin/whitelist/route.ts:15:      process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/admin/whitelist/route.ts:22:  const supabase = await createClient()
+src/app/api/admin/whitelist/route.ts:23:  const { data: { user }, error } = await supabase.auth.getUser()
+src/app/api/admin/whitelist/route.ts:78:  const supabase = await createClient()
+src/app/api/admin/whitelist/route.ts:79:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/admin/whitelist/route.ts:136:  const supabase = await createClient()
+src/app/api/admin/whitelist/route.ts:137:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/insights/weekly/route.ts:6:  const supabase = await createClient()
+src/app/api/ai/insights/weekly/route.ts:7:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/search/history/route.ts:6:  const supabase = await createClient()
+src/app/api/search/history/route.ts:7:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/search/history/route.ts:17:    .eq('user_id', user.id)
+src/app/api/search/history/route.ts:28:  const supabase = await createClient()
+src/app/api/search/history/route.ts:29:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/search/history/route.ts:45:    .eq('user_id', user.id)
+src/app/api/search/history/route.ts:59:          user_id: user.id,
+src/app/api/search/history/route.ts:76:        user_id: user.id,
+src/app/api/search/history/route.ts:87:  const supabase = await createClient()
+src/app/api/search/history/route.ts:88:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/search/history/route.ts:99:    .eq('user_id', user.id)
+src/app/api/search/history/route.ts:108:      user_id: user.id,
+src/app/api/unsubscribe/route.ts:7:  const supabase = await createClient()
+src/app/api/unsubscribe/route.ts:8:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/unsubscribe/route.ts:22:  const supabase = await createClient()
+src/app/api/unsubscribe/route.ts:23:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/unsubscribe/route.ts:53:        .eq('user_id', user.id)
+src/app/api/unsubscribe/route.ts:61:        .eq('user_id', user.id)
+src/app/api/unsubscribe/route.ts:79:  const supabase = await createClient()
+src/app/api/unsubscribe/route.ts:80:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/source-accounts/google/callback/route.ts:47:    let stateData: { user_id: string; action: string; timestamp: number } | null = null
+src/app/api/source-accounts/google/callback/route.ts:57:    const supabase = await createClient()
+src/app/api/source-accounts/google/callback/route.ts:58:    const { data: { user }, error: authError } = await supabase.auth.getUser()
+src/app/api/source-accounts/google/callback/route.ts:67:    if (stateData && stateData.user_id !== user.id) {
+src/app/api/source-accounts/google/callback/route.ts:86:      .eq('user_id', user.id)
+src/app/api/source-accounts/google/callback/route.ts:113:      .eq('user_id', user.id)
+src/app/api/source-accounts/google/callback/route.ts:126:        user_id: user.id,
+src/app/api/ai/briefing/route.ts:10:  emailIds: string[]
+src/app/api/ai/briefing/route.ts:18:  emailIds: string[]
+src/app/api/ai/briefing/route.ts:32:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/briefing/route.ts:47:    .eq('user_id', user.id)
+src/app/api/ai/briefing/route.ts:117:    .eq('user_id', user.id)
+src/app/api/ai/briefing/route.ts:139:      emailIds: urgentUnread.slice(0, 5).map(e => e.id)
+src/app/api/ai/briefing/route.ts:150:      emailIds: hasDeadlineToday.map(e => e.id)
+src/app/api/ai/briefing/route.ts:161:      emailIds: waitingReplyLong.map(e => e.id)
+src/app/api/ai/briefing/route.ts:172:      emailIds: vipEmails.map(e => e.id)
+src/app/api/ai/briefing/route.ts:185:      emailIds: oldNewsletter.map(e => e.id)
+src/app/api/ai/briefing/route.ts:195:      emailIds: oldPromotion.map(e => e.id)
+src/app/api/source-accounts/[accountId]/sync/route.ts:16:  { params }: { params: Promise<{ accountId: string }> }
+src/app/api/source-accounts/[accountId]/sync/route.ts:19:  const { accountId } = await params
+src/app/api/source-accounts/[accountId]/sync/route.ts:20:  const supabase = await createClient()
+src/app/api/source-accounts/[accountId]/sync/route.ts:21:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/source-accounts/[accountId]/sync/route.ts:31:    .eq('id', accountId)
+src/app/api/source-accounts/[accountId]/sync/route.ts:32:    .eq('user_id', user.id)
+src/app/api/source-accounts/[accountId]/sync/route.ts:62:    result = await syncGmailEmails(user.id, accountId, {
+src/app/api/admin/domain-reputation/route.ts:18:    const supabase = await createClient()
+src/app/api/admin/domain-reputation/route.ts:19:    const { data: { user } } = await supabase.auth.getUser()
+src/app/api/admin/domain-reputation/route.ts:57:    const supabase = await createClient()
+src/app/api/admin/domain-reputation/route.ts:58:    const { data: { user } } = await supabase.auth.getUser()
+src/app/api/source-accounts/google/route.ts:12:    const supabase = await createClient()
+src/app/api/source-accounts/google/route.ts:13:    const { data: { user }, error: authError } = await supabase.auth.getUser()
+src/app/api/source-accounts/google/route.ts:21:      user_id: user.id,
+src/app/api/source-accounts/[accountId]/route.ts:7:  { params }: { params: Promise<{ accountId: string }> }
+src/app/api/source-accounts/[accountId]/route.ts:9:  const { accountId } = await params
+src/app/api/source-accounts/[accountId]/route.ts:10:  const supabase = await createClient()
+src/app/api/source-accounts/[accountId]/route.ts:11:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/source-accounts/[accountId]/route.ts:35:    .eq('id', accountId)
+src/app/api/source-accounts/[accountId]/route.ts:36:    .eq('user_id', user.id)
+src/app/api/source-accounts/[accountId]/route.ts:47:    .eq('source_account_id', accountId)
+src/app/api/source-accounts/[accountId]/route.ts:52:    .eq('source_account_id', accountId)
+src/app/api/source-accounts/[accountId]/route.ts:67:  { params }: { params: Promise<{ accountId: string }> }
+src/app/api/source-accounts/[accountId]/route.ts:69:  const { accountId } = await params
+src/app/api/source-accounts/[accountId]/route.ts:70:  const supabase = await createClient()
+src/app/api/source-accounts/[accountId]/route.ts:71:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/source-accounts/[accountId]/route.ts:92:      .eq('user_id', user.id)
+src/app/api/source-accounts/[accountId]/route.ts:93:      .neq('id', accountId)
+src/app/api/source-accounts/[accountId]/route.ts:105:    .eq('id', accountId)
+src/app/api/source-accounts/[accountId]/route.ts:106:    .eq('user_id', user.id)
+src/app/api/source-accounts/[accountId]/route.ts:120:  { params }: { params: Promise<{ accountId: string }> }
+src/app/api/source-accounts/[accountId]/route.ts:122:  const { accountId } = await params
+src/app/api/source-accounts/[accountId]/route.ts:123:  const supabase = await createClient()
+src/app/api/source-accounts/[accountId]/route.ts:124:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/source-accounts/[accountId]/route.ts:134:    .eq('id', accountId)
+src/app/api/source-accounts/[accountId]/route.ts:135:    .eq('user_id', user.id)
+src/app/api/source-accounts/[accountId]/route.ts:146:    .eq('source_account_id', accountId)
+src/app/api/source-accounts/[accountId]/route.ts:152:    .eq('id', accountId)
+src/app/api/source-accounts/[accountId]/route.ts:153:    .eq('user_id', user.id)
+src/app/api/source-accounts/[accountId]/route.ts:164:      .eq('user_id', user.id)
+src/app/api/dashboard/stats/route.ts:14:    const supabase = await createClient();
+src/app/api/dashboard/stats/route.ts:16:    const { data: { user }, error: authError } = await supabase.auth.getUser();
+src/app/api/dashboard/stats/route.ts:35:        .eq('user_id', user.id),
+src/app/api/dashboard/stats/route.ts:41:        .eq('user_id', user.id)
+src/app/api/dashboard/stats/route.ts:49:        .eq('user_id', user.id)
+src/app/api/dashboard/stats/route.ts:58:        .eq('user_id', user.id)
+src/app/api/dashboard/stats/route.ts:65:        .eq('user_id', user.id)
+src/app/api/dashboard/stats/route.ts:74:        .eq('user_id', user.id),
+src/app/api/dashboard/stats/route.ts:80:        .eq('user_id', user.id)
+src/app/api/follow-ups/counts/route.ts:5:  const supabase = await createClient()
+src/app/api/follow-ups/counts/route.ts:6:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/follow-ups/counts/route.ts:17:      .eq('user_id', user.id)
+src/app/api/ai/insights/daily/route.ts:6:  const supabase = await createClient()
+src/app/api/ai/insights/daily/route.ts:7:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/research/route.ts:7:    const supabase = await createClient()
+src/app/api/ai/research/route.ts:8:    const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/research/route.ts:14:    const { emailId } = await request.json()
+src/app/api/ai/research/route.ts:16:    if (!emailId) {
+src/app/api/ai/research/route.ts:24:      .eq('id', emailId)
+src/app/api/ai/research/route.ts:25:      .eq('user_id', user.id)
+src/app/api/email-providers/route.ts:11:    const supabase = await createClient()
+src/app/api/email-providers/route.ts:12:    const { data: { user }, error: authError } = await supabase.auth.getUser()
+src/app/api/ai/usage/route.ts:12:    const supabase = await createClient();
+src/app/api/ai/usage/route.ts:14:    const { data: { user }, error: authError } = await supabase.auth.getUser();
+src/app/api/ai/usage/route.ts:32:      .eq('user_id', user.id)
+src/app/api/ai/usage/route.ts:45:      .eq('user_id', user.id)
+src/app/api/ai/classify/route.ts:8:  process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/ai/classify/route.ts:14:    const supabase = await createClient()
+src/app/api/ai/classify/route.ts:15:    const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/classify/route.ts:21:    const { emailId } = await request.json()
+src/app/api/ai/classify/route.ts:23:    if (!emailId) {
+src/app/api/ai/classify/route.ts:24:      return NextResponse.json({ error: 'Missing emailId' }, { status: 400 })
+src/app/api/ai/classify/route.ts:31:      .eq('id', emailId)
+src/app/api/ai/classify/route.ts:32:      .eq('user_id', user.id)
+src/app/api/ai/classify/route.ts:39:    console.log(`[CLASSIFY API] Processing email: ${emailId}`)
+src/app/api/ai/classify/route.ts:46:      user_id: user.id,
+src/app/api/ai/classify/route.ts:65:      .eq('id', emailId)
+src/app/api/ai/smart-reply/route.ts:10:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/smart-reply/route.ts:17:  const emailId = searchParams.get('emailId')
+src/app/api/ai/smart-reply/route.ts:20:  if (!emailId) {
+src/app/api/ai/smart-reply/route.ts:21:    return NextResponse.json({ error: 'emailId required' }, { status: 400 })
+src/app/api/ai/smart-reply/route.ts:28:    .eq('id', emailId)
+src/app/api/ai/smart-reply/route.ts:29:    .eq('user_id', user.id)
+src/app/api/ai/smart-reply/route.ts:66:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/smart-reply/route.ts:72:  const { emailId, bullets, tone = 'formal' } = await request.json()
+src/app/api/ai/smart-reply/route.ts:74:  if (!emailId || !bullets) {
+src/app/api/ai/smart-reply/route.ts:75:    return NextResponse.json({ error: 'emailId and bullets required' }, { status: 400 })
+src/app/api/ai/smart-reply/route.ts:82:    .eq('id', emailId)
+src/app/api/ai/smart-reply/route.ts:83:    .eq('user_id', user.id)
+src/app/api/ai/feedback/route.ts:15:      process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/ai/feedback/route.ts:27:    const supabase = await createClient()
+src/app/api/ai/feedback/route.ts:28:    const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/feedback/route.ts:34:    const { emailId, correctedCategory } = await request.json()
+src/app/api/ai/feedback/route.ts:36:    if (!emailId || !correctedCategory) {
+src/app/api/ai/feedback/route.ts:37:      return NextResponse.json({ error: 'Missing emailId or correctedCategory' }, { status: 400 })
+src/app/api/ai/feedback/route.ts:53:      .eq('id', emailId)
+src/app/api/ai/feedback/route.ts:54:      .eq('user_id', user.id)
+src/app/api/ai/feedback/route.ts:68:        emailId,
+src/app/api/ai/feedback/route.ts:99:        .eq('id', emailId)
+src/app/api/ai/feedback/route.ts:101:      console.log(`[FEEDBACK] User ${user.id} corrected ${emailId}: ${originalCategory} → ${correctedCategory}`)
+src/app/api/ai/feedback/route.ts:106:      emailId,
+src/app/api/ai/feedback/route.ts:124:    const supabase = await createClient()
+src/app/api/ai/feedback/route.ts:125:    const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/draft/route.ts:8:    const supabase = await createClient()
+src/app/api/ai/draft/route.ts:9:    const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/draft/route.ts:16:    const { emailId, analysis, options, relatedEmails, action, draft, instructions } = body
+src/app/api/ai/draft/route.ts:25:    if (!emailId || !analysis) {
+src/app/api/ai/draft/route.ts:36:      .eq('id', emailId)
+src/app/api/ai/draft/route.ts:37:      .eq('user_id', user.id)
+src/app/api/ai/features/[emailId]/auto/route.ts:2: * POST /api/ai/features/[emailId]/auto
+src/app/api/ai/features/[emailId]/auto/route.ts:72:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/ai/features/[emailId]/auto/route.ts:79:    const { emailId } = await params;
+src/app/api/ai/features/[emailId]/auto/route.ts:80:    aiLogger.debug('[BatchAPI] Step 1 - emailId:', emailId);
+src/app/api/ai/features/[emailId]/auto/route.ts:82:    if (!emailId) {
+src/app/api/ai/features/[emailId]/auto/route.ts:83:      aiLogger.debug('[BatchAPI] ERROR: No emailId');
+src/app/api/ai/features/[emailId]/auto/route.ts:84:      return NextResponse.json({ error: 'emailId is required' }, { status: 400 });
+src/app/api/ai/features/[emailId]/auto/route.ts:99:    const { data: { user }, error: authError } = await supabase.auth.getUser();
+src/app/api/ai/features/[emailId]/auto/route.ts:108:    aiLogger.debug('[BatchAPI] Step 5 - Fetching email:', emailId);
+src/app/api/ai/features/[emailId]/auto/route.ts:125:      .eq('id', emailId)
+src/app/api/ai/features/[emailId]/auto/route.ts:126:      .eq('user_id', user.id)
+src/app/api/ai/features/[emailId]/auto/route.ts:243:            emailId,
+src/app/api/ai/features/[emailId]/auto/route.ts:322:          .eq('id', emailId);
+src/app/api/ai/features/[emailId]/auto/route.ts:341:      emailId,
+src/app/api/ai/features/[emailId]/route.ts:2: * GET /api/ai/features/[emailId]
+src/app/api/ai/features/[emailId]/route.ts:5: * POST /api/ai/features/[emailId]
+src/app/api/ai/features/[emailId]/route.ts:20:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/ai/features/[emailId]/route.ts:23:    const supabase = await createClient();
+src/app/api/ai/features/[emailId]/route.ts:26:    const { data: { user }, error: authError } = await supabase.auth.getUser();
+src/app/api/ai/features/[emailId]/route.ts:31:    const { emailId } = await params;
+src/app/api/ai/features/[emailId]/route.ts:51:      .eq('id', emailId)
+src/app/api/ai/features/[emailId]/route.ts:52:      .eq('user_id', user.id)
+src/app/api/ai/features/[emailId]/route.ts:85:      emailId,
+src/app/api/ai/features/[emailId]/route.ts:103:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/ai/features/[emailId]/route.ts:106:    const supabase = await createClient();
+src/app/api/ai/features/[emailId]/route.ts:109:    const { data: { user }, error: authError } = await supabase.auth.getUser();
+src/app/api/ai/features/[emailId]/route.ts:114:    const { emailId } = await params;
+src/app/api/ai/features/[emailId]/route.ts:140:      .eq('id', emailId)
+src/app/api/ai/features/[emailId]/route.ts:141:      .eq('user_id', user.id)
+src/app/api/ai/features/[emailId]/route.ts:152:      emailId,
+src/app/api/ai/features/[emailId]/route.ts:181:        .eq('id', emailId);
+src/app/api/action-items/route.ts:6:  const supabase = await createClient()
+src/app/api/action-items/route.ts:7:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/action-items/route.ts:26:    .eq('user_id', user.id)
+src/app/api/action-items/route.ts:69:  const supabase = await createClient()
+src/app/api/action-items/route.ts:70:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/action-items/route.ts:86:      user_id: user.id,
+src/app/api/ai/features/[emailId]/debug/route.ts:2: * GET /api/ai/features/[emailId]/debug
+src/app/api/ai/features/[emailId]/debug/route.ts:11:  { params }: { params: Promise<{ emailId: string }> }
+src/app/api/ai/features/[emailId]/debug/route.ts:13:  const { emailId } = await params;
+src/app/api/ai/features/[emailId]/debug/route.ts:16:    const supabase = await createClient();
+src/app/api/ai/features/[emailId]/debug/route.ts:18:    const { data: { user } } = await supabase.auth.getUser();
+src/app/api/ai/features/[emailId]/debug/route.ts:40:      .eq('id', emailId)
+src/app/api/ai/features/[emailId]/debug/route.ts:41:      .eq('user_id', user.id)
+src/app/api/ai/features/[emailId]/debug/route.ts:47:        emailId,
+src/app/api/ai/features/[emailId]/debug/route.ts:58:      emailId,
+src/app/api/ai/test/route.ts:7:  const supabase = await createClient()
+src/app/api/ai/test/route.ts:8:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/check-whitelist/route.ts:15:    supabaseInstance = createClient(
+src/app/api/check-whitelist/route.ts:17:      process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/ai/classify-all/route.ts:8:  process.env.SUPABASE_SERVICE_ROLE_KEY!
+src/app/api/ai/classify-all/route.ts:12:  const supabase = await createClient()
+src/app/api/ai/classify-all/route.ts:13:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/ai/classify-all/route.ts:23:    .eq('user_id', user.id)
+src/app/api/ai/features/batch/route.ts:15:    const supabase = await createClient();
+src/app/api/ai/features/batch/route.ts:18:    const { data: { user }, error: authError } = await supabase.auth.getUser();
+src/app/api/ai/features/batch/route.ts:24:    const { emailIds } = body as { emailIds: string[] };
+src/app/api/ai/features/batch/route.ts:26:    if (!emailIds || !Array.isArray(emailIds) || emailIds.length === 0) {
+src/app/api/ai/features/batch/route.ts:28:        { error: 'emailIds array is required' },
+src/app/api/ai/features/batch/route.ts:35:    const idsToProcess = emailIds.slice(0, maxBatchSize);
+src/app/api/ai/features/batch/route.ts:42:      .eq('user_id', user.id);
+src/app/api/ai/features/batch/route.ts:101:        emailId: email.id,
+src/app/api/follow-ups/route.ts:6:  const supabase = await createClient()
+src/app/api/follow-ups/route.ts:7:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/follow-ups/route.ts:30:      .eq('user_id', user.id)
+src/app/api/follow-ups/route.ts:58:      .eq('user_id', user.id)
+src/app/api/follow-ups/route.ts:80:  const supabase = await createClient()
+src/app/api/follow-ups/route.ts:81:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/follow-ups/route.ts:100:        .eq('user_id', user.id)
+src/app/api/follow-ups/route.ts:108:        .eq('user_id', user.id)
+src/app/api/follow-ups/route.ts:147:          user_id: user.id,
+src/app/api/follow-ups/route.ts:148:          email_id: fu.emailId,
+src/app/api/follow-ups/route.ts:164:            onConflict: 'user_id,email_id',
+src/app/api/follow-ups/route.ts:195:  const supabase = await createClient()
+src/app/api/follow-ups/route.ts:196:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/follow-ups/route.ts:227:      .eq('user_id', user.id)

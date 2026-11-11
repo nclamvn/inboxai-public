@@ -1,0 +1,7615 @@
+{
+  "revision": "240d9e1",
+  "method": "All tracked blobs hashed; text indexed; TS/JS imports/exports parsed; no secrets read from environment.",
+  "totals": {
+    "files": 442,
+    "text": 394,
+    "apiRoutes": 83,
+    "migrations": 8
+  },
+  "entries": [
+    {
+      "path": ".env.example",
+      "sha256": "f62b857b916059d3708f5bfdb256e9fc1a2059902c7556b0481dd457799acc38",
+      "bytes": 2920,
+      "kind": "text",
+      "lines": 86,
+      "imports": [],
+      "exports": [],
+      "serviceRole": true,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "13ab2d6766e36774c117d6d9069034161b6f21c3181751a46010f71abc7bbe5a",
+      "bytes": 697,
+      "kind": "text",
+      "lines": 59,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "DEPLOY.md",
+      "sha256": "737a016612b45b86fa89c3c705c54cfcbe2dd081f9e849184b60d29287a86177",
+      "bytes": 3246,
+      "kind": "text",
+      "lines": 134,
+      "imports": [],
+      "exports": [],
+      "serviceRole": true,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "dbfd6b0e74c13caab33506a91ad84c77b6e40ae3201b2886ed106cd8e9552b8c",
+      "bytes": 1064,
+      "kind": "text",
+      "lines": 22,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "MEMO.md",
+      "sha256": "6fd6a129dfb59e53ec69faccc2c0185af671a4aa303b2c5bce5b9cd0e579133d",
+      "bytes": 4152,
+      "kind": "text",
+      "lines": 139,
+      "imports": [],
+      "exports": [],
+      "serviceRole": true,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "PROJECT_OVERVIEW.md",
+      "sha256": "f3afbb0add996f5117d0a04c17e2a1d7f73cfd7ffbf7e52b7f6fc9f407672a3d",
+      "bytes": 16493,
+      "kind": "text",
+      "lines": 470,
+      "imports": [],
+      "exports": [],
+      "serviceRole": true,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "README.md",
+      "sha256": "8c842694a70aef0e48d0fc137d9ffed9db6f7e44f6bbbf035d5d99efcce24397",
+      "bytes": 10105,
+      "kind": "text",
+      "lines": 355,
+      "imports": [],
+      "exports": [],
+      "serviceRole": true,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "add-user-whitelist.sql",
+      "sha256": "8e4c330feeabe67d06699b9a770ab4d95d712f54ecf2064cb242b89fba9580cc",
+      "bytes": 317,
+      "kind": "text",
+      "lines": 10,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [],
+      "sqlTables": []
+    },
+    {
+      "path": "android/.gitignore",
+      "sha256": "065e4a92a240fe11a0ea230491ad9dabef143f5fd5a3e6884ad6f0395666a971",
+      "bytes": 1824,
+      "kind": "text",
+      "lines": 102,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/.gitignore",
+      "sha256": "99c54e51ee601a60fbde8016b2cbf717483bc2e92773be86c9247d02a7fa6ea4",
+      "bytes": 26,
+      "kind": "text",
+      "lines": 3,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/build.gradle",
+      "sha256": "be7471ccc4a73e84a512d17f5c676b6c47279ea4170ce8c9d76d77fcdeccd0ea",
+      "bytes": 2517,
+      "kind": "text",
+      "lines": 65,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/capacitor.build.gradle",
+      "sha256": "2232546ce971a33d76bfb9b369a2070377d00f0358237bb1d5da527e35720d0e",
+      "bytes": 680,
+      "kind": "text",
+      "lines": 25,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/proguard-rules.pro",
+      "sha256": "1cf8c57e8f79c250b0af9c1a5a4edad71a5c348a79ab70243b6bae086c150ad2",
+      "bytes": 751,
+      "kind": "text",
+      "lines": 22,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java",
+      "sha256": "ff50b4c110a7434312f9af54171f9e8523b015836f707c9b387b76d4c38a97f8",
+      "bytes": 774,
+      "kind": "text",
+      "lines": 27,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/src/main/AndroidManifest.xml",
+      "sha256": "d9e51a11cf2ddd632b3fdaebd5f77de42618a2a90a6238f52d1d2c1c50b24132",
+      "bytes": 3318,
+      "kind": "text",
+      "lines": 75,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/src/main/java/vn/inboxai/app/MainActivity.java",
+      "sha256": "511ae8b14c32ff356c0476b6aea61b9048f78f0797314493a2ff7b135138b4b9",
+      "bytes": 118,
+      "kind": "text",
+      "lines": 6,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/src/main/res/drawable-hdpi/splash_logo.png",
+      "sha256": "033cac3048c3d1394a0220a109cf470aa0a72b3b36a399f8ebddbd47346210db",
+      "bytes": 5946,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/drawable-land-hdpi/splash.png",
+      "sha256": "08cc34ad7713fe7ed58bceaa37b2387b670c53cd60264b4bd6442db3098e75dc",
+      "bytes": 7705,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/drawable-land-mdpi/splash.png",
+      "sha256": "5cf98b4451bd99b20df26f9e608a46946118be6b0ae90762f9ca1786a30c76ff",
+      "bytes": 4040,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/drawable-land-xhdpi/splash.png",
+      "sha256": "22f87e1e3bc89aa01a7dbc39c9a4db058cd0bf4ad3fe9f55712bf69eb997f4bf",
+      "bytes": 9251,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/drawable-land-xxhdpi/splash.png",
+      "sha256": "42aa26392546fcdee1b8d3ac6d4b41bfcceb41dc6a4f3a3c30c24a8a8f4db862",
+      "bytes": 13984,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/drawable-land-xxxhdpi/splash.png",
+      "sha256": "60393ce8636fd263e4e1fea3fd4ab2de948c6295e898fda9b50ac4e5283be809",
+      "bytes": 17683,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/drawable-mdpi/splash_logo.png",
+      "sha256": "ea570d304538553b373673ab296c7383994c8f4db4536668db2c1333f3b347bd",
+      "bytes": 3425,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/drawable-port-hdpi/splash.png",
+      "sha256": "c5015f4ba3628392b538386c5e210f0b94f352a3160adab934fd0311972137ca",
+      "bytes": 7934,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/drawable-port-mdpi/splash.png",
+      "sha256": "07fa579e1c83e04ba7f9cbcbfcf41b68e15fe3638f2c44a04e58b809103e6b69",
+      "bytes": 4096,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/drawable-port-xhdpi/splash.png",
+      "sha256": "b73049cb37fe76d6c11b87a796766bf6af0c85483b31eb6a921657b0d764a4b9",
+      "bytes": 9875,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/drawable-port-xxhdpi/splash.png",
+      "sha256": "0c7f1212f25b7b90e9a6e1d320013e4ff3d3e03e634cbb07b7b7981cac51627f",
+      "bytes": 13346,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/drawable-port-xxxhdpi/splash.png",
+      "sha256": "3db071a03b2f8ffe0dfd4170fc59842d53cd15bba5e88af59401d58efabf7827",
+      "bytes": 17489,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/drawable-v24/ic_launcher_foreground.xml",
+      "sha256": "a8514094f754b099d3e55ce1d6e0b2de79db418b2eeacb0fc2a6bb0bfadef221",
+      "bytes": 1880,
+      "kind": "text",
+      "lines": 35,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/src/main/res/drawable-xhdpi/splash_logo.png",
+      "sha256": "274eb7e55a117a1d7c5e783423d12b667b3cb1eff42667f19fdfec7d499e635f",
+      "bytes": 9578,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/drawable-xxhdpi/splash_logo.png",
+      "sha256": "af68127998b6d2ba6f8ba16b55f25ab0e1c84f33fa156a05259a80603f18e58b",
+      "bytes": 17393,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/drawable-xxxhdpi/splash_logo.png",
+      "sha256": "918509227fe2503150013a655ddb4948c3e98a96ec336ba47f73298b0c659d3b",
+      "bytes": 26038,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/drawable/ic_launcher_background.xml",
+      "sha256": "718ba51adf166bb55c3e9936bb8199a0148457f7f0191aaa2f37a94f3159d6ec",
+      "bytes": 5606,
+      "kind": "text",
+      "lines": 171,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/src/main/res/drawable/splash.xml",
+      "sha256": "bd50da537a9b8cc7096abc5545cfab7b8ea275e2d54cedc77b32632750c8ed1e",
+      "bytes": 367,
+      "kind": "text",
+      "lines": 13,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/src/main/res/drawable/splash_logo.png",
+      "sha256": "918509227fe2503150013a655ddb4948c3e98a96ec336ba47f73298b0c659d3b",
+      "bytes": 26038,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/layout/activity_main.xml",
+      "sha256": "5d770feb791313b947020cbfc57e5c733c556dac5e9e49261a1190e527073253",
+      "bytes": 535,
+      "kind": "text",
+      "lines": 13,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+      "sha256": "08fb6666ad0fd15141128455da462a7071e18e3822795e416f0db1f1de69555c",
+      "bytes": 260,
+      "kind": "text",
+      "lines": 5,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+      "sha256": "08fb6666ad0fd15141128455da462a7071e18e3822795e416f0db1f1de69555c",
+      "bytes": 260,
+      "kind": "text",
+      "lines": 5,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-hdpi/ic_launcher.png",
+      "sha256": "033cac3048c3d1394a0220a109cf470aa0a72b3b36a399f8ebddbd47346210db",
+      "bytes": 5946,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png",
+      "sha256": "033cac3048c3d1394a0220a109cf470aa0a72b3b36a399f8ebddbd47346210db",
+      "bytes": 5946,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png",
+      "sha256": "033cac3048c3d1394a0220a109cf470aa0a72b3b36a399f8ebddbd47346210db",
+      "bytes": 5946,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-mdpi/ic_launcher.png",
+      "sha256": "ea570d304538553b373673ab296c7383994c8f4db4536668db2c1333f3b347bd",
+      "bytes": 3425,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png",
+      "sha256": "ea570d304538553b373673ab296c7383994c8f4db4536668db2c1333f3b347bd",
+      "bytes": 3425,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png",
+      "sha256": "ea570d304538553b373673ab296c7383994c8f4db4536668db2c1333f3b347bd",
+      "bytes": 3425,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
+      "sha256": "274eb7e55a117a1d7c5e783423d12b667b3cb1eff42667f19fdfec7d499e635f",
+      "bytes": 9578,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png",
+      "sha256": "274eb7e55a117a1d7c5e783423d12b667b3cb1eff42667f19fdfec7d499e635f",
+      "bytes": 9578,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png",
+      "sha256": "274eb7e55a117a1d7c5e783423d12b667b3cb1eff42667f19fdfec7d499e635f",
+      "bytes": 9578,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
+      "sha256": "af68127998b6d2ba6f8ba16b55f25ab0e1c84f33fa156a05259a80603f18e58b",
+      "bytes": 17393,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png",
+      "sha256": "af68127998b6d2ba6f8ba16b55f25ab0e1c84f33fa156a05259a80603f18e58b",
+      "bytes": 17393,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png",
+      "sha256": "af68127998b6d2ba6f8ba16b55f25ab0e1c84f33fa156a05259a80603f18e58b",
+      "bytes": 17393,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+      "sha256": "918509227fe2503150013a655ddb4948c3e98a96ec336ba47f73298b0c659d3b",
+      "bytes": 26038,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png",
+      "sha256": "918509227fe2503150013a655ddb4948c3e98a96ec336ba47f73298b0c659d3b",
+      "bytes": 26038,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png",
+      "sha256": "918509227fe2503150013a655ddb4948c3e98a96ec336ba47f73298b0c659d3b",
+      "bytes": 26038,
+      "kind": "binary"
+    },
+    {
+      "path": "android/app/src/main/res/values-v31/styles.xml",
+      "sha256": "27218df7fbee5668263181d44365b6ad4173b226fe8ddfbce36faf8ace9ad224",
+      "bytes": 503,
+      "kind": "text",
+      "lines": 11,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/src/main/res/values/colors.xml",
+      "sha256": "3e13012cb2293ee79a7178bcbc8d5ecb3c61b2395f3a33ae4013b716c83b5c26",
+      "bytes": 260,
+      "kind": "text",
+      "lines": 8,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/src/main/res/values/ic_launcher_background.xml",
+      "sha256": "cd40bafe618ff506f4088778b135cb4faa15f25e0c9b475e22d730c74b7be115",
+      "bytes": 120,
+      "kind": "text",
+      "lines": 4,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/src/main/res/values/strings.xml",
+      "sha256": "8ed94465577b20c004b14c80b8932b57d70f2967a8ba5eb662accec7edccc3db",
+      "bytes": 275,
+      "kind": "text",
+      "lines": 8,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/src/main/res/values/styles.xml",
+      "sha256": "b4cd90064a2df7a7c39ac3b163632b58fdb6fd9be43ffa55cf1d1f4d575409ca",
+      "bytes": 1501,
+      "kind": "text",
+      "lines": 33,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/src/main/res/xml/file_paths.xml",
+      "sha256": "a46ed43ef65c90cb6778f4581decf3556e3f0055aad8f36d69dae16f9a0e99aa",
+      "bytes": 213,
+      "kind": "text",
+      "lines": 5,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/src/main/res/xml/network_security_config.xml",
+      "sha256": "ac41cd348354ea0a716bbb2c175642cac418fb2f1d88b3837dc27378275f4fc3",
+      "bytes": 390,
+      "kind": "text",
+      "lines": 12,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/app/src/test/java/com/getcapacitor/myapp/ExampleUnitTest.java",
+      "sha256": "d4045ae8fac1f0807e6b24eb34e68409a9a235df9d1a3f896fb8c9a49424363d",
+      "bytes": 402,
+      "kind": "text",
+      "lines": 19,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/build.gradle",
+      "sha256": "46ade7db7afeb8049ccea59fce83095dca736ceb8c9acd79cc944e988c3357d9",
+      "bytes": 637,
+      "kind": "text",
+      "lines": 30,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/capacitor.settings.gradle",
+      "sha256": "977b362794b3c206cb6068d6e17be5905f2f755c6905b3b1b0599ea25e8e38aa",
+      "bytes": 1026,
+      "kind": "text",
+      "lines": 22,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/gradle.properties",
+      "sha256": "3bab15c5b8bc4c2f4b6cf525497d15ad4abca53a460e6dd2eb0f0135817d31e6",
+      "bytes": 987,
+      "kind": "text",
+      "lines": 23,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/gradle/wrapper/gradle-wrapper.jar",
+      "sha256": "7d3a4ac4de1c32b59bc6a4eb8ecb8e612ccd0cf1ae1e99f66902da64df296172",
+      "bytes": 43764,
+      "kind": "binary"
+    },
+    {
+      "path": "android/gradle/wrapper/gradle-wrapper.properties",
+      "sha256": "9a479a85aa879bb55284fc16d0de5b81a745c3854f4e2d88c42e7debaf007435",
+      "bytes": 253,
+      "kind": "text",
+      "lines": 8,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/gradlew",
+      "sha256": "b187b4c52e749f5760afdd6fadc31b2a98ad35fb249bf0dff03b72650f320409",
+      "bytes": 8733,
+      "kind": "text",
+      "lines": 252,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/gradlew.bat",
+      "sha256": "1d297e00bd21de3ace22b4d7f2de1f9dfa858883d66bbf7c1ccbecccec8f4f3b",
+      "bytes": 2937,
+      "kind": "text",
+      "lines": 95,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/settings.gradle",
+      "sha256": "6ce098d15ebd69b44c4ecd786bca1bdc366340d2459b2af4d7bb0ab317aa9669",
+      "bytes": 208,
+      "kind": "text",
+      "lines": 5,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "android/variables.gradle",
+      "sha256": "83d502c9ed8fcf1dd4791482067abeedbebae49fafe9cd14a8a1f5891deb0d88",
+      "bytes": 498,
+      "kind": "text",
+      "lines": 16,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "capacitor.config.ts",
+      "sha256": "3d5adac45a9b83e95ae5ce74a83865fb44430ec7e757031a166641b5fd2e2786",
+      "bytes": 1028,
+      "kind": "text",
+      "lines": 44,
+      "imports": [
+        "@capacitor/cli"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "eslint.config.mjs",
+      "sha256": "870f1adccecf3051cbcd9fd307cef51d7633cf510979c181a81f4b1797273493",
+      "bytes": 465,
+      "kind": "text",
+      "lines": 19,
+      "imports": [
+        "eslint/config",
+        "eslint-config-next/core-web-vitals",
+        "eslint-config-next/typescript"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "ios/.gitignore",
+      "sha256": "2b7132a9943d2622e51e656897ca5162f56b121b40b423dedce1fbc699dba88a",
+      "bytes": 206,
+      "kind": "text",
+      "lines": 14,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "ios/App/App.xcodeproj/project.pbxproj",
+      "sha256": "488e9ccd90c2f3edea433abb46b3a11ac60b8bb5104a7bbd1cb8837e702c35f6",
+      "bytes": 14479,
+      "kind": "text",
+      "lines": 377,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist",
+      "sha256": "dfa0f9bb85b95ccba9c6811adadf8cb407fb5d52088e89db83ebc308ec448542",
+      "bytes": 238,
+      "kind": "text",
+      "lines": 9,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "ios/App/App/AppDelegate.swift",
+      "sha256": "5963d47ceba89e0d5694376ebf0bca630284db3de794bdf8666ea3093fe38a2f",
+      "bytes": 3031,
+      "kind": "text",
+      "lines": 50,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",
+      "sha256": "ae521e7a42b77ae28cf7d906e4281ef6864da4c148d06f6b60071c2bb6ffa671",
+      "bytes": 228448,
+      "kind": "binary"
+    },
+    {
+      "path": "ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json",
+      "sha256": "5c09bec6eede599b14fa9e4c44b03e7febebc930615a0cd70f02981c09dfe48a",
+      "bytes": 218,
+      "kind": "text",
+      "lines": 15,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "ios/App/App/Assets.xcassets/Contents.json",
+      "sha256": "972ec1fd42325872438eb085ac29e94f51c10788ec18ec5549439950866c541d",
+      "bytes": 62,
+      "kind": "text",
+      "lines": 6,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "ios/App/App/Assets.xcassets/Splash.imageset/Contents.json",
+      "sha256": "041481917eb249533ac6dd63d283bc6190b2d0642a93deda11b2ed0f6f7b605a",
+      "bytes": 403,
+      "kind": "text",
+      "lines": 23,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-1.png",
+      "sha256": "674c31b3ce64e4d0943cd48133be3003a2d86495e198d3ce4aa87153e4d18cd6",
+      "bytes": 12822,
+      "kind": "binary"
+    },
+    {
+      "path": "ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-2.png",
+      "sha256": "674c31b3ce64e4d0943cd48133be3003a2d86495e198d3ce4aa87153e4d18cd6",
+      "bytes": 12822,
+      "kind": "binary"
+    },
+    {
+      "path": "ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png",
+      "sha256": "674c31b3ce64e4d0943cd48133be3003a2d86495e198d3ce4aa87153e4d18cd6",
+      "bytes": 12822,
+      "kind": "binary"
+    },
+    {
+      "path": "ios/App/App/Base.lproj/LaunchScreen.storyboard",
+      "sha256": "0d3d5db304b08d5af8b200fecf80070f3405863b1aa28c276891f647d2e99b79",
+      "bytes": 4461,
+      "kind": "text",
+      "lines": 57,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "ios/App/App/Base.lproj/Main.storyboard",
+      "sha256": "7b7dc7acc67134bfaa80e5ce9c9068ba53db5369b9b70248aa7439fc2b09daae",
+      "bytes": 1019,
+      "kind": "text",
+      "lines": 20,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "ios/App/App/Info.plist",
+      "sha256": "de91a0578560c278f7b32b6207cced01cdb0e0c6a9d9e4806f5eae6e9ddfb3a5",
+      "bytes": 2754,
+      "kind": "text",
+      "lines": 88,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "ios/App/CapApp-SPM/.gitignore",
+      "sha256": "4b958e2b4dd57319aadef2551153c74b9cb5ffe9f89d6e3e491122a94913f016",
+      "bytes": 165,
+      "kind": "text",
+      "lines": 10,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "ios/App/CapApp-SPM/Package.swift",
+      "sha256": "18a9c49820098b32ee9f9cd60f95d2bcf9c9c846faf88dd0b1b977e60a58e2cd",
+      "bytes": 1807,
+      "kind": "text",
+      "lines": 38,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "ios/App/CapApp-SPM/README.md",
+      "sha256": "57b818dc59b59e0a00887c6cca7ab2917dd056ee29b58dee314831b13fcd4f9f",
+      "bytes": 157,
+      "kind": "text",
+      "lines": 6,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "ios/App/CapApp-SPM/Sources/CapApp-SPM/CapApp-SPM.swift",
+      "sha256": "70bf9dafddc35e3877dfb133a996f5be7ccd1e132897a98fdbf4869ff605ece9",
+      "bytes": 33,
+      "kind": "text",
+      "lines": 2,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "ios/debug.xcconfig",
+      "sha256": "4838938a72b913b99cfda54a43bbe73f05893071dc6e3702b0adc44794b64272",
+      "bytes": 23,
+      "kind": "text",
+      "lines": 2,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "next.config.ts",
+      "sha256": "df66f9c2eaf6e4d4e7205c4293d106d9140725ac515a149a2d0475bd61125f47",
+      "bytes": 1964,
+      "kind": "text",
+      "lines": 69,
+      "imports": [
+        "next",
+        "@next/bundle-analyzer",
+        "@sentry/nextjs"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "ANALYZE",
+        "NODE_ENV",
+        "SENTRY_ORG",
+        "SENTRY_PROJECT",
+        "SENTRY_AUTH_TOKEN"
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "abc12e6e4728ff75cedcdd0383c6afa1e0a3651a93bff5c17ba64fb7fdf69117",
+      "bytes": 492874,
+      "kind": "text",
+      "lines": 13585,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "package.json",
+      "sha256": "84344b442d323ed7801706e30a92e6b106b1df543940d71d0777aeb0f525c8c7",
+      "bytes": 2106,
+      "kind": "text",
+      "lines": 73,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "postcss.config.mjs",
+      "sha256": "dfac7ac2d86d326a0e5adb024e7943c181393ed17a5fcb8f0315b24c7da6ddde",
+      "bytes": 94,
+      "kind": "text",
+      "lines": 8,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "public/favicon.svg",
+      "sha256": "f32a98d9983173d2d8bf29c2879b66fc6fbfed85cda1c31e823041c9ef33a62e",
+      "bytes": 712,
+      "kind": "text",
+      "lines": 21,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "public/file.svg",
+      "sha256": "2b67812c325c199a02536cdbeea0c593a72f707d323b72ee3e08dbab06753bd4",
+      "bytes": 391,
+      "kind": "text",
+      "lines": 1,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "public/globe.svg",
+      "sha256": "b614b9bf183925957661ac851498fe1d8029fd43a62fbfed86f9e2624a57e7cf",
+      "bytes": 1035,
+      "kind": "text",
+      "lines": 1,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "public/icons/apple-touch-icon.png",
+      "sha256": "25c9ba00eb85243081362377c4a0fe6e21d62c1f603d7fdb118004247903b49e",
+      "bytes": 6094,
+      "kind": "binary"
+    },
+    {
+      "path": "public/icons/favicon-16x16.png",
+      "sha256": "d048c8f480f86512663a06cc6cd61790c2781ab05425e8b693f6b631605649d8",
+      "bytes": 656,
+      "kind": "binary"
+    },
+    {
+      "path": "public/icons/favicon-32x32.png",
+      "sha256": "73ad55e2eead56f4c135c48dac14ff71146778d5e9fe03c04a9a08da23cc727f",
+      "bytes": 1225,
+      "kind": "binary"
+    },
+    {
+      "path": "public/icons/favicon.svg",
+      "sha256": "f32a98d9983173d2d8bf29c2879b66fc6fbfed85cda1c31e823041c9ef33a62e",
+      "bytes": 712,
+      "kind": "text",
+      "lines": 21,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "public/icons/icon-128x128.png",
+      "sha256": "cc23e5359031ca1d803de959619fb767e83bb9d0f3163540b60bdce33865faae",
+      "bytes": 4345,
+      "kind": "binary"
+    },
+    {
+      "path": "public/icons/icon-144x144.png",
+      "sha256": "f9e1c15daf0a656308371e54025cd98eb037a2d5e67f5b422e56eb01be3c8cd9",
+      "bytes": 4909,
+      "kind": "binary"
+    },
+    {
+      "path": "public/icons/icon-152x152.png",
+      "sha256": "953b28bbcaef85973f1b4b16a07572022e1c26fe0edb64b6af0592f3edcf02ab",
+      "bytes": 5117,
+      "kind": "binary"
+    },
+    {
+      "path": "public/icons/icon-192x192.png",
+      "sha256": "3adf681d79bcf7d5fcd5d16d0f7f702cd84c764360fa2860508b10f80d8218b0",
+      "bytes": 6598,
+      "kind": "binary"
+    },
+    {
+      "path": "public/icons/icon-384x384.png",
+      "sha256": "254636d39d935765f048f88609e6b5647df9b3713a3db48673120000cd074e8e",
+      "bytes": 16031,
+      "kind": "binary"
+    },
+    {
+      "path": "public/icons/icon-512x512.png",
+      "sha256": "2cec8c13c87eb2eb20b7d2e600fac920d761167e47e54b6e075e7ac6df40bc89",
+      "bytes": 24458,
+      "kind": "binary"
+    },
+    {
+      "path": "public/icons/icon-72x72.png",
+      "sha256": "44d00ae10a71926ae8f3b0db53a58701b4c1f9250b401f620672135ac9683c20",
+      "bytes": 2610,
+      "kind": "binary"
+    },
+    {
+      "path": "public/icons/icon-96x96.png",
+      "sha256": "46fc240e0c8a3ba18c61b32baadbb19142716857b3f2e7b711744b2db92b9a9f",
+      "bytes": 3340,
+      "kind": "binary"
+    },
+    {
+      "path": "public/icons/icon.svg",
+      "sha256": "898de4f080b36d7aee47e3dda0d2e2806314b019d74dfad61ad120689ea1295d",
+      "bytes": 1827,
+      "kind": "text",
+      "lines": 61,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "public/images/image-error.svg",
+      "sha256": "b77c90800cdebfc2ba791b62c1cf43cec773a9f71bf067c4fe4d5225a53a345e",
+      "bytes": 330,
+      "kind": "text",
+      "lines": 6,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "public/images/image-placeholder.svg",
+      "sha256": "f8b1e520fe1ef827e50ae37590dfd35f11a926071f03f2fe70425a1a00f21be7",
+      "bytes": 347,
+      "kind": "text",
+      "lines": 7,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "public/manifest.json",
+      "sha256": "e13137a9b5ce77b27b9ece16897972079198474d815100245134ccbd87bc5668",
+      "bytes": 1756,
+      "kind": "text",
+      "lines": 75,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "public/next.svg",
+      "sha256": "55995dfad6ecb4945a1e856ddca03c5e16aa5bf13fd21b4df6a74ae79357bcfc",
+      "bytes": 1375,
+      "kind": "text",
+      "lines": 1,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "public/vercel.svg",
+      "sha256": "f081337b2fee635b455b63275406a3e7f39d6a014e25ad90dab5a67e62a12ac4",
+      "bytes": 128,
+      "kind": "text",
+      "lines": 1,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "public/window.svg",
+      "sha256": "644768c4aaeb4767bce293344eeb0c125fb804a94d801440424072202d85e3a1",
+      "bytes": 385,
+      "kind": "text",
+      "lines": 1,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "render.yaml",
+      "sha256": "88959edf2873d47ddc9521f78270ba85ca8771b0c499d2c8adb7314454a67627",
+      "bytes": 1224,
+      "kind": "text",
+      "lines": 51,
+      "imports": [],
+      "exports": [],
+      "serviceRole": true,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "scripts/cron-sync.js",
+      "sha256": "5e736ebd0a00ebee68f52bd3ebec3dece28b5b754c44d6b2ac06cc2f292e4894",
+      "bytes": 2083,
+      "kind": "text",
+      "lines": 82,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "RENDER_EXTERNAL_URL",
+        "APP_URL",
+        "CRON_SECRET"
+      ]
+    },
+    {
+      "path": "scripts/generate-android-icons.sh",
+      "sha256": "c8a352571510a30b9a972b1419277f4a3bf27159e6b42f41c6a21b0987e9f6ff",
+      "bytes": 1965,
+      "kind": "text",
+      "lines": 69,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "scripts/generate-icons.ts",
+      "sha256": "9260e81ec9ea617c6683cf3e56451ac41fa01e6502e267b0125663f3d36d56b0",
+      "bytes": 4835,
+      "kind": "text",
+      "lines": 156,
+      "imports": [
+        "sharp",
+        "fs",
+        "path"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "scripts/generate-ios-icons.sh",
+      "sha256": "6eddc9ca28d167b878749233f5fa25aa5cef0e985b0d2f23817f0cec66630004",
+      "bytes": 1394,
+      "kind": "text",
+      "lines": 39,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "scripts/sync-worker.js",
+      "sha256": "76aafd3c163193d06d029c6338e20fe7987fa9805bd0177be11c855b66daabc6",
+      "bytes": 2482,
+      "kind": "text",
+      "lines": 91,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "NEXT_PUBLIC_APP_URL",
+        "CRON_SECRET"
+      ]
+    },
+    {
+      "path": "sentry.client.config.ts",
+      "sha256": "c9b420228a508c693776d8a88e43043ede9afe7f20189be59cb9eb23f87ef0c4",
+      "bytes": 1608,
+      "kind": "text",
+      "lines": 66,
+      "imports": [
+        "@sentry/nextjs"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "NEXT_PUBLIC_SENTRY_DSN",
+        "NODE_ENV",
+        "NEXT_PUBLIC_APP_VERSION"
+      ]
+    },
+    {
+      "path": "sentry.edge.config.ts",
+      "sha256": "291ac4ac92c8e62db369dc27d5e0eb7060d345e8a2705db3f939dcfb319cdfcc",
+      "bytes": 570,
+      "kind": "text",
+      "lines": 23,
+      "imports": [
+        "@sentry/nextjs"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "SENTRY_DSN",
+        "NEXT_PUBLIC_SENTRY_DSN",
+        "NODE_ENV",
+        "NEXT_PUBLIC_APP_VERSION"
+      ]
+    },
+    {
+      "path": "sentry.server.config.ts",
+      "sha256": "9edc54b6600a275153b0fe97b1aa3251c47f1c1d4b5a5222dbfa819f6736f02a",
+      "bytes": 1005,
+      "kind": "text",
+      "lines": 41,
+      "imports": [
+        "@sentry/nextjs"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "SENTRY_DSN",
+        "NEXT_PUBLIC_SENTRY_DSN",
+        "NODE_ENV",
+        "NEXT_PUBLIC_APP_VERSION"
+      ]
+    },
+    {
+      "path": "src/app/(auth)/layout.tsx",
+      "sha256": "25fd8c071e2fc565fa03e9531948ff8bd0bf0daf99685229e318159fecfbba5a",
+      "bytes": 1079,
+      "kind": "text",
+      "lines": 35,
+      "imports": [
+        "next/link",
+        "lucide-react"
+      ],
+      "exports": [
+        "AuthLayout"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(auth)/login/page.tsx",
+      "sha256": "9eca8bf82bb643dbabfc6e0ca1444b1efc03685a53309b75175fc9ae8ed04152",
+      "bytes": 4775,
+      "kind": "text",
+      "lines": 129,
+      "imports": [
+        "react",
+        "next/link",
+        "next/navigation",
+        "lucide-react",
+        "@/lib/supabase/client"
+      ],
+      "exports": [
+        "LoginPage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(auth)/signup/page.tsx",
+      "sha256": "562aff4e4764c1779a179e6079e8ddfda88420a57994c1ce81b73357b56d5bd8",
+      "bytes": 17599,
+      "kind": "text",
+      "lines": 458,
+      "imports": [
+        "react",
+        "next/link",
+        "lucide-react"
+      ],
+      "exports": [
+        "SignupPage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(dashboard)/actions/page.tsx",
+      "sha256": "a600da7d3413085091ea37340febee458fcf36c1eb9f061d51d4865926271243",
+      "bytes": 16113,
+      "kind": "text",
+      "lines": 456,
+      "imports": [
+        "react",
+        "next/navigation",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "ActionsPage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(dashboard)/archive/page.tsx",
+      "sha256": "dfb66706578d05817350cfaf8803fd9aae55618c26d91eff5dc55e1c6faef9d6",
+      "bytes": 2992,
+      "kind": "text",
+      "lines": 90,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/hooks/use-emails",
+        "@/components/email/email-list",
+        "@/components/email/email-detail",
+        "@/types"
+      ],
+      "exports": [
+        "ArchivePage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(dashboard)/compose/page.tsx",
+      "sha256": "47d1e77149832de2ecdaac9fa933b4c5a0ef8ce64800b1674084b770a343b851",
+      "bytes": 20221,
+      "kind": "text",
+      "lines": 491,
+      "imports": [
+        "react",
+        "next/navigation",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "ComposePage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(dashboard)/follow-ups/page.tsx",
+      "sha256": "b5998175073a782719c8747537ec0e26a3e262701502b6af9783b2b7c3133d14",
+      "bytes": 13988,
+      "kind": "text",
+      "lines": 363,
+      "imports": [
+        "react",
+        "next/navigation",
+        "lucide-react",
+        "@/lib/utils",
+        "@/components/ui/badge",
+        "@/components/ui/button"
+      ],
+      "exports": [
+        "FollowUpsPage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(dashboard)/inbox/loading.tsx",
+      "sha256": "c6dc778af879a429b221971e2d758bbf120337f4b00051ebbc1f0ecc786ab857",
+      "bytes": 216,
+      "kind": "text",
+      "lines": 10,
+      "imports": [
+        "@/components/ui/loading-skeleton"
+      ],
+      "exports": [
+        "InboxLoading"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(dashboard)/inbox/page.tsx",
+      "sha256": "2e163daa1d5c24f6adde7c6ce221a2991efa08ed438c70310cd7048f55c95f1f",
+      "bytes": 24140,
+      "kind": "text",
+      "lines": 688,
+      "imports": [
+        "react",
+        "next/navigation",
+        "next/dynamic",
+        "lucide-react",
+        "@/lib/utils",
+        "@/components/ui/empty-state",
+        "@/hooks/use-emails",
+        "@/hooks/use-email",
+        "@/hooks/use-media-query",
+        "@/components/email/email-list-skeleton",
+        "@/contexts/email-selection-context",
+        "@/components/email/selection-toolbar",
+        "@/components/layout/unified-top-bar",
+        "@/components/layout/mobile-inbox-header",
+        "@/components/layout/category-filter-sheet",
+        "@/components/email/account-switcher"
+      ],
+      "exports": [
+        "InboxPage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(dashboard)/insights/page.tsx",
+      "sha256": "5d7a25c6d4cc185f74628e88b7e3a220327dc98b226f5c8bdcf575a9f4906ebb",
+      "bytes": 985,
+      "kind": "text",
+      "lines": 29,
+      "imports": [
+        "@/components/insights/weekly-report",
+        "lucide-react"
+      ],
+      "exports": [
+        "InsightsPage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(dashboard)/layout.tsx",
+      "sha256": "1bfcc463bdf8f0541ffe8d0de21d810a6966c930857fbcb70a0069f5cb2c97e4",
+      "bytes": 1339,
+      "kind": "text",
+      "lines": 45,
+      "imports": [
+        "next/navigation",
+        "@/lib/supabase/server",
+        "@/components/layout/sidebar",
+        "@/components/layout/header",
+        "@/components/layout/mobile-nav",
+        "@/components/ai/urgent-alert-wrapper",
+        "@/providers/auto-sync-provider",
+        "@/components/onboarding/ai-intro-tooltip"
+      ],
+      "exports": [
+        "DashboardLayout"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(dashboard)/search/page.tsx",
+      "sha256": "9436f4e72fe7fbb4386b3c6f6c347180bdd566ada91f798bfbdc7c0aa6752e9c",
+      "bytes": 11338,
+      "kind": "text",
+      "lines": 293,
+      "imports": [
+        "react",
+        "next/navigation",
+        "lucide-react",
+        "@/lib/utils",
+        "@/components/search/search-box",
+        "@/components/email/email-detail-full",
+        "@/types"
+      ],
+      "exports": [
+        "SearchPage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(dashboard)/sent/page.tsx",
+      "sha256": "f230808ca7994d9b2038cc7fdbf0f4610be6addd57f4dedc0731bd78df3794a3",
+      "bytes": 2760,
+      "kind": "text",
+      "lines": 83,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/hooks/use-emails",
+        "@/components/email/email-list",
+        "@/components/email/email-detail",
+        "@/types"
+      ],
+      "exports": [
+        "SentPage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(dashboard)/settings/page.tsx",
+      "sha256": "4841bb756dce92202cfdf94a234503088e3915f7a205c57fa78ec64fdb7694d8",
+      "bytes": 8946,
+      "kind": "text",
+      "lines": 177,
+      "imports": [
+        "@/lib/supabase/server",
+        "lucide-react",
+        "@/components/settings/ai-section",
+        "@/components/ai",
+        "@/components/settings/mailbox-section",
+        "@/components/automation/rules-list",
+        "@/components/settings/source-accounts-section"
+      ],
+      "exports": [
+        "SettingsPage"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "profiles"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(dashboard)/starred/page.tsx",
+      "sha256": "d64b3df8d06b7f2759bde9323095682964069a37e8748e8afc676ceede9304c0",
+      "bytes": 3098,
+      "kind": "text",
+      "lines": 98,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/hooks/use-emails",
+        "@/components/email/email-list",
+        "@/components/email/email-detail",
+        "@/types"
+      ],
+      "exports": [
+        "StarredPage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(dashboard)/subscriptions/page.tsx",
+      "sha256": "1c2fd64a0d7ee41cc1c8e6c845ace04a691344bdbed362b03eba80cdb867fd36",
+      "bytes": 7503,
+      "kind": "text",
+      "lines": 204,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "SubscriptionsPage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(dashboard)/trash/page.tsx",
+      "sha256": "f46c4d0dc8819d9276020f1209acce20e23e99474e004e0ceb041ed9dd657cec",
+      "bytes": 6818,
+      "kind": "text",
+      "lines": 159,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/hooks/use-emails",
+        "@/components/email/email-list",
+        "@/components/email/email-detail",
+        "@/types"
+      ],
+      "exports": [
+        "TrashPage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(protected)/admin/components/admin-ai-metrics-tab.tsx",
+      "sha256": "c33e062c471718092dfd4edfdc244df68f447e741cdead5d1e81b9c48908e0ee",
+      "bytes": 8108,
+      "kind": "text",
+      "lines": 189,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(protected)/admin/components/admin-ai-settings-tab.tsx",
+      "sha256": "4992742b65b3dbef05ab86b6572264d48c24210d284f3cd1951a81c2c417c263",
+      "bytes": 8661,
+      "kind": "text",
+      "lines": 215,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(protected)/admin/components/admin-domains-tab.tsx",
+      "sha256": "c455e7a4d85448569f372ec3a0b15846954954c9f8239dacee7e03b104a9872b",
+      "bytes": 5327,
+      "kind": "text",
+      "lines": 136,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(protected)/admin/components/admin-requests-tab.tsx",
+      "sha256": "52ac44cf20785c429cd1dbe8bedaf86c82b32313ecbed9f3819f5af4338b8c51",
+      "bytes": 3623,
+      "kind": "text",
+      "lines": 104,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(protected)/admin/components/admin-stats.tsx",
+      "sha256": "c6990995472ff75e4ef28ec326e96beb71fa50c9354994e1303f21808e7aa479",
+      "bytes": 3411,
+      "kind": "text",
+      "lines": 91,
+      "imports": [
+        "react",
+        "lucide-react"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(protected)/admin/components/admin-whitelist-tab.tsx",
+      "sha256": "0eb4d39038c7a6b289613f43fb2898152fc73255467a8a1794a8fb3b2eb43a27",
+      "bytes": 3279,
+      "kind": "text",
+      "lines": 104,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(protected)/admin/components/index.ts",
+      "sha256": "c17154fd906827a290f536f3924870a0ce24ef397f4a0cf4867d0531ca69715d",
+      "bytes": 331,
+      "kind": "text",
+      "lines": 7,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(protected)/admin/page.tsx",
+      "sha256": "790e94f8971178e948b90d41cdd1976877c52b7267b9d0a3bbf2486d536378e7",
+      "bytes": 21264,
+      "kind": "text",
+      "lines": 533,
+      "imports": [
+        "react",
+        "next/navigation",
+        "next/dynamic",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "AdminPage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/(protected)/layout.tsx",
+      "sha256": "e2c421eb303f901375f0002c0dc7cf85609f51431f8ca4eadf66a3b1ec90dc18",
+      "bytes": 365,
+      "kind": "text",
+      "lines": 18,
+      "imports": [
+        "next/navigation",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "ProtectedLayout"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/access-denied/page.tsx",
+      "sha256": "d34832fce393b93b70c258f2363fd2868e1d1fc358d62ad5d6e81b7cb5f72893",
+      "bytes": 7187,
+      "kind": "text",
+      "lines": 188,
+      "imports": [
+        "react",
+        "next/navigation",
+        "lucide-react",
+        "@/lib/supabase/client"
+      ],
+      "exports": [
+        "AccessDeniedPage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/access-request/route.ts",
+      "sha256": "0c00f3b76726f9c1ef585203bfbc30fcfb4041ec83799b404c172ce00630e78d",
+      "bytes": 3307,
+      "kind": "text",
+      "lines": 124,
+      "imports": [
+        "next/server",
+        "@supabase/supabase-js",
+        "@/lib/rate-limit"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "whitelist",
+        "access_requests"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/action-items/[itemId]/route.ts",
+      "sha256": "708b526b3c4d13c49b0d8b239296a99b3b1697f5faace200ef34d7ed9c02c27f",
+      "bytes": 3065,
+      "kind": "text",
+      "lines": 114,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "PATCH",
+        "DELETE",
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "action_items"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/action-items/route.ts",
+      "sha256": "7b1243644b7adb1c14d41243d3b6de11324153a121d1ff7c89996ff128bb5884",
+      "bytes": 3048,
+      "kind": "text",
+      "lines": 105,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "GET",
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "action_items"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/admin/ai-metrics/route.ts",
+      "sha256": "3c267c01658818ad1fb2f9a1f61960d3a29681168fa22b0081cbe908134e5887",
+      "bytes": 1615,
+      "kind": "text",
+      "lines": 58,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/classification-logger"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/admin/ai-settings/route.ts",
+      "sha256": "8dfc575d17f548f4c6457f9989a8e8e17fca09e8f87e952d9ea1ec01d70bd69c",
+      "bytes": 4755,
+      "kind": "text",
+      "lines": 161,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "GET",
+        "POST",
+        "DELETE"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "ai_settings"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/admin/domain-reputation/route.ts",
+      "sha256": "d941312956be1e17eeb9d11c750a26901b36c587366fc56c10565f93d085e273",
+      "bytes": 3051,
+      "kind": "text",
+      "lines": 105,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/domain-reputation"
+      ],
+      "exports": [
+        "GET",
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/admin/whitelist/route.ts",
+      "sha256": "79213741061c755a6a74f2a92f19f1dc858b03d7436da94471c597234ff8faff",
+      "bytes": 7763,
+      "kind": "text",
+      "lines": 276,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@supabase/supabase-js",
+        "@/lib/resend/waitlist-emails"
+      ],
+      "exports": [
+        "GET",
+        "POST",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "access_requests",
+        "whitelist"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/ai/analyze/route.ts",
+      "sha256": "ecbe0be023c09cb3916d3c886913d3ed5b6e809115fc3fe51a6f5fb8a2ad6172",
+      "bytes": 1170,
+      "kind": "text",
+      "lines": 44,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/email-analyzer"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/ai/briefing/route.ts",
+      "sha256": "eaee09ed057e60a8e1428bc2c5e38c2bf798e83c1f34580887320bc0a1a4ad48",
+      "bytes": 6066,
+      "kind": "text",
+      "lines": 212,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails",
+        "sender_scores"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/ai/classify-all/route.ts",
+      "sha256": "faad0cb02a9f9026d03a74917b435ee04f4b68ca3cddbca4fb75da61f17651e6",
+      "bytes": 2700,
+      "kind": "text",
+      "lines": 95,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@supabase/supabase-js",
+        "@/lib/ai/classifier"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/ai/classify-batch/route.ts",
+      "sha256": "00ac726ea00b780398e4a10f8c1a8320bf92ff566ddcfd8ed2d552a6e5958830",
+      "bytes": 3125,
+      "kind": "text",
+      "lines": 99,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/classifier",
+        "@/lib/ai/sender-trust"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "source_accounts",
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/ai/classify/route.ts",
+      "sha256": "56b1db7631cd0a04ed8e9447ecebbab7f8e72f9d8521ed8e98f2048409efd87a",
+      "bytes": 2487,
+      "kind": "text",
+      "lines": 79,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@supabase/supabase-js",
+        "@/lib/ai/classifier"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/ai/compose/route.ts",
+      "sha256": "718075bb8e9ea53ce720d3acd3b9a25ec6126f747f30bb331f9e1a9c1e326d30",
+      "bytes": 4775,
+      "kind": "text",
+      "lines": 137,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "openai",
+        "@/lib/logger"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "OPENAI_API_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/ai/draft/route.ts",
+      "sha256": "21528e77d26f3ed9b85614f9414c63beff6535c163a83a91cf13132dc8e72e00",
+      "bytes": 2392,
+      "kind": "text",
+      "lines": 76,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/draft-generator",
+        "@/lib/ai/email-analyzer"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails",
+        "profiles"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/ai/features/[emailId]/auto/route.ts",
+      "sha256": "84cba4de3ee7c60da90d1648830b2249d046487368908151480f85bb8a676b9b",
+      "bytes": 12592,
+      "kind": "text",
+      "lines": 372,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/feature-allocation",
+        "@/lib/ai/feature-runner",
+        "@/lib/ai/setup",
+        "@/lib/logger"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/ai/features/[emailId]/debug/route.ts",
+      "sha256": "017418080974c3837f4c55b8022cb6a969d3ed3dccc74a470de82b7fbec99d55",
+      "bytes": 2347,
+      "kind": "text",
+      "lines": 92,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": [
+        "OPENAI_API_KEY",
+        "ANTHROPIC_API_KEY",
+        "NODE_ENV"
+      ]
+    },
+    {
+      "path": "src/app/api/ai/features/[emailId]/route.ts",
+      "sha256": "e402c32970b7585d84ea566c6929e0af268ec4b5d2c76f1e15ea29d902476c45",
+      "bytes": 5274,
+      "kind": "text",
+      "lines": 197,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/feature-allocation",
+        "@/lib/ai/feature-runner"
+      ],
+      "exports": [
+        "GET",
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/ai/features/batch/route.ts",
+      "sha256": "acff4bb61bc4b85a68779abd967b78f1c6771aceddb74603d5c6fb86c45344b1",
+      "bytes": 3337,
+      "kind": "text",
+      "lines": 120,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/feature-allocation",
+        "@/lib/ai/feature-runner"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/ai/feedback/route.ts",
+      "sha256": "2e4dba1fbb2164d53b40d0da92cf841d9aa32870a06291ab24330a0b8e80d4c8",
+      "bytes": 4852,
+      "kind": "text",
+      "lines": 152,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@supabase/supabase-js",
+        "@/lib/ai/feedback-learner",
+        "@/lib/ai/sender-trust",
+        "@/lib/ai/sender-reputation",
+        "@/types"
+      ],
+      "exports": [
+        "POST",
+        "GET"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/ai/insights/daily/route.ts",
+      "sha256": "ec672165ac6cddc84b812ab31f698b372c5c9ae317f72225bbd9213ae91b95f7",
+      "bytes": 656,
+      "kind": "text",
+      "lines": 21,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/insights-service"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/ai/insights/weekly/route.ts",
+      "sha256": "e3753cf856e9f01ad1e4465971c0cc2ba5dfc9dce969628a1fa500e56e661326",
+      "bytes": 659,
+      "kind": "text",
+      "lines": 21,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/insights-service"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/ai/reclassify/route.ts",
+      "sha256": "5efc917299a24928fadbf8b144abba4182bf378204e37062f12f6056f6ddbd22",
+      "bytes": 2936,
+      "kind": "text",
+      "lines": 107,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/classifier"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "source_accounts",
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/ai/research/route.ts",
+      "sha256": "14f457918465b06e2b70edd136f8d81db17be0c16c30226004c39166b2e05f9c",
+      "bytes": 1205,
+      "kind": "text",
+      "lines": 44,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/research-service"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/ai/sender-insights/route.ts",
+      "sha256": "6a79dea80f67b51b10c74664217e443b2de2e490e5404ce646382f311f284020",
+      "bytes": 3383,
+      "kind": "text",
+      "lines": 116,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "GET",
+        "PATCH"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "sender_scores"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/ai/smart-reply/route.ts",
+      "sha256": "9226f6264f6556e97a1a8658e24927b08404bd726a87f580f3e05888f95c2179",
+      "bytes": 3256,
+      "kind": "text",
+      "lines": 117,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/smart-reply"
+      ],
+      "exports": [
+        "GET",
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails",
+        "profiles"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/ai/test/route.ts",
+      "sha256": "3c9b3c50ba19845a49eeb64fc38ba894ae561ff5c4d109b12286d926a51771f0",
+      "bytes": 1043,
+      "kind": "text",
+      "lines": 35,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/classifier"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/ai/urgent-check/route.ts",
+      "sha256": "be878463ff6d32f7a071b98a62daf4e78b2ba9aca8b56c846f493dadf0296b56",
+      "bytes": 1023,
+      "kind": "text",
+      "lines": 33,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/ai/usage/route.ts",
+      "sha256": "0fb117da9c0d06e23b971691b6cc114c0ecf0b17985b0068c7af64b9e246177a",
+      "bytes": 1802,
+      "kind": "text",
+      "lines": 64,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/feature-allocation"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "ai_cost_daily",
+        "ai_feature_usage"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/attachments/[attachmentId]/route.ts",
+      "sha256": "3c26b5255620a07782505dadb4c8ddc2fbfe6bc605f3ceda2d989583b2149362",
+      "bytes": 3973,
+      "kind": "text",
+      "lines": 133,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/email/imap-client"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "attachments"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/auth/google/callback/route.ts",
+      "sha256": "e58599a37afde581c1b0a4ede5deacb7fe5261becbdc27a75f9ac7164d832924",
+      "bytes": 3788,
+      "kind": "text",
+      "lines": 130,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/oauth/google"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "source_accounts"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_APP_URL"
+      ]
+    },
+    {
+      "path": "src/app/api/auth/google/route.ts",
+      "sha256": "6d3b9d39c8635ec080071bd4c032111b00bb39b52e9e326d416429eb28cc38ff",
+      "bytes": 1183,
+      "kind": "text",
+      "lines": 44,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/oauth/google"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "NEXT_PUBLIC_APP_URL"
+      ]
+    },
+    {
+      "path": "src/app/api/automation/rules/[ruleId]/route.ts",
+      "sha256": "12ffcda1a506f573c691259b674fe7dfd7169043b3bfc1761822638f257187ec",
+      "bytes": 2278,
+      "kind": "text",
+      "lines": 91,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "automation_rules"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/automation/rules/route.ts",
+      "sha256": "94ab51fde3d09e0675a3adfabc792e0706dbc9c515b0336ffe106aee3e21e72d",
+      "bytes": 2297,
+      "kind": "text",
+      "lines": 82,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/rules-engine"
+      ],
+      "exports": [
+        "GET",
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "automation_rules"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/automation/run/route.ts",
+      "sha256": "8c33f73cd9be4648ce7c46f855d6eedddaa5af6a7d72526b2c9caf693b1b87ee",
+      "bytes": 1658,
+      "kind": "text",
+      "lines": 61,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/rules-engine"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "automation_rules"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/check-whitelist/route.ts",
+      "sha256": "70572cb63872cb87948d6d55f52fe13ddf86ff4b7289dc6240af814ac51b8683",
+      "bytes": 3801,
+      "kind": "text",
+      "lines": 127,
+      "imports": [
+        "next/server",
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "whitelist",
+        "access_requests"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/cron/aggregate-ai-costs/route.ts",
+      "sha256": "2ca0c90711f2513e80872d59f2bcb310e82143e3eb3163ae842211cd438c59f1",
+      "bytes": 4308,
+      "kind": "text",
+      "lines": 124,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "ai_feature_usage",
+        "ai_cost_daily"
+      ],
+      "envNames": [
+        "CRON_SECRET"
+      ]
+    },
+    {
+      "path": "src/app/api/cron/aggregate-metrics/route.ts",
+      "sha256": "ea8782b7746e81de63620967fde432e7e68e3b3c431e85383ff8861a3a7b31c7",
+      "bytes": 1775,
+      "kind": "text",
+      "lines": 61,
+      "imports": [
+        "next/server",
+        "@/lib/ai/classification-logger"
+      ],
+      "exports": [
+        "GET",
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "CRON_SECRET"
+      ]
+    },
+    {
+      "path": "src/app/api/cron/classify-emails/route.ts",
+      "sha256": "fd8ae53f11b045a0ff44075cef393efc4da73bbfdb06d9f2f91039cf2c7ecd5a",
+      "bytes": 4610,
+      "kind": "text",
+      "lines": 154,
+      "imports": [
+        "next/server",
+        "@supabase/supabase-js",
+        "@/lib/ai/classifier",
+        "@/lib/notifications/create"
+      ],
+      "exports": [
+        "GET",
+        "POST"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "emails"
+      ],
+      "envNames": [
+        "CRON_SECRET",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/cron/recalculate-reputation/route.ts",
+      "sha256": "e1c24c4ef46bed8b3ebaeaba8b18e4e13734ead69739711397ad964d3411fd02",
+      "bytes": 3832,
+      "kind": "text",
+      "lines": 130,
+      "imports": [
+        "next/server",
+        "@supabase/supabase-js",
+        "@/lib/ai/sender-reputation"
+      ],
+      "exports": [
+        "GET",
+        "POST"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "sender_reputation"
+      ],
+      "envNames": [
+        "CRON_SECRET",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/cron/sync-emails/route.ts",
+      "sha256": "b9f21db7ddc8f95fd5dd4c39196c069f2c1772cd6f4bd9bf83e3c80150826568",
+      "bytes": 7632,
+      "kind": "text",
+      "lines": 251,
+      "imports": [
+        "next/server",
+        "@supabase/supabase-js",
+        "@/lib/email/imap-client",
+        "@/lib/email/unsubscribe-service",
+        "@/lib/ai/classifier",
+        "@/lib/notifications/create"
+      ],
+      "exports": [
+        "GET",
+        "POST"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "emails",
+        "source_accounts"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "CRON_SECRET"
+      ]
+    },
+    {
+      "path": "src/app/api/dashboard/stats/route.ts",
+      "sha256": "5cdf0104103e5b5056894822da9072aeb95b7ab669f1b43eacfbeb128f0e2786",
+      "bytes": 5757,
+      "kind": "text",
+      "lines": 183,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails",
+        "ai_feature_usage",
+        "source_accounts",
+        "follow_ups"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/debug/gmail-sync/route.ts",
+      "sha256": "cad456c3ace410391d0b2a8420de51b9a59e91aae50437d878e63f0b39b6aee7",
+      "bytes": 14747,
+      "kind": "text",
+      "lines": 436,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@supabase/supabase-js",
+        "@/lib/oauth/google"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "source_accounts",
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/email-providers/route.ts",
+      "sha256": "8a80014d8d1cb04432ef4175ddc811d718868d246f0717567cc64f60b84dd199",
+      "bytes": 3873,
+      "kind": "text",
+      "lines": 147,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "email_provider_presets"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/email/sync/gmail/route.ts",
+      "sha256": "236ff506a89fdacf90721373c486412cc92dd7849444f2aa74db06c69b99870d",
+      "bytes": 1454,
+      "kind": "text",
+      "lines": 54,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/gmail/sync"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "source_accounts"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/emails/[emailId]/archive/route.ts",
+      "sha256": "757518e784a679a44b8ae18e8695c7c3495d9ca19459aad8a537e0a3ca246021",
+      "bytes": 1473,
+      "kind": "text",
+      "lines": 54,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/emails/[emailId]/attachments/route.ts",
+      "sha256": "ebe512ec790100cfa0f6baf0069f5f5d3c96b40358e1e0903b14a06e3d8656e5",
+      "bytes": 1183,
+      "kind": "text",
+      "lines": 44,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails",
+        "attachments"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/emails/[emailId]/extract-actions/route.ts",
+      "sha256": "3330cfd78be3806d4edab9d8a0d69e7951e0db7f7b29ba619e21ee6996671df5",
+      "bytes": 3500,
+      "kind": "text",
+      "lines": 125,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/action-extractor"
+      ],
+      "exports": [
+        "POST",
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails",
+        "action_items"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/emails/[emailId]/feedback/route.ts",
+      "sha256": "c60938a0629ac918844e68c93a7e9d2715479b52fd9a4e41da528824dbc0edfa",
+      "bytes": 5993,
+      "kind": "text",
+      "lines": 192,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@supabase/supabase-js",
+        "@/lib/ai/sender-trust",
+        "@/lib/ai/sender-reputation"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "emails",
+        "classification_feedback"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/emails/[emailId]/phishing-review/route.ts",
+      "sha256": "f864c5243ccfb3ba52177834826e6a5bcaddee56c6a7f8400065dcd7817595a9",
+      "bytes": 1887,
+      "kind": "text",
+      "lines": 68,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/emails/[emailId]/read/route.ts",
+      "sha256": "b9ac65865055f9dfa2ff8f60e4fb9ef9f3a6dfbca6f04e467242ae331f4bd074",
+      "bytes": 1543,
+      "kind": "text",
+      "lines": 55,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/emails/[emailId]/route.ts",
+      "sha256": "8817eeb321f9caad4a996c15a313e5202e50135e9d03689f06cfb91f2e767e91",
+      "bytes": 6009,
+      "kind": "text",
+      "lines": 202,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@supabase/supabase-js",
+        "@/lib/email/imap-client"
+      ],
+      "exports": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "emails",
+        "source_accounts"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/emails/[emailId]/star/route.ts",
+      "sha256": "e882d8eedcd493aad7a9ade105ea006bae8a78801ddc63d6339bb87cbe7c0242",
+      "bytes": 1547,
+      "kind": "text",
+      "lines": 56,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/emails/[emailId]/summary/route.ts",
+      "sha256": "4c0f475186b976d04bd93e1bf033dae60fac1dc2246dc584a2e9b3b73b9d6749",
+      "bytes": 4008,
+      "kind": "text",
+      "lines": 164,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/summarizer"
+      ],
+      "exports": [
+        "GET",
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/emails/[emailId]/unread/route.ts",
+      "sha256": "c6cb3cae16d3aa0b6d3f6bdf02b94e280317f49f6692078d4b2b056e2d28585e",
+      "bytes": 1470,
+      "kind": "text",
+      "lines": 54,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/emails/batch/route.ts",
+      "sha256": "bfed9cb0a5aac66231f428fa96bf339c65f79231553b21c005a1331a8eff2224",
+      "bytes": 8698,
+      "kind": "text",
+      "lines": 291,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/emails/bulk-action/route.ts",
+      "sha256": "263e994e2a8d7d6fff044cd2e68e02bdf8aaf21422bc71aa37c09f0a8a187202",
+      "bytes": 4485,
+      "kind": "text",
+      "lines": 146,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/emails/bulk/route.ts",
+      "sha256": "6f3494e3a440a14cdd914b0cb9ba90fe649ab01f2010eaa8b2b474874fa831bd",
+      "bytes": 2944,
+      "kind": "text",
+      "lines": 110,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/emails/refetch-bodies/route.ts",
+      "sha256": "ccde6d561d9f98da3df4240c8486a05a351f474501949a5f3ec4ce5d6c9a522b",
+      "bytes": 3155,
+      "kind": "text",
+      "lines": 107,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@supabase/supabase-js",
+        "@/lib/email/imap-client"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "source_accounts",
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/emails/route.ts",
+      "sha256": "8a5460aea0162e9193b3d996c722ab5cc38f6d1ccf1a7daae3e52b9f52701ccf",
+      "bytes": 3675,
+      "kind": "text",
+      "lines": 121,
+      "imports": [
+        "next/server",
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/emails/search/route.ts",
+      "sha256": "c3cc8a4159c0f40682f9e3fb4866f9990d888f8bd635102b8bfe6e173cb7cdc7",
+      "bytes": 4200,
+      "kind": "text",
+      "lines": 140,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/search/search-parser"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails",
+        "attachments"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/emails/send/route.ts",
+      "sha256": "5a1974e066511f8c2da817d83eed5572f97307155976346ace2482f940a91e1a",
+      "bytes": 5772,
+      "kind": "text",
+      "lines": 191,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/email/smtp-client",
+        "@/lib/email/imap-client",
+        "@supabase/supabase-js",
+        "@/lib/ai/sender-trust"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "source_accounts",
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/emails/smart-views/route.ts",
+      "sha256": "4ba9314716d9de29f4818a43490ba97d739b74a8fcde6d61f675899a251e9841",
+      "bytes": 4281,
+      "kind": "text",
+      "lines": 128,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/follow-ups/counts/route.ts",
+      "sha256": "1f88381afbbfb00e7ad6f41f990e4856a8c576805a835a143d0c0fd3a90b87b1",
+      "bytes": 1294,
+      "kind": "text",
+      "lines": 49,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "follow_ups"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/follow-ups/route.ts",
+      "sha256": "9467a2da97f7b7482c53e5f74028cb5beed23430bec2d617cc4fc2da3de1cbf4",
+      "bytes": 7399,
+      "kind": "text",
+      "lines": 239,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/follow-up-detector"
+      ],
+      "exports": [
+        "GET",
+        "POST",
+        "PATCH"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "follow_ups",
+        "source_accounts",
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/health/route.ts",
+      "sha256": "ee68c92097d84b66a4a93101a07f60164be41fc39287d80f574a73810c39f394",
+      "bytes": 239,
+      "kind": "text",
+      "lines": 12,
+      "imports": [
+        "next/server"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/notifications/route.ts",
+      "sha256": "4a1ab6899d70f1ccea2e60a44d9dd5846d487657524cde9e86e7c2d354f03aad",
+      "bytes": 3543,
+      "kind": "text",
+      "lines": 135,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "GET",
+        "POST",
+        "PATCH",
+        "DELETE"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "notifications"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/search/history/route.ts",
+      "sha256": "b72bafd80a9a111528ca719c7f0236c78f423e9a931ffbaea9debbfdfc28550a",
+      "bytes": 3129,
+      "kind": "text",
+      "lines": 115,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "GET",
+        "POST",
+        "DELETE"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "user_preferences"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/search/route.ts",
+      "sha256": "e2b34edbe2fe9f575f5749bedb002f164486cf0285aea9414c45474e8665611b",
+      "bytes": 7208,
+      "kind": "text",
+      "lines": 249,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/search-parser"
+      ],
+      "exports": [
+        "GET",
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails",
+        "user_preferences"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/settings/ai-features/route.ts",
+      "sha256": "c612c11337987a4c51d5c251c0d9b159cf253f871a559628c629647b858963df",
+      "bytes": 4231,
+      "kind": "text",
+      "lines": 158,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/feature-allocation",
+        "@/types/ai-features"
+      ],
+      "exports": [
+        "GET",
+        "PUT",
+        "DELETE"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "ai_feature_defaults",
+        "ai_feature_definitions",
+        "ai_feature_user_config"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/settings/vip-senders/route.ts",
+      "sha256": "49a41d3b1e0b3990a6b8b5ddd5a3dd5d4fc8d1c75228383c0f1944f678cd05de",
+      "bytes": 3778,
+      "kind": "text",
+      "lines": 144,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/ai/feature-allocation"
+      ],
+      "exports": [
+        "GET",
+        "POST",
+        "DELETE"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "ai_vip_senders"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/signup-whitelist/route.ts",
+      "sha256": "ed29190a76fbe148d1d12b871ce4bc7552fa7c98d450fd3f8e89323fd83c206a",
+      "bytes": 3989,
+      "kind": "text",
+      "lines": 127,
+      "imports": [
+        "next/server",
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "whitelist",
+        "access_requests",
+        "profiles"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/source-accounts/[accountId]/route.ts",
+      "sha256": "7c807023332ff98e5e99b63aca2777c587abe5456c8a0a122ea5c9e4ce28cb03",
+      "bytes": 4836,
+      "kind": "text",
+      "lines": 178,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "source_accounts",
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/source-accounts/[accountId]/sync/route.ts",
+      "sha256": "ed2418cc04646914ee453c84c7d96f2968c66dbaf8cd4f6983695b70804a595e",
+      "bytes": 2869,
+      "kind": "text",
+      "lines": 92,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/email/imap-client",
+        "@/lib/gmail/sync"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "source_accounts"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/source-accounts/google/callback/route.ts",
+      "sha256": "da0ae1db051ef8ec74d3c2f1604495bae9344d3584326f56b01ccb3256e49268",
+      "bytes": 5105,
+      "kind": "text",
+      "lines": 158,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/oauth/google"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "source_accounts"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_APP_URL"
+      ]
+    },
+    {
+      "path": "src/app/api/source-accounts/google/route.ts",
+      "sha256": "b06f0d670419ac0f35b0f55480061a280c944eb5f6049d0f75a3e0c79f29e744",
+      "bytes": 1309,
+      "kind": "text",
+      "lines": 42,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/oauth/google"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "NEXT_PUBLIC_APP_URL"
+      ]
+    },
+    {
+      "path": "src/app/api/source-accounts/route.ts",
+      "sha256": "f0f953fec12c8054263ba365fb8774274bae42e147f902e5695242f29989ebc0",
+      "bytes": 4807,
+      "kind": "text",
+      "lines": 180,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/email/imap-client",
+        "@/lib/email/smtp-client"
+      ],
+      "exports": [
+        "GET",
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "source_accounts",
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/source-accounts/sync/route.ts",
+      "sha256": "040b8a09383585b951336484e051ef2acb1c1fd328dc84c548be2736b4d03ca9",
+      "bytes": 5953,
+      "kind": "text",
+      "lines": 209,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@supabase/supabase-js",
+        "@/lib/email/imap-client",
+        "@/lib/ai/classifier",
+        "@/lib/notifications/create"
+      ],
+      "exports": [
+        "POST",
+        "GET"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "emails",
+        "source_accounts"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/subscriptions/route.ts",
+      "sha256": "fe36dea4a371561e7f9cebd1c9fce107f236ae5252639348d571688419d42511",
+      "bytes": 1486,
+      "kind": "text",
+      "lines": 53,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/subscriptions/unsubscribe/route.ts",
+      "sha256": "7b59e0d6d714f42081f75dab9b65c7570a9b4a6ff263ac604aa5e8f0cef76143",
+      "bytes": 1682,
+      "kind": "text",
+      "lines": 58,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/track/route.ts",
+      "sha256": "c4ed7e0f48c915cb6ec9cff34e20951ca2f734d57d3dedbf2a00dfa35154e44f",
+      "bytes": 2411,
+      "kind": "text",
+      "lines": 78,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@supabase/supabase-js",
+        "@/lib/ai/behavior-tracker",
+        "@/lib/ai/domain-reputation"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/unsubscribe/route.ts",
+      "sha256": "cbae247f1c3f929579e0752259d35a4acff9470c1827442b0c526071e42165fc",
+      "bytes": 2821,
+      "kind": "text",
+      "lines": 98,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/email/unsubscribe-service"
+      ],
+      "exports": [
+        "GET",
+        "POST",
+        "DELETE"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/app/api/waitlist/route.ts",
+      "sha256": "f6054fe2ad6da1e1e39b467155ed70005b25fdf07deef546a25eb0409c43135e",
+      "bytes": 3196,
+      "kind": "text",
+      "lines": 112,
+      "imports": [
+        "next/server",
+        "@supabase/supabase-js",
+        "@/lib/rate-limit",
+        "@/lib/resend/waitlist-emails"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "access_requests",
+        "whitelist"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/app/api/webhooks/resend/route.ts",
+      "sha256": "3b7046bf205e26c7484926de6510027191e62a3f3716e50fb2dd9407138e615e",
+      "bytes": 5392,
+      "kind": "text",
+      "lines": 203,
+      "imports": [
+        "next/server",
+        "@supabase/supabase-js",
+        "next/headers",
+        "crypto"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "profiles",
+        "emails",
+        "attachments"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "RESEND_WEBHOOK_SECRET",
+        "NODE_ENV",
+        "NEXT_PUBLIC_APP_URL"
+      ]
+    },
+    {
+      "path": "src/app/auth/callback/route.ts",
+      "sha256": "38a66da6c9d2fa40f31ace00377015ae92c4011276020328c3590ca1b9d22ba0",
+      "bytes": 646,
+      "kind": "text",
+      "lines": 21,
+      "imports": [
+        "@/lib/supabase/server",
+        "next/server"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/error.tsx",
+      "sha256": "d6337496d93f62c4e6a4838f4e426876db17292d92f36f9a7b48574449d56298",
+      "bytes": 2378,
+      "kind": "text",
+      "lines": 73,
+      "imports": [
+        "react",
+        "lucide-react"
+      ],
+      "exports": [
+        "Error"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/favicon.ico",
+      "sha256": "2b8ad2d33455a8f736fc3a8ebf8f0bdea8848ad4c0db48a2833bd0f9cd775932",
+      "bytes": 25931,
+      "kind": "binary"
+    },
+    {
+      "path": "src/app/globals.css",
+      "sha256": "8456906a63c772affc1ec79ce611fdf052f05ca137ab17493abdab9a3ad377f9",
+      "bytes": 13255,
+      "kind": "text",
+      "lines": 663,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "sha256": "dbcf7cc7027d40b40f0ced2526af7204cdc854bcb35bb41ae53204d5b3bd0a97",
+      "bytes": 3899,
+      "kind": "text",
+      "lines": 125,
+      "imports": [
+        "next",
+        "next/font/google",
+        "./globals.css",
+        "@/providers/query-provider",
+        "@/contexts/theme-context",
+        "@/components/ui/toast",
+        "@/components/error-boundary",
+        "@/components/offline-banner",
+        "@/components/web-vitals-reporter"
+      ],
+      "exports": [
+        "RootLayout"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/not-found.tsx",
+      "sha256": "27a62a4909ed0107f84c7bc999e09099f22978092dc1aabe2e47407fbf6c6fca",
+      "bytes": 2091,
+      "kind": "text",
+      "lines": 57,
+      "imports": [
+        "next/link",
+        "lucide-react"
+      ],
+      "exports": [
+        "NotFound"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/app/page.tsx",
+      "sha256": "32dce7010018166027b5ea68cced9fdd65de7385ede0ec5b067b89a3890cb362",
+      "bytes": 20305,
+      "kind": "text",
+      "lines": 406,
+      "imports": [
+        "react",
+        "next/link",
+        "lucide-react",
+        "@/contexts/theme-context"
+      ],
+      "exports": [
+        "LandingPage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ai/ai-action-items-content.tsx",
+      "sha256": "bb174a188750ece253c69c6c2c60f4ae1406375f2e78861c391087f8fe451675",
+      "bytes": 3101,
+      "kind": "text",
+      "lines": 105,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "AIActionItemsContent"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ai/ai-feature-button.tsx",
+      "sha256": "837c60fd5d980e39b402b5019247f236a321a5c725e4a4a9ba71776e3220c1df",
+      "bytes": 2326,
+      "kind": "text",
+      "lines": 90,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "@/types/ai-features"
+      ],
+      "exports": [
+        "AIFeatureButton"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ai/ai-feature-card.tsx",
+      "sha256": "76a8af3f89b022f70d85ea0bf1197af5bed5ee102f1b57fdaf9bc02bb063202d",
+      "bytes": 4396,
+      "kind": "text",
+      "lines": 159,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "@/types/ai-features"
+      ],
+      "exports": [
+        "AIFeatureCard"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ai/ai-features-index.ts",
+      "sha256": "f1ec8e5155cb4b5b7b4974adfd2cf744c98ef23d5eaaf18707f8032d60c75256",
+      "bytes": 451,
+      "kind": "text",
+      "lines": 12,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ai/ai-features-panel.tsx",
+      "sha256": "56b01e38944197c272ca41982a3f9ef4e5edace295b4bde33025cc2e07c9f047",
+      "bytes": 9216,
+      "kind": "text",
+      "lines": 280,
+      "imports": [
+        "lucide-react",
+        "@/lib/utils",
+        "@/hooks/use-ai-features",
+        "./ai-feature-card",
+        "./ai-feature-button",
+        "./ai-summary-content",
+        "./ai-smart-reply-content",
+        "./ai-action-items-content",
+        "@/types/ai-features"
+      ],
+      "exports": [
+        "AIFeaturesPanel"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "NODE_ENV"
+      ]
+    },
+    {
+      "path": "src/components/ai/ai-features-settings.tsx",
+      "sha256": "a736f8c78e08268e8670426fd6fff979f0f8a1d13f54558a8ca83c84bb0cdaa3",
+      "bytes": 14065,
+      "kind": "text",
+      "lines": 421,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "@/types/ai-features"
+      ],
+      "exports": [
+        "AIFeaturesSettings"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ai/ai-quick-actions.tsx",
+      "sha256": "8effc5707943822b2b0eecb68eac68a96b3b8859a46a428efefd5c86c293cb6a",
+      "bytes": 2613,
+      "kind": "text",
+      "lines": 87,
+      "imports": [
+        "lucide-react",
+        "next/link",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "AIQuickActions"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ai/ai-smart-reply-content.tsx",
+      "sha256": "19a17b74963b508c7e59ed994978cc37849cc2a6996b4f915cbab76021359abd",
+      "bytes": 2041,
+      "kind": "text",
+      "lines": 74,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "AISmartReplyContent"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ai/ai-summary-content.tsx",
+      "sha256": "9a8be7b0fd465f3477f0ccd03cf008b6925ee91a585aaa7a04efeeba3844f546",
+      "bytes": 2059,
+      "kind": "text",
+      "lines": 76,
+      "imports": [
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "exports": [
+        "AISummaryContent"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ai/assistant-panel.tsx",
+      "sha256": "5dcc21fac4c804b2d72f2d436fa8ca239eb179e726efd80e1138517f0156283a",
+      "bytes": 8338,
+      "kind": "text",
+      "lines": 232,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "@/components/ui/icon-box"
+      ],
+      "exports": [
+        "AssistantPanel"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ai/index.ts",
+      "sha256": "81b0a5cd44818b47c9ba0ced8cdddd3ea586b0d28d7f0e7eaac603634e492bd0",
+      "bytes": 651,
+      "kind": "text",
+      "lines": 18,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ai/reply-assistant.tsx",
+      "sha256": "0a0b89c71aac008bce07f59e1b5e02b3793a3363858da2a507a0a440fd3d1d64",
+      "bytes": 23791,
+      "kind": "text",
+      "lines": 529,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/types",
+        "@/lib/ai/email-analyzer",
+        "@/lib/ai/draft-generator",
+        "@/lib/ai/research-service"
+      ],
+      "exports": [
+        "ReplyAssistant"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ai/urgent-alert-wrapper.tsx",
+      "sha256": "a1e7e94ba563896b4194af0bca4f9dfa890bffd6bb4aefcc7c6eb108f634c94a",
+      "bytes": 323,
+      "kind": "text",
+      "lines": 15,
+      "imports": [
+        "next/navigation",
+        "./urgent-alert"
+      ],
+      "exports": [
+        "UrgentAlertWrapper"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ai/urgent-alert.tsx",
+      "sha256": "975e7e87bb08383c8c4b725a2b0835672047d6b68ffaa22f98451ccdd9afc4ae",
+      "bytes": 3223,
+      "kind": "text",
+      "lines": 101,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "@/components/ui/icon-box",
+        "@/components/ui/button"
+      ],
+      "exports": [
+        "UrgentAlert"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/auth/logout-button.tsx",
+      "sha256": "b9a14005fd5a63179cfa3c7041eaba671be695faa7ac749504d97c8463a2ff63",
+      "bytes": 1228,
+      "kind": "text",
+      "lines": 50,
+      "imports": [
+        "react",
+        "next/navigation",
+        "lucide-react",
+        "@/lib/supabase/client"
+      ],
+      "exports": [
+        "LogoutButton"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/automation/rules-list.tsx",
+      "sha256": "25a23bd229ab99b8457e473a8e792cdf41445d298702efc99706392ec82a7d76",
+      "bytes": 10137,
+      "kind": "text",
+      "lines": 296,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "@/components/ui/badge",
+        "@/components/ui/empty-state"
+      ],
+      "exports": [
+        "RulesList"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/capacitor-init.tsx",
+      "sha256": "d473bc9e8d7220882ee0c2d4bab592e8e4ced761635e7e504dfc9c922646460c",
+      "bytes": 1690,
+      "kind": "text",
+      "lines": 74,
+      "imports": [
+        "react",
+        "@/lib/capacitor"
+      ],
+      "exports": [
+        "CapacitorInit",
+        "useCapacitorTheme"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/account-switcher.tsx",
+      "sha256": "35168a94735e7b7a234b39e97d39ed2a597a0979078be85e62a0248f49c08d90",
+      "bytes": 8243,
+      "kind": "text",
+      "lines": 234,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "AccountSwitcher"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/action-items-card.tsx",
+      "sha256": "567d76b76ab0866cec232f01426261f0009e34e1bd822667ddea68629a30a78a",
+      "bytes": 11497,
+      "kind": "text",
+      "lines": 333,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "ActionItemsCard"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/ai-bottom-bar.tsx",
+      "sha256": "fd4174944c5b75ab57e78d141f65efd2d2f47fdc31e1261a523b40c5017a2578",
+      "bytes": 15509,
+      "kind": "text",
+      "lines": 476,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "@/hooks/use-ai-features"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/ai-summary.tsx",
+      "sha256": "fe6dcea43040db00fefc19105c2665c53b9a4732f97d008e558afd3de15b264d",
+      "bytes": 10844,
+      "kind": "text",
+      "lines": 360,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "AISummary"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/attachment-list.tsx",
+      "sha256": "c38242e7efe312b6f1e3f80bd7c1d70defe1bd8825a56a1c8a350f9d7c05f89f",
+      "bytes": 7218,
+      "kind": "text",
+      "lines": 202,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "AttachmentList"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/category-picker.tsx",
+      "sha256": "d4d0bfe0e2f83205019ec35cd5a3a58f693051ce737ca159f02bcdbbed30e575",
+      "bytes": 2827,
+      "kind": "text",
+      "lines": 67,
+      "imports": [
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "CategoryPicker"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/context-menu.tsx",
+      "sha256": "ee375716d080d13644b5a4041dd7f25ed2b1fd0ab8dc23ea5ec7d3787ef90615",
+      "bytes": 5707,
+      "kind": "text",
+      "lines": 185,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "ContextMenu"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/email-detail-full.tsx",
+      "sha256": "2f55755d4431553c501db11748f8b3f926935aabe705cac505e64aafb128d46e",
+      "bytes": 24069,
+      "kind": "text",
+      "lines": 630,
+      "imports": [
+        "react",
+        "next/navigation",
+        "lucide-react",
+        "@/lib/utils",
+        "@/components/ai/reply-assistant",
+        "./ai-bottom-bar",
+        "@/lib/email/html-sanitizer",
+        "./attachment-list",
+        "@/types"
+      ],
+      "exports": [
+        "EmailDetailFull"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/email-detail-mobile.tsx",
+      "sha256": "a3955d3c8efb571c47970b6278f1f09c9d46755d2a01b5b6400b7531c682d20d",
+      "bytes": 11456,
+      "kind": "text",
+      "lines": 347,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "@/lib/email/html-sanitizer",
+        "./attachment-list",
+        "./ai-summary",
+        "./smart-reply",
+        "./action-items-card",
+        "@/types"
+      ],
+      "exports": [
+        "EmailDetailMobile"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/email-detail.tsx",
+      "sha256": "a4eb4ff5d089397634047e400b24fac0de3090a28941a9dfbced9ba17dd026f8",
+      "bytes": 16968,
+      "kind": "text",
+      "lines": 412,
+      "imports": [
+        "react",
+        "next/navigation",
+        "lucide-react",
+        "@/lib/utils",
+        "@/hooks/use-behavior-tracker",
+        "@/components/ai/reply-assistant",
+        "@/components/ai",
+        "@/lib/email/html-sanitizer",
+        "@/components/email/phishing-warning",
+        "@/types"
+      ],
+      "exports": [
+        "EmailDetail"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/email-item.tsx",
+      "sha256": "b2118242966edff1c374c09147c626403344cdac9913c9a811f0f6be12cdc95d",
+      "bytes": 9527,
+      "kind": "text",
+      "lines": 277,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "@/types"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/email-list-compact.tsx",
+      "sha256": "ef8fce1e48f355faa5b8f0b7a798f60968a8b01f9f0416abba07bd63577fe307",
+      "bytes": 25545,
+      "kind": "text",
+      "lines": 745,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "@/contexts/email-selection-context",
+        "./context-menu",
+        "./category-picker",
+        "@/types"
+      ],
+      "exports": [
+        "EmailListCompact"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/email-list-item.tsx",
+      "sha256": "ad63887a0fceeb8a386d7180bdb9eb055c9978ffd54f4f6841f90076323be1fb",
+      "bytes": 3315,
+      "kind": "text",
+      "lines": 112,
+      "imports": [
+        "lucide-react",
+        "@/lib/utils",
+        "@/components/ui/badge"
+      ],
+      "exports": [
+        "EmailListItem"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/email-list-skeleton.tsx",
+      "sha256": "36789f922ed84cf461e32c3af05e3b7aa81864b175f6a86239de42cb7c8a9c8b",
+      "bytes": 1526,
+      "kind": "text",
+      "lines": 50,
+      "imports": [
+        "@/lib/utils"
+      ],
+      "exports": [
+        "EmailListSkeleton"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/email-list-virtual.tsx",
+      "sha256": "a7dbce32f9466ebd4510412beb74f6bf9695a8d620ccdd9eb82b6e02f0dc47cb",
+      "bytes": 8159,
+      "kind": "text",
+      "lines": 257,
+      "imports": [
+        "react",
+        "@tanstack/react-virtual",
+        "lucide-react",
+        "@/lib/utils",
+        "@/types"
+      ],
+      "exports": [
+        "EmailListVirtual"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/email-list.tsx",
+      "sha256": "62264774820d0f6e91c0af04d5f5614bea0be863f3d37127a51135c8dff8d31b",
+      "bytes": 4219,
+      "kind": "text",
+      "lines": 119,
+      "imports": [
+        "lucide-react",
+        "@/lib/utils",
+        "@/components/ui/badge",
+        "@/types"
+      ],
+      "exports": [
+        "EmailList"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/filter-chips.tsx",
+      "sha256": "20213d256d52d89c24b6c3896b8bc49f7f24ee1ff8dd6ba0ea0cad8a8485a7c7",
+      "bytes": 7367,
+      "kind": "text",
+      "lines": 182,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/phishing-warning.tsx",
+      "sha256": "32c413a1a3f80c57c8c6dd2cf55bbb407d0f49ad669fea13e95bc8891824dce8",
+      "bytes": 8019,
+      "kind": "text",
+      "lines": 267,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "PhishingWarning",
+        "PhishingBadge"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/selection-toolbar.tsx",
+      "sha256": "d95d7a9489713ee11cb8c4ccc91907329a0128f301425099da5cb93df92cd60d",
+      "bytes": 2170,
+      "kind": "text",
+      "lines": 67,
+      "imports": [
+        "@/contexts/email-selection-context",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "SelectionToolbar"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/smart-inbox.tsx",
+      "sha256": "9aae28200e9f08ea4e63c6e7f0ff003ce41c5e3e33639c2facd945d149b5d5c4",
+      "bytes": 18949,
+      "kind": "text",
+      "lines": 515,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "@/components/ui/confirm-dialog",
+        "@/components/ui/toast",
+        "@/types"
+      ],
+      "exports": [
+        "SmartInbox"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/email/smart-reply.tsx",
+      "sha256": "fb3c73795d817e19f656ac13c1df7a41b00033cd5cfd937a1a6e273bee17be8c",
+      "bytes": 12030,
+      "kind": "text",
+      "lines": 321,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "SmartReply"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/error-boundary.tsx",
+      "sha256": "0094410e77c9119804d31617522719185feaeb19c0dd8550415c63bf539eed2e",
+      "bytes": 8184,
+      "kind": "text",
+      "lines": 243,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/components/ui/button",
+        "@/lib/sentry"
+      ],
+      "exports": [
+        "ErrorBoundary",
+        "SectionErrorFallback",
+        "withErrorBoundary"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "NODE_ENV"
+      ]
+    },
+    {
+      "path": "src/components/follow-up/follow-up-badge.tsx",
+      "sha256": "365b449184fa9c8a5fed28111bfd80d75d05809e2f931642320765a63819f3fc",
+      "bytes": 3325,
+      "kind": "text",
+      "lines": 128,
+      "imports": [
+        "react",
+        "next/navigation",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "FollowUpBadge",
+        "FollowUpInlineBadge"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/icons/index.tsx",
+      "sha256": "0f33fc507aa23e6e6cceee73782c794376df6cc5aef986a0342b34d2fe17bcb0",
+      "bytes": 2603,
+      "kind": "text",
+      "lines": 231,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/insights/weekly-report.tsx",
+      "sha256": "d1cb92e39c35f75d4980a481f4030bd0284e46440dfb06f277151ffd9013f020",
+      "bytes": 11595,
+      "kind": "text",
+      "lines": 302,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "@/components/ui/stat-card",
+        "@/components/ui/icon-box",
+        "@/components/ui/badge"
+      ],
+      "exports": [
+        "WeeklyReportView"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/layout/category-filter-sheet.tsx",
+      "sha256": "3b6ffd852f38525e0c16d3f2204f5d7b79282b8fc53b4c975ff4d55994e5f714",
+      "bytes": 4686,
+      "kind": "text",
+      "lines": 150,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/layout/header.tsx",
+      "sha256": "8f2e0c145d6b7d9ef6bb0fa997cd09cbdfc2da0eb31c3708c84117b5dbcd4aaa",
+      "bytes": 11361,
+      "kind": "text",
+      "lines": 303,
+      "imports": [
+        "react",
+        "next/link",
+        "lucide-react",
+        "@/lib/utils",
+        "@/lib/supabase/client",
+        "next/navigation",
+        "@/components/search/search-box",
+        "@/components/notifications/notification-dropdown",
+        "@/components/theme/theme-toggle",
+        "@/components/follow-up/follow-up-badge"
+      ],
+      "exports": [
+        "Header"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "profiles"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/components/layout/mobile-inbox-header.tsx",
+      "sha256": "babf0a45eb777ca8ce6999f82a2720d2dc86cfcfb647fd715c58baad0ba7529b",
+      "bytes": 5729,
+      "kind": "text",
+      "lines": 181,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "@/contexts/theme-context"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/layout/mobile-nav.tsx",
+      "sha256": "143bb45d38016379eb06d30e826565a826dbce2349bcffcfd9e868dbe743f4ed",
+      "bytes": 2244,
+      "kind": "text",
+      "lines": 67,
+      "imports": [
+        "next/link",
+        "next/navigation",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "MobileNav"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/layout/sidebar.tsx",
+      "sha256": "7ae0d671066145c67e777d91a94bea1fe5fbc405827622df668321a1f001d567",
+      "bytes": 7306,
+      "kind": "text",
+      "lines": 188,
+      "imports": [
+        "react",
+        "next/link",
+        "next/navigation",
+        "lucide-react",
+        "@/lib/utils",
+        "@/components/follow-up/follow-up-badge",
+        "@/components/ai/ai-quick-actions"
+      ],
+      "exports": [
+        "Sidebar"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/layout/unified-top-bar.tsx",
+      "sha256": "1e867b82a827ab370c5d90f1ae37f0e372733110fbbf10b2709b7aa2b8157f1a",
+      "bytes": 14860,
+      "kind": "text",
+      "lines": 414,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "next/navigation",
+        "@/components/notifications/notification-dropdown",
+        "@/contexts/theme-context"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/mobile/bottom-sheet.tsx",
+      "sha256": "09f9ebb1a240b4d8627dbd49f4f60d55718103cf41f385ad0ce50da7436d54d9",
+      "bytes": 4673,
+      "kind": "text",
+      "lines": 169,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "@/hooks/use-haptic"
+      ],
+      "exports": [
+        "BottomSheet"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/mobile/index.ts",
+      "sha256": "f8489c290fb41d7bc3da690426cbfe29c168166662b4340b16a8f478e5e01c4b",
+      "bytes": 160,
+      "kind": "text",
+      "lines": 4,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/mobile/pull-to-refresh.tsx",
+      "sha256": "33d22c6882e4d5ca43c67f23fd77a56576aede60c5f96ea988db1c9eb861c827",
+      "bytes": 3571,
+      "kind": "text",
+      "lines": 120,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "@/hooks/use-haptic"
+      ],
+      "exports": [
+        "PullToRefresh"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/mobile/swipe-actions.tsx",
+      "sha256": "f3276c8166e4d4bc511908a9b7081b4c1dd85ba0a36ed14691383b6adcc03b43",
+      "bytes": 5463,
+      "kind": "text",
+      "lines": 186,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "@/hooks/use-haptic"
+      ],
+      "exports": [
+        "SwipeAction",
+        "SwipeActions"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/notifications/notification-dropdown.tsx",
+      "sha256": "b49f543ba98e6845060f96e54890bff1576550af9193329bcc94dae2c65a7f83",
+      "bytes": 8122,
+      "kind": "text",
+      "lines": 225,
+      "imports": [
+        "react",
+        "next/navigation",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "NotificationDropdown"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/offline-banner.tsx",
+      "sha256": "f24be7c0a35586f305a803e3759428997c9addb4f9a650d3529505370dc190ce",
+      "bytes": 2359,
+      "kind": "text",
+      "lines": 83,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils",
+        "@/hooks/use-network-status"
+      ],
+      "exports": [
+        "OfflineBanner"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/onboarding/ai-intro-tooltip.tsx",
+      "sha256": "b7d4a005b85e592598b98df6b72f51ef5d8abf429a570deda46eb19533fe5e5a",
+      "bytes": 4344,
+      "kind": "text",
+      "lines": 142,
+      "imports": [
+        "react",
+        "lucide-react"
+      ],
+      "exports": [
+        "AIIntroTooltip"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/page-error-boundary.tsx",
+      "sha256": "6a2b2fccc22ab3d2486fa5eee13ea958b5143913139d9e0eddf97f4f2dfeec33",
+      "bytes": 2464,
+      "kind": "text",
+      "lines": 83,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/components/ui/button"
+      ],
+      "exports": [
+        "PageErrorBoundary"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "NODE_ENV"
+      ]
+    },
+    {
+      "path": "src/components/pwa/index.ts",
+      "sha256": "7b08a4b7fe91abd09a7a2a6eaa75652e9afa4c0fef69178a3fd13cbc44bb0722",
+      "bytes": 49,
+      "kind": "text",
+      "lines": 2,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/pwa/install-prompt.tsx",
+      "sha256": "5917e3154727fbddf589c44b7f8d15c81f6881d5bcea43b230c1705c903872dd",
+      "bytes": 4306,
+      "kind": "text",
+      "lines": 134,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "InstallPrompt"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/search/search-box.tsx",
+      "sha256": "fb159704cefbff27e7b697908eef984dbd927a8ba1d435cc76550063bcc0152e",
+      "bytes": 17208,
+      "kind": "text",
+      "lines": 464,
+      "imports": [
+        "react",
+        "next/navigation",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "SearchBox"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/settings/add-account-modal.tsx",
+      "sha256": "decb1a1cae2e687458778b3c7793961b4c3f3849dd77b5c433f5bce407427d50",
+      "bytes": 18276,
+      "kind": "text",
+      "lines": 439,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/components/ui/button",
+        "./connect-google"
+      ],
+      "exports": [
+        "AddAccountModal"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/settings/ai-section.tsx",
+      "sha256": "310918b28473828c796286c951623ab2399f942beb9dfcf5ac6efa2e34f23028",
+      "bytes": 3466,
+      "kind": "text",
+      "lines": 93,
+      "imports": [
+        "react",
+        "lucide-react"
+      ],
+      "exports": [
+        "AISection"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/settings/connect-google.tsx",
+      "sha256": "dcc394bda3bfec0f070f72676e0a4d99ed4d014873a45033156bb446f12d092a",
+      "bytes": 1964,
+      "kind": "text",
+      "lines": 63,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "ConnectGoogleButton"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/settings/mailbox-section.tsx",
+      "sha256": "c7fbfefde934249ae118f5ce8ef1eba485973f1d17669b0c1c05f7b8ea8517ba",
+      "bytes": 2310,
+      "kind": "text",
+      "lines": 63,
+      "imports": [
+        "react",
+        "lucide-react"
+      ],
+      "exports": [
+        "MailboxSection"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/settings/source-accounts-section.tsx",
+      "sha256": "a804016e3abe90f12de3a7c2431f4819f512d601607b85a2d5455d0e21d05067",
+      "bytes": 17354,
+      "kind": "text",
+      "lines": 442,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/components/ui/button",
+        "./add-account-modal",
+        "@/components/ui/confirm-dialog",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "SourceAccountsSection"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/theme-toggle.tsx",
+      "sha256": "983dcff1a22a436e45041a0c0e04619e60c07993e06e0ecbb33d7b8e618ee23b",
+      "bytes": 3839,
+      "kind": "text",
+      "lines": 140,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/hooks/use-theme",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "ThemeToggle",
+        "ThemeSelect"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/theme/theme-toggle.tsx",
+      "sha256": "7b3e0a7d200d4a2702a6aceeb4e4a008a223a1b271495da8b19ed9e927ac3994",
+      "bytes": 2496,
+      "kind": "text",
+      "lines": 80,
+      "imports": [
+        "lucide-react",
+        "@/contexts/theme-context",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "ThemeToggle"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/alert.tsx",
+      "sha256": "66a8d808b003b6dd81dc8b36c523a709c8c975ba47c1d4ddb1195752f8933b18",
+      "bytes": 3174,
+      "kind": "text",
+      "lines": 143,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "AlertProps"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/avatar.tsx",
+      "sha256": "36d1543c404731cc7c0d36057c0347a16390221cbfc25a4a74b67256e144e3b4",
+      "bytes": 5096,
+      "kind": "text",
+      "lines": 206,
+      "imports": [
+        "react",
+        "next/image",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "AvatarProps",
+        "AvatarGroupProps"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/badge.tsx",
+      "sha256": "756b23118c04c1c57a137350b7f2808b1e408add9cf228f187a843aa3f294caf",
+      "bytes": 3706,
+      "kind": "text",
+      "lines": 140,
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "BadgeProps",
+        "BadgeGroupProps"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/button.tsx",
+      "sha256": "1e6146a6d309fd8e56925855095e909826741a226fd826777fc5ddb9f46c9f8e",
+      "bytes": 5899,
+      "kind": "text",
+      "lines": 214,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "ButtonProps",
+        "IconButtonProps"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/card.tsx",
+      "sha256": "24143c945b61d7b1ca7bb5c0b381ad235dd68e3c26074964ea567f6279e24e1c",
+      "bytes": 5405,
+      "kind": "text",
+      "lines": 227,
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "CardProps",
+        "CardHeaderProps"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/confirm-dialog.tsx",
+      "sha256": "6ffbdaa0f32bd531d97b984bf5cce049b60398ac722583ad5234f94ea5916312",
+      "bytes": 4477,
+      "kind": "text",
+      "lines": 141,
+      "imports": [
+        "react",
+        "lucide-react"
+      ],
+      "exports": [
+        "ConfirmDialog"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/empty-state.tsx",
+      "sha256": "213110f6d7aa4d9287c9912f6383a06f4c205dbcb2ae143d13f949e8fd01ea43",
+      "bytes": 4010,
+      "kind": "text",
+      "lines": 153,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/icon-box.tsx",
+      "sha256": "2d7572ba7f572b0f4204a81f2418586857ebcfd94a4390949bc4830b8c02e7b2",
+      "bytes": 1391,
+      "kind": "text",
+      "lines": 42,
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/index.ts",
+      "sha256": "f10b7d9a47cefc737ff92f4bb05377be1dab599ae001563ea8d6d2c2f6a4c46e",
+      "bytes": 1482,
+      "kind": "text",
+      "lines": 61,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/input.tsx",
+      "sha256": "8527b7d8534a4d12908295ee526b07bc05837b3789c80bb11f8ac5194d302026",
+      "bytes": 11346,
+      "kind": "text",
+      "lines": 380,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "InputProps",
+        "TextareaProps"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/loading-skeleton.tsx",
+      "sha256": "7468360ab675182a13ddf1cd476f2a9e18b45bbd395d8db73cec550f4aae6b16",
+      "bytes": 3528,
+      "kind": "text",
+      "lines": 132,
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/modal.tsx",
+      "sha256": "2a5ea67130ee585d466e913754f44b216efe3c8b4c206e60b38dfb74b67fa679",
+      "bytes": 7029,
+      "kind": "text",
+      "lines": 291,
+      "imports": [
+        "react",
+        "react-dom",
+        "lucide-react",
+        "@/lib/utils",
+        "./button"
+      ],
+      "exports": [
+        "ModalProps",
+        "Modal",
+        "ConfirmModalProps",
+        "ConfirmModal",
+        "ModalFooter"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/optimized-image.tsx",
+      "sha256": "881fe80a23024ae96bf78c58924a4bc3994cc1882c91e4ecd62f4c7ced22a0e6",
+      "bytes": 3179,
+      "kind": "text",
+      "lines": 152,
+      "imports": [
+        "next/image",
+        "react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "OptimizedImage",
+        "AvatarImage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/section-header.tsx",
+      "sha256": "ee56de3e9373ea22a73a661a6424ae93ea6466e726c534c15afd46690401918e",
+      "bytes": 947,
+      "kind": "text",
+      "lines": 42,
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "SectionHeader"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/skeleton.tsx",
+      "sha256": "5086798541bbac6eb1d3909880b229a5c9b9118eae24574a9c2815e9e5bcf453",
+      "bytes": 7019,
+      "kind": "text",
+      "lines": 300,
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "SkeletonProps",
+        "SkeletonTextProps",
+        "SkeletonAvatarProps",
+        "SkeletonButtonProps",
+        "SkeletonCardProps",
+        "EmailRowSkeleton",
+        "EmailListSkeleton",
+        "EmailDetailSkeleton",
+        "CardSkeleton",
+        "AvatarSkeleton"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/spinner.tsx",
+      "sha256": "7a479625e5af3469dee6cd65d701c8ef4beb9da204732248663627b465582ec3",
+      "bytes": 2626,
+      "kind": "text",
+      "lines": 124,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "SpinnerProps",
+        "LoadingOverlayProps"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/stat-card.tsx",
+      "sha256": "4a9d16a7b18a9f921fd5c313148fd825082d319e7429a1822a14cd69849dc086",
+      "bytes": 1497,
+      "kind": "text",
+      "lines": 55,
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "StatCard"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/ui/toast.tsx",
+      "sha256": "071273dea65e7c2f27ae0ac7df95fc169015af9ccdc8e621e33f96359e679ca4",
+      "bytes": 10046,
+      "kind": "text",
+      "lines": 385,
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "ToastType",
+        "toast",
+        "ToastProvider",
+        "useToast"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/components/web-vitals-reporter.tsx",
+      "sha256": "b130d0edc8b639bac8fcbe3689b7ecc30ddd4fc10fbe80fa94f657602a15977c",
+      "bytes": 327,
+      "kind": "text",
+      "lines": 20,
+      "imports": [
+        "react",
+        "@/lib/web-vitals"
+      ],
+      "exports": [
+        "WebVitalsReporter"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/contexts/email-selection-context.tsx",
+      "sha256": "477ed19db3a9f1264f05761136b9ba4cd3759a439b5ad87e929c43e1c051c538",
+      "bytes": 2539,
+      "kind": "text",
+      "lines": 97,
+      "imports": [
+        "react"
+      ],
+      "exports": [
+        "SelectionProvider",
+        "useSelection"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/contexts/theme-context.tsx",
+      "sha256": "07ed8f310292c1956f19e36a9f9df6ae91070b255036101b603c231c5b50d117",
+      "bytes": 6077,
+      "kind": "text",
+      "lines": 238,
+      "imports": [
+        "react",
+        "@/styles/design-tokens"
+      ],
+      "exports": [
+        "ThemeMode",
+        "ResolvedTheme",
+        "ThemeProvider",
+        "useTheme",
+        "useIsDark",
+        "useThemeColors",
+        "useThemeShadows"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/hooks/index.ts",
+      "sha256": "3f86e162babe2858a5790e3bcbb733a99e2839af06fdc70b67343c94b278bc08",
+      "bytes": 1030,
+      "kind": "text",
+      "lines": 51,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/hooks/use-ai-features.ts",
+      "sha256": "bfa9af9cb47e9895bc67b133dda12e386c65b5c335d87bbc81825b54f5110eec",
+      "bytes": 11209,
+      "kind": "text",
+      "lines": 366,
+      "imports": [
+        "react",
+        "@/lib/logger",
+        "@/types/ai-features"
+      ],
+      "exports": [
+        "AIFeatureResult",
+        "AIAllocation",
+        "useAIFeatures"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/hooks/use-auto-sync.ts",
+      "sha256": "d27bd39e37e4dea1d8ee13fbd579cb808472e8c86ac1b3b649736c1b1ab9f36c",
+      "bytes": 3234,
+      "kind": "text",
+      "lines": 122,
+      "imports": [
+        "react"
+      ],
+      "exports": [
+        "useAutoSync"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/hooks/use-behavior-tracker.ts",
+      "sha256": "5b675ad367353d49ec891ef4dfca6f53d2ef69ceb79b46551bf244341ae6fe90",
+      "bytes": 2066,
+      "kind": "text",
+      "lines": 84,
+      "imports": [
+        "react"
+      ],
+      "exports": [
+        "useBehaviorTracker"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/hooks/use-email-batch.ts",
+      "sha256": "f829a97a52db7082cb2113c8f3f97d65bcc2cb2e79f755e4895e0659bbaa6856",
+      "bytes": 4859,
+      "kind": "text",
+      "lines": 158,
+      "imports": [
+        "react",
+        "@tanstack/react-query"
+      ],
+      "exports": [
+        "useEmailBatch"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/hooks/use-email.ts",
+      "sha256": "d0cc4730ecc806f0f15d1635edb1be187ef61c1b9502cba6651ec050895e8eae",
+      "bytes": 1351,
+      "kind": "text",
+      "lines": 55,
+      "imports": [
+        "react",
+        "@/types"
+      ],
+      "exports": [
+        "useEmail"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/hooks/use-emails-query.ts",
+      "sha256": "d097908757ccb7bf666cc2da0a31665eafa0a02837b7128dae5a6884480ca54c",
+      "bytes": 8478,
+      "kind": "text",
+      "lines": 294,
+      "imports": [
+        "@tanstack/react-query",
+        "@/lib/supabase/client",
+        "@/types"
+      ],
+      "exports": [
+        "useEmailsInfinite",
+        "useEmailsQuery",
+        "useEmailDetailQuery",
+        "useUpdateEmailMutation",
+        "useMarkAsRead",
+        "useToggleStar",
+        "useArchiveEmail",
+        "useDeleteEmail",
+        "usePrefetchEmails",
+        "usePrefetchCommonFolders"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/hooks/use-emails.ts",
+      "sha256": "748a5bcba29dd29f25622135a5827ae9b0292ab9d7f2d9f2affa4304ae9fc0af",
+      "bytes": 6969,
+      "kind": "text",
+      "lines": 246,
+      "imports": [
+        "react",
+        "@/lib/supabase/client",
+        "@/types"
+      ],
+      "exports": [
+        "useEmails"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/hooks/use-haptic.ts",
+      "sha256": "114373884243892cccd9a021cb2eec3cab2827e2c8137c1c54e566e523f01125",
+      "bytes": 697,
+      "kind": "text",
+      "lines": 29,
+      "imports": [],
+      "exports": [
+        "useHaptic"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/hooks/use-media-query.ts",
+      "sha256": "5215c25f6dbb1ae9c44e894f5454d191e7fb57b98dc421411e844b63113b14e8",
+      "bytes": 2923,
+      "kind": "text",
+      "lines": 121,
+      "imports": [
+        "react",
+        "@/styles/design-tokens"
+      ],
+      "exports": [
+        "useMediaQuery",
+        "useBreakpoint",
+        "useBreakpointDown",
+        "useCurrentBreakpoint",
+        "useIsMobile",
+        "useIsTablet",
+        "useIsDesktop",
+        "usePrefersReducedMotion",
+        "usePrefersColorScheme"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/hooks/use-network-status.ts",
+      "sha256": "b072dd2d99fb3b6fef4a0f7de7c35ddd0554557b7ad56c470749943b1a7c6659",
+      "bytes": 5256,
+      "kind": "text",
+      "lines": 180,
+      "imports": [
+        "react"
+      ],
+      "exports": [
+        "NetworkStatus",
+        "UseNetworkStatusOptions",
+        "useNetworkStatus",
+        "isSlowConnection",
+        "getConnectionQuality"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/hooks/use-theme.ts",
+      "sha256": "32c2a7ae76c7cd85ebddf8a42395a61c693ddd73b91add44eec179d0f4559bcd",
+      "bytes": 266,
+      "kind": "text",
+      "lines": 17,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/hooks/use-user.ts",
+      "sha256": "eb866cfe50bdc652db25b0abb9f90cf6fafb548b5a27aa6598866d6917ee5ae3",
+      "bytes": 840,
+      "kind": "text",
+      "lines": 38,
+      "imports": [
+        "react",
+        "@supabase/supabase-js",
+        "@/lib/supabase/client"
+      ],
+      "exports": [
+        "useUser"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/hooks/useHaptics.ts",
+      "sha256": "7edd47eeea45b75fb0073404c4d098cd238cd3ad8470b0bafb4d0965130f695c",
+      "bytes": 1101,
+      "kind": "text",
+      "lines": 46,
+      "imports": [
+        "react",
+        "@/lib/capacitor/haptics"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/hooks/useKeyboard.ts",
+      "sha256": "d1bffea7c6d1fd97cac0fe15f2a44f957912304e45b7b0f0ff37e940db32d624",
+      "bytes": 1168,
+      "kind": "text",
+      "lines": 44,
+      "imports": [
+        "react",
+        "@/lib/capacitor"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/hooks/usePushNotifications.ts",
+      "sha256": "34ab43dc79526f9034a0b66fee7847dc52838add4578f8ade24c83b727b8f37e",
+      "bytes": 1644,
+      "kind": "text",
+      "lines": 67,
+      "imports": [
+        "react",
+        "@capacitor/push-notifications",
+        "@/lib/capacitor/push-notifications",
+        "@/lib/capacitor"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/ai/__tests__/feature-allocation.test.ts",
+      "sha256": "0d8f9dddd5a09fe58071806b9d6c25625cef907574a1b0043c62f45a3fc12860",
+      "bytes": 9862,
+      "kind": "text",
+      "lines": 321,
+      "imports": [
+        "../feature-runner"
+      ],
+      "exports": [
+        "runFeatureAllocationTests"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/ai/__tests__/feature-executors.test.ts",
+      "sha256": "f308ff90ac3160daeda1668b96ddf96c988a63107cce5bcd45717d46de97d2b9",
+      "bytes": 6070,
+      "kind": "text",
+      "lines": 206,
+      "imports": [
+        "../feature-executors",
+        "@/types/ai-features"
+      ],
+      "exports": [
+        "runFeatureExecutorsTests"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/ai/action-extractor.ts",
+      "sha256": "d5d822999f18eff940b52253becca558e8378e5121ad95444c795df6ba1b1640",
+      "bytes": 5385,
+      "kind": "text",
+      "lines": 192,
+      "imports": [
+        "openai"
+      ],
+      "exports": [
+        "ActionType",
+        "ActionPriority",
+        "ActionStatus",
+        "ExtractedAction",
+        "ActionExtractionResult",
+        "extractActions",
+        "batchExtractActions"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "OPENAI_API_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/behavior-tracker.ts",
+      "sha256": "43c98eb00fd0c25f5edcfc2d96035b6d5dfdc53a3e763a208fd5689bcd2a4aa9",
+      "bytes": 6398,
+      "kind": "text",
+      "lines": 216,
+      "imports": [
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "BehaviorAction",
+        "trackBehavior",
+        "trackEmailReceived",
+        "getUserBehaviorSummary"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "emails",
+        "user_behaviors",
+        "sender_scores"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/classification-logger.ts",
+      "sha256": "29876d0646e955ae5763068c833a462b782e08c939c0f7ff3e6327f75787feb3",
+      "bytes": 10364,
+      "kind": "text",
+      "lines": 387,
+      "imports": [
+        "@supabase/supabase-js",
+        "@/types"
+      ],
+      "exports": [
+        "ClassificationLogInput",
+        "ClassificationLog",
+        "DailyMetrics",
+        "logClassification",
+        "recordClassificationFeedback",
+        "getClassificationLogs",
+        "getDailyMetrics",
+        "getRealtimeStats",
+        "aggregateDailyMetrics",
+        "getAccuracyByCategory"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "ai_classification_logs",
+        "ai_metrics_daily"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/classifier-updated.ts",
+      "sha256": "c80fb6c6b05f729bd24fc5d9e7dba4440dc4bf6f8ff7a0b12f3296f522b4a51a",
+      "bytes": 5921,
+      "kind": "text",
+      "lines": 221,
+      "imports": [
+        "./vietnamese-classifier-integration",
+        "./vietnamese-utils"
+      ],
+      "exports": [
+        "preprocessForClassification",
+        "classifyEmailWithVietnamese"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/ai/classifier.test.ts",
+      "sha256": "c2635604797dfca990704889270aca792a68eb55454771360438e0921eb89f71",
+      "bytes": 15524,
+      "kind": "text",
+      "lines": 485,
+      "imports": [
+        "./classifier"
+      ],
+      "exports": [
+        "runClassifierTests"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/ai/classifier.ts",
+      "sha256": "6cdce8979d476562b6d3c570c0886864cdd9bfea5e2e713715977b14fcd72aa0",
+      "bytes": 24933,
+      "kind": "text",
+      "lines": 780,
+      "imports": [
+        "openai",
+        "@/types",
+        "./sender-trust",
+        "./vietnamese-domains",
+        "./keyword-classifier",
+        "./priority-rules",
+        "./feedback-learner",
+        "./sender-reputation",
+        "./phishing-detector",
+        "./classification-logger",
+        "./domain-reputation",
+        "@/lib/logger"
+      ],
+      "exports": [
+        "classifyEmail",
+        "classifyEmails"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "OPENAI_API_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/domain-reputation.ts",
+      "sha256": "6d1bc9db346c1a12aba8da72b320f175300f6fe1f24dd38cb5dfd0b0673d01dd",
+      "bytes": 12813,
+      "kind": "text",
+      "lines": 508,
+      "imports": [
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "DomainReputation",
+        "DomainLookupResult",
+        "ActionType",
+        "extractDomain",
+        "getTrustLevel",
+        "logEmailAction",
+        "getDomainReputation",
+        "getTopDomains",
+        "getDomainStats",
+        "whitelistDomain",
+        "blacklistDomain",
+        "updateDomainCategory",
+        "recalculateDomainRates",
+        "rebuildDomainReputation"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "email_action_logs",
+        "domain_reputation",
+        "legitimate_domains",
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/draft-generator.ts",
+      "sha256": "39e0dedf73c56c514dd15c52e30c921dceab285952b83493eb0d3ba5f49766e4",
+      "bytes": 3679,
+      "kind": "text",
+      "lines": 128,
+      "imports": [
+        "openai",
+        "@/types",
+        "./email-analyzer"
+      ],
+      "exports": [
+        "DraftOptions",
+        "GeneratedDraft",
+        "generateDraft",
+        "improveExistingDraft"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "OPENAI_API_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/email-analyzer.ts",
+      "sha256": "d83caecf69d092697063faef1ef04cabf35cfe574bc4cae74ec1be06dadb2af7",
+      "bytes": 2105,
+      "kind": "text",
+      "lines": 74,
+      "imports": [
+        "openai",
+        "@/types"
+      ],
+      "exports": [
+        "EmailAnalysis",
+        "analyzeEmail"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "OPENAI_API_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/feature-allocation.ts",
+      "sha256": "d6f50db3d4be133ab6be3272db565b16efb68e7a2873e01ecae3c19eda47f5ee",
+      "bytes": 25332,
+      "kind": "text",
+      "lines": 852,
+      "imports": [
+        "@/lib/supabase/server"
+      ],
+      "exports": [
+        "AIFeatureKey",
+        "EmailCategory",
+        "TriggerType",
+        "FeatureAllocation",
+        "EmailContext",
+        "AllocationResult",
+        "AIFeatureAllocationService",
+        "getAIFeatureAllocationService",
+        "getFeatureAllocationForEmail",
+        "shouldAutoEnableFeature"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "ai_vip_senders",
+        "ai_feature_defaults",
+        "ai_feature_user_config",
+        "ai_feature_usage",
+        "emails",
+        "ai_content_triggers",
+        "ai_cost_daily"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/ai/feature-executors.ts",
+      "sha256": "e8fb3ccbb8aabb0b68c636dcec2c60088aaecffe232a3f3f0335d0da985735a7",
+      "bytes": 9083,
+      "kind": "text",
+      "lines": 286,
+      "imports": [
+        "./feature-runner",
+        "./summarizer",
+        "./smart-reply",
+        "./action-extractor",
+        "./follow-up-detector",
+        "@/types/ai-features",
+        "openai"
+      ],
+      "exports": [
+        "registerAllExecutors"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "OPENAI_API_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/feature-runner.ts",
+      "sha256": "eb895a2e91fbdd46cb3affe78c25c1ae313ad4a21602458997a027e83f0bc11d",
+      "bytes": 6183,
+      "kind": "text",
+      "lines": 256,
+      "imports": [
+        "./feature-allocation"
+      ],
+      "exports": [
+        "FeatureResult",
+        "RunFeaturesResult",
+        "FeatureExecutor",
+        "AIFeatureRunner",
+        "getAIFeatureRunner"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/ai/feedback-learner.ts",
+      "sha256": "64b29d746ebf8403a6eb399556ac01be643a4c83f01111bee6d708f3f5e872ef",
+      "bytes": 7272,
+      "kind": "text",
+      "lines": 263,
+      "imports": [
+        "@supabase/supabase-js",
+        "@/types"
+      ],
+      "exports": [
+        "recordFeedback",
+        "getLearnedRules",
+        "applyLearnedRules",
+        "getAccuracyStats",
+        "exportLearningData"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "classification_feedback"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/follow-up-detector.ts",
+      "sha256": "cb5f971ced988aebc56cd09df6bf162682dd01fcf71e0035d9bb8162811a3ff7",
+      "bytes": 8027,
+      "kind": "text",
+      "lines": 268,
+      "imports": [
+        "openai"
+      ],
+      "exports": [
+        "FollowUpType",
+        "FollowUpPriority",
+        "FollowUp",
+        "EmailForFollowUp",
+        "detectFollowUp",
+        "detectFollowUps",
+        "getFollowUpTypeLabel",
+        "getFollowUpPriorityColor"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "OPENAI_API_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/index.ts",
+      "sha256": "e3034771f030ecb1bc107840eb9ede0346438ea3c550fe43e84ef8fa2bc7bfba",
+      "bytes": 2537,
+      "kind": "text",
+      "lines": 126,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/ai/insights-service.ts",
+      "sha256": "3a67c8fa533c046a61a3ad4d6e80c2f96f0504fd6e99f18e80def13752730d38",
+      "bytes": 14360,
+      "kind": "text",
+      "lines": 488,
+      "imports": [
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "generateWeeklyReport",
+        "generateDailyDigest"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/keyword-classifier.ts",
+      "sha256": "ab9d3d2a98b3e1d2d5af41024ddba2002632c0987b342c92a8860305fe0a78ce",
+      "bytes": 11800,
+      "kind": "text",
+      "lines": 370,
+      "imports": [],
+      "exports": [
+        "KeywordScores",
+        "calculateKeywordScores",
+        "getTopKeywordCategory",
+        "quickKeywordClassify"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/ai/phishing-detector.ts",
+      "sha256": "79b10254c18a1ce8934563dd5e55e23103b438ce19bae3c2b731996c37e84bde",
+      "bytes": 14632,
+      "kind": "text",
+      "lines": 556,
+      "imports": [
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "PhishingResult",
+        "PhishingReason",
+        "EmailInput",
+        "detectPhishing",
+        "updateEmailPhishingStatus",
+        "detectPhishingBatch",
+        "markPhishingReviewed",
+        "getPhishingStats"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "phishing_patterns",
+        "phishing_domains",
+        "legitimate_domains",
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/priority-rules.ts",
+      "sha256": "67d95835b5ab21e0e4c1edc5800dd96b7701c43cb163953041a655d9f3742bd6",
+      "bytes": 7753,
+      "kind": "text",
+      "lines": 298,
+      "imports": [
+        "@/types"
+      ],
+      "exports": [
+        "determinePriority",
+        "extractDeadline",
+        "needsReply",
+        "suggestAction"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/ai/prompts/vietnamese-classifier.ts",
+      "sha256": "c56f942244557429dd3dcf8ed34700a21f58bc166e878ccd2665341fbbbb1556",
+      "bytes": 22697,
+      "kind": "text",
+      "lines": 857,
+      "imports": [],
+      "exports": [
+        "ClassificationExample",
+        "buildClassificationPrompt",
+        "buildFewShotPrompt",
+        "getExamplesByCategory",
+        "getRandomExamples"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/ai/research-service.ts",
+      "sha256": "aa6580ed1c99b4ef61e72206cecfd050e38606f21c757355c2fb72ad18cdf43f",
+      "bytes": 3717,
+      "kind": "text",
+      "lines": 128,
+      "imports": [
+        "@/lib/supabase/server",
+        "@/types"
+      ],
+      "exports": [
+        "ResearchResult",
+        "researchEmailContext"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "emails"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/ai/rules-engine.ts",
+      "sha256": "b026692c0b2673582929b95646acdf7d06e3d59c9475effe37116da52b2af468",
+      "bytes": 11547,
+      "kind": "text",
+      "lines": 389,
+      "imports": [
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "Rule",
+        "runRule",
+        "runAllRules",
+        "createDefaultRules"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "emails",
+        "labels",
+        "email_labels",
+        "automation_rules",
+        "automation_logs"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/search-parser.ts",
+      "sha256": "dfbad92f7a738271cda0a74640a5e76c292518e510e43c6e42251e6381e560a0",
+      "bytes": 12964,
+      "kind": "text",
+      "lines": 435,
+      "imports": [
+        "openai"
+      ],
+      "exports": [
+        "ParsedSearchQuery",
+        "parseSearchQuery",
+        "SearchQueryOptions",
+        "buildSearchQuery"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "OPENAI_API_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/sender-reputation.ts",
+      "sha256": "a27bd1b3647853d60fe92d67693cc87ad7652270ace652259a1e21089a80d282",
+      "bytes": 8944,
+      "kind": "text",
+      "lines": 345,
+      "imports": [
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "SenderReputation",
+        "ReputationLookupResult",
+        "extractDomain",
+        "normalizeEmail",
+        "getReputation",
+        "updateReputation",
+        "calculateConfidence",
+        "getHighConfidenceSenders",
+        "getReputationStats",
+        "resolveCategory"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "sender_reputation"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/sender-trust.ts",
+      "sha256": "5cc6e94b2324d63300e4fe4acf2e7e215aea9dae99a70da4d1068a3a7823c6d4",
+      "bytes": 9469,
+      "kind": "text",
+      "lines": 321,
+      "imports": [
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "SenderTrust",
+        "getSenderTrust",
+        "updateSenderOnReceive",
+        "markSenderAsTrusted",
+        "markSenderAsUntrusted",
+        "blockSender",
+        "calculateTrustScore",
+        "extractEmailSignals",
+        "isSameDomain"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "sender_trust"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/setup.ts",
+      "sha256": "83911f24979fec603eefca37714a6b43f79b9c6ca3927f07686b9f0a370cd452",
+      "bytes": 1557,
+      "kind": "text",
+      "lines": 74,
+      "imports": [
+        "./feature-executors",
+        "./feature-runner",
+        "./feature-allocation"
+      ],
+      "exports": [
+        "initializeAIModule",
+        "isAIModuleInitialized",
+        "ensureAIModuleInitialized",
+        "getAIModuleStatus"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/ai/smart-reply.ts",
+      "sha256": "4474e63ff0db63a770905ad697a98a420901dadac8f8b42e5ffd6a5eaef8faf2",
+      "bytes": 8321,
+      "kind": "text",
+      "lines": 289,
+      "imports": [
+        "openai"
+      ],
+      "exports": [
+        "ReplyTone",
+        "ReplyIntent",
+        "ReplySuggestion",
+        "SmartReplyResult",
+        "generateSmartReplies",
+        "composeFromBullets"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "OPENAI_API_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/summarizer.ts",
+      "sha256": "1d53d912dcf42c47986ac328f4734e480d6de514b06e4df9f5ecf383d74ec067",
+      "bytes": 3570,
+      "kind": "text",
+      "lines": 130,
+      "imports": [
+        "openai",
+        "@/lib/logger"
+      ],
+      "exports": [
+        "SummaryResult",
+        "summarizeEmail",
+        "needsSummary",
+        "needsSummaryByChars"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "OPENAI_API_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/ai/vietnamese-classifier-integration.ts",
+      "sha256": "12a3b3bc59e3ccf4a945c7ecdc357cd291fe2c5bcb60721ae1cc322918c4ee46",
+      "bytes": 17759,
+      "kind": "text",
+      "lines": 593,
+      "imports": [
+        "./prompts/vietnamese-classifier",
+        "./vietnamese-utils",
+        "./vietnamese-entities"
+      ],
+      "exports": [
+        "VietnameseClassificationInput",
+        "VietnameseClassificationContext",
+        "VietnameseClassificationResult",
+        "analyzeEmailContext",
+        "buildVietnameseClassificationPrompt",
+        "parseClassificationResponse",
+        "tryRuleBasedClassification",
+        "classifyVietnameseEmail"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/ai/vietnamese-domains.ts",
+      "sha256": "e39b2f22b0633fe3f590ff1f8d4a86946e97040718ab80f3ab001a80f7577199",
+      "bytes": 10999,
+      "kind": "text",
+      "lines": 307,
+      "imports": [],
+      "exports": [
+        "getDomainCategory",
+        "getEmailPatternHint"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/ai/vietnamese-entities.ts",
+      "sha256": "d7020086fc880bbb14ae4c36b2438e3eb323a41c81db0073fe0a2c880d9a2d39",
+      "bytes": 28654,
+      "kind": "text",
+      "lines": 1048,
+      "imports": [],
+      "exports": [
+        "BankInfo",
+        "EWalletInfo",
+        "ECommerceInfo",
+        "DeliveryServiceInfo",
+        "TravelServiceInfo",
+        "TelecomInfo",
+        "GovServiceInfo",
+        "SocialMediaInfo",
+        "EntityType",
+        "DetectedEntity",
+        "detectEntities",
+        "detectBanks",
+        "detectEWallets",
+        "detectECommerce",
+        "identifySenderEntity",
+        "MoneyAmount",
+        "detectMoneyAmounts",
+        "PhoneNumber",
+        "detectPhoneNumbers",
+        "ExtractedEntities",
+        "extractAllEntities",
+        "getCategoryHints"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/ai/vietnamese-utils.ts",
+      "sha256": "b85995dfd6248fe8c374aa5cf5b61d041dfb4fa37844b76412820b0328191142",
+      "bytes": 21493,
+      "kind": "text",
+      "lines": 729,
+      "imports": [],
+      "exports": [
+        "toAscii",
+        "normalizeVietnameseText",
+        "removeVietnameseDiacritics",
+        "expandAbbreviations",
+        "expandAbbreviationsWithContext",
+        "isVietnamese",
+        "getLanguageConfidence",
+        "cleanEmailBody",
+        "extractKeyPhrases",
+        "detectFormality",
+        "extractMoneyAmounts",
+        "PreprocessedEmail",
+        "preprocessEmail"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/api/errors.ts",
+      "sha256": "22d14ed49a5035259980c550bb06799d7159a544ba92c17bd648854ec7ff3594",
+      "bytes": 8618,
+      "kind": "text",
+      "lines": 277,
+      "imports": [],
+      "exports": [
+        "ApiErrorCode",
+        "ApiErrorOptions",
+        "ApiError",
+        "isRetryableError",
+        "httpStatusToErrorCode",
+        "createErrorFromResponse",
+        "isApiError",
+        "getErrorMessage",
+        "withErrorHandling"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/api/fetch-client.ts",
+      "sha256": "fd3f95731dbe4abb7f94cc6987963d81f02b1c98e305a9e48bed5920ff576a6b",
+      "bytes": 10508,
+      "kind": "text",
+      "lines": 364,
+      "imports": [
+        "./errors",
+        "@/lib/sentry"
+      ],
+      "exports": [
+        "FetchClientOptions",
+        "RequestOptions",
+        "FetchClient",
+        "createAuthenticatedClient",
+        "apiFetch"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/api/protect.ts",
+      "sha256": "39f0735cae0e47264d8c2a46339ff45c656d24c2f529d624d6b4a20bec186066",
+      "bytes": 6695,
+      "kind": "text",
+      "lines": 248,
+      "imports": [
+        "next/server",
+        "zod",
+        "@/lib/supabase/server",
+        "@/lib/rate-limit",
+        "@/lib/validation",
+        "@/lib/sentry",
+        "./errors"
+      ],
+      "exports": [
+        "ProtectedRouteOptions",
+        "ProtectedContext",
+        "protectedRoute",
+        "generateCSRFToken",
+        "apiResponse",
+        "apiError"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "NODE_ENV"
+      ]
+    },
+    {
+      "path": "src/lib/capacitor/android-back-button.ts",
+      "sha256": "d07ab986b009d1eff96b26e9bde2b81de20b4388edd5b8720f30da9ec7bc6908",
+      "bytes": 1020,
+      "kind": "text",
+      "lines": 44,
+      "imports": [
+        "@capacitor/app",
+        "./index"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/capacitor/app-lifecycle.ts",
+      "sha256": "d389e32c823bbae4bff4ad646712d1f836e860591089af90c04f38627ea475a1",
+      "bytes": 1813,
+      "kind": "text",
+      "lines": 74,
+      "imports": [
+        "@capacitor/app",
+        "./index"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/capacitor/haptics.ts",
+      "sha256": "41b00c8c8c427dc24a1da15a2f63596db6ee32044ee11454cb81d8bf459ab314",
+      "bytes": 2568,
+      "kind": "text",
+      "lines": 115,
+      "imports": [
+        "@capacitor/haptics",
+        "./index"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/capacitor/index.ts",
+      "sha256": "727e5c85113c6ce91d985bd89fc72ee08b81317b9f209f3dfdb1f633bbf02856",
+      "bytes": 1119,
+      "kind": "text",
+      "lines": 53,
+      "imports": [
+        "@capacitor/core"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/capacitor/keyboard.ts",
+      "sha256": "33ff0c74baf1d9e7ba4fc910ac71f7a48a6e34db626a5799d884c220225cbd41",
+      "bytes": 2961,
+      "kind": "text",
+      "lines": 125,
+      "imports": [
+        "@capacitor/keyboard",
+        "./index"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/capacitor/push-notifications.ts",
+      "sha256": "81b2f2768d735b5daf1a5c76cd249c9dca40fce902013d56f8d48ca61c5ee906",
+      "bytes": 3141,
+      "kind": "text",
+      "lines": 111,
+      "imports": [
+        "@capacitor/push-notifications",
+        "./index"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/capacitor/splash-screen.ts",
+      "sha256": "53d6355a04628fe93c8c7bb4c7aa2ad393ea4977b0fba5027f48f03668f26948",
+      "bytes": 759,
+      "kind": "text",
+      "lines": 38,
+      "imports": [
+        "@capacitor/splash-screen",
+        "./index"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/capacitor/status-bar.ts",
+      "sha256": "18dd108cebfbc4db20985f908a656ae729f981a2b092d9bf2e08e7332a64afc7",
+      "bytes": 1456,
+      "kind": "text",
+      "lines": 65,
+      "imports": [
+        "@capacitor/status-bar",
+        "./index"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/cn.ts",
+      "sha256": "7e6af0feb4ff020821fd1dddc25395e87309728b0c8ccdd5f2fafe3614ca5b0e",
+      "bytes": 97,
+      "kind": "text",
+      "lines": 7,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/date-utils.ts",
+      "sha256": "70af0342766b1d0d7f348f967f50d00e84d81095b73eba89299b724326d2f133",
+      "bytes": 4230,
+      "kind": "text",
+      "lines": 160,
+      "imports": [],
+      "exports": [
+        "formatRelativeTime",
+        "formatDate",
+        "formatTime",
+        "formatDateTime",
+        "formatEmailTime",
+        "isSameDay",
+        "startOfDay",
+        "endOfDay",
+        "startOfWeek",
+        "startOfMonth",
+        "addDays",
+        "diffInDays",
+        "toISOString",
+        "parseDate",
+        "isToday",
+        "isYesterday",
+        "formatSmartDate"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/email/html-sanitizer.ts",
+      "sha256": "a6fce7fe28171d881469e0f51bda9319ae5be874a3bcea10e516ff2331fd5229",
+      "bytes": 2917,
+      "kind": "text",
+      "lines": 81,
+      "imports": [
+        "isomorphic-dompurify"
+      ],
+      "exports": [
+        "sanitizeEmailHtml"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/email/imap-client.ts",
+      "sha256": "5661c12e6c1c32a96ad9aed208f4a7d90c98b50c5d5666c7c21567d5412f1169",
+      "bytes": 18708,
+      "kind": "text",
+      "lines": 624,
+      "imports": [
+        "crypto",
+        "@/lib/logger"
+      ],
+      "exports": [
+        "encryptPassword",
+        "decryptPassword",
+        "testImapConnection",
+        "syncEmails",
+        "fetchEmailBody"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "emails",
+        "attachments",
+        "source_accounts"
+      ],
+      "envNames": [
+        "ENCRYPTION_KEY",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/email/smtp-client.ts",
+      "sha256": "7171b8a3e241c0840958662715ddfaec005c09d7b474d35a5d4ee70697a7b735",
+      "bytes": 2649,
+      "kind": "text",
+      "lines": 117,
+      "imports": [
+        "nodemailer",
+        "./imap-client"
+      ],
+      "exports": [
+        "testSmtpConnection",
+        "sendEmailViaSMTP",
+        "createSmtpConfigFromAccount"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/email/unsubscribe-service.ts",
+      "sha256": "1e66d4a730ff7de1466ce90998e73109adac3b46ed546f3d3519fe678af7e173",
+      "bytes": 5696,
+      "kind": "text",
+      "lines": 208,
+      "imports": [
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "UnsubscribeService",
+        "getUnsubscribeService"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "unsubscribed_senders"
+      ],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/gmail/api.ts",
+      "sha256": "3627b5d67e1ce3341abbe65127eb32d7a085f1a780814082ea93193d2faee100",
+      "bytes": 5941,
+      "kind": "text",
+      "lines": 247,
+      "imports": [],
+      "exports": [
+        "GmailMessage",
+        "GmailMessagePart",
+        "GmailMessageList",
+        "listMessages",
+        "getMessage",
+        "parseHeaders",
+        "decodeBase64Url",
+        "extractBody",
+        "modifyMessage",
+        "markAsRead",
+        "archiveMessage",
+        "trashMessage"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/gmail/sync.ts",
+      "sha256": "2c38e43c888fc26777e9c04fddf4ce9d4b77ab8b9fba685d4728500cd44cc666",
+      "bytes": 10305,
+      "kind": "text",
+      "lines": 342,
+      "imports": [
+        "@supabase/supabase-js",
+        "@/lib/oauth/google",
+        "@/lib/gmail/api",
+        "@/lib/logger"
+      ],
+      "exports": [
+        "getValidAccessToken",
+        "syncGmailEmails"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "source_accounts",
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/logger.ts",
+      "sha256": "51ff5617a67f7fab28f1c5441796c4eb076adb3e6541778968bea0ed3779be8e",
+      "bytes": 2527,
+      "kind": "text",
+      "lines": 90,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "NODE_ENV"
+      ]
+    },
+    {
+      "path": "src/lib/notifications/create.ts",
+      "sha256": "ff3f751bb4b4330c4d9f340f0d5ae774225122c96237af71f602919a5f792cbd",
+      "bytes": 2149,
+      "kind": "text",
+      "lines": 98,
+      "imports": [
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "createNotification",
+        "notifyNewImportantEmail",
+        "notifySyncComplete",
+        "notifyAiClassified",
+        "notifyNewEmail"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "notifications"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/oauth/google.ts",
+      "sha256": "4c1b79b65077c16c9824bfc8de605e43a3cb112ff595cfa76b41216d09ee33b3",
+      "bytes": 4284,
+      "kind": "text",
+      "lines": 152,
+      "imports": [],
+      "exports": [
+        "GoogleTokens",
+        "GoogleUserInfo",
+        "getGoogleAuthUrl",
+        "exchangeCodeForTokens",
+        "refreshAccessToken",
+        "getGoogleUserInfo",
+        "isTokenExpired"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_REDIRECT_URI",
+        "GOOGLE_CLIENT_SECRET"
+      ]
+    },
+    {
+      "path": "src/lib/rate-limit.ts",
+      "sha256": "d5158c98e409642e85a8a61a40eee051d85ef27ddbdf4a7e139fe834e9fb0573",
+      "bytes": 5481,
+      "kind": "text",
+      "lines": 218,
+      "imports": [
+        "next/server"
+      ],
+      "exports": [
+        "RateLimitConfig",
+        "RateLimitResult",
+        "checkRateLimit",
+        "getClientIP",
+        "createRateLimitHeaders",
+        "rateLimitResponse",
+        "blockIP",
+        "unblockIP",
+        "isIPBlocked"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/resend/client.ts",
+      "sha256": "02f7a8fc34080bf3829d26c47a18eae63700fe584c8bbe5b54894353aa404196",
+      "bytes": 778,
+      "kind": "text",
+      "lines": 28,
+      "imports": [
+        "resend"
+      ],
+      "exports": [
+        "getResendClient"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "RESEND_API_KEY",
+        "RESEND_FROM_EMAIL"
+      ]
+    },
+    {
+      "path": "src/lib/resend/send-email.ts",
+      "sha256": "d22412c07bb9697d1783b257297556fcaa7168478661d473b578afaac4f33768",
+      "bytes": 3604,
+      "kind": "text",
+      "lines": 139,
+      "imports": [
+        "./client",
+        "@supabase/supabase-js"
+      ],
+      "exports": [
+        "sendEmail",
+        "sendReply"
+      ],
+      "serviceRole": true,
+      "tables": [
+        "profiles",
+        "emails"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/resend/templates.tsx",
+      "sha256": "24a72b5e2a947ae53d691214cec6dcec24312bb339c56b2746851cf868d749bb",
+      "bytes": 8977,
+      "kind": "text",
+      "lines": 243,
+      "imports": [
+        "react"
+      ],
+      "exports": [
+        "WaitlistConfirmationEmail",
+        "WaitlistApprovedEmail",
+        "WelcomeEmail",
+        "NotificationEmail"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "NEXT_PUBLIC_APP_URL"
+      ]
+    },
+    {
+      "path": "src/lib/resend/waitlist-emails.ts",
+      "sha256": "015dbaf0e0586ec0e37f9addf88e3ae2f512b0c7fa6903db555a669683596afd",
+      "bytes": 8774,
+      "kind": "text",
+      "lines": 228,
+      "imports": [
+        "./client"
+      ],
+      "exports": [
+        "sendWaitlistConfirmation",
+        "sendWaitlistApproval"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "NEXT_PUBLIC_APP_URL",
+        "RESEND_API_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/search/search-parser.ts",
+      "sha256": "a13a0e21904f6652fbc42713421b562ff09c86eef13242aba0ed7dc898d6197e",
+      "bytes": 4495,
+      "kind": "text",
+      "lines": 174,
+      "imports": [],
+      "exports": [
+        "ParsedSearch",
+        "parseSearchQuery",
+        "buildSearchConditions"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/seed-mock-data.ts",
+      "sha256": "8177fc8a2ac8c89fd370bef7631ff21d285b564685dea6726bdc9e472e99f50a",
+      "bytes": 3884,
+      "kind": "text",
+      "lines": 92,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/sentry.ts",
+      "sha256": "344772f56408363291909da21cc792bc560d955f80a4e231108028367ae1055e",
+      "bytes": 4264,
+      "kind": "text",
+      "lines": 194,
+      "imports": [
+        "@sentry/nextjs"
+      ],
+      "exports": [
+        "setUser",
+        "clearUser",
+        "addBreadcrumb",
+        "trackApiCall",
+        "trackUserAction",
+        "trackPageView",
+        "captureException",
+        "captureMessage",
+        "startSpan",
+        "withSentry",
+        "setTag",
+        "setTags"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/sql/follow-ups-migration.sql",
+      "sha256": "61488c4814aa1c121ae75f41098fdeb90d50fdf907ed048578227dcf6dc517d0",
+      "bytes": 2531,
+      "kind": "text",
+      "lines": 80,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [],
+      "sqlTables": [
+        "follow_ups"
+      ]
+    },
+    {
+      "path": "src/lib/supabase/client.ts",
+      "sha256": "6c0f12f8a9d9936d394b017a61171b2c905ad02a8c590913966c4e93214820c5",
+      "bytes": 212,
+      "kind": "text",
+      "lines": 9,
+      "imports": [
+        "@supabase/ssr"
+      ],
+      "exports": [
+        "createClient"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/supabase/middleware.ts",
+      "sha256": "2056b076a49942895e86bdeb3ec6658d921819d44e1b3d58d62071e61eb38c85",
+      "bytes": 2823,
+      "kind": "text",
+      "lines": 92,
+      "imports": [
+        "@supabase/ssr",
+        "next/server"
+      ],
+      "exports": [
+        "updateSession"
+      ],
+      "serviceRole": false,
+      "tables": [
+        "whitelist"
+      ],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/supabase/server.ts",
+      "sha256": "aac0b040bbfb5ae9ca9ee9191089b1c52fec8c6bea6c4e2918a29db7878212a9",
+      "bytes": 2029,
+      "kind": "text",
+      "lines": 74,
+      "imports": [
+        "@supabase/ssr",
+        "@supabase/supabase-js",
+        "next/headers",
+        "next/server"
+      ],
+      "exports": [
+        "createClient",
+        "createClientFromToken",
+        "createClientForRequest"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      ]
+    },
+    {
+      "path": "src/lib/toast.ts",
+      "sha256": "8b9985c707b1c3f4e8d937a4158f395e269b94b08c19f921b66a345670971e8b",
+      "bytes": 3389,
+      "kind": "text",
+      "lines": 131,
+      "imports": [
+        "@/components/ui/toast",
+        "@/lib/api/errors"
+      ],
+      "exports": [
+        "toastSuccess",
+        "toastError",
+        "toastWarning",
+        "toastInfo",
+        "toastFromError",
+        "toastNetworkError",
+        "toastOffline",
+        "toastBackOnline",
+        "toastPromise"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "sha256": "cf3c4ed05d793907509d6ed61ddf6cadba1482e8580fabb0c3f88e3d5cfc7e62",
+      "bytes": 6257,
+      "kind": "text",
+      "lines": 254,
+      "imports": [
+        "clsx",
+        "tailwind-merge"
+      ],
+      "exports": [
+        "cn",
+        "createVariants",
+        "formatRelativeDate",
+        "formatDate",
+        "formatFileSize",
+        "truncate",
+        "getInitials",
+        "stringToColor",
+        "debounce",
+        "throttle",
+        "safeJsonParse",
+        "sleep",
+        "copyToClipboard",
+        "generateId",
+        "clamp"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/validation.ts",
+      "sha256": "daeca5b3b6ad77b7476c2e55b58e0baa285f6b24cdbf56c5f23c2c40ae8b90c7",
+      "bytes": 7090,
+      "kind": "text",
+      "lines": 246,
+      "imports": [
+        "zod"
+      ],
+      "exports": [
+        "safeString",
+        "ValidationResult",
+        "validate",
+        "formatValidationErrors",
+        "sanitizeHtml",
+        "parseAndValidate",
+        "AccessRequest",
+        "EmailAction",
+        "BulkEmailAction",
+        "AIFeedback",
+        "SmartReply",
+        "SearchQuery",
+        "FollowUp",
+        "Whitelist",
+        "Settings"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/lib/web-vitals.ts",
+      "sha256": "ffd72168ced912b6afcf71fed6334913afb6b7b430cdc2cd19cdabbe72409978",
+      "bytes": 3481,
+      "kind": "text",
+      "lines": 126,
+      "imports": [
+        "web-vitals",
+        "./sentry"
+      ],
+      "exports": [
+        "reportWebVitals",
+        "getPerformanceSummary"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "NODE_ENV"
+      ]
+    },
+    {
+      "path": "src/providers/auto-sync-provider.tsx",
+      "sha256": "125f10237d914cca09df139202d2cb10bd0c8851f1ccd498f9b191060d9206e5",
+      "bytes": 1780,
+      "kind": "text",
+      "lines": 61,
+      "imports": [
+        "@/hooks/use-auto-sync",
+        "@/lib/toast",
+        "@tanstack/react-query"
+      ],
+      "exports": [
+        "AutoSyncProvider"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "NODE_ENV"
+      ]
+    },
+    {
+      "path": "src/providers/query-provider.tsx",
+      "sha256": "87f55b2683a972558ec428ac41c2acdf56df8c10f19f8d8fc922acb506f7f95c",
+      "bytes": 1048,
+      "kind": "text",
+      "lines": 36,
+      "imports": [
+        "@tanstack/react-query",
+        "react"
+      ],
+      "exports": [
+        "QueryProvider"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/proxy.ts",
+      "sha256": "ac3d03ae49f75c147d918c870a0f081c7a52eeee6465d0287fec2df7e9c83844",
+      "bytes": 3355,
+      "kind": "text",
+      "lines": 119,
+      "imports": [
+        "next/server",
+        "@/lib/supabase/middleware"
+      ],
+      "exports": [
+        "proxy"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [
+        "NODE_ENV"
+      ]
+    },
+    {
+      "path": "src/styles/animations.css",
+      "sha256": "969cb5b43fd66603027d8350273e9350639cf29fbcdfbcc4877b9eb1ed79490d",
+      "bytes": 2486,
+      "kind": "text",
+      "lines": 140,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/styles/design-tokens.ts",
+      "sha256": "b0bd17b4c8e7dc9345d6c4bcd944d09b8c4421de135c5f2745ffdf9204b2aa22",
+      "bytes": 12666,
+      "kind": "text",
+      "lines": 542,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/types/ai-features.ts",
+      "sha256": "62d78312e337c15cc58f5d35c71100e912ef205ec1f26a57640ab67be925a0b3",
+      "bytes": 4455,
+      "kind": "text",
+      "lines": 154,
+      "imports": [],
+      "exports": [
+        "AIFeatureKey",
+        "EmailCategory",
+        "TriggerType",
+        "AIFeatureInfo",
+        "CategoryInfo",
+        "AIFeatureUIState",
+        "AIFeaturesForEmail"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "src/types/index.ts",
+      "sha256": "a51251e568e082b83f98872274b1e62dc311a1ff1418cfe8ab395577e4bd804e",
+      "bytes": 2795,
+      "kind": "text",
+      "lines": 129,
+      "imports": [],
+      "exports": [
+        "Priority",
+        "Category",
+        "EmailDirection",
+        "SendStatus",
+        "Email",
+        "Label",
+        "Profile",
+        "SourceAccount",
+        "AIClassification"
+      ],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "supabase-check-oauth.sql",
+      "sha256": "e0daba1489ace6e9feffb57331f9af368ceeb091c54f3a1e9cf9cb2ef6f0175b",
+      "bytes": 1571,
+      "kind": "text",
+      "lines": 41,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [],
+      "sqlTables": []
+    },
+    {
+      "path": "supabase-fix-thread-id.sql",
+      "sha256": "c2ad618638b7ded531821a2094501f0398aca8d3e9954eba41bcc6b6e055a930",
+      "bytes": 828,
+      "kind": "text",
+      "lines": 32,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [],
+      "sqlTables": []
+    },
+    {
+      "path": "supabase-indexes.sql",
+      "sha256": "81f0280acf55965896aba6a88dfd3cee46929f523e14d0b84508f20d44290102",
+      "bytes": 2077,
+      "kind": "text",
+      "lines": 67,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [],
+      "sqlTables": []
+    },
+    {
+      "path": "supabase-migration.sql",
+      "sha256": "7d39dccbce742277d44ae3a46ef2ea6fcc1f3681b3604a7000607aed031af161",
+      "bytes": 3234,
+      "kind": "text",
+      "lines": 93,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [],
+      "sqlTables": [
+        "source_accounts"
+      ]
+    },
+    {
+      "path": "supabase-oauth-migration.sql",
+      "sha256": "13d82b89e1ba62196fc0539c08d7f7f7a8f1597f7ac77280de503c68fb3077d0",
+      "bytes": 2376,
+      "kind": "text",
+      "lines": 69,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [],
+      "sqlTables": []
+    },
+    {
+      "path": "supabase-sender-reputation.sql",
+      "sha256": "aa49426326a9a76b089cbf238e8a0e0889ca932f5bc8360fb90177b7bfa86f25",
+      "bytes": 3744,
+      "kind": "text",
+      "lines": 108,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [],
+      "sqlTables": [
+        "sender_reputation"
+      ]
+    },
+    {
+      "path": "supabase/migrations/00000000000000_initial_schema.sql",
+      "sha256": "ca870bf4b6bc4d6335549aa6a526954843510c5f630914e100a23ba7aff05c8e",
+      "bytes": 13081,
+      "kind": "text",
+      "lines": 407,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [],
+      "sqlTables": [
+        "profiles",
+        "emails",
+        "source_accounts",
+        "attachments",
+        "action_items",
+        "follow_ups",
+        "automation_rules",
+        "email_feedback",
+        "whitelist",
+        "access_requests",
+        "notifications"
+      ]
+    },
+    {
+      "path": "supabase/migrations/20241213_ai_monitoring_domain_reputation.sql",
+      "sha256": "d9d37ceaea7783c186bcb8b6a9036eaa2569de73d3f573f8def62bcbc94a0698",
+      "bytes": 16223,
+      "kind": "text",
+      "lines": 461,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [],
+      "sqlTables": [
+        "ai_classification_logs",
+        "ai_metrics_daily",
+        "domain_reputation",
+        "email_action_logs",
+        "ai_settings"
+      ]
+    },
+    {
+      "path": "supabase/migrations/20241213_classification_feedback.sql",
+      "sha256": "950b083b9438dc1ac9336dae54e08682ca2724aca421eaf1a991399530a10902",
+      "bytes": 1471,
+      "kind": "text",
+      "lines": 46,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [],
+      "sqlTables": [
+        "classification_feedback"
+      ]
+    },
+    {
+      "path": "supabase/migrations/20241213_phishing_detection.sql",
+      "sha256": "185ce6a3bb73855f0e91bdbf831d22c6954dfd9fb97bc8310284e5341eee2e59",
+      "bytes": 12890,
+      "kind": "text",
+      "lines": 301,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [],
+      "sqlTables": [
+        "phishing_patterns",
+        "phishing_domains",
+        "legitimate_domains"
+      ]
+    },
+    {
+      "path": "supabase/migrations/20241213_sender_reputation.sql",
+      "sha256": "38fc60397552a89d708407cedd2532b75c552d522bccad53a1eae417c617bc01",
+      "bytes": 5686,
+      "kind": "text",
+      "lines": 153,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [],
+      "sqlTables": [
+        "sender_reputation"
+      ]
+    },
+    {
+      "path": "supabase/migrations/20241214_smart_ai_features.sql",
+      "sha256": "f20f7ffa93b420951755df9333a10c50a634fb60b6ae6adb92621e8b508c9dd3",
+      "bytes": 21371,
+      "kind": "text",
+      "lines": 521,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [],
+      "sqlTables": [
+        "ai_feature_definitions",
+        "ai_feature_defaults",
+        "ai_feature_user_config",
+        "ai_vip_senders",
+        "ai_content_triggers",
+        "ai_feature_usage",
+        "ai_cost_daily"
+      ]
+    },
+    {
+      "path": "supabase/migrations/20241216_multiple_accounts.sql",
+      "sha256": "c597acddc6dd00b4f09682db4a4799d645b4eb1f7c9541459717c8e708f74879",
+      "bytes": 4957,
+      "kind": "text",
+      "lines": 146,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [],
+      "sqlTables": []
+    },
+    {
+      "path": "supabase/migrations/20241217_imap_smtp_support.sql",
+      "sha256": "78365bee45c646fc6cbb0b8fd3009736d8bbb325b68df9e421149af41b48e18b",
+      "bytes": 4439,
+      "kind": "text",
+      "lines": 84,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": [],
+      "sqlTables": [
+        "email_provider_presets"
+      ]
+    },
+    {
+      "path": "tailwind.config.ts",
+      "sha256": "deb32f0e11d2682bb5f017a686bc61ddcdad3180720e68b0b6c8e21e4b72f955",
+      "bytes": 10295,
+      "kind": "text",
+      "lines": 318,
+      "imports": [
+        "tailwindcss"
+      ],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "5c51df4c59f4510d8c7dadf07a5c32132228826a3b331da5e286207b4df7ef9c",
+      "bytes": 670,
+      "kind": "text",
+      "lines": 35,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    },
+    {
+      "path": "vercel.json",
+      "sha256": "730527928c33b4f47829376a9a9d3b7b7b91fdb40cda77ef877dd09514860c15",
+      "bytes": 549,
+      "kind": "text",
+      "lines": 32,
+      "imports": [],
+      "exports": [],
+      "serviceRole": false,
+      "tables": [],
+      "envNames": []
+    }
+  ]
+}

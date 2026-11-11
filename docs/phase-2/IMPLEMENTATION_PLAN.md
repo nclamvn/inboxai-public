@@ -1,0 +1,29 @@
+# Ordered PR plan
+
+These are reviewable PR scopes, not claims that remote PRs were created.
+Keep M0 on the assigned branch. Stage/commit small scopes; do not merge to main.
+
+| PR | Dependencies | Scope | Acceptance criteria |
+| --- | --- | --- | --- |
+| M0-A audit and authority | none | AGENTS, standard, map/debt/risk, baseline logs | Source SHA, coverage limits, missing documents resolved from owner, no invented PASS |
+| M0-B request security | M0-A | OAuth/PKCE, cron, reply ownership, settings tenant binding, webhook verification | Forged/missing/expired/cross-user state rejected before token exchange; all cron methods fail closed; foreign reply never sends; body cannot choose tenant |
+| M0-C database boundaries | M0-A | privilege escalation/RPC/RLS reference controls | Anonymous + two authenticated tenants tested on local PG; own access works, foreign read/write/reference fails; upgrade caveats documented |
+| M0-D reproducible quality | M0-B,C | runner, CI, dependency/lint/build baseline repair | npm ci, lint, typecheck, unit, route integration, SQL integration, build; no production secrets or network mail; failures block gate |
+| M0-E baseline handoff | M0-D | residual audit/remediation and isolated deployment rehearsal | Baseline request/tenant checks and CI verified; real-mail gate stays closed while vault/sync and staging remain unverified; no production-readiness claim |
+| M1-A credential boundary | M0-E | vault, AEAD/key version/rotation, server-only credential reads | No credential readable by anon/authenticated direct table API; legacy migration and rollback tested |
+| M1-B sync contracts | M1-A | Gmail initial paging/history, IMAP UIDVALIDITY/UID, retry/lease/checkpoints | No omission on overflow/history expiry/restart; two accounts and duplicate delivery converge; failed writes never advance cursor |
+| M1-C sending | M1-A,B | Gmail OAuth send / SMTP, scoped request idempotency | Retries cannot double-send; uncertain provider outcomes reconciled; tenant tests and sandbox provider evidence |
+| M2-A design system | M1-C | tokens, Inter/Lucide, primitives, states | Exact owner palette/grid, keyboard/focus/contrast, desktop/tablet/mobile snapshots, bundle baseline |
+| M2-B Action Inbox | M2-A | contextual ranking, reasons, corrections and evidence | Ranking reasons cite actual sources, user corrections persist, urgent exceptions visible, synthetic/held-out comparisons |
+| M3-A commitment ledger | M2-B | persistent owner/due/status/evidence + change history | Deadline changes update identity rather than duplicate; ambiguous/conflicting evidence explicit; two-tenant constraints |
+| M3-B commitment UX | M3-A | owed/waiting/overdue workflows and history | Sources accessible; completion requires evidence or user confirmation; measurable reduction in reconstruction effort |
+| M4-A retrieval | M3-A | tenant-scoped metadata/keyword/semantic retrieval | Cross-account allowed scope only; index isolation/deletion, held-out recall and latency measured |
+| M4-B Ask Inbox | M4-A | cited synthesis, structured amounts/dates, abstention | Important conclusions linked to source/version; contradictions visible; adversarial unsupported claims rejected |
+| M5-A execution contracts | M4-B | plans, preview, immutable scope/approval, audit/idempotency | Stale or expanded plan needs new approval; email content cannot grant authority; concurrent/replayed requests safe |
+| M5-B verify/undo | M5-A | provider verification and reversible actions | Actual outcome verified; undo limited to reversible actions and recorded; irreversible actions clearly previewed |
+| M6-A hardening | M5-B | performance, e2e, a11y and native shells | Defined representative datasets/devices and budgets; measured results, regression tests and accessible workflows |
+| M6-B staging | M6-A | isolated staging, migration rehearsal, observability/recovery | Synthetic/consented data policy, least privilege, rollback/restore rehearsal; production deploy remains separate authorization |
+
+For every PR record what changed, why, test commands/outcomes, remaining risk,
+and rollback. Database forward migrations should not be reversed by dropping data.
+Security failures must remain closed even if rolling application code back.

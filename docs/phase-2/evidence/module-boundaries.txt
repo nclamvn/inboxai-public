@@ -1,0 +1,734 @@
+src/components/follow-up/follow-up-badge.tsx:20:export function FollowUpBadge({ className, showLabel = false }: Props) {
+src/components/follow-up/follow-up-badge.tsx:27:        const res = await fetch('/api/follow-ups/counts')
+src/components/follow-up/follow-up-badge.tsx:91:export function FollowUpInlineBadge() {
+src/components/follow-up/follow-up-badge.tsx:97:        const res = await fetch('/api/follow-ups/counts')
+src/components/onboarding/ai-intro-tooltip.tsx:32:export function AIIntroTooltip() {
+src/components/email/context-menu.tsx:36:export function ContextMenu({
+src/components/email/action-items-card.tsx:56:export function ActionItemsCard({ emailId, onViewAll }: ActionItemsCardProps) {
+src/components/email/action-items-card.tsx:79:      const res = await fetch(`/api/emails/${emailId}/extract-actions`)
+src/components/email/action-items-card.tsx:92:      const res = await fetch(`/api/emails/${emailId}/extract-actions`, {
+src/components/email/action-items-card.tsx:113:      await fetch(`/api/action-items/${actionId}`, {
+src/components/email/selection-toolbar.tsx:14:export function SelectionToolbar({ onAction }: SelectionToolbarProps) {
+src/components/email/selection-toolbar.tsx:19:  const ids = Array.from(selectedIds)
+src/lib/email/html-sanitizer.ts:7:export function sanitizeEmailHtml(
+src/lib/email/unsubscribe-service.ts:12:export class UnsubscribeService {
+src/lib/email/unsubscribe-service.ts:35:      .from('unsubscribed_senders')
+src/lib/email/unsubscribe-service.ts:52:    const combined = new Set([...emails, ...Array.from(domains).map(d => `@${d}`)])
+src/lib/email/unsubscribe-service.ts:106:        .from('unsubscribed_senders')
+src/lib/email/unsubscribe-service.ts:119:        .from('unsubscribed_senders')
+src/lib/email/unsubscribe-service.ts:139:      .from('unsubscribed_senders')
+src/lib/email/unsubscribe-service.ts:146:      .from('unsubscribed_senders')
+src/lib/email/unsubscribe-service.ts:158:      .from('unsubscribed_senders')
+src/lib/email/unsubscribe-service.ts:202:export function getUnsubscribeService(supabase: SupabaseClient): UnsubscribeService {
+src/components/theme-toggle.tsx:22:export function ThemeToggle({
+src/components/theme-toggle.tsx:115:export function ThemeSelect({ className }: { className?: string }) {
+src/components/theme-toggle.tsx:139:export default ThemeToggle;
+src/components/web-vitals-reporter.tsx:11:export function WebVitalsReporter() {
+src/components/web-vitals-reporter.tsx:19:export default WebVitalsReporter
+src/lib/ai/priority-rules.ts:23:export function determinePriority(input: PriorityInput): Priority {
+src/lib/ai/priority-rules.ts:148:export function extractDeadline(subject: string, bodyText: string): string | null {
+src/lib/ai/priority-rules.ts:210:export function needsReply(
+src/lib/ai/priority-rules.ts:261:export function suggestAction(
+src/components/email/email-detail.tsx:41:export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onReply, onRefresh }: EmailDetailProps) {
+src/components/email/email-detail.tsx:94:      const res = await fetch('/api/ai/classify', {
+src/components/email/email-detail.tsx:259:                      await fetch('/api/ai/feedback', {
+src/components/email/email-detail.tsx:315:                  await fetch(`/api/emails/${email.id}/phishing-review`, {
+src/lib/email/smtp-client.ts:37:export async function testSmtpConnection(config: SmtpConfig): Promise<{ success: boolean; error?: string }> {
+src/lib/email/smtp-client.ts:57:export async function sendEmailViaSMTP(
+src/lib/email/smtp-client.ts:102:export function createSmtpConfigFromAccount(account: {
+src/components/email/phishing-warning.tsx:80:export function PhishingWarning({
+src/components/email/phishing-warning.tsx:228:export function PhishingBadge({
+src/components/email/filter-chips.tsx:37:export const FilterChips = memo(function FilterChips({ activeFilter, onFilterChange, counts, onClassify, classifying, onDeleteAll, onReclassify, reclassifying }: Props) {
+src/components/email/email-list-item.tsx:40:export function EmailListItem({
+src/lib/email/imap-client.ts:15:export function encryptPassword(password: string): string {
+src/lib/email/imap-client.ts:18:  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key.padEnd(32).slice(0, 32)), iv)
+src/lib/email/imap-client.ts:24:export function decryptPassword(encryptedPassword: string): string {
+src/lib/email/imap-client.ts:27:  const iv = Buffer.from(textParts.shift()!, 'hex')
+src/lib/email/imap-client.ts:28:  const encryptedText = Buffer.from(textParts.join(':'), 'hex')
+src/lib/email/imap-client.ts:29:  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key.padEnd(32).slice(0, 32)), iv)
+src/lib/email/imap-client.ts:110:async function parallelLimit<T, R>(
+src/lib/email/imap-client.ts:118:  async function worker(): Promise<void> {
+src/lib/email/imap-client.ts:136:async function getNewestUIDs(
+src/lib/email/imap-client.ts:149:  for await (const msg of client.fetch(searchCriteria, { uid: true }, { uid: true })) {
+src/lib/email/imap-client.ts:160:export async function testImapConnection(config: {
+src/lib/email/imap-client.ts:208:export async function syncEmails(account: SourceAccount, options: SyncOptions = {}): Promise<SyncResult> {
+src/lib/email/imap-client.ts:274:        for await (const msg of client.fetch(`${lastUid + 1}:*`, { uid: true }, { uid: true })) {
+src/lib/email/imap-client.ts:322:          for await (const msg of client.fetch(uidRange, {
+src/lib/email/imap-client.ts:408:            .from('emails')
+src/lib/email/imap-client.ts:449:                  .from('attachments')
+src/lib/email/imap-client.ts:484:          .from('source_accounts')
+src/lib/email/imap-client.ts:508:      .from('source_accounts')
+src/lib/email/imap-client.ts:520:export async function fetchEmailBody(
+src/lib/email/imap-client.ts:582:export const EMAIL_PROVIDERS = {
+src/components/email/email-item.tsx:81:export const EmailItem = memo(function EmailItem({
+src/components/email/email-item.tsx:276:export default EmailItem
+src/components/email/smart-reply.tsx:47:export function SmartReply({ emailId, onReply }: SmartReplyProps) {
+src/components/email/smart-reply.tsx:77:      const res = await fetch(`/api/ai/smart-reply?emailId=${emailId}&tone=auto`)
+src/components/email/smart-reply.tsx:105:      const res = await fetch('/api/ai/smart-reply', {
+src/components/email/account-switcher.tsx:26:export function AccountSwitcher({
+src/components/email/account-switcher.tsx:39:      const res = await fetch('/api/source-accounts')
+src/components/email/smart-inbox.tsx:57:export function SmartInbox({ onSelectEmail }: SmartInboxProps) {
+src/components/email/smart-inbox.tsx:65:      const res = await fetch('/api/emails/smart-views')
+src/components/email/smart-inbox.tsx:297:      const res = await fetch('/api/emails/bulk-action', {
+src/lib/ai/follow-up-detector.ts:3:const openai = new OpenAI({
+src/lib/ai/follow-up-detector.ts:7:export type FollowUpType =
+src/lib/ai/follow-up-detector.ts:14:export type FollowUpPriority = 'high' | 'medium' | 'low'
+src/lib/ai/follow-up-detector.ts:16:export interface FollowUp {
+src/lib/ai/follow-up-detector.ts:30:export interface EmailForFollowUp {
+src/lib/ai/follow-up-detector.ts:80:export async function detectFollowUp(
+src/lib/ai/follow-up-detector.ts:198:export async function detectFollowUps(
+src/lib/ai/follow-up-detector.ts:232:export function getFollowUpTypeLabel(type: FollowUpType): string {
+src/lib/ai/follow-up-detector.ts:244:export function getFollowUpPriorityColor(priority: FollowUpPriority): {
+src/lib/ai/smart-reply.ts:3:const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+src/lib/ai/smart-reply.ts:5:export type ReplyTone = 'formal' | 'casual' | 'auto'
+src/lib/ai/smart-reply.ts:6:export type ReplyIntent =
+src/lib/ai/smart-reply.ts:29:export interface ReplySuggestion {
+src/lib/ai/smart-reply.ts:38:export interface SmartReplyResult {
+src/lib/ai/smart-reply.ts:101:export async function generateSmartReplies(
+src/lib/ai/smart-reply.ts:230:export async function composeFromBullets(
+src/lib/ai/rules-engine.ts:34:export interface Rule {
+src/lib/ai/rules-engine.ts:119:async function executeActions(email: Email, actions: Action[]): Promise<{ success: boolean; action: string }[]> {
+src/lib/ai/rules-engine.ts:127:            .from('emails')
+src/lib/ai/rules-engine.ts:135:            .from('emails')
+src/lib/ai/rules-engine.ts:143:            .from('emails')
+src/lib/ai/rules-engine.ts:151:            .from('emails')
+src/lib/ai/rules-engine.ts:160:              .from('emails')
+src/lib/ai/rules-engine.ts:170:              .from('emails')
+src/lib/ai/rules-engine.ts:181:              .from('labels')
+src/lib/ai/rules-engine.ts:189:                .from('labels')
+src/lib/ai/rules-engine.ts:198:                .from('email_labels')
+src/lib/ai/rules-engine.ts:215:export async function runRule(rule: Rule): Promise<{
+src/lib/ai/rules-engine.ts:222:    .from('emails')
+src/lib/ai/rules-engine.ts:256:export async function runAllRules(userId: string): Promise<{
+src/lib/ai/rules-engine.ts:262:    .from('automation_rules')
+src/lib/ai/rules-engine.ts:277:      .from('automation_logs')
+src/lib/ai/rules-engine.ts:291:        .from('automation_logs')
+src/lib/ai/rules-engine.ts:303:        .from('automation_rules')
+src/lib/ai/rules-engine.ts:316:        .from('automation_logs')
+src/lib/ai/rules-engine.ts:332:export async function createDefaultRules(userId: string) {
+src/lib/ai/rules-engine.ts:387:  await getSupabase().from('automation_rules').insert(defaultRules)
+src/hooks/use-theme.ts:3: * Re-export from ThemeContext for convenient imports
+src/hooks/use-theme.ts:6:export {
+src/hooks/use-theme.ts:13:export type {
+src/components/email/email-list-compact.tsx:37:export function EmailListCompact({
+src/components/email/email-list-compact.tsx:361:    const ids = Array.from(selectedIds)
+src/components/email/email-list-compact.tsx:380:    const ids = Array.from(selectedIds)
+src/lib/ai/feature-executors.ts:14:const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+src/lib/ai/feature-executors.ts:20:export const summaryExecutor: FeatureExecutor<SummaryResult | null> = {
+src/lib/ai/feature-executors.ts:36:export const smartReplyExecutor: FeatureExecutor<SmartReplyResult> = {
+src/lib/ai/feature-executors.ts:57:export const actionItemsExecutor: FeatureExecutor<ActionExtractionResult> = {
+src/lib/ai/feature-executors.ts:75:export const followUpExecutor: FeatureExecutor<FollowUp | null> = {
+src/lib/ai/feature-executors.ts:110:export const sentimentExecutor: FeatureExecutor<SentimentResult> = {
+src/lib/ai/feature-executors.ts:184:export const translatorExecutor: FeatureExecutor<TranslationResult | null> = {
+src/lib/ai/feature-executors.ts:248:export function registerAllExecutors(): void {
+src/lib/ai/feature-executors.ts:266:export const executorMap: Record<AIFeatureKey, FeatureExecutor> = {
+src/lib/ai/feature-executors.ts:276:export default {
+src/components/capacitor-init.tsx:18:export function CapacitorInit() {
+src/components/capacitor-init.tsx:66:export function useCapacitorTheme(isDark: boolean) {
+src/components/email/category-picker.tsx:24:export function CategoryPicker({ onSelect, onClose, currentCategory }: CategoryPickerProps) {
+src/lib/ai/research-service.ts:4:export interface ResearchResult {
+src/lib/ai/research-service.ts:14:export async function researchEmailContext(
+src/lib/ai/research-service.ts:22:    .from('emails')
+src/lib/ai/research-service.ts:36:    .from('emails')
+src/lib/ai/research-service.ts:50:      .from('emails')
+src/lib/ai/research-service.ts:70:  const uniqueRelated = Array.from(
+src/components/automation/rules-list.tsx:31:export function RulesList() {
+src/components/automation/rules-list.tsx:50:      const res = await fetch('/api/automation/rules')
+src/components/automation/rules-list.tsx:62:      await fetch(`/api/automation/rules/${ruleId}`, {
+src/components/automation/rules-list.tsx:79:      const res = await fetch('/api/automation/run', {
+src/components/automation/rules-list.tsx:98:      const res = await fetch('/api/automation/run', {
+src/components/automation/rules-list.tsx:118:      await fetch(`/api/automation/rules/${ruleId}`, { method: 'DELETE' })
+src/lib/ai/classifier.ts:42:const openai = new OpenAI({
+src/lib/ai/classifier.ts:323:async function classifyByAI(
+src/lib/ai/classifier.ts:406:export async function classifyEmail(email: ClassifyEmailInput): Promise<AIClassification> {
+src/lib/ai/classifier.ts:753:export async function classifyEmails(
+src/lib/ai/draft-generator.ts:5:const openai = new OpenAI({
+src/lib/ai/draft-generator.ts:9:export interface DraftOptions {
+src/lib/ai/draft-generator.ts:18:export interface GeneratedDraft {
+src/lib/ai/draft-generator.ts:39:export async function generateDraft(
+src/lib/ai/draft-generator.ts:107:export async function improveExistingDraft(
+src/lib/ai/domain-reputation.ts:9:export interface DomainReputation {
+src/lib/ai/domain-reputation.ts:34:export interface DomainLookupResult {
+src/lib/ai/domain-reputation.ts:43:export type ActionType = 'open' | 'reply' | 'archive' | 'delete' | 'spam' | 'phishing_report' | 'mark_safe'
+src/lib/ai/domain-reputation.ts:56:export function extractDomain(email: string): string {
+src/lib/ai/domain-reputation.ts:64:export function getTrustLevel(score: number): 'untrusted' | 'low' | 'neutral' | 'trusted' | 'verified' {
+src/lib/ai/domain-reputation.ts:75:export async function logEmailAction(
+src/lib/ai/domain-reputation.ts:90:      .from('email_action_logs')
+src/lib/ai/domain-reputation.ts:105:export async function getDomainReputation(
+src/lib/ai/domain-reputation.ts:115:      .from('domain_reputation')
+src/lib/ai/domain-reputation.ts:134:      .from('legitimate_domains')
+src/lib/ai/domain-reputation.ts:176:export async function getTopDomains(
+src/lib/ai/domain-reputation.ts:184:      .from('domain_reputation')
+src/lib/ai/domain-reputation.ts:205:export async function getDomainStats(userId: string): Promise<{
+src/lib/ai/domain-reputation.ts:215:      .from('domain_reputation')
+src/lib/ai/domain-reputation.ts:266:export async function whitelistDomain(
+src/lib/ai/domain-reputation.ts:275:      .from('domain_reputation')
+src/lib/ai/domain-reputation.ts:294:export async function blacklistDomain(
+src/lib/ai/domain-reputation.ts:303:      .from('domain_reputation')
+src/lib/ai/domain-reputation.ts:322:export async function updateDomainCategory(
+src/lib/ai/domain-reputation.ts:333:      .from('domain_reputation')
+src/lib/ai/domain-reputation.ts:354:      .from('domain_reputation')
+src/lib/ai/domain-reputation.ts:373:export async function recalculateDomainRates(
+src/lib/ai/domain-reputation.ts:382:      .from('domain_reputation')
+src/lib/ai/domain-reputation.ts:395:      .from('domain_reputation')
+src/lib/ai/domain-reputation.ts:412:export async function rebuildDomainReputation(userId: string): Promise<{
+src/lib/ai/domain-reputation.ts:421:      .from('emails')
+src/lib/ai/domain-reputation.ts:480:        .from('domain_reputation')
+src/components/pwa/install-prompt.tsx:12:export function InstallPrompt() {
+src/lib/ai/keyword-classifier.ts:4:export const CATEGORY_KEYWORDS = {
+src/lib/ai/keyword-classifier.ts:178:export const SUBJECT_PATTERNS = {
+src/lib/ai/keyword-classifier.ts:248:export interface KeywordScores {
+src/lib/ai/keyword-classifier.ts:261:export function calculateKeywordScores(
+src/lib/ai/keyword-classifier.ts:314:export function getTopKeywordCategory(scores: KeywordScores): {
+src/lib/ai/keyword-classifier.ts:343:export function quickKeywordClassify(
+src/components/email/email-list-skeleton.tsx:10:export function EmailListSkeleton({ count = 8, compact = false }: Props) {
+src/components/email/email-list-skeleton.tsx:13:      {Array.from({ length: count }).map((_, i) => (
+src/lib/ai/phishing-detector.ts:9:export interface PhishingResult {
+src/lib/ai/phishing-detector.ts:17:export interface PhishingReason {
+src/lib/ai/phishing-detector.ts:24:export interface EmailInput {
+src/lib/ai/phishing-detector.ts:63:async function loadPatternsAndDomains(): Promise<void> {
+src/lib/ai/phishing-detector.ts:73:    .from('phishing_patterns')
+src/lib/ai/phishing-detector.ts:95:    .from('phishing_domains')
+src/lib/ai/phishing-detector.ts:108:    .from('legitimate_domains')
+src/lib/ai/phishing-detector.ts:411:export async function detectPhishing(email: EmailInput): Promise<PhishingResult> {
+src/lib/ai/phishing-detector.ts:462:export async function updateEmailPhishingStatus(
+src/lib/ai/phishing-detector.ts:470:      .from('emails')
+src/lib/ai/phishing-detector.ts:486:export async function detectPhishingBatch(
+src/lib/ai/phishing-detector.ts:505:export async function markPhishingReviewed(emailId: string): Promise<void> {
+src/lib/ai/phishing-detector.ts:509:    .from('emails')
+src/lib/ai/phishing-detector.ts:517:export async function getPhishingStats(userId: string): Promise<{
+src/lib/ai/phishing-detector.ts:525:    .from('emails')
+src/lib/ai/action-extractor.ts:3:const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+src/lib/ai/action-extractor.ts:5:export type ActionType = 'task' | 'deadline' | 'question' | 'meeting' | 'follow_up'
+src/lib/ai/action-extractor.ts:6:export type ActionPriority = 'high' | 'medium' | 'low'
+src/lib/ai/action-extractor.ts:7:export type ActionStatus = 'pending' | 'in_progress' | 'completed' | 'dismissed'
+src/lib/ai/action-extractor.ts:9:export interface ExtractedAction {
+src/lib/ai/action-extractor.ts:18:export interface ActionExtractionResult {
+src/lib/ai/action-extractor.ts:55:export async function extractActions(email: EmailContext): Promise<ActionExtractionResult> {
+src/lib/ai/action-extractor.ts:170:export async function batchExtractActions(
+src/lib/ai/insights-service.ts:114:export async function generateWeeklyReport(userId: string): Promise<WeeklyReport> {
+src/lib/ai/insights-service.ts:121:    .from('emails')
+src/lib/ai/insights-service.ts:129:    .from('emails')
+src/lib/ai/insights-service.ts:138:    .from('emails')
+src/lib/ai/insights-service.ts:446:export async function generateDailyDigest(userId: string) {
+src/lib/ai/insights-service.ts:451:    .from('emails')
+src/lib/ai/insights-service.ts:457:    .from('emails')
+src/components/email/attachment-list.tsx:47:export function AttachmentList({ attachments }: AttachmentListProps) {
+src/lib/ai/sender-trust.ts:15:export interface SenderTrust {
+src/lib/ai/sender-trust.ts:33:export async function getSenderTrust(
+src/lib/ai/sender-trust.ts:38:    .from('sender_trust')
+src/lib/ai/sender-trust.ts:51:export async function updateSenderOnReceive(
+src/lib/ai/sender-trust.ts:60:    .from('sender_trust')
+src/lib/ai/sender-trust.ts:69:      .from('sender_trust')
+src/lib/ai/sender-trust.ts:79:      .from('sender_trust')
+src/lib/ai/sender-trust.ts:98:export async function markSenderAsTrusted(
+src/lib/ai/sender-trust.ts:120:    .from('sender_trust')
+src/lib/ai/sender-trust.ts:131:      .from('sender_trust')
+src/lib/ai/sender-trust.ts:136:      .from('sender_trust')
+src/lib/ai/sender-trust.ts:150:export async function markSenderAsUntrusted(
+src/lib/ai/sender-trust.ts:158:    .from('sender_trust')
+src/lib/ai/sender-trust.ts:172:      .from('sender_trust')
+src/lib/ai/sender-trust.ts:177:      .from('sender_trust')
+src/lib/ai/sender-trust.ts:191:export async function blockSender(
+src/lib/ai/sender-trust.ts:199:    .from('sender_trust')
+src/lib/ai/sender-trust.ts:215:export function calculateTrustScore(sender: SenderTrust | null): number {
+src/lib/ai/sender-trust.ts:243:export function extractEmailSignals(email: {
+src/lib/ai/sender-trust.ts:307:export function isSameDomain(userEmail: string, senderEmail: string): boolean {
+src/hooks/index.ts:3: * Barrel export for all custom hooks
+src/hooks/index.ts:7:export {
+src/hooks/index.ts:13:export type { ThemeMode, ResolvedTheme } from './use-theme';
+src/hooks/index.ts:16:export {
+src/hooks/index.ts:29:export { useEmails } from './use-emails';
+src/hooks/index.ts:30:export { useEmail } from './use-email';
+src/hooks/index.ts:31:export { useEmailBatch } from './use-email-batch';
+src/hooks/index.ts:32:export { useEmailsQuery } from './use-emails-query';
+src/hooks/index.ts:35:export { useAIFeatures } from './use-ai-features';
+src/hooks/index.ts:38:export { useUser } from './use-user';
+src/hooks/index.ts:41:export { useAutoSync } from './use-auto-sync';
+src/hooks/index.ts:44:export { useBehaviorTracker } from './use-behavior-tracker';
+src/hooks/index.ts:47:export { useHaptic } from './use-haptic';
+src/hooks/index.ts:50:export { useNetworkStatus } from './use-network-status';
+src/lib/ai/feature-runner.ts:18:export interface FeatureResult<T = unknown> {
+src/lib/ai/feature-runner.ts:27:export interface RunFeaturesResult {
+src/lib/ai/feature-runner.ts:38:export interface FeatureExecutor<T = unknown> {
+src/lib/ai/feature-runner.ts:46:export class AIFeatureRunner {
+src/lib/ai/feature-runner.ts:202:    return Array.from(this.executors.keys());
+src/lib/ai/feature-runner.ts:212:export function getAIFeatureRunner(): AIFeatureRunner {
+src/lib/ai/feature-runner.ts:252:export default {
+src/lib/ai/vietnamese-classifier-integration.ts:39:export interface VietnameseClassificationInput {
+src/lib/ai/vietnamese-classifier-integration.ts:47:export interface VietnameseClassificationContext {
+src/lib/ai/vietnamese-classifier-integration.ts:68:export interface VietnameseClassificationResult {
+src/lib/ai/vietnamese-classifier-integration.ts:86:export function analyzeEmailContext(input: VietnameseClassificationInput): VietnameseClassificationContext {
+src/lib/ai/vietnamese-classifier-integration.ts:259:export function buildVietnameseClassificationPrompt(
+src/lib/ai/vietnamese-classifier-integration.ts:337:export function parseClassificationResponse(
+src/lib/ai/vietnamese-classifier-integration.ts:399:export function tryRuleBasedClassification(
+src/lib/ai/vietnamese-classifier-integration.ts:505:export async function classifyVietnameseEmail(
+src/lib/ai/vietnamese-classifier-integration.ts:586:export default {
+src/lib/ai/classifier.test.ts:16:export const TEST_CASES: TestCase[] = [
+src/lib/ai/classifier.test.ts:367:export async function runClassifierTests(): Promise<{
+src/hooks/use-behavior-tracker.ts:7:export function useBehaviorTracker() {
+src/hooks/use-behavior-tracker.ts:25:      await fetch('/api/track', {
+src/lib/ai/index.ts:3: * Central export file for all AI-related functionality
+src/lib/ai/index.ts:7:export * from './prompts/vietnamese-classifier';
+src/lib/ai/index.ts:8:export * from './vietnamese-utils';
+src/lib/ai/index.ts:9:export * from './vietnamese-entities';
+src/lib/ai/index.ts:10:export * from './vietnamese-classifier-integration';
+src/lib/ai/index.ts:12:// Re-export commonly used functions
+src/lib/ai/index.ts:13:export {
+src/lib/ai/index.ts:21:export {
+src/lib/ai/index.ts:32:export {
+src/lib/ai/index.ts:46:export {
+src/lib/ai/index.ts:55:export type {
+src/lib/ai/index.ts:59:export type {
+src/lib/ai/index.ts:63:export type {
+src/lib/ai/index.ts:73:export type {
+src/lib/ai/index.ts:84:export {
+src/lib/ai/index.ts:90:export type {
+src/lib/ai/index.ts:96:export {
+src/lib/ai/index.ts:101:export type {
+src/lib/ai/index.ts:108:export {
+src/lib/ai/index.ts:120:export {
+src/lib/ai/summarizer.ts:4:const openai = new OpenAI({
+src/lib/ai/summarizer.ts:8:export interface SummaryResult {
+src/lib/ai/summarizer.ts:52:export async function summarizeEmail(
+src/lib/ai/summarizer.ts:119:export function needsSummary(bodyText: string | null): boolean {
+src/lib/ai/summarizer.ts:126:export function needsSummaryByChars(text: string | null): boolean {
+src/lib/ai/vietnamese-domains.ts:4:export const VIETNAMESE_DOMAINS = {
+src/lib/ai/vietnamese-domains.ts:153:export const SPAM_DOMAIN_PATTERNS = [
+src/lib/ai/vietnamese-domains.ts:167:export const EMAIL_ADDRESS_PATTERNS = {
+src/lib/ai/vietnamese-domains.ts:213:export function getDomainCategory(domain: string): {
+src/lib/ai/vietnamese-domains.ts:291:export function getEmailPatternHint(emailAddress: string): {
+src/hooks/use-email-batch.ts:28:async function executeBatch(operations: BatchOperation[]): Promise<BatchResult> {
+src/hooks/use-email-batch.ts:29:  const response = await fetch('/api/emails/batch', {
+src/hooks/use-email-batch.ts:43:export function useEmailBatch() {
+src/hooks/use-email-batch.ts:157:export default useEmailBatch;
+src/lib/search/search-parser.ts:1:export interface ParsedSearch {
+src/lib/search/search-parser.ts:26:export function parseSearchQuery(query: string): ParsedSearch {
+src/lib/search/search-parser.ts:119:export function buildSearchConditions(parsed: ParsedSearch): {
+src/components/email/ai-summary.tsx:90:export function AISummary({
+src/components/email/ai-summary.tsx:174:      const response = await fetch(`/api/ai/features/${emailId}`, {
+src/components/email/ai-summary.tsx:359:export default AISummary;
+src/hooks/useHaptics.ts:27:export const useHaptics = () => {
+src/lib/ai/vietnamese-entities.ts:10:export interface BankInfo {
+src/lib/ai/vietnamese-entities.ts:18:export const VIETNAMESE_BANKS: Record<string, BankInfo> = {
+src/lib/ai/vietnamese-entities.ts:175:export interface EWalletInfo {
+src/lib/ai/vietnamese-entities.ts:181:export const VIETNAMESE_EWALLETS: Record<string, EWalletInfo> = {
+src/lib/ai/vietnamese-entities.ts:223:export interface ECommerceInfo {
+src/lib/ai/vietnamese-entities.ts:231:export const VIETNAMESE_ECOMMERCE: Record<string, ECommerceInfo> = {
+src/lib/ai/vietnamese-entities.ts:299:export interface DeliveryServiceInfo {
+src/lib/ai/vietnamese-entities.ts:306:export const VIETNAMESE_DELIVERY: Record<string, DeliveryServiceInfo> = {
+src/lib/ai/vietnamese-entities.ts:373:export interface TravelServiceInfo {
+src/lib/ai/vietnamese-entities.ts:380:export const VIETNAMESE_TRAVEL: Record<string, TravelServiceInfo> = {
+src/lib/ai/vietnamese-entities.ts:429:export interface TelecomInfo {
+src/lib/ai/vietnamese-entities.ts:435:export const VIETNAMESE_TELECOM: Record<string, TelecomInfo> = {
+src/lib/ai/vietnamese-entities.ts:467:export interface GovServiceInfo {
+src/lib/ai/vietnamese-entities.ts:473:export const VIETNAMESE_GOVERNMENT: Record<string, GovServiceInfo> = {
+src/lib/ai/vietnamese-entities.ts:500:export interface SocialMediaInfo {
+src/lib/ai/vietnamese-entities.ts:506:export const SOCIAL_MEDIA: Record<string, SocialMediaInfo> = {
+src/lib/ai/vietnamese-entities.ts:548:export type EntityType = 'bank' | 'ewallet' | 'ecommerce' | 'delivery' | 'travel' | 'telecom' | 'government' | 'social';
+src/lib/ai/vietnamese-entities.ts:550:export interface DetectedEntity {
+src/lib/ai/vietnamese-entities.ts:574:export function detectEntities(text: string): DetectedEntity[] {
+src/lib/ai/vietnamese-entities.ts:665:export function detectBanks(text: string): Array<{ key: string; info: BankInfo; confidence: number }> {
+src/lib/ai/vietnamese-entities.ts:679:export function detectEWallets(text: string): Array<{ key: string; info: EWalletInfo; confidence: number }> {
+src/lib/ai/vietnamese-entities.ts:693:export function detectECommerce(text: string): Array<{ key: string; info: ECommerceInfo; confidence: number }> {
+src/lib/ai/vietnamese-entities.ts:707:export function identifySenderEntity(senderDomain: string): {
+src/lib/ai/vietnamese-entities.ts:756:export interface MoneyAmount {
+src/lib/ai/vietnamese-entities.ts:766:export function detectMoneyAmounts(text: string): MoneyAmount[] {
+src/lib/ai/vietnamese-entities.ts:824:export interface PhoneNumber {
+src/lib/ai/vietnamese-entities.ts:852:export function detectPhoneNumbers(text: string): PhoneNumber[] {
+src/lib/ai/vietnamese-entities.ts:915:export interface ExtractedEntities {
+src/lib/ai/vietnamese-entities.ts:933:export function extractAllEntities(
+src/lib/ai/vietnamese-entities.ts:958:export function getCategoryHints(entities: ExtractedEntities): {
+src/lib/ai/vietnamese-entities.ts:1025:export default {
+src/lib/ai/__tests__/feature-allocation.test.ts:273:export async function runFeatureAllocationTests(): Promise<{
+src/lib/ai/setup.ts:16:export async function initializeAIModule(): Promise<void> {
+src/lib/ai/setup.ts:41:export function isAIModuleInitialized(): boolean {
+src/lib/ai/setup.ts:48:export async function ensureAIModuleInitialized(): Promise<void> {
+src/lib/ai/setup.ts:57:export function getAIModuleStatus(): {
+src/lib/ai/setup.ts:68:export default {
+src/hooks/use-media-query.ts:16:export function useMediaQuery(query: string): boolean {
+src/hooks/use-media-query.ts:51:export function useBreakpoint(breakpoint: BreakpointKey): boolean {
+src/hooks/use-media-query.ts:59:export function useBreakpointDown(breakpoint: BreakpointKey): boolean {
+src/hooks/use-media-query.ts:67:export function useCurrentBreakpoint(): BreakpointKey {
+src/hooks/use-media-query.ts:87:export function useIsMobile(): boolean {
+src/hooks/use-media-query.ts:91:export function useIsTablet(): boolean {
+src/hooks/use-media-query.ts:97:export function useIsDesktop(): boolean {
+src/hooks/use-media-query.ts:104:export function usePrefersReducedMotion(): boolean {
+src/hooks/use-media-query.ts:111:export function usePrefersColorScheme(): 'light' | 'dark' | 'no-preference' {
+src/hooks/use-media-query.ts:120:export default useMediaQuery;
+src/components/pwa/index.ts:1:export { InstallPrompt } from './install-prompt'
+src/lib/ai/search-parser.ts:3:const openai = new OpenAI({
+src/lib/ai/search-parser.ts:7:export interface ParsedSearchQuery {
+src/lib/ai/search-parser.ts:87:export async function parseSearchQuery(query: string): Promise<ParsedSearchQuery> {
+src/lib/ai/search-parser.ts:345:export interface SearchQueryOptions {
+src/lib/ai/search-parser.ts:352:export function buildSearchQuery(options: SearchQueryOptions): {
+src/lib/ai/email-analyzer.ts:4:const openai = new OpenAI({
+src/lib/ai/email-analyzer.ts:8:export interface EmailAnalysis {
+src/lib/ai/email-analyzer.ts:26:export async function analyzeEmail(email: Email): Promise<EmailAnalysis> {
+src/lib/ai/vietnamese-utils.ts:10:export const VIETNAMESE_ABBREVIATIONS: Record<string, string> = {
+src/lib/ai/vietnamese-utils.ts:164:export const VIETNAMESE_STOPWORDS = new Set([
+src/lib/ai/vietnamese-utils.ts:180:export const VIETNAMESE_CHAR_MAP: Record<string, string> = {
+src/lib/ai/vietnamese-utils.ts:225:export function toAscii(text: string): string {
+src/lib/ai/vietnamese-utils.ts:233:export function normalizeVietnameseText(text: string): string {
+src/lib/ai/vietnamese-utils.ts:253:export function removeVietnameseDiacritics(text: string): string {
+src/lib/ai/vietnamese-utils.ts:264:export function expandAbbreviations(text: string): string {
+src/lib/ai/vietnamese-utils.ts:299:export function expandAbbreviationsWithContext(text: string): {
+src/lib/ai/vietnamese-utils.ts:341:export function isVietnamese(text: string): boolean {
+src/lib/ai/vietnamese-utils.ts:369:export function getLanguageConfidence(text: string): {
+src/lib/ai/vietnamese-utils.ts:431:export function cleanEmailBody(body: string): string {
+src/lib/ai/vietnamese-utils.ts:480:export function extractKeyPhrases(text: string, maxPhrases: number = 10): string[] {
+src/lib/ai/vietnamese-utils.ts:498:  return Array.from(wordFreq.entries())
+src/lib/ai/vietnamese-utils.ts:511:export function detectFormality(text: string): {
+src/lib/ai/vietnamese-utils.ts:587:export function extractMoneyAmounts(text: string): Array<{
+src/lib/ai/vietnamese-utils.ts:639:export interface PreprocessedEmail {
+src/lib/ai/vietnamese-utils.ts:663:export function preprocessEmail(
+src/lib/ai/vietnamese-utils.ts:712:export default {
+src/components/icons/index.tsx:8:export {
+src/components/icons/index.tsx:230:export type { LucideIcon, LucideProps } from 'lucide-react';
+src/hooks/useKeyboard.ts:16:export const useKeyboard = () => {
+src/lib/ai/sender-reputation.ts:9:export interface SenderReputation {
+src/lib/ai/sender-reputation.ts:24:export interface ReputationLookupResult {
+src/lib/ai/sender-reputation.ts:45:export function extractDomain(email: string): string {
+src/lib/ai/sender-reputation.ts:53:export function normalizeEmail(email: string): string {
+src/lib/ai/sender-reputation.ts:61:export async function getReputation(
+src/lib/ai/sender-reputation.ts:70:      .from('sender_reputation')
+src/lib/ai/sender-reputation.ts:108:export async function updateReputation(
+src/lib/ai/sender-reputation.ts:121:      .from('sender_reputation')
+src/lib/ai/sender-reputation.ts:160:        .from('sender_reputation')
+src/lib/ai/sender-reputation.ts:183:        .from('sender_reputation')
+src/lib/ai/sender-reputation.ts:205:export function calculateConfidence(
+src/lib/ai/sender-reputation.ts:238:export async function getHighConfidenceSenders(
+src/lib/ai/sender-reputation.ts:246:      .from('sender_reputation')
+src/lib/ai/sender-reputation.ts:268:export async function getReputationStats(userId: string): Promise<{
+src/lib/ai/sender-reputation.ts:278:      .from('sender_reputation')
+src/lib/ai/sender-reputation.ts:323:export function resolveCategory(
+src/hooks/use-ai-features.ts:12:export interface AIFeatureResult {
+src/hooks/use-ai-features.ts:18:export interface AIAllocation {
+src/hooks/use-ai-features.ts:54:export function useAIFeatures(emailId: string | null): UseAIFeaturesReturn {
+src/hooks/use-ai-features.ts:104:      const response = await fetch(url, {
+src/hooks/use-ai-features.ts:365:export default useAIFeatures;
+src/lib/ai/feedback-learner.ts:31:export async function recordFeedback(
+src/lib/ai/feedback-learner.ts:42:  await getSupabase().from('classification_feedback').insert({
+src/lib/ai/feedback-learner.ts:80:export async function getLearnedRules(userId: string): Promise<{
+src/lib/ai/feedback-learner.ts:85:    .from('classification_feedback')
+src/lib/ai/feedback-learner.ts:163:export async function applyLearnedRules(
+src/lib/ai/feedback-learner.ts:204:export async function getAccuracyStats(userId: string): Promise<{
+src/lib/ai/feedback-learner.ts:209:    .from('classification_feedback')
+src/lib/ai/feedback-learner.ts:240:export async function exportLearningData(userId: string): Promise<{
+src/lib/ai/feedback-learner.ts:248:    .from('classification_feedback')
+src/lib/ai/feature-allocation.ts:13:export type AIFeatureKey =
+src/lib/ai/feature-allocation.ts:22:export type EmailCategory =
+src/lib/ai/feature-allocation.ts:32:export type TriggerType =
+src/lib/ai/feature-allocation.ts:43:export interface FeatureAllocation {
+src/lib/ai/feature-allocation.ts:51:export interface EmailContext {
+src/lib/ai/feature-allocation.ts:67:export interface AllocationResult {
+src/lib/ai/feature-allocation.ts:83:export const FEATURE_COSTS: Record<AIFeatureKey, number> = {
+src/lib/ai/feature-allocation.ts:240:export class AIFeatureAllocationService {
+src/lib/ai/feature-allocation.ts:334:        .from('ai_vip_senders')
+src/lib/ai/feature-allocation.ts:381:        .from('ai_feature_defaults')
+src/lib/ai/feature-allocation.ts:387:        .from('ai_feature_user_config')
+src/lib/ai/feature-allocation.ts:546:      await supabase.from('ai_feature_usage').insert({
+src/lib/ai/feature-allocation.ts:559:        .from('emails')
+src/lib/ai/feature-allocation.ts:568:            .from('emails')
+src/lib/ai/feature-allocation.ts:593:      .from('ai_feature_user_config')
+src/lib/ai/feature-allocation.ts:599:      .from('ai_vip_senders')
+src/lib/ai/feature-allocation.ts:605:      .from('ai_content_triggers')
+src/lib/ai/feature-allocation.ts:645:    await supabase.from('ai_feature_user_config').upsert({
+src/lib/ai/feature-allocation.ts:668:    await supabase.from('ai_vip_senders').insert({
+src/lib/ai/feature-allocation.ts:684:    let query = supabase.from('ai_vip_senders').delete().eq('user_id', userId);
+src/lib/ai/feature-allocation.ts:711:      .from('ai_cost_daily')
+src/lib/ai/feature-allocation.ts:766:export function getAIFeatureAllocationService(): AIFeatureAllocationService {
+src/lib/ai/feature-allocation.ts:780:export async function getFeatureAllocationForEmail(
+src/lib/ai/feature-allocation.ts:823:export async function shouldAutoEnableFeature(
+src/lib/ai/feature-allocation.ts:844:export default {
+src/hooks/use-emails.ts:13:export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEmailsOptions = {}) {
+src/hooks/use-emails.ts:27:      .from('emails')
+src/hooks/use-emails.ts:148:      .from('emails')
+src/hooks/use-emails.ts:164:      .from('emails')
+src/hooks/use-emails.ts:175:      .from('emails')
+src/hooks/use-emails.ts:186:      .from('emails')
+src/hooks/use-emails.ts:197:      .from('emails')
+src/hooks/use-emails.ts:208:      .from('emails')
+src/hooks/use-emails.ts:219:      .from('emails')
+src/components/email/email-list.tsx:32:export function EmailList({ emails, selectedId, onSelect, onStar }: EmailListProps) {
+src/components/ai/ai-quick-actions.tsx:38:export function AIQuickActions({ collapsed = false }: AIQuickActionsProps) {
+src/lib/ai/prompts/vietnamese-classifier.ts:10:export const VIETNAMESE_SYSTEM_PROMPT = `Ban la AI chuyen phan loai email tieng Viet. Ban hieu ro van hoa, ngu canh va cach viet email cua nguoi Viet Nam.
+src/lib/ai/prompts/vietnamese-classifier.ts:174:export interface ClassificationExample {
+src/lib/ai/prompts/vietnamese-classifier.ts:186:export const VIETNAMESE_EXAMPLES: ClassificationExample[] = [
+src/lib/ai/prompts/vietnamese-classifier.ts:719:export function buildClassificationPrompt(
+src/lib/ai/prompts/vietnamese-classifier.ts:745:export function buildFewShotPrompt(
+src/lib/ai/prompts/vietnamese-classifier.ts:793:export function getExamplesByCategory(category: string): ClassificationExample[] {
+src/lib/ai/prompts/vietnamese-classifier.ts:797:export function getRandomExamples(count: number): ClassificationExample[] {
+src/lib/ai/prompts/vietnamese-classifier.ts:806:export const CATEGORY_KEYWORDS = {
+src/lib/ai/prompts/vietnamese-classifier.ts:848:export default {
+src/hooks/use-email.ts:10:export function useEmail(emailId: string | null) {
+src/hooks/use-email.ts:27:      const res = await fetch(`/api/emails/${emailId}`)
+src/lib/ai/classifier-updated.ts:28:export function preprocessForClassification(
+src/lib/ai/classifier-updated.ts:56:export async function classifyEmailWithVietnamese(
+src/lib/ai/classifier-updated.ts:169:export async function classifyEmail(email: EmailInput): Promise<Classification> {
+src/lib/ai/classifier-updated.ts:178:export async function classifyEmail(email: EmailInput): Promise<Classification> {
+src/lib/ai/classifier-updated.ts:214:export {
+src/components/ai/ai-action-items-content.tsx:26:export function AIActionItemsContent({
+src/lib/ai/behavior-tracker.ts:15:export type BehaviorAction = 'open' | 'read' | 'reply' | 'archive' | 'delete' | 'star' | 'unstar'
+src/lib/ai/behavior-tracker.ts:36:export async function trackBehavior(input: TrackBehaviorInput) {
+src/lib/ai/behavior-tracker.ts:41:    .from('emails')
+src/lib/ai/behavior-tracker.ts:51:  await getSupabase().from('user_behaviors').insert({
+src/lib/ai/behavior-tracker.ts:67:async function updateSenderScore(
+src/lib/ai/behavior-tracker.ts:76:    .from('sender_scores')
+src/lib/ai/behavior-tracker.ts:124:      .from('sender_scores')
+src/lib/ai/behavior-tracker.ts:130:    await getSupabase().from('sender_scores').insert({
+src/lib/ai/behavior-tracker.ts:145:export async function trackEmailReceived(userId: string, senderEmail: string, senderName?: string) {
+src/lib/ai/behavior-tracker.ts:147:    .from('sender_scores')
+src/lib/ai/behavior-tracker.ts:155:      .from('sender_scores')
+src/lib/ai/behavior-tracker.ts:162:    await getSupabase().from('sender_scores').insert({
+src/lib/ai/behavior-tracker.ts:172:export async function getUserBehaviorSummary(userId: string) {
+src/lib/ai/behavior-tracker.ts:174:    .from('user_behaviors')
+src/components/email/email-list-virtual.tsx:164:export function EmailListVirtual({
+src/components/ai/urgent-alert-wrapper.tsx:6:export function UrgentAlertWrapper() {
+src/components/ai/ai-smart-reply-content.tsx:18:export function AISmartReplyContent({
+src/components/ai/urgent-alert.tsx:21:export function UrgentAlert({ onSelectEmail }: Props) {
+src/components/ai/urgent-alert.tsx:28:        const res = await fetch('/api/ai/urgent-check')
+src/components/ai/index.ts:6:export { AIFeatureCard } from './ai-feature-card';
+src/components/ai/index.ts:7:export { AIFeatureButton } from './ai-feature-button';
+src/components/ai/index.ts:8:export { AIFeaturesPanel } from './ai-features-panel';
+src/components/ai/index.ts:9:export { AISummaryContent } from './ai-summary-content';
+src/components/ai/index.ts:10:export { AISmartReplyContent } from './ai-smart-reply-content';
+src/components/ai/index.ts:11:export { AIActionItemsContent } from './ai-action-items-content';
+src/components/ai/index.ts:12:export { AIFeaturesSettings } from './ai-features-settings';
+src/components/ai/index.ts:15:export { ReplyAssistant } from './reply-assistant';
+src/components/ai/index.ts:16:export { AssistantPanel } from './assistant-panel';
+src/components/ai/index.ts:17:export { UrgentAlert } from './urgent-alert';
+src/components/ai/ai-feature-card.tsx:58:export function AIFeatureCard({
+src/components/email/email-detail-mobile.tsx:34:export function EmailDetailMobile({
+src/components/email/email-detail-mobile.tsx:51:      const res = await fetch(`/api/emails/${emailId}/attachments`)
+src/components/auth/logout-button.tsx:14:export function LogoutButton({ className, showIcon = true, children }: LogoutButtonProps) {
+src/lib/ai/classification-logger.ts:10:export interface ClassificationLogInput {
+src/lib/ai/classification-logger.ts:24:export interface ClassificationLog {
+src/lib/ai/classification-logger.ts:44:export interface DailyMetrics {
+src/lib/ai/classification-logger.ts:80:export async function logClassification(input: ClassificationLogInput): Promise<void> {
+src/lib/ai/classification-logger.ts:86:      .from('ai_classification_logs')
+src/lib/ai/classification-logger.ts:110:export async function recordClassificationFeedback(
+src/lib/ai/classification-logger.ts:120:      .from('ai_classification_logs')
+src/lib/ai/classification-logger.ts:137:export async function getClassificationLogs(
+src/lib/ai/classification-logger.ts:153:      .from('ai_classification_logs')
+src/lib/ai/classification-logger.ts:189:export async function getDailyMetrics(
+src/lib/ai/classification-logger.ts:198:      .from('ai_metrics_daily')
+src/lib/ai/classification-logger.ts:232:export async function getRealtimeStats(
+src/lib/ai/classification-logger.ts:250:      .from('ai_classification_logs')
+src/lib/ai/classification-logger.ts:324:export async function aggregateDailyMetrics(date?: Date): Promise<{ success: boolean; count: number }> {
+src/lib/ai/classification-logger.ts:329:    const { data, error } = await supabase.rpc('run_daily_metrics_aggregation', {
+src/lib/ai/classification-logger.ts:346:export async function getAccuracyByCategory(
+src/lib/ai/classification-logger.ts:356:      .from('ai_classification_logs')
+src/lib/ai/__tests__/feature-executors.test.ts:158:export async function runFeatureExecutorsTests(): Promise<{
+src/components/offline-banner.tsx:13:export function OfflineBanner() {
+src/components/offline-banner.tsx:82:export default OfflineBanner
+src/components/ai/assistant-panel.tsx:48:export function AssistantPanel({ onSelectEmail, onRefresh }: Props) {
+src/components/ai/assistant-panel.tsx:60:      const res = await fetch('/api/ai/briefing')
+src/components/ai/assistant-panel.tsx:75:      const res = await fetch('/api/emails/bulk-action', {
+src/components/ai/ai-summary-content.tsx:25:export function AISummaryContent({ summary, className }: AISummaryContentProps) {
+src/components/error-boundary.tsx:35:export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+src/components/error-boundary.tsx:180:export function SectionErrorFallback({
+src/components/error-boundary.tsx:223:export function withErrorBoundary<P extends object>(
+src/components/error-boundary.tsx:242:export default ErrorBoundary
+src/hooks/use-haptic.ts:5:export function useHaptic() {
+src/components/email/ai-bottom-bar.tsx:37:export const AIBottomBar = memo(function AIBottomBar({
+src/components/email/ai-bottom-bar.tsx:475:export default AIBottomBar;
+src/hooks/usePushNotifications.ts:30:export const usePushNotifications = () => {
+src/components/email/email-detail-full.tsx:35:export function EmailDetailFull({
+src/components/email/email-detail-full.tsx:94:      const res = await fetch(`/api/emails/${emailId}/attachments`)
+src/components/email/email-detail-full.tsx:110:      const res = await fetch(`/api/emails/${email.id}/feedback`, {
+src/components/email/email-detail-full.tsx:131:      const res = await fetch(`/api/emails/${email.id}/feedback`, {
+src/components/email/email-detail-full.tsx:157:      const res = await fetch('/api/unsubscribe', {
+src/components/email/email-detail-full.tsx:421:                      await fetch('/api/ai/feedback', {
+src/hooks/use-user.ts:7:export function useUser() {
+src/components/settings/source-accounts-section.tsx:41:export function SourceAccountsSection() {
+src/components/settings/source-accounts-section.tsx:54:      const res = await fetch('/api/source-accounts')
+src/components/settings/source-accounts-section.tsx:84:      const res = await fetch(`/api/source-accounts/${accountId}/sync`, {
+src/components/settings/source-accounts-section.tsx:112:      const res = await fetch('/api/ai/classify-batch', {
+src/components/settings/source-accounts-section.tsx:135:      const res = await fetch(`/api/source-accounts/${deleteConfirm.account.id}`, {
+src/components/settings/source-accounts-section.tsx:156:      const res = await fetch(`/api/source-accounts/${accountId}`, {
+src/components/settings/source-accounts-section.tsx:175:      const res = await fetch(`/api/source-accounts/${accountId}`, {
+src/components/settings/add-account-modal.tsx:42:export function AddAccountModal({ isOpen, onClose, onSuccess }: AddAccountModalProps) {
+src/components/settings/add-account-modal.tsx:62:      fetch('/api/email-providers')
+src/components/settings/add-account-modal.tsx:139:      const response = await fetch('/api/source-accounts', {
+src/hooks/use-auto-sync.ts:20:export function useAutoSync({
+src/hooks/use-auto-sync.ts:48:      const res = await fetch('/api/source-accounts/sync', {
+src/components/settings/connect-google.tsx:15:export function ConnectGoogleButton({ className }: ConnectGoogleProps) {
+src/components/settings/mailbox-section.tsx:10:export function MailboxSection({ mailboxAddress }: MailboxSectionProps) {
+src/components/settings/ai-section.tsx:6:export function AISection() {
+src/components/settings/ai-section.tsx:15:      const res = await fetch('/api/ai/classify-all', { method: 'POST' })
+src/components/page-error-boundary.tsx:22:export class PageErrorBoundary extends Component<Props, State> {
+src/components/page-error-boundary.tsx:82:export default PageErrorBoundary;
+src/components/search/search-box.tsx:54:export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, className }: Props) {
+src/components/search/search-box.tsx:71:        const res = await fetch('/api/search/history')
+src/components/search/search-box.tsx:102:          const res = await fetch('/api/search', {
+src/components/search/search-box.tsx:193:    fetch('/api/search/history', {
+src/hooks/use-emails-query.ts:25:async function fetchEmails(params: FetchEmailsParams & { cursor?: string | null }) {
+src/hooks/use-emails-query.ts:34:    .from('emails')
+src/hooks/use-emails-query.ts:111:async function fetchEmailDetail(emailId: string) {
+src/hooks/use-emails-query.ts:118:    .from('emails')
+src/hooks/use-emails-query.ts:129:async function updateEmail(emailId: string, updates: Partial<Email>) {
+src/hooks/use-emails-query.ts:132:    .from('emails')
+src/hooks/use-emails-query.ts:140:export function useEmailsInfinite(params: FetchEmailsParams = {}) {
+src/hooks/use-emails-query.ts:153:export function useEmailsQuery(params: FetchEmailsParams = {}) {
+src/hooks/use-emails-query.ts:164:export function useEmailDetailQuery(emailId: string | null) {
+src/hooks/use-emails-query.ts:175:export function useUpdateEmailMutation() {
+src/hooks/use-emails-query.ts:237:export function useMarkAsRead() {
+src/hooks/use-emails-query.ts:243:export function useToggleStar() {
+src/hooks/use-emails-query.ts:253:export function useArchiveEmail() {
+src/hooks/use-emails-query.ts:259:export function useDeleteEmail() {
+src/hooks/use-emails-query.ts:265:export function usePrefetchEmails() {
+src/hooks/use-emails-query.ts:278:export function usePrefetchCommonFolders() {
+src/components/layout/mobile-nav.tsx:16:export function MobileNav() {
+src/components/ui/avatar.tsx:51:export interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
+src/components/ui/avatar.tsx:66:export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
+src/components/ui/avatar.tsx:152:export interface AvatarGroupProps extends HTMLAttributes<HTMLDivElement> {
+src/components/ui/avatar.tsx:161:export const AvatarGroup = forwardRef<HTMLDivElement, AvatarGroupProps>(
+src/components/ui/avatar.tsx:205:export default Avatar;
+src/components/layout/sidebar.tsx:34:export function Sidebar({ defaultCollapsed = true }: SidebarProps) {
+src/components/theme/theme-toggle.tsx:12:export function ThemeToggle({ variant = 'icon', className }: ThemeToggleProps) {
+src/components/ui/skeleton.tsx:11:export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
+src/components/ui/skeleton.tsx:22:export const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>(
+src/components/ui/skeleton.tsx:74:export interface SkeletonTextProps extends React.HTMLAttributes<HTMLDivElement> {
+src/components/ui/skeleton.tsx:83:export const SkeletonText = forwardRef<HTMLDivElement, SkeletonTextProps>(
+src/components/ui/skeleton.tsx:92:        {Array.from({ length: lines }).map((_, index) => (
+src/components/ui/skeleton.tsx:112:export interface SkeletonAvatarProps extends Omit<SkeletonProps, 'variant'> {
+src/components/ui/skeleton.tsx:117:export const SkeletonAvatar = forwardRef<HTMLDivElement, SkeletonAvatarProps>(
+src/components/ui/skeleton.tsx:135:export interface SkeletonButtonProps extends Omit<SkeletonProps, 'variant'> {
+src/components/ui/skeleton.tsx:140:export const SkeletonButton = forwardRef<HTMLDivElement, SkeletonButtonProps>(
+src/components/ui/skeleton.tsx:166:export interface SkeletonCardProps extends React.HTMLAttributes<HTMLDivElement> {
+src/components/ui/skeleton.tsx:175:export const SkeletonCard = forwardRef<HTMLDivElement, SkeletonCardProps>(
+src/components/ui/skeleton.tsx:215:export function EmailRowSkeleton() {
+src/components/ui/skeleton.tsx:235:export function EmailListSkeleton({ count = 8 }: { count?: number }) {
+src/components/ui/skeleton.tsx:248:export function EmailDetailSkeleton() {
+src/components/ui/skeleton.tsx:273:export function CardSkeleton() {
+src/components/ui/skeleton.tsx:289:export function AvatarSkeleton({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
+src/components/ui/skeleton.tsx:299:export default Skeleton;
+src/components/ui/optimized-image.tsx:28:export function OptimizedImage({
+src/components/ui/optimized-image.tsx:108:export function AvatarImage({
+src/components/ui/optimized-image.tsx:151:export default OptimizedImage
+src/components/layout/header.tsx:35:export function Header() {
+src/components/layout/header.tsx:67:          .from('profiles')
+src/components/layout/header.tsx:77:        const res = await fetch('/api/ai/briefing')
+src/components/ui/alert.tsx:48:export interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
+src/components/ui/alert.tsx:65:export const Alert = forwardRef<HTMLDivElement, AlertProps>(
+src/components/ui/alert.tsx:142:export default Alert;
+src/components/layout/mobile-inbox-header.tsx:39:export const MobileInboxHeader = memo(function MobileInboxHeader({
+src/components/layout/mobile-inbox-header.tsx:180:export default MobileInboxHeader;
+src/components/layout/category-filter-sheet.tsx:44:export const CategoryFilterSheet = memo(function CategoryFilterSheet({
+src/components/layout/category-filter-sheet.tsx:149:export default CategoryFilterSheet;
+src/components/ai/ai-features-panel.tsx:27:export function AIFeaturesPanel({
+src/components/ai/ai-features-panel.tsx:279:export default AIFeaturesPanel;
+src/components/mobile/index.ts:1:export { PullToRefresh } from './pull-to-refresh'
+src/components/mobile/index.ts:2:export { SwipeActions, type SwipeAction } from './swipe-actions'
+src/components/mobile/index.ts:3:export { BottomSheet } from './bottom-sheet'
+src/components/layout/unified-top-bar.tsx:71:export const UnifiedTopBar = memo(function UnifiedTopBar({
+src/components/layout/unified-top-bar.tsx:115:        const res = await fetch('/api/ai/briefing');
+src/components/layout/unified-top-bar.tsx:413:export default UnifiedTopBar;
+src/hooks/use-network-status.ts:14:export interface NetworkStatus {
+src/hooks/use-network-status.ts:23:export interface UseNetworkStatusOptions {
+src/hooks/use-network-status.ts:32:export function useNetworkStatus(options?: UseNetworkStatusOptions): NetworkStatus {
+src/hooks/use-network-status.ts:143:export function isSlowConnection(status: NetworkStatus): boolean {
+src/hooks/use-network-status.ts:154:export function getConnectionQuality(status: NetworkStatus): 'offline' | 'poor' | 'moderate' | 'good' {
+src/hooks/use-network-status.ts:179:export default useNetworkStatus
+src/components/ui/card.tsx:30:export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+src/components/ui/card.tsx:45:export const Card = forwardRef<HTMLDivElement, CardProps>(
+src/components/ui/card.tsx:119:export interface CardHeaderProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+src/components/ui/card.tsx:128:export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
+src/components/ui/card.tsx:158:export const CardTitle = forwardRef<
+src/components/ui/card.tsx:176:export const CardDescription = forwardRef<
+src/components/ui/card.tsx:194:export const CardContent = forwardRef<
+src/components/ui/card.tsx:210:export const CardFooter = forwardRef<
+src/components/ui/card.tsx:226:export default Card;
+src/components/mobile/bottom-sheet.tsx:18:export function BottomSheet({
+src/components/mobile/pull-to-refresh.tsx:18:export function PullToRefresh({ onRefresh, children, className, disabled }: Props) {
+src/components/ui/confirm-dialog.tsx:18:export function ConfirmDialog({
+src/components/mobile/swipe-actions.tsx:8:export type SwipeAction = 'archive' | 'delete' | 'star' | 'read'
+src/components/mobile/swipe-actions.tsx:30:export function SwipeActions({
+src/components/ui/stat-card.tsx:16:export function StatCard({
+src/components/ui/empty-state.tsx:92:export const EmptyState = memo(function EmptyState({
+src/components/ui/empty-state.tsx:152:export default EmptyState;
+src/components/ui/button.tsx:73:export interface ButtonProps
+src/components/ui/button.tsx:93:export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+src/components/ui/button.tsx:194:export interface IconButtonProps
+src/components/ui/button.tsx:202:export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
+src/components/ui/button.tsx:213:export default Button;
+src/components/notifications/notification-dropdown.tsx:35:export function NotificationDropdown() {
+src/components/notifications/notification-dropdown.tsx:47:      const res = await fetch('/api/notifications?limit=10')
+src/components/notifications/notification-dropdown.tsx:79:      await fetch('/api/notifications', {
+src/components/ui/index.ts:3: * Barrel export for all UI components
+src/components/ui/index.ts:7:export { Button, IconButton } from './button';
+src/components/ui/index.ts:8:export type { ButtonProps, IconButtonProps } from './button';
+src/components/ui/index.ts:10:export { Input, Textarea } from './input';
+src/components/ui/index.ts:11:export type { InputProps, TextareaProps } from './input';
+src/components/ui/index.ts:13:export {
+src/components/ui/index.ts:21:export type { CardProps, CardHeaderProps } from './card';
+src/components/ui/index.ts:23:export { Avatar, AvatarGroup } from './avatar';
+src/components/ui/index.ts:24:export type { AvatarProps, AvatarGroupProps } from './avatar';
+src/components/ui/index.ts:27:export { ToastProvider, useToast, toast } from './toast';
+src/components/ui/index.ts:28:export type { ToastType } from './toast';
+src/components/ui/index.ts:30:export { Modal, ConfirmModal, ModalFooter } from './modal';
+src/components/ui/index.ts:31:export type { ModalProps, ConfirmModalProps } from './modal';
+src/components/ui/index.ts:33:export { Alert } from './alert';
+src/components/ui/index.ts:34:export type { AlertProps } from './alert';
+src/components/ui/index.ts:36:export { Badge, BadgeGroup } from './badge';
+src/components/ui/index.ts:37:export type { BadgeProps, BadgeGroupProps } from './badge';
+src/components/ui/index.ts:39:export {
+src/components/ui/index.ts:51:export type {
+src/components/ui/index.ts:59:export { Spinner, LoadingOverlay } from './spinner';
+src/components/ui/index.ts:60:export type { SpinnerProps, LoadingOverlayProps } from './spinner';
+src/components/ui/badge.tsx:33:export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+src/components/ui/badge.tsx:46:export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
+src/components/ui/badge.tsx:109:export interface BadgeGroupProps extends React.HTMLAttributes<HTMLDivElement> {
+src/components/ui/badge.tsx:114:export const BadgeGroup = forwardRef<HTMLDivElement, BadgeGroupProps>(
+src/components/ui/badge.tsx:139:export default Badge;
+src/components/ui/section-header.tsx:12:export function SectionHeader({
+src/components/ui/modal.tsx:27:export interface ModalProps {
+src/components/ui/modal.tsx:54:export function Modal({
+src/components/ui/modal.tsx:225:export interface ConfirmModalProps {
+src/components/ui/modal.tsx:237:export function ConfirmModal({
+src/components/ui/modal.tsx:276:export function ModalFooter({
+src/components/ui/modal.tsx:290:export default Modal;
+src/components/ui/spinner.tsx:21:export interface SpinnerProps extends React.HTMLAttributes<HTMLDivElement> {
+src/components/ui/spinner.tsx:30:export const Spinner = forwardRef<HTMLDivElement, SpinnerProps>(
+src/components/ui/spinner.tsx:74:export interface LoadingOverlayProps extends React.HTMLAttributes<HTMLDivElement> {
+src/components/ui/spinner.tsx:85:export const LoadingOverlay = forwardRef<HTMLDivElement, LoadingOverlayProps>(
+src/components/ui/spinner.tsx:123:export default Spinner;
+src/components/ui/icon-box.tsx:9:export const IconBox = forwardRef<HTMLDivElement, IconBoxProps>(
+src/components/ai/ai-features-index.ts:5:export { AIFeatureCard } from './ai-feature-card';
+src/components/ai/ai-features-index.ts:6:export { AIFeatureButton } from './ai-feature-button';
+src/components/ai/ai-features-index.ts:7:export { AIFeaturesPanel } from './ai-features-panel';
+src/components/ai/ai-features-index.ts:8:export { AISummaryContent } from './ai-summary-content';
+src/components/ai/ai-features-index.ts:9:export { AISmartReplyContent } from './ai-smart-reply-content';
+src/components/ai/ai-features-index.ts:10:export { AIActionItemsContent } from './ai-action-items-content';
+src/components/ai/ai-features-index.ts:11:export { AIFeaturesSettings } from './ai-features-settings';
+src/components/ui/toast.tsx:28:export type ToastType = 'success' | 'error' | 'warning' | 'info' | 'loading' | 'undo';
+src/components/ui/toast.tsx:38:export function toast(type: ToastType, message: string, description?: string, duration?: number): void {
+src/components/ui/toast.tsx:103:export function ToastProvider({
+src/components/ui/toast.tsx:376:export function useToast(): ToastContextValue {
+src/components/ui/toast.tsx:384:export default ToastProvider;
+src/components/ai/ai-features-settings.tsx:46:export function AIFeaturesSettings() {
+src/components/ai/ai-features-settings.tsx:66:      const response = await fetch('/api/settings/ai-features');
+src/components/ai/ai-features-settings.tsx:89:      const response = await fetch('/api/settings/ai-features', {
+src/components/ai/ai-features-settings.tsx:123:      const response = await fetch('/api/settings/vip-senders', {
+src/components/ai/ai-features-settings.tsx:145:      const response = await fetch(`/api/settings/vip-senders?id=${id}`, {
+src/components/ui/loading-skeleton.tsx:12:export const Skeleton = memo(function Skeleton({
+src/components/ui/loading-skeleton.tsx:26:export const EmailItemSkeleton = memo(function EmailItemSkeleton() {
+src/components/ui/loading-skeleton.tsx:43:export const EmailListSkeleton = memo(function EmailListSkeleton({
+src/components/ui/loading-skeleton.tsx:50:      {Array.from({ length: count }).map((_, i) => (
+src/components/ui/loading-skeleton.tsx:58:export const EmailDetailSkeleton = memo(function EmailDetailSkeleton() {
+src/components/ui/loading-skeleton.tsx:92:export const StatsCardSkeleton = memo(function StatsCardSkeleton() {
+src/components/ui/loading-skeleton.tsx:107:export const PageSkeleton = memo(function PageSkeleton() {
+src/components/ui/loading-skeleton.tsx:131:export default Skeleton;
+src/components/ui/input.tsx:39:export interface InputProps
+src/components/ui/input.tsx:67:export const Input = forwardRef<HTMLInputElement, InputProps>(
+src/components/ui/input.tsx:280:export interface TextareaProps
+src/components/ui/input.tsx:294:export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
+src/components/ui/input.tsx:379:export default Input;
+src/components/ai/ai-feature-button.tsx:24:export function AIFeatureButton({
+src/components/insights/weekly-report.tsx:57:export function WeeklyReportView() {
+src/components/insights/weekly-report.tsx:67:      const res = await fetch('/api/ai/insights/weekly')
+src/components/ai/reply-assistant.tsx:33:export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantProps) {
+src/components/ai/reply-assistant.tsx:60:      const res = await fetch('/api/ai/analyze', {
+src/components/ai/reply-assistant.tsx:84:      const res = await fetch('/api/ai/draft', {
+src/components/ai/reply-assistant.tsx:111:      const res = await fetch('/api/ai/research', {

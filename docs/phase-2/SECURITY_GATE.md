@@ -1,0 +1,18 @@
+# Real mailbox / production gate: CLOSED
+
+No real email, external send, production deploy, main merge or live migration has
+been authorized in this task. Passing local tests does not open this gate.
+
+Required evidence before proposing a supervised real-mailbox test:
+- [ ] Request-security fixes pass adversarial unit/route integration tests.
+- [ ] Fresh and upgrade migrations, two-tenant/anonymous SQL boundaries verified.
+- [ ] Server credential vault, AEAD rotation and no client credential visibility.
+- [ ] No unresolved applicable critical/high dependency or application vulnerabilities.
+- [ ] Gmail scope minimization and OAuth verification/security-assessment applicability checked.
+- [ ] Durable sync checkpoints, duplicate/retry/concurrency behavior and Gmail send verified.
+- [ ] CI lint/typecheck/tests/build succeed; required checks and branch protection confirmed remotely.
+- [ ] Isolated staging, synthetic data, redacted telemetry and incident/recovery procedure verified.
+- [ ] Explicit owner authorization for the particular supervised mailbox test.
+
+M0 only establishes the baseline and closes identified paths. Vault/sync release
+requirements span M1; this is a data-use gate, not a claim M0 implements M1.
