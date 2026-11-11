@@ -34,8 +34,14 @@ for task_migration in supabase/migrations/*.sql; do
   if [[ "$task_migration" == "supabase/migrations/20261111020000_credential_vault.sql" ]]; then
     psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/credential-upgrade.sql
   fi
+  if [[ "$task_migration" == "supabase/migrations/20261111090000_ask_inbox.sql" ]]; then
+    psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -v seed_ask_mail=true -f tests/db/ask-inbox-upgrade.sql
+  fi
   echo "Applying $task_migration"
   psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f "$task_migration"
+  if [[ "$task_migration" == "supabase/migrations/20261111090000_ask_inbox.sql" ]]; then
+    psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -v seed_ask_mail=false -f tests/db/ask-inbox-upgrade.sql
+  fi
 done
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/tenant-isolation.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/registration.sql
@@ -47,3 +53,4 @@ psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/action-inbox.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/commitment-ledger.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/commitment-board.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/commitment-detection.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/ask-inbox.sql

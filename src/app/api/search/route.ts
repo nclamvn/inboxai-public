@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
 
     // Save to search history
     if (query.trim()) {
-      await saveSearchHistory(supabase, user.id, query)
+      await saveSearchHistory(supabase, query.trim())
     }
 
     return NextResponse.json({
@@ -186,31 +186,11 @@ function escapeRegex(str: string): string {
 
 // Save search to history
 async function saveSearchHistory(
-  supabase: ReturnType<typeof createClient> extends Promise<infer T> ? T : never,
-  userId: string,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   query: string
 ) {
-  try {
-    const { data: prefs } = await supabase
-      .from('user_preferences')
-      .select('recent_searches')
-      .eq('user_id', userId)
-      .single()
-
-    const recentSearches: string[] = prefs?.recent_searches || []
-    const filtered = recentSearches.filter(s => s !== query)
-    filtered.unshift(query)
-    const updated = filtered.slice(0, 10)
-
-    await supabase
-      .from('user_preferences')
-      .upsert({
-        user_id: userId,
-        recent_searches: updated,
-        updated_at: new Date().toISOString()
-      })
-  } catch {
-    // Ignore history save errors
+  if (query.length <= 300) {
+    await supabase.rpc('update_search_history', { p_query: query, p_action: 'recent' })
   }
 }
 

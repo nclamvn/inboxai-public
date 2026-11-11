@@ -8,7 +8,8 @@ const withBundleAnalyzer = bundleAnalyzer({
 
 const nextConfig: NextConfig = {
   // Externalize packages that don't work with bundling
-  serverExternalPackages: ['imapflow', 'nodemailer', 'mailparser', 'pino', 'thread-stream'],
+  serverExternalPackages: ['imapflow', 'nodemailer', 'mailparser', 'pino', 'thread-stream', 'onnxruntime-node'],
+  outputFileTracingExcludes: { '/api/ask-inbox': ['node_modules/.cache/inboxai-ask-e5/**'] },
 
   // Empty turbopack config to silence the warning
   turbopack: {},
