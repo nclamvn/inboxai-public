@@ -1,0 +1,38 @@
+{
+  "engine": "157.0.8103.51",
+  "captures": [
+    {
+      "name": "desktop-proposals",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "axe": []
+    },
+    {
+      "name": "desktop-preview",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "axe": []
+    },
+    {
+      "name": "tablet-proposals",
+      "viewport": {
+        "width": 834,
+        "height": 1112
+      },
+      "axe": []
+    },
+    {
+      "name": "mobile-preview",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "axe": []
+    }
+  ],
+  "runtimeErrors": []
+}

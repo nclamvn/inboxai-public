@@ -22,6 +22,7 @@ the real-mail/production gate remains closed throughout.
 | M2-B Action Inbox | M2-A | contextual ranking, reasons, corrections and evidence | Ranking reasons cite actual sources, user corrections persist, urgent exceptions visible, synthetic/held-out comparisons |
 | M3-A commitment ledger | M2-B | persistent owner/due/status/evidence + change history | Deadline changes update identity rather than duplicate; ambiguous/conflicting evidence explicit; two-tenant constraints |
 | M3-B commitment UX | M3-A | owed/waiting/overdue workflows and history | Sources accessible; completion requires evidence or user confirmation; measurable reduction in reconstruction effort |
+| M3-C commitment detection | M3-B | detect cited promises and changes for confirmation | No write on scan or preview; source and version checks; unlinked changes stay outside the ledger |
 | M4-A retrieval | M3-A | tenant-scoped metadata/keyword/semantic retrieval | Cross-account allowed scope only; index isolation/deletion, held-out recall and latency measured |
 | M4-B Ask Inbox | M4-A | cited synthesis, structured amounts/dates, abstention | Important conclusions linked to source/version; contradictions visible; adversarial unsupported claims rejected |
 | M5-A execution contracts | M4-B | plans, preview, immutable scope/approval, audit/idempotency | Stale or expanded plan needs new approval; email content cannot grant authority; concurrent/replayed requests safe |
@@ -113,3 +114,13 @@ consumes it for commitment tracking and review workflows.
 | M3-B3 | M3-B2 | Evidence-backed confirmation and local rehearsal | Preview before writing, stale version blocked, retries keep their key and completion appears in the closed group |
 
 See the [M3-B handoff](M3B_LOCAL_HANDOFF.md) for browser evidence and scope.
+
+## M3-C local review units
+
+| Unit | Dependency | Scope | Acceptance |
+| --- | --- | --- | --- |
+| M3-C1 | M3-A | Tenant-scoped email scan and evidence-bound confirmation | Bounded cursor pages, source checks inside the ledger transaction, replay and duplicate-source protection |
+| M3-C2 | M3-C1, M3-B | Explicit pledge and change detection with in-app review | Exact evidence, safe linking, previous and proposed values, explicit confirmation |
+| M3-C3 | M3-C2 | Local synthetic rehearsal | Two tenants, stale source, competing approvals, accessible review, stable receipt on retry |
+
+See the [M3-C handoff](M3C_LOCAL_HANDOFF.md) for the supported language and verification.

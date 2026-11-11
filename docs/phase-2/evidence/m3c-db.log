@@ -1,0 +1,662 @@
+
+> ai-mailbox@0.1.0 test:db
+> bash scripts/test-db.sh
+
+CREATE ROLE
+CREATE ROLE
+CREATE ROLE
+CREATE SCHEMA
+CREATE TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+GRANT
+GRANT
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+Applying supabase/migrations/00000000000000_initial_schema.sql
+CREATE EXTENSION
+CREATE TABLE
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE FUNCTION
+psql:supabase/migrations/00000000000000_initial_schema.sql:51: NOTICE:  trigger "on_auth_user_created" for relation "auth.users" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE TABLE
+CREATE INDEX
+ALTER TABLE
+CREATE POLICY
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+CREATE POLICY
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+CREATE POLICY
+CREATE TABLE
+ALTER TABLE
+CREATE POLICY
+CREATE TABLE
+ALTER TABLE
+CREATE POLICY
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+CREATE POLICY
+CREATE FUNCTION
+psql:supabase/migrations/00000000000000_initial_schema.sql:401: NOTICE:  trigger "update_profiles_updated_at" for relation "profiles" does not exist, skipping
+psql:supabase/migrations/00000000000000_initial_schema.sql:401: NOTICE:  trigger "update_emails_updated_at" for relation "emails" does not exist, skipping
+psql:supabase/migrations/00000000000000_initial_schema.sql:401: NOTICE:  trigger "update_source_accounts_updated_at" for relation "source_accounts" does not exist, skipping
+psql:supabase/migrations/00000000000000_initial_schema.sql:401: NOTICE:  trigger "update_action_items_updated_at" for relation "action_items" does not exist, skipping
+psql:supabase/migrations/00000000000000_initial_schema.sql:401: NOTICE:  trigger "update_follow_ups_updated_at" for relation "follow_ups" does not exist, skipping
+psql:supabase/migrations/00000000000000_initial_schema.sql:401: NOTICE:  trigger "update_automation_rules_updated_at" for relation "automation_rules" does not exist, skipping
+DO
+                status
+--------------------------------------
+ Initial schema created successfully!
+(1 row)
+
+Applying supabase/migrations/20241213_ai_monitoring_domain_reputation.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+INSERT 0 1
+CREATE FUNCTION
+CREATE FUNCTION
+psql:supabase/migrations/20241213_ai_monitoring_domain_reputation.sql:307: NOTICE:  trigger "trigger_update_domain_reputation" for relation "email_action_logs" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+ALTER TABLE
+CREATE POLICY
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+CREATE FUNCTION
+Applying supabase/migrations/20241213_classification_feedback.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+COMMENT
+Applying supabase/migrations/20241213_phishing_detection.sql
+psql:supabase/migrations/20241213_phishing_detection.sql:13: NOTICE:  column "phishing_score" of relation "emails" already exists, skipping
+psql:supabase/migrations/20241213_phishing_detection.sql:13: NOTICE:  column "phishing_risk" of relation "emails" already exists, skipping
+psql:supabase/migrations/20241213_phishing_detection.sql:13: NOTICE:  column "phishing_reasons" of relation "emails" already exists, skipping
+psql:supabase/migrations/20241213_phishing_detection.sql:13: NOTICE:  column "is_phishing_reviewed" of relation "emails" already exists, skipping
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+INSERT 0 8
+INSERT 0 7
+INSERT 0 8
+INSERT 0 6
+INSERT 0 6
+INSERT 0 6
+INSERT 0 5
+INSERT 0 29
+INSERT 0 9
+ALTER TABLE
+CREATE POLICY
+ALTER TABLE
+CREATE POLICY
+ALTER TABLE
+CREATE POLICY
+CREATE FUNCTION
+CREATE FUNCTION
+psql:supabase/migrations/20241213_phishing_detection.sql:295: NOTICE:  trigger "trigger_update_phishing_risk" for relation "emails" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+Applying supabase/migrations/20241213_sender_reputation.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+psql:supabase/migrations/20241213_sender_reputation.sql:54: NOTICE:  policy "Users can view own sender_reputation" for relation "sender_reputation" does not exist, skipping
+DROP POLICY
+psql:supabase/migrations/20241213_sender_reputation.sql:55: NOTICE:  policy "Users can insert own sender_reputation" for relation "sender_reputation" does not exist, skipping
+DROP POLICY
+psql:supabase/migrations/20241213_sender_reputation.sql:56: NOTICE:  policy "Users can update own sender_reputation" for relation "sender_reputation" does not exist, skipping
+DROP POLICY
+psql:supabase/migrations/20241213_sender_reputation.sql:57: NOTICE:  policy "Users can delete own sender_reputation" for relation "sender_reputation" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE FUNCTION
+psql:supabase/migrations/20241213_sender_reputation.sql:88: NOTICE:  trigger "trigger_sender_reputation_updated_at" for relation "sender_reputation" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+COMMENT
+COMMENT
+COMMENT
+COMMENT
+COMMENT
+                       status
+-----------------------------------------------------
+ sender_reputation migration completed successfully!
+(1 row)
+
+Applying supabase/migrations/20241214_smart_ai_features.sql
+CREATE TABLE
+INSERT 0 7
+CREATE TABLE
+INSERT 0 6
+INSERT 0 6
+INSERT 0 6
+INSERT 0 6
+INSERT 0 6
+INSERT 0 6
+INSERT 0 6
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+INSERT 0 7
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+ALTER TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+ALTER TABLE
+psql:supabase/migrations/20241214_smart_ai_features.sql:468: NOTICE:  policy "Anyone can read feature definitions" for relation "ai_feature_definitions" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+ALTER TABLE
+psql:supabase/migrations/20241214_smart_ai_features.sql:474: NOTICE:  policy "Anyone can read feature defaults" for relation "ai_feature_defaults" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+ALTER TABLE
+psql:supabase/migrations/20241214_smart_ai_features.sql:480: NOTICE:  policy "Users can manage own config" for relation "ai_feature_user_config" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+ALTER TABLE
+psql:supabase/migrations/20241214_smart_ai_features.sql:486: NOTICE:  policy "Users can manage own VIP senders" for relation "ai_vip_senders" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+ALTER TABLE
+psql:supabase/migrations/20241214_smart_ai_features.sql:492: NOTICE:  policy "Users can read global or own triggers" for relation "ai_content_triggers" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:supabase/migrations/20241214_smart_ai_features.sql:497: NOTICE:  policy "Users can manage own triggers" for relation "ai_content_triggers" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+ALTER TABLE
+psql:supabase/migrations/20241214_smart_ai_features.sql:512: NOTICE:  policy "Users can manage own usage" for relation "ai_feature_usage" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+ALTER TABLE
+psql:supabase/migrations/20241214_smart_ai_features.sql:518: NOTICE:  policy "Users can view own costs" for relation "ai_cost_daily" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+Applying supabase/migrations/20241216_multiple_accounts.sql
+ALTER TABLE
+DO
+DO
+DO
+psql:supabase/migrations/20241216_multiple_accounts.sql:51: NOTICE:  column "access_token" of relation "source_accounts" already exists, skipping
+psql:supabase/migrations/20241216_multiple_accounts.sql:51: NOTICE:  column "refresh_token" of relation "source_accounts" already exists, skipping
+psql:supabase/migrations/20241216_multiple_accounts.sql:51: NOTICE:  column "token_expires_at" of relation "source_accounts" already exists, skipping
+ALTER TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+CREATE FUNCTION
+psql:supabase/migrations/20241216_multiple_accounts.sql:90: NOTICE:  trigger "trigger_auto_primary" for relation "source_accounts" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+UPDATE 0
+UPDATE 0
+UPDATE 0
+       check_type        | total_accounts | primary_accounts | accounts_with_color
+-------------------------+----------------+------------------+---------------------
+ source_accounts columns |              0 |                0 |                   0
+(1 row)
+
+                 status
+----------------------------------------
+ Multiple accounts migration completed!
+(1 row)
+
+Applying supabase/migrations/20241217_imap_smtp_support.sql
+psql:supabase/migrations/20241217_imap_smtp_support.sql:16: NOTICE:  column "imap_host" of relation "source_accounts" already exists, skipping
+psql:supabase/migrations/20241217_imap_smtp_support.sql:16: NOTICE:  column "imap_port" of relation "source_accounts" already exists, skipping
+psql:supabase/migrations/20241217_imap_smtp_support.sql:16: NOTICE:  column "imap_secure" of relation "source_accounts" already exists, skipping
+psql:supabase/migrations/20241217_imap_smtp_support.sql:16: NOTICE:  column "smtp_host" of relation "source_accounts" already exists, skipping
+psql:supabase/migrations/20241217_imap_smtp_support.sql:16: NOTICE:  column "smtp_port" of relation "source_accounts" already exists, skipping
+psql:supabase/migrations/20241217_imap_smtp_support.sql:16: NOTICE:  column "smtp_secure" of relation "source_accounts" already exists, skipping
+ALTER TABLE
+psql:supabase/migrations/20241217_imap_smtp_support.sql:21: NOTICE:  column "message_id" of relation "emails" already exists, skipping
+ALTER TABLE
+CREATE INDEX
+CREATE TABLE
+INSERT 0 13
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+       table_name       | count
+------------------------+-------
+ email_provider_presets |    13
+(1 row)
+
+             status
+--------------------------------
+ IMAP/SMTP migration completed!
+(1 row)
+
+Applying supabase/migrations/20261111000000_security_baseline.sql
+BEGIN
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+psql:supabase/migrations/20261111000000_security_baseline.sql:53: NOTICE:  trigger "guard_profile_admin" for relation "public.profiles" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+ALTER TABLE
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+DO
+ALTER FUNCTION
+COMMIT
+Applying supabase/migrations/20261111010000_registration_admission.sql
+BEGIN
+ALTER TABLE
+CREATE TABLE
+INSERT 0 1
+ALTER TABLE
+REVOKE
+GRANT
+CREATE TABLE
+ALTER TABLE
+REVOKE
+GRANT
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+REVOKE
+GRANT
+COMMIT
+UPDATE 1
+INSERT 0 1
+UPDATE 1
+INSERT 0 1
+Applying supabase/migrations/20261111020000_credential_vault.sql
+BEGIN
+CREATE SCHEMA
+REVOKE
+ALTER TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TABLE
+CREATE TABLE
+ALTER TABLE
+ALTER TABLE
+REVOKE
+REVOKE
+INSERT 0 1
+ALTER TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+NOTIFY
+COMMIT
+Applying supabase/migrations/20261111030000_sync_contracts.sql
+BEGIN
+ALTER TABLE
+ALTER TABLE
+CREATE INDEX
+CREATE FUNCTION
+ALTER TABLE
+UPDATE 0
+ALTER TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+ALTER TABLE
+REVOKE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+REVOKE
+GRANT
+NOTIFY
+COMMIT
+Applying supabase/migrations/20261111040000_mail_send.sql
+BEGIN
+CREATE TABLE
+ALTER TABLE
+REVOKE
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+NOTIFY
+COMMIT
+Applying supabase/migrations/20261111050000_action_inbox.sql
+BEGIN
+ALTER TABLE
+CREATE INDEX
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMIT
+Applying supabase/migrations/20261111060000_commitment_ledger.sql
+BEGIN
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+REVOKE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+GRANT
+COMMIT
+Applying supabase/migrations/20261111070000_commitment_board.sql
+BEGIN
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMIT
+Applying supabase/migrations/20261111080000_commitment_detection.sql
+BEGIN
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMIT
+BEGIN
+UPDATE 1
+INSERT 0 2
+INSERT 0 2
+INSERT 0 2
+INSERT 0 0
+SET
+DO
+RESET
+              set_config
+--------------------------------------
+ 00000000-0000-0000-0000-000000000001
+(1 row)
+
+           set_config
+--------------------------------
+ {"email":"alice@example.test"}
+(1 row)
+
+SET
+DO
+RESET
+DO
+ROLLBACK
+                           result
+-------------------------------------------------------------
+ PASS: synthetic anonymous/two-tenant SQL boundary scenarios
+(1 row)
+
+BEGIN
+DO
+UPDATE 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+DO
+SET
+DO
+RESET
+DO
+ROLLBACK
+                                             result
+------------------------------------------------------------------------------------------------
+ PASS: default closed, native signup admission, whitelist, protected policy, shared rate limits
+(1 row)
+
+PASS: 10 concurrent native inserts compete for one remaining slot; exactly one admitted
+BEGIN
+DO
+SET
+DO
+RESET
+              set_config
+--------------------------------------
+ 90000000-0000-0000-0000-000000000001
+(1 row)
+
+SET
+DO
+RESET
+SET
+DO
+RESET
+DO
+DO
+DELETE 1
+DO
+ROLLBACK
+                                                      result
+------------------------------------------------------------------------------------------------------------------
+ PASS: private grants, dropped public columns, tenant RPC, atomic failure rollback, legacy quarantine and cascade
+(1 row)
+
+BEGIN
+SET
+DO
+RESET
+SET
+DO
+RESET
+DO
+ROLLBACK
+                                                result
+-------------------------------------------------------------------------------------------------------
+ PASS: sync RPC grants, lease exclusion, atomic rollback, revision fencing and preserved user priority
+(1 row)
+
+BEGIN
+SET
+DO
+RESET
+DO
+ROLLBACK
+                                       result
+-------------------------------------------------------------------------------------
+ PASS: send grants, replay conflict, invalid receipt rollback and Gmail mirror merge
+(1 row)
+
+BEGIN
+UPDATE 1
+INSERT 0 2
+INSERT 0 3
+SET
+DO
+RESET
+              set_config
+--------------------------------------
+ 00000000-0000-0000-0000-000000000041
+(1 row)
+
+SET
+DO
+RESET
+ROLLBACK
+                                      result
+----------------------------------------------------------------------------------
+ PASS: Action Inbox preview, tenant isolation, correction, reset and stale replay
+(1 row)
+
+BEGIN
+UPDATE 1
+INSERT 0 2
+INSERT 0 5
+DO
+              set_config
+--------------------------------------
+ 00000000-0000-0000-0000-000000000061
+(1 row)
+
+SET
+DO
+RESET
+UPDATE 1
+DELETE 1
+SET
+DO
+RESET
+SET CONSTRAINTS
+DELETE 1
+DO
+ROLLBACK
+                                                      result
+------------------------------------------------------------------------------------------------------------------
+ PASS: commitment identity, versioning, conflict, completion, evidence retention, pagination and tenant isolation
+(1 row)
+
+BEGIN
+DO
+UPDATE 1
+INSERT 0 2
+INSERT 0 2
+INSERT 0 1
+              set_config
+--------------------------------------
+ 00000000-0000-0000-0000-000000000071
+(1 row)
+
+SET
+DO
+RESET
+ROLLBACK
+                                                      result
+------------------------------------------------------------------------------------------------------------------
+ PASS: commitment board ownership, UTC+7 date boundary, exact instant, group totals, cursors and tenant isolation
+(1 row)
+
+BEGIN
+UPDATE 1
+INSERT 0 2
+INSERT 0 3
+INSERT 0 24
+DO
+              set_config
+--------------------------------------
+ 00000000-0000-0000-0000-000000000081
+(1 row)
+
+SET
+DO
+RESET
+ROLLBACK
+                                          result
+-------------------------------------------------------------------------------------------
+ PASS: detection scan cursor, stale source, confirmed receipt, tenant isolation and replay
+(1 row)

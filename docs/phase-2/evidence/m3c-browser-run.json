@@ -1,0 +1,124 @@
+{
+  "date": "2026-11-11T14:12:39.158Z",
+  "provenance": "Local Chromium, Next, GoTrue, PostgREST and PostgreSQL with synthetic commitment sources",
+  "images": {
+    "auth": "supabase/gotrue:v2.197.0",
+    "rest": "postgrest/postgrest:v14.18",
+    "mail": "axllent/mailpit:v1.28.1",
+    "db": "postgres:16"
+  },
+  "outcomes": [
+    {
+      "name": "upgrade preserves existing profile",
+      "status": "PASS"
+    },
+    {
+      "name": "direct Auth API cannot bypass closed registration policy",
+      "status": "PASS"
+    },
+    {
+      "name": "Next signup requires email verification",
+      "status": "PASS"
+    },
+    {
+      "name": "signup sets no authenticated access-token cookie",
+      "status": "PASS"
+    },
+    {
+      "name": "unverified signup has no admin access",
+      "status": "PASS"
+    },
+    {
+      "name": "password login rejected before verification",
+      "status": "PASS"
+    },
+    {
+      "name": "PKCE email callback creates a verified session",
+      "status": "PASS"
+    },
+    {
+      "name": "verified admitted user can open the inbox page",
+      "status": "PASS"
+    },
+    {
+      "name": "non-admin verified user cannot access global whitelist",
+      "status": "PASS"
+    },
+    {
+      "name": "real PostgREST JWT/RLS returns only own email",
+      "status": "PASS"
+    },
+    {
+      "name": "anonymous PostgREST cannot read tenant email",
+      "status": "PASS"
+    },
+    {
+      "name": "server-provisioned admin role grants whitelist access",
+      "status": "PASS"
+    },
+    {
+      "name": "admin revocation is enforced on the next request",
+      "status": "PASS"
+    },
+    {
+      "name": "closed policy rejects subsequent Next signups",
+      "status": "PASS"
+    },
+    {
+      "name": "recent mail yields exact cited proposals, with unresolved changes held until a target exists",
+      "status": "PASS"
+    },
+    {
+      "name": "detection and review reads do not create a ledger row",
+      "status": "PASS"
+    },
+    {
+      "name": "older scan pages remain accessible without duplicate or foreign results",
+      "status": "PASS"
+    },
+    {
+      "name": "anonymous read and foreign cursor or confirmation are refused",
+      "status": "PASS"
+    },
+    {
+      "name": "changed source rejects confirmation even when the visible quote still exists",
+      "status": "PASS"
+    },
+    {
+      "name": "an email already used by the manual ledger is not proposed again",
+      "status": "PASS"
+    },
+    {
+      "name": "source preview changes nothing until explicit confirmation and focus moves to the receipt",
+      "status": "PASS"
+    },
+    {
+      "name": "only the newer change with matching sender, mailbox and reference links to the same ledger",
+      "status": "PASS"
+    },
+    {
+      "name": "mobile approval previews old and new values and retries with the original idempotency key",
+      "status": "PASS"
+    },
+    {
+      "name": "accepted update keeps one identity and history links both original and changing emails",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent approvals create a single version and persist only the explicit new assignee",
+      "status": "PASS"
+    },
+    {
+      "name": "confirmation from an older ledger version cannot overwrite the approved assignee",
+      "status": "PASS"
+    },
+    {
+      "name": "completion enters the closed group only after confirmation",
+      "status": "PASS"
+    },
+    {
+      "name": "desktop, tablet and mobile proposals have no overflow, runtime exceptions or sampled axe violations",
+      "status": "PASS"
+    }
+  ]
+}
