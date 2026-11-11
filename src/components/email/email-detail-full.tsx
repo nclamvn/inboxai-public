@@ -29,6 +29,7 @@ interface Props {
   onStar?: (id: string) => void
   onArchive?: (id: string) => void
   onDelete?: (id: string) => void
+  onExplainPriority?: () => void
   fullWidth?: boolean
 }
 
@@ -39,6 +40,7 @@ export function EmailDetailFull({
   onStar,
   onArchive,
   onDelete,
+  onExplainPriority,
   fullWidth = false
 }: Props) {
   const router = useRouter()
@@ -512,6 +514,15 @@ export function EmailDetailFull({
           </div>
         </div>
 
+        {onExplainPriority && (
+          <button type="button" onClick={onExplainPriority}
+            className="neo-target mt-3 inline-flex items-center gap-2 border-s-2 border-[var(--selection-line)] px-2 py-2 text-sm font-medium text-[var(--accent-foreground)] hover:bg-[var(--hover)]"
+          >
+            <ListTodo size={16} strokeWidth={1.5} aria-hidden="true" />
+            Ưu tiên và nguồn
+          </button>
+        )}
+
         {/* AI Analysis - Compact inline */}
         {(email.category || email.priority || email.summary) && (
           <div className="mt-4">
@@ -523,7 +534,7 @@ export function EmailDetailFull({
             >
               <ListTodo className="w-3.5 h-3.5" strokeWidth={1.5} />
               <span className="flex items-center gap-2">
-                {email.priority && (
+                {email.priority && !onExplainPriority && (
                   <span className={cn(
                     'px-1.5 py-0.5 rounded text-[11px] font-medium',
                     (email.priority || 0) >= 4 ? 'bg-[var(--warning-bg)] text-[var(--warning)]' : 'bg-[var(--secondary)] text-[var(--muted)]'

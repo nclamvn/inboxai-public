@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 const segments = [
   { id: 'all', label: 'Tất cả' },
   { id: 'unread', label: 'Chưa đọc' },
-  { id: 'important', label: 'Quan trọng' },
+  { id: 'important', label: 'Cần xử lý' },
 ]
 
 interface MobileInboxHeaderProps {

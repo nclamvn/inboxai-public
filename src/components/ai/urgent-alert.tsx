@@ -21,22 +21,31 @@ export function UrgentAlert({ onSelectEmail, hidden = false }: Props) {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
 
   useEffect(() => {
+    let pending: AbortController | undefined
     const checkUrgentEmails = async () => {
+      pending?.abort()
+      const request = new AbortController()
+      pending = request
       try {
-        const res = await fetch('/api/ai/urgent-check')
+        const res = await fetch('/api/ai/urgent-check', { signal: request.signal })
         if (res.ok) {
           const data = await res.json()
-          setAlerts(data.urgentEmails || [])
+          if (!request.signal.aborted) setAlerts(data.urgentEmails || [])
         }
       } catch (error) {
-        console.error('Failed to check urgent emails:', error)
+        if (!request.signal.aborted) console.error('Failed to check urgent emails:', error)
       }
     }
 
     checkUrgentEmails()
     // Refresh every 10 minutes (was 5 minutes - performance optimization)
     const interval = setInterval(checkUrgentEmails, 10 * 60 * 1000)
-    return () => clearInterval(interval)
+    window.addEventListener('inbox-priority-changed', checkUrgentEmails)
+    return () => {
+      clearInterval(interval)
+      pending?.abort()
+      window.removeEventListener('inbox-priority-changed', checkUrgentEmails)
+    }
   }, [])
 
   const handleDismiss = (id: string) => {

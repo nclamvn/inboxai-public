@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback, useMemo, MouseEvent, TouchEvent } from 'react'
-import { Star, ListTodo, Inbox, Newspaper, ChevronDown, ChevronRight, Loader2, Paperclip, Check, X, Archive, Trash2, Mail, MailOpen } from 'lucide-react'
+import { Star, ListTodo, Inbox, Newspaper, ChevronDown, ChevronRight, Loader2, Paperclip, Check, X, Archive, Trash2, Mail, MailOpen, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSelection } from '@/contexts/email-selection-context'
 import { ContextMenu } from './context-menu'
 import { CategoryPicker } from './category-picker'
 import type { Email } from '@/types'
+import { inboxBandLabels, type InboxRanking } from '@/lib/action-inbox/rank'
 
 interface Props {
   emails: Email[]
@@ -15,20 +16,22 @@ interface Props {
   onStar?: (id: string) => void
   onCategoryClick?: (category: string) => void
   compact?: boolean
-  smartSort?: boolean
+  groupByPriority?: boolean
+  rankings?: ReadonlyMap<string, InboxRanking>
+  onExplainPriority?: (email: Email) => void
   hasMore?: boolean
   loadingMore?: boolean
+  pageError?: boolean
   onLoadMore?: () => void
   onBulkAction?: (action: string, emailIds: string[], data?: Record<string, unknown>) => void
   selectionEnabled?: boolean
 }
 
 interface EmailSection {
-  id: string
+  id: 'action' | 'primary' | 'later'
   title: string
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
   emails: Email[]
-  defaultCollapsed?: boolean
 }
 
 // Long press duration in milliseconds
@@ -41,16 +44,17 @@ export function EmailListCompact({
   onStar,
   onCategoryClick,
   compact = false,
-  smartSort = false,
+  groupByPriority = false,
+  rankings,
+  onExplainPriority,
   hasMore = false,
   loadingMore = false,
+  pageError = false,
   onLoadMore,
   onBulkAction,
   selectionEnabled = true
 }: Props) {
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
-    readLater: true // Collapsed by default
-  })
+  const [collapsedSections, setCollapsedSections] = useState<Partial<Record<EmailSection['id'], boolean>>>({})
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
   // Selection state - always call hook to follow rules of hooks
@@ -164,7 +168,7 @@ export function EmailListCompact({
   // Infinite scroll: observe the load more sentinel with PREFETCH
   // rootMargin: '400px' triggers load 400px before reaching the end
   useEffect(() => {
-    if (!onLoadMore || !hasMore) return
+    if (!onLoadMore || !hasMore || pageError) return
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -183,7 +187,7 @@ export function EmailListCompact({
     }
 
     return () => observer.disconnect()
-  }, [hasMore, loadingMore, onLoadMore])
+  }, [hasMore, loadingMore, onLoadMore, pageError])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -225,41 +229,22 @@ export function EmailListCompact({
     return categoryLabels[category as keyof typeof categoryLabels] || category
   }, [categoryLabels])
 
-  // Group emails into sections for smart sort - memoized
-  const sections = useMemo(() => {
-    if (!smartSort) return []
+  const sections = useMemo<EmailSection[]>(() => {
+    if (!groupByPriority || !rankings) return []
+    const grouped = {
+      action: [] as Email[],
+      primary: [] as Email[],
+      later: [] as Email[],
+    }
+    for (const email of emails) grouped[rankings.get(email.id)?.band ?? 'primary'].push(email)
+    const result: EmailSection[] = [
+      { id: 'action', title: inboxBandLabels.action, icon: ListTodo, emails: grouped.action },
+      { id: 'primary', title: inboxBandLabels.primary, icon: Inbox, emails: grouped.primary },
+      { id: 'later', title: inboxBandLabels.later, icon: Newspaper, emails: grouped.later },
+    ]
+    return result.filter(section => section.emails.length > 0)
+  }, [emails, groupByPriority, rankings])
 
-    const needsAction: Email[] = []
-    const primary: Email[] = []
-    const readLater: Email[] = []
-
-    emails.forEach(email => {
-      if (!email.is_read && (
-        (email.priority || 0) >= 4 ||
-        email.needs_reply ||
-        email.detected_deadline
-      )) {
-        needsAction.push(email)
-      } else if (email.category === 'newsletter' || email.category === 'promotion') {
-        readLater.push(email)
-      } else {
-        primary.push(email)
-      }
-    })
-
-    return [
-      { id: 'needsAction', title: 'Cần xử lý', icon: ListTodo, emails: needsAction },
-      { id: 'primary', title: 'Hộp thư chính', icon: Inbox, emails: primary },
-      { id: 'readLater', title: 'Đọc sau', icon: Newspaper, emails: readLater, defaultCollapsed: true }
-    ].filter(section => section.emails.length > 0)
-  }, [emails, smartSort])
-
-  const toggleSection = useCallback((sectionId: string) => {
-    setCollapsedSections(prev => ({
-      ...prev,
-      [sectionId]: !prev[sectionId]
-    }))
-  }, [])
 
   // Handle checkbox click (desktop) - memoized
   const handleCheckboxClick = useCallback((e: MouseEvent, email: Email) => {
@@ -413,6 +398,7 @@ export function EmailListCompact({
     const subject = email.subject || '(Không có tiêu đề)'
     const sender = email.from_name || email.from_address || 'Người gửi'
     const label = getCategoryLabel(email.category)
+    const rank = rankings?.get(email.id)
 
     return (
       <div
@@ -463,7 +449,7 @@ export function EmailListCompact({
           type="button"
           onClick={event => handleTap(email, event)}
           aria-current={open ? 'true' : undefined}
-          aria-label={`${isSelecting ? 'Chọn' : 'Mở'} thư: ${subject}, ${sender}${email.is_read ? '' : ', chưa đọc'}${(email.priority || 0) >= 4 ? ', quan trọng' : ''}`}
+          aria-label={`${isSelecting ? 'Chọn' : 'Mở'} thư: ${subject}, ${sender}${email.is_read ? '' : ', chưa đọc'}${rank?.band === 'action' ? ', cần xử lý' : ''}`}
           className="flex min-h-11 min-w-0 flex-1 flex-col items-stretch gap-1 text-start focus-visible:outline-none"
         >
           <span className="flex items-center justify-between gap-2">
@@ -477,16 +463,31 @@ export function EmailListCompact({
             <span className={cn('truncate', !email.is_read && 'font-semibold')}>{subject}</span>
             {(email.attachment_count || 0) > 0 && <Paperclip size={14} className="shrink-0 text-[var(--foreground-muted)]" aria-label="Có tệp đính kèm" />}
           </span>
-          <span className="truncate text-xs leading-4 text-[var(--foreground-muted)]">
-            {(email.body_text || email.snippet || '').replace(/\s+/g, ' ').slice(0, 120)}
-          </span>
+          {rank?.band === 'action' ? (
+            <span className="truncate text-xs leading-4 text-[var(--accent-foreground)]">
+              {rank.reasons[0].label}
+            </span>
+          ) : (
+            <span className="truncate text-xs leading-4 text-[var(--foreground-muted)]">
+              {(email.body_text || email.snippet || '').replace(/\s+/g, ' ').slice(0, 120)}
+            </span>
+          )}
         </button>
+
+        {rank && onExplainPriority && !isSelecting && (
+          <button
+            type="button" aria-label={`Ưu tiên và nguồn: ${subject}`} title="Ưu tiên và nguồn"
+            className="neo-icon-button h-8 w-8" onClick={() => onExplainPriority(email)}
+          >
+            <Info size={16} strokeWidth={1.5} aria-hidden="true" />
+          </button>
+        )}
 
         {!compact && email.category && onCategoryClick && (
           <button
             type="button" onClick={() => onCategoryClick(email.category!)}
             aria-label={`Lọc danh mục ${label}`}
-            className="hidden h-8 shrink-0 items-center rounded-[var(--radius-control)] px-2 text-xs text-[var(--foreground-muted)] hover:bg-[var(--secondary)] lg:inline-flex"
+            className="hidden h-8 w-24 shrink-0 items-center justify-end rounded-[var(--radius-control)] px-2 text-xs text-[var(--foreground-muted)] hover:bg-[var(--secondary)] lg:inline-flex"
           >
             {label}
           </button>
@@ -511,9 +512,12 @@ export function EmailListCompact({
           <span className="text-[13px]">Đang tải...</span>
         </div>
       ) : hasMore ? (
-        <button onClick={onLoadMore} className="text-[13px] text-[var(--muted)] hover:text-[var(--foreground)]">
-          Tải thêm
-        </button>
+        <div className="text-center">
+          {pageError && <p role="status" className="text-sm text-[var(--error)]">Chưa tải được trang tiếp theo.</p>}
+          <button type="button" onClick={onLoadMore} className="neo-target px-3 py-2 text-sm text-[var(--accent-foreground)] underline">
+            {pageError ? 'Thử tải thêm' : 'Tải thêm'}
+          </button>
+        </div>
       ) : emails.length > 0 ? (
         <span className="text-[12px] text-[var(--muted-foreground)]">Đã hiển thị tất cả</span>
       ) : null}
@@ -545,21 +549,21 @@ export function EmailListCompact({
     />
   )
 
-  if (smartSort) {
-    // sections is already memoized above
+  if (groupByPriority) {
     return (
       <>
         <div className={cn(isSelecting && 'pb-32 md:pb-0')}>
           {sections.map((section) => {
             const Icon = section.icon
-            const isCollapsed = collapsedSections[section.id] ?? section.defaultCollapsed
+            const isCollapsed = collapsedSections[section.id] ??
+              (section.id === 'later' && !section.emails.some(email => email.id === selectedId))
 
             return (
               <div key={section.id}>
                 <button
                   type="button"
                   aria-expanded={!isCollapsed}
-                  onClick={() => toggleSection(section.id)}
+                  onClick={() => setCollapsedSections(previous => ({ ...previous, [section.id]: !isCollapsed }))}
                   className="flex min-h-11 w-full items-center gap-2 border-b border-[var(--border)] bg-[var(--canvas)] px-4 py-2 text-start hover:bg-[var(--hover)]"
                 >
                   {isCollapsed ? (
@@ -570,13 +574,13 @@ export function EmailListCompact({
                   <Icon
                     className={cn(
                       'w-4 h-4',
-                      section.id === 'needsAction' ? 'text-[var(--accent-foreground)]' : 'text-[var(--muted)]'
+                      section.id === 'action' ? 'text-[var(--accent-foreground)]' : 'text-[var(--muted)]'
                     )}
                     strokeWidth={1.5}
                   />
                   <span className={cn(
                     'text-[13px] font-medium',
-                    section.id === 'needsAction' ? 'text-[var(--accent-foreground)]' : 'text-[var(--foreground)]'
+                    section.id === 'action' ? 'text-[var(--accent-foreground)]' : 'text-[var(--foreground)]'
                   )}>
                     {section.title}
                   </span>

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import {
   ChevronLeft, Star, MoreVertical, Reply, Forward,
   Archive, Trash2, Mail, AlertCircle, Loader2,
-  Tag, Flag, MailOpen, Ban, Check
+  Tag, Flag, MailOpen, Ban, Check, ListTodo
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
@@ -29,6 +29,7 @@ interface EmailDetailMobileProps {
   onStar?: (id: string) => void
   onArchive?: (id: string) => void
   onDelete?: (id: string) => void
+  onExplainPriority?: () => void
 }
 
 export function EmailDetailMobile({
@@ -37,7 +38,8 @@ export function EmailDetailMobile({
   onRefresh,
   onStar,
   onArchive,
-  onDelete
+  onDelete,
+  onExplainPriority
 }: EmailDetailMobileProps) {
   const [showActions, setShowActions] = useState(false)
   const [isStarred, setIsStarred] = useState(email.is_starred)
@@ -182,6 +184,15 @@ export function EmailDetailMobile({
             </div>
           </div>
         </div>
+
+        {onExplainPriority && (
+          <button type="button" onClick={onExplainPriority}
+            className="neo-target mx-4 mt-3 inline-flex items-center gap-2 border-s-2 border-[var(--selection-line)] px-2 py-2 text-sm font-medium text-[var(--accent-foreground)] hover:bg-[var(--hover)]"
+          >
+            <ListTodo size={16} strokeWidth={1.5} aria-hidden="true" />
+            Ưu tiên và nguồn
+          </button>
+        )}
 
         {/* AI Summary - Smart Allocation */}
         <div className="px-4 pt-3">

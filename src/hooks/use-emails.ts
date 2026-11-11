@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { Email } from '@/types'
+import type { Email, InboxPriority } from '@/types'
+
+export interface InboxPriorityResult {
+  status: 'saved' | 'conflict'
+  choice: InboxPriority
+  version: number
+}
 
 interface UseEmailsOptions {
   folder?: 'inbox' | 'sent' | 'starred' | 'archive' | 'trash'
@@ -15,9 +21,11 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [pageError, setPageError] = useState(false)
   const [hasMore, setHasMore] = useState(true)
-  // CURSOR-BASED: Track cursor (received_at timestamp) instead of page number
-  const cursorRef = useRef<string | null>(null)
+  const cursorRef = useRef<Pick<Email, 'received_at' | 'id'> | null>(null)
+  const requestGeneration = useRef(0)
+  const paging = useRef(false)
 
   const supabase = createClient()
 
@@ -30,6 +38,7 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
         received_at, is_read, is_starred, is_archived, is_deleted,
         priority, category, needs_reply, detected_deadline, direction,
         summary, ai_confidence, source_account_id
+        ${folder === 'inbox' ? ', snippet:inbox_preview, inbox_priority, inbox_priority_version' : ''}
       `)
       .eq('user_id', userId)
 
@@ -45,6 +54,7 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
           .eq('direction', 'inbound')
           .eq('is_archived', false)
           .eq('is_deleted', false)
+          .eq('provider_deleted', false)
         break
       case 'sent':
         query = query
@@ -71,8 +81,12 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
 
   // Fetch initial page - CURSOR-BASED O(1) vs O(n) offset
   const fetchEmails = useCallback(async () => {
+    const generation = ++requestGeneration.current
     setLoading(true)
+    setLoadingMore(false)
+    paging.current = false
     setError(null)
+    setPageError(false)
     cursorRef.current = null
 
     try {
@@ -81,9 +95,11 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
 
       // Fetch pageSize + 1 to check if there's more
       const { data, error: fetchError } = await buildQuery(user.id)
-        .order('received_at', { ascending: false })
+        .order('received_at', { ascending: false, nullsFirst: false })
+        .order('id', { ascending: false })
         .limit(pageSize + 1)
 
+      if (generation !== requestGeneration.current) return
       if (fetchError) throw fetchError
 
       const allData = data as Email[] || []
@@ -91,35 +107,53 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
       const hasMoreItems = allData.length > pageSize
       const fetchedEmails = hasMoreItems ? allData.slice(0, pageSize) : allData
 
-      setEmails(fetchedEmails)
+      setEmails(previous => {
+        if (folder !== 'inbox') return fetchedEmails
+        const byId = new Map(previous.map(email => [email.id, email]))
+        return fetchedEmails.map(email => {
+          const previousEmail = byId.get(email.id)
+          return previousEmail && (previousEmail.inbox_priority_version ?? 0) > (email.inbox_priority_version ?? 0)
+            ? { ...email, inbox_priority: previousEmail.inbox_priority, inbox_priority_version: previousEmail.inbox_priority_version }
+            : email
+        })
+      })
       setHasMore(hasMoreItems)
       // Set cursor to last item's timestamp for next page
-      cursorRef.current = fetchedEmails.length > 0
-        ? fetchedEmails[fetchedEmails.length - 1].received_at
-        : null
+      cursorRef.current = fetchedEmails.at(-1) ?? null
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch emails')
+      if (generation === requestGeneration.current) {
+        setEmails([])
+        setHasMore(false)
+        setError(err instanceof Error ? err.message : 'Failed to fetch emails')
+      }
     } finally {
-      setLoading(false)
+      if (generation === requestGeneration.current) setLoading(false)
     }
-  }, [buildQuery, pageSize, supabase])
+  }, [buildQuery, folder, pageSize, supabase])
 
   // Load more emails - CURSOR-BASED O(1) pagination
   const loadMore = useCallback(async () => {
-    if (loadingMore || !hasMore || !cursorRef.current) return
+    const cursor = cursorRef.current
+    if (paging.current || !hasMore || !cursor) return
+    const generation = requestGeneration.current
+    paging.current = true
 
     setLoadingMore(true)
+    setPageError(false)
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      // CURSOR-BASED: Use .lt() on received_at instead of .range()
-      // This is O(1) with index vs O(n) with offset
-      const { data, error: fetchError } = await buildQuery(user.id)
-        .lt('received_at', cursorRef.current)
-        .order('received_at', { ascending: false })
+      const query = buildQuery(user.id)
+      const page = cursor.received_at === null
+        ? query.is('received_at', null).lt('id', cursor.id)
+        : query.or(`received_at.lt.${cursor.received_at},and(received_at.eq.${cursor.received_at},id.lt.${cursor.id}),received_at.is.null`)
+      const { data, error: fetchError } = await page
+        .order('received_at', { ascending: false, nullsFirst: false })
+        .order('id', { ascending: false })
         .limit(pageSize + 1)
 
+      if (generation !== requestGeneration.current) return
       if (fetchError) throw fetchError
 
       const allData = data as Email[] || []
@@ -127,21 +161,43 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
       const newEmails = hasMoreItems ? allData.slice(0, pageSize) : allData
 
       if (newEmails.length > 0) {
-        setEmails(prev => [...prev, ...newEmails])
-        // Update cursor to last item's timestamp
-        cursorRef.current = newEmails[newEmails.length - 1].received_at
+        setEmails(prev => {
+          const loaded = new Set(prev.map(email => email.id))
+          return [...prev, ...newEmails.filter(email => !loaded.has(email.id))]
+        })
+        cursorRef.current = newEmails[newEmails.length - 1]
       }
       setHasMore(hasMoreItems)
-    } catch (err) {
-      console.error('Load more error:', err)
+    } catch {
+      if (generation === requestGeneration.current) setPageError(true)
     } finally {
-      setLoadingMore(false)
+      if (generation === requestGeneration.current) {
+        paging.current = false
+        setLoadingMore(false)
+      }
     }
-  }, [buildQuery, hasMore, loadingMore, pageSize, supabase])
+  }, [buildQuery, hasMore, pageSize, supabase])
 
   useEffect(() => {
     fetchEmails()
+    return () => { requestGeneration.current++ }
   }, [fetchEmails])
+
+  const setInboxPriority = async (emailId: string, choice: InboxPriority, version: number): Promise<InboxPriorityResult> => {
+    const { data, error } = await supabase.rpc('set_inbox_priority', {
+      p_email_id: emailId, p_choice: choice, p_version: version,
+    }).abortSignal(AbortSignal.timeout(10_000))
+    if (error) throw error
+
+    const result = data as InboxPriorityResult
+    setEmails(previous => previous.map(email =>
+      email.id === emailId && (email.inbox_priority_version ?? 0) <= result.version
+        ? { ...email, inbox_priority: result.choice, inbox_priority_version: result.version }
+        : email,
+    ))
+    window.dispatchEvent(new Event('inbox-priority-changed'))
+    return result
+  }
 
   const markAsRead = async (emailId: string) => {
     const { error } = await supabase
@@ -231,6 +287,7 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
     loading,
     loadingMore,
     error,
+    pageError,
     hasMore,
     refetch: fetchEmails,
     loadMore,
@@ -241,5 +298,6 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
     restoreEmail,
     permanentDelete,
     emptyTrash,
+    setInboxPriority,
   }
 }

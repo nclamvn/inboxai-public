@@ -17,6 +17,9 @@ import { UnifiedTopBar } from '@/components/layout/unified-top-bar'
 import { MobileInboxHeader } from '@/components/layout/mobile-inbox-header'
 import { CategoryFilterSheet } from '@/components/layout/category-filter-sheet'
 import { AccountSwitcher } from '@/components/email/account-switcher'
+import { InboxPriorityDialog } from '@/components/email/inbox-priority-dialog'
+import { compareInboxPriority, rankActionInbox } from '@/lib/action-inbox/rank'
+import type { Email } from '@/types'
 
 // Dynamic imports for code splitting - heavy components loaded on demand
 const EmailListCompact = dynamic(
@@ -65,7 +68,7 @@ function InboxContent() {
   // Account filter state
   const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([])
 
-  const { emails, error, loading, loadingMore, hasMore, toggleStar, archiveEmail, deleteEmail, markAsRead, refetch, loadMore } = useEmails({
+  const { emails, error, loading, loadingMore, hasMore, pageError, toggleStar, archiveEmail, deleteEmail, markAsRead, refetch, loadMore, setInboxPriority } = useEmails({
     folder: 'inbox',
     accountIds: selectedAccountIds.length > 0 ? selectedAccountIds : undefined
   })
@@ -86,6 +89,15 @@ function InboxContent() {
   const [reclassifying, setReclassifying] = useState(false)
   const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [priorityTarget, setPriorityTarget] = useState<Email | null>(null)
+  const [now, setNow] = useState(Date.now)
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60_000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const rankings = useMemo(() => rankActionInbox(emails, now), [emails, now])
 
   // Read briefing filter from sessionStorage when URL has briefing param
   useEffect(() => {
@@ -110,7 +122,7 @@ function InboxContent() {
   }, [briefingType])
 
   // ALWAYS fetch full email when selectedId is set (list only has preview, not body)
-  const { email: fetchedEmail, loading: fetchingEmail } = useEmail(selectedId)
+  const { email: fetchedEmail, loading: fetchingEmail, error: sourceError, refetch: refetchEmail } = useEmail(selectedId)
 
   // Update viewMode when URL changes
   const effectiveViewMode = selectedId ? (viewMode === 'list' ? 'split' : viewMode) : 'list'
@@ -195,22 +207,15 @@ function InboxContent() {
         counts.unread++
       }
 
-      if ((email.priority || 0) >= 4) {
+      if (rankings.get(email.id)?.band === 'action') {
         counts.important++
-      }
-
-      if (!email.is_read && (
-        (email.priority || 0) >= 4 ||
-        email.needs_reply ||
-        email.detected_deadline
-      )) {
         counts.needs_action++
-        counts.needsAction++ // Legacy alias
+        counts.needsAction++
       }
     })
 
     return counts
-  }, [emails])
+  }, [emails, rankings])
 
   // Categories quan trọng cần warning
   const IMPORTANT_CATEGORIES = ['work', 'personal', 'transaction', 'needsAction', 'needs_action']
@@ -291,44 +296,14 @@ function InboxContent() {
       return result.filter(email => emailIdSet.has(email.id))
     }
 
-    // Priority 2: Category filter (desktop) or segment filter (mobile)
-    if (isMobile) {
-      // Mobile: Apply segment filter
-      if (mobileSegment === 'unread') {
-        result = result.filter(email => !email.is_read)
-      } else if (mobileSegment === 'important') {
-        result = result.filter(email => (email.priority || 0) >= 4)
-      }
+    const needsAction = (email: Email) => rankings.get(email.id)?.band === 'action'
+    if (isMobile && mobileSegment === 'unread') result = result.filter(email => !email.is_read)
+    if (isMobile && mobileSegment === 'important') result = result.filter(needsAction)
 
-      // Also apply category filter if set (from bottom sheet)
-      if (activeFilter && activeFilter !== 'all') {
-        if (activeFilter === 'needs_action' || activeFilter === 'needsAction') {
-          result = result.filter(email =>
-            !email.is_read && (
-              (email.priority || 0) >= 4 ||
-              email.needs_reply ||
-              email.detected_deadline
-            )
-          )
-        } else {
-          result = result.filter(email => email.category === activeFilter)
-        }
-      }
-    } else {
-      // Desktop: Apply category filter
-      if (activeFilter && activeFilter !== 'all') {
-        if (activeFilter === 'needs_action' || activeFilter === 'needsAction') {
-          result = result.filter(email =>
-            !email.is_read && (
-              (email.priority || 0) >= 4 ||
-              email.needs_reply ||
-              email.detected_deadline
-            )
-          )
-        } else {
-          result = result.filter(email => email.category === activeFilter)
-        }
-      }
+    if (activeFilter === 'needs_action' || activeFilter === 'needsAction') {
+      result = result.filter(needsAction)
+    } else if (activeFilter && activeFilter !== 'all') {
+      result = result.filter(email => email.category === activeFilter)
     }
 
     // Priority 3: Search filter
@@ -342,8 +317,8 @@ function InboxContent() {
       )
     }
 
-    return result
-  }, [emails, activeFilter, briefingFilter, isMobile, mobileSegment, searchQuery])
+    return result.sort((a, b) => compareInboxPriority(rankings.get(a.id)!, rankings.get(b.id)!))
+  }, [emails, rankings, activeFilter, briefingFilter, isMobile, mobileSegment, searchQuery])
 
   // URL-based navigation
   const handleSelectEmail = useCallback((id: string) => {
@@ -455,8 +430,36 @@ function InboxContent() {
     }
   }, [emails, router, refetch])
 
-  // Use fetchedEmail (full data with body) instead of list email (preview only)
   const selectedEmail = fetchedEmail
+  const explainSelected = selectedEmail?.direction === 'inbound' &&
+    !selectedEmail.is_deleted && !selectedEmail.is_archived && !selectedEmail.provider_deleted
+    ? () => setPriorityTarget(selectedEmail)
+    : undefined
+  const priorityEmail = priorityTarget && (emails.find(email => email.id === priorityTarget.id) ?? priorityTarget)
+  const priorityRanking = priorityEmail && (rankings.get(priorityEmail.id) ?? rankActionInbox([{
+    ...priorityEmail,
+    snippet: priorityEmail.snippet || priorityEmail.body_text?.slice(0, 480) || null,
+  }], now).get(priorityEmail.id))
+  const priorityDialog = priorityEmail && priorityRanking && (
+    <InboxPriorityDialog
+      key={priorityEmail.id}
+      email={priorityEmail}
+      ranking={priorityRanking}
+      onClose={() => setPriorityTarget(null)}
+      onOpenSource={id => {
+        setPriorityTarget(null)
+        if (id !== selectedId) handleSelectEmail(id)
+      }}
+      onSave={async (id, choice, version) => {
+        const result = await setInboxPriority(id, choice, version)
+        setPriorityTarget(previous => previous?.id === id
+          ? { ...previous, inbox_priority: result.choice, inbox_priority_version: result.version }
+          : previous)
+        if (id === selectedId && !rankings.has(id)) void refetchEmail()
+        return result
+      }}
+    />
+  )
 
   // Show skeleton while loading initial data
   if (loading) {
@@ -486,14 +489,18 @@ function InboxContent() {
   // MOBILE: Full-screen email detail - completely replaces the inbox view
   if (isMobile && selectedId && selectedEmail) {
     return (
-      <EmailDetailMobile
-        email={selectedEmail}
-        onBack={handleCloseEmail}
-        onRefresh={refetch}
-        onStar={toggleStar}
-        onArchive={handleArchive}
-        onDelete={handleDelete}
-      />
+      <>
+        <EmailDetailMobile
+          email={selectedEmail}
+          onBack={handleCloseEmail}
+          onRefresh={refetch}
+          onStar={toggleStar}
+          onArchive={handleArchive}
+          onDelete={handleDelete}
+          onExplainPriority={explainSelected}
+        />
+        {priorityDialog}
+      </>
     )
   }
 
@@ -583,23 +590,36 @@ function InboxContent() {
                   action={{ label: 'Tải lại', onClick: refetch }}
                 />
               ) : filteredEmails.length === 0 ? (
-                <EmptyState
-                  type={searchQuery ? 'no-results' : emails.length === 0 ? 'no-emails' : 'empty-folder'}
-                  description={emails.length === 0 && !searchQuery ? 'Thư mới sẽ xuất hiện sau khi đồng bộ.' : undefined}
-                  className="py-8"
-                  action={(activeFilter || briefingFilter || searchQuery) ? {
-                    label: 'Xóa bộ lọc',
-                    onClick: () => {
-                      if (briefingFilter) {
-                        handleClearBriefingFilter()
-                      } else if (searchQuery) {
-                        setSearchQuery('')
-                      } else {
-                        setActiveFilter(null)
+                <>
+                  <EmptyState
+                    type={searchQuery ? 'no-results' : emails.length === 0 ? 'no-emails' : 'empty-folder'}
+                    description={emails.length === 0 && !searchQuery ? 'Thư mới sẽ xuất hiện sau khi đồng bộ.' : undefined}
+                    className="py-8"
+                    action={(activeFilter || briefingFilter || searchQuery) ? {
+                      label: 'Xóa bộ lọc',
+                      onClick: () => {
+                        if (briefingFilter) {
+                          handleClearBriefingFilter()
+                        } else if (searchQuery) {
+                          setSearchQuery('')
+                        } else {
+                          setActiveFilter(null)
+                        }
                       }
-                    }
-                  } : emails.length === 0 ? { label: 'Quản lý tài khoản', onClick: () => router.push('/settings') } : undefined}
-                />
+                    } : emails.length === 0 ? { label: 'Quản lý tài khoản', onClick: () => router.push('/settings') } : undefined}
+                  />
+                  {hasMore && (
+                    <div className="px-4 pb-4 text-center">
+                      <p role="status" className="text-sm text-[var(--foreground-muted)]">
+                        {pageError ? 'Chưa tải được trang tiếp theo.' : 'Có thể còn thư phù hợp ở các trang chưa tải.'}
+                      </p>
+                      <button type="button" onClick={loadMore} disabled={loadingMore}
+                        className="neo-target px-3 py-2 text-sm text-[var(--accent-foreground)] underline disabled:opacity-50">
+                        {loadingMore ? 'Đang tải thêm…' : pageError ? 'Thử tải thêm' : 'Tải thêm'}
+                      </button>
+                    </div>
+                  )}
+                </>
               ) : (
                 <EmailListCompact
                   emails={filteredEmails}
@@ -608,9 +628,12 @@ function InboxContent() {
                   onStar={toggleStar}
                   onCategoryClick={handleCategoryClick}
                   compact={effectiveViewMode === 'split'}
-                  smartSort={!activeFilter}
+                  groupByPriority={!activeFilter && !briefingFilter && !searchQuery && (!isMobile || mobileSegment === 'all')}
+                  rankings={rankings}
+                  onExplainPriority={setPriorityTarget}
                   hasMore={hasMore}
                   loadingMore={loadingMore}
+                  pageError={pageError}
                   onLoadMore={loadMore}
                   onBulkAction={handleBulkAction}
                 />
@@ -630,6 +653,7 @@ function InboxContent() {
               onArchive={handleArchive}
               onDelete={handleDelete}
               fullWidth={effectiveViewMode === 'full'}
+              onExplainPriority={explainSelected}
             />
           </div>
         )}
@@ -642,6 +666,16 @@ function InboxContent() {
           </div>
         )}
 
+        {selectedId && !selectedEmail && sourceError && !fetchingEmail && (
+          <div className="min-w-0 flex-1 bg-[var(--surface)]">
+            <EmptyState type="error" title="Chưa mở được email nguồn"
+              description="Thư có thể không còn khả dụng. Bạn có thể thử lại."
+              action={<button type="button" onClick={() => void refetchEmail()} className="neo-target px-3 py-2 text-sm text-[var(--accent-foreground)] underline">Thử mở lại</button>}
+            />
+            <button type="button" onClick={handleCloseEmail} className="neo-target mx-auto block px-3 py-2 text-sm text-[var(--accent-foreground)] underline">Về hộp thư</button>
+          </div>
+        )}
+
         {/* Empty State when split but no selection */}
         {effectiveViewMode === 'split' && !selectedId && (
           <div className="flex-1 bg-[var(--background)]">
@@ -649,6 +683,8 @@ function InboxContent() {
           </div>
         )}
       </div>
+
+      {priorityDialog}
 
       {/* Mobile: Category Filter Sheet */}
       {isMobile && (
