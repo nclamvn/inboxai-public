@@ -64,6 +64,7 @@ export async function rehearseDesign({ app, cookies, admin, userId, record, acti
     for (const { name, ...options } of scenarios) {
       assert.equal((await admin.from('emails').update({ is_read: false }).eq('user_id', userId).eq('subject', subject)).error, null)
       const context = await browser.newContext({ locale: 'vi-VN', reducedMotion: 'reduce', deviceScaleFactor: 1, ...options })
+      await context.grantPermissions(['local-network-access'], { origin: app })
       await context.addCookies([...cookies].filter(([, value]) => value).map(([cookie, value]) => ({ name: cookie, value, url: app })))
       await context.addInitScript(() => localStorage.setItem('inboxai_onboarding_seen', 'true'))
       let inboxMode = 'data'

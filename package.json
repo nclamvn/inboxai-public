@@ -30,7 +30,8 @@
     "test:ask-inbox": "npm run test:local-auth -- --ask-inbox",
     "test:ask-answer": "npm run test:local-auth -- --ask-answer",
     "test:operator": "npm run test:local-auth -- --operator",
-    "test:operator-outcomes": "npm run test:local-auth -- --operator-outcomes"
+    "test:operator-outcomes": "npm run test:local-auth -- --operator-outcomes",
+    "test:platform": "npm run test:local-auth -- --m6a"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

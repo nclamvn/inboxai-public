@@ -21,7 +21,11 @@ const askInbox = process.argv.includes('--ask-inbox')
 const askAnswer = process.argv.includes('--ask-answer')
 const operator = process.argv.includes('--operator')
 const operatorOutcomes = process.argv.includes('--operator-outcomes')
-const evidenceFile = operatorOutcomes ? 'docs/phase-2/evidence/m5b-browser-run.json'
+const m6Baseline = process.argv.includes('--m6a-baseline')
+const m6 = m6Baseline || process.argv.includes('--m6a')
+const m6Native = m6 && process.argv.includes('--native-shells')
+const evidenceFile = m6 ? `docs/phase-2/evidence/m6a-${m6Baseline ? 'baseline' : m6Native ? 'native-run' : 'browser-run'}.json`
+  : operatorOutcomes ? 'docs/phase-2/evidence/m5b-browser-run.json'
   : operator ? 'docs/phase-2/evidence/m5a-browser-run.json'
   : askAnswer ? 'docs/phase-2/evidence/m4b-browser-run.json'
   : askInbox ? 'docs/phase-2/evidence/m4a-browser-run.json'
@@ -49,7 +53,8 @@ const loopbackFetch = (input, init) => {
 const admin = createClient(base, service, { auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: loopbackFetch } })
 const outcomes = []
 const record = (name, condition) => { assert.ok(condition, name); outcomes.push({ name, status: 'PASS' }); console.log(`PASS: ${name}`) }
-let started = false, next, proxy, mailProvider, smtpWire
+let started = false, next, proxy, nativeFixture, mailProvider, smtpWire
+const briefingReads = []
 const cookies = new Map()
 const appFetch = async (path, init = {}) => {
   const headers = new Headers(init.headers)
@@ -90,9 +95,23 @@ try {
     const auth = req.url.startsWith('/auth/v1/')
     const rest = req.url.startsWith('/rest/v1/')
     if (!auth && !rest) { res.writeHead(404); res.end(); return }
+    const localCors = m6 && req.headers.origin === app
+    const cors = { 'access-control-allow-origin': app, 'access-control-allow-methods': 'GET,POST,PATCH,DELETE,OPTIONS',
+      'access-control-allow-headers': req.headers['access-control-request-headers'] ?? '',
+      'access-control-expose-headers': 'content-range, location', vary: 'Origin' }
+    if (localCors && req.method === 'OPTIONS') { res.writeHead(204, cors); res.end(); return }
     const upstream = httpRequest({ hostname: '127.0.0.1', port: auth ? 55999 : 55400,
       path: req.url.replace(auth ? '/auth/v1' : '/rest/v1', ''), method: req.method, headers: req.headers }, response => {
-      res.writeHead(response.statusCode, response.headers); response.pipe(res)
+      if (m6 && rest && req.method === 'GET') {
+        const url = new URL(req.url, base)
+        if (url.pathname === '/rest/v1/emails' && url.searchParams.get('order') === 'received_at.desc'
+          && url.searchParams.get('is_archived') === 'eq.false' && !url.searchParams.has('limit')) {
+          const read = { bytes: 0, status: response.statusCode }
+          briefingReads.push(read)
+          response.on('data', chunk => { read.bytes += chunk.length })
+        }
+      }
+      res.writeHead(response.statusCode, localCors ? { ...response.headers, ...cors } : response.headers); response.pipe(res)
     })
     upstream.on('error', () => { res.writeHead(502); res.end() })
     req.pipe(upstream)
@@ -121,14 +140,21 @@ try {
   await delay(1000)
   mailProvider = await startMailProvider()
   smtpWire = await startSmtpWire()
-  next = spawn(process.execPath, ['--import', './tests/local-auth/mail-network.mjs', 'node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', '55300'], {
-    env: { ...Object.fromEntries(['PATH','HOME','LANG','TMPDIR', ...(askInbox ? ['ASK_INBOX_MODEL_DIR'] : [])]
+  const nextEnv = { ...Object.fromEntries(['PATH','HOME','LANG','TMPDIR', ...(askInbox ? ['ASK_INBOX_MODEL_DIR'] : [])]
         .filter(key => process.env[key]).map(key => [key,process.env[key]])),
-      INBOXAI_TEST_GMAIL_URL: mailProvider.url, NODE_EXTRA_CA_CERTS: smtpWire.cert, NODE_ENV:'development', NEXT_PUBLIC_SUPABASE_URL: base, NEXT_PUBLIC_SUPABASE_ANON_KEY: anon,
+      INBOXAI_TEST_GMAIL_URL: mailProvider.url, NODE_EXTRA_CA_CERTS: smtpWire.cert, NODE_ENV: m6 ? 'production' : 'development', NEXT_PUBLIC_SUPABASE_URL: base, NEXT_PUBLIC_SUPABASE_ANON_KEY: anon,
       SUPABASE_SERVICE_ROLE_KEY: service, NEXT_PUBLIC_APP_URL: app, SIGNUP_ENABLED: 'true',
       SIGNUP_RATE_LIMIT_KEY: 'synthetic-local-registration-key-at-least-32-characters',
       CREDENTIAL_VAULT_KEYS:vaultKeys,CREDENTIAL_VAULT_ACTIVE_KEY:'local1',
-      OPENAI_API_KEY: 'sk-synthetic', RESEND_API_KEY: 're_synthetic', NEXT_TELEMETRY_DISABLED: '1' },
+      OPENAI_API_KEY: 'sk-synthetic', RESEND_API_KEY: 're_synthetic', NEXT_TELEMETRY_DISABLED: '1' }
+  const nextCommand = ['--import', './tests/local-auth/mail-network.mjs', 'node_modules/next/dist/bin/next']
+  if (m6) execFileSync(process.execPath, [...nextCommand, 'build'], { env: nextEnv, stdio: 'inherit' })
+  if (m6Native) {
+    const { startNativeFixture } = await import('../tests/local-auth/native-shell.mjs')
+    nativeFixture = await startNativeFixture(cookies)
+  }
+  next = spawn(process.execPath, [...nextCommand, m6 ? 'start' : 'dev', '--hostname', '127.0.0.1', '--port', m6Native ? '55301' : '55300'], {
+    env: nextEnv,
     stdio: ['ignore','pipe','pipe'],
   })
   let output = ''
@@ -185,7 +211,11 @@ try {
   record('admin revocation is enforced on the next request', (await appFetch('/api/admin/whitelist')).status === 403)
   sql("UPDATE public.registration_policy SET enabled=false;")
   record('closed policy rejects subsequent Next signups', (await appFetch('/api/signup-whitelist', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({email:'later@example.test',password,fullName:'Later'}) })).status === 503)
-  if (operatorOutcomes || operator) {
+  if (m6) {
+    sql(`DELETE FROM public.emails WHERE id='${ownEmailId}' AND user_id='${userId}';`)
+    const { rehearsePlatform } = await import('../tests/design/platform.mjs')
+    await rehearsePlatform({ app, appFetch, cookies, admin, userId, record, briefingReads, baseline: m6Baseline, nativeFixture })
+  } else if (operatorOutcomes || operator) {
     const foreignLogin = createClient(base, anon, { auth: { persistSession: false, autoRefreshToken: false } })
     const foreignSession = await foreignLogin.auth.signInWithPassword({ email: 'preupgrade@example.test', password })
     assert.equal(foreignSession.error, null)
@@ -239,7 +269,9 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = operatorOutcomes ? 'Local Chromium, authenticated Next/PostgREST/PostgreSQL, real local state verification and undo on synthetic mail'
+  const provenance = m6Native ? 'Native simulator WebViews against production-mode local Next, GoTrue and PostgREST on synthetic mail'
+    : m6 ? 'Production-mode Next locally with Chromium, GoTrue, PostgREST and PostgreSQL on synthetic mail'
+    : operatorOutcomes ? 'Local Chromium, authenticated Next/PostgREST/PostgreSQL, real local state verification and undo on synthetic mail'
     : operator ? 'Local Chromium and authenticated Next/PostgREST/PostgreSQL with actual in-database Operator actions on synthetic mail'
     : askAnswer ? 'Local Chromium and authenticated Next/PostgREST/PostgreSQL with deterministic synthesis of synthetic mail'
     : askInbox ? 'Local Chromium and authenticated Next/PostgREST/PostgreSQL with real local E5 embeddings and synthetic mail'
@@ -256,6 +288,7 @@ try {
   }
   if (mailProvider) await mailProvider.close()
   if (smtpWire) await smtpWire.close()
+  if (nativeFixture) await nativeFixture.close()
   if (proxy) await new Promise(resolve => proxy.close(resolve))
   if (started) docker(['down'])
 }
