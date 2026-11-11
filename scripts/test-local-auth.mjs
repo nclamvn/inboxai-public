@@ -14,7 +14,9 @@ import { seedLegacyVault, rehearseVault, vaultKeys } from '../tests/local-auth/v
 // Containers have no internet route and SMTP goes only to an internal capture sink.
 const actionInbox = process.argv.includes('--action-inbox')
 const design = actionInbox || process.argv.includes('--design')
-const evidenceFile = actionInbox ? 'docs/phase-2/evidence/m2b-browser-run.json'
+const commitments = process.argv.includes('--commitment-ledger')
+const evidenceFile = commitments ? 'docs/phase-2/evidence/m3a-local-auth.json'
+  : actionInbox ? 'docs/phase-2/evidence/m2b-browser-run.json'
   : design ? 'docs/phase-2/evidence/m2a-browser-run.json' : 'docs/phase-2/evidence/m1c-local-auth.json'
 const compose = ['compose', '-p', 'inboxai-m0e-local', '-f', 'tests/local-auth/compose.yml']
 const docker = args => execFileSync('docker', [...compose, ...args], { encoding: 'utf8', maxBuffer: 2e6 })
@@ -58,6 +60,7 @@ async function waitFor(url, predicate = r => r.ok) {
 try {
   // A failed future run must never leave a stale success report behind.
   rmSync(evidenceFile, { force:true })
+  if (commitments) rmSync('docs/phase-2/evidence/m3a-sample-ledger.json', { force: true })
   const freeKB = Number(execFileSync('df', ['-Pk', '/'], { encoding: 'utf8' }).trim().split('\n').at(-1).split(/\s+/)[3])
   assert.ok(freeKB >= 10 * 1024 * 1024, 'less than 10 GiB free')
   assert.equal(docker(['ps', '-aq']).trim(), '', 'existing test project found; will not replace it')
@@ -93,6 +96,9 @@ try {
     if (file === '20261111030000_sync_contracts.sql') seedLegacySync(sql,previousId)
     if (actionInbox && file === '20261111050000_action_inbox.sql') {
       sql(`INSERT INTO public.emails(user_id,from_address,subject,body_text) VALUES('${previousId}','legacy@example.test','Priority before upgrade','Legacy body');`)
+    }
+    if (commitments && file === '20261111060000_commitment_ledger.sql') {
+      sql(`INSERT INTO public.action_items(user_id,title) VALUES('${previousId}','Legacy task before ledger');`)
     }
     sql(readFileSync(`supabase/migrations/${file}`, 'utf8'))
   }
@@ -166,7 +172,15 @@ try {
   record('admin revocation is enforced on the next request', (await appFetch('/api/admin/whitelist')).status === 403)
   sql("UPDATE public.registration_policy SET enabled=false;")
   record('closed policy rejects subsequent Next signups', (await appFetch('/api/signup-whitelist', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({email:'later@example.test',password,fullName:'Later'}) })).status === 503)
-  if (design) {
+  if (commitments) {
+    const legacyLogin = createClient(base, anon, { auth: { persistSession: false, autoRefreshToken: false } })
+    const legacySession = await legacyLogin.auth.signInWithPassword({ email: 'preupgrade@example.test', password })
+    assert.equal(legacySession.error, null)
+    const { rehearseCommitments } = await import('../tests/local-auth/commitment-ledger.mjs')
+    const sample = await rehearseCommitments({ app, appFetch, loopbackFetch, admin, sql, login, anonymous: createClient(base, anon),
+      foreignToken: legacySession.data.session.access_token, userId, ownEmailId, otherEmailId, record })
+    writeFileSync('docs/phase-2/evidence/m3a-sample-ledger.json', JSON.stringify(sample, null, 2) + '\n')
+  } else if (design) {
     if (actionInbox) {
       const { rehearsePriorityRpc } = await import('../tests/local-auth/action-inbox.mjs')
       await rehearsePriorityRpc({ login, anonymous: createClient(base, anon), sql, appFetch, ownEmailId, otherEmailId, record })
@@ -181,7 +195,10 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  writeFileSync(evidenceFile, JSON.stringify({ date: new Date().toISOString(), provenance:design ? 'Authenticated local Chromium with synthetic mail, loopback only' : 'Real local GoTrue/PostgREST/Next; synthetic Gmail/IMAP readers and loopback Gmail HTTP/SMTP TLS send; internal verification SMTP sink; .test identities; not hosted/provider interoperability', images:{ auth:'supabase/gotrue:v2.197.0',rest:'postgrest/postgrest:v14.18',mail:'axllent/mailpit:v1.28.1',db:'postgres:16' }, outcomes },null,2)+'\n')
+  const provenance = commitments ? 'Local Next/GoTrue/PostgREST/PostgreSQL, synthetic mail and .test accounts'
+    : design ? 'Authenticated local Chromium with synthetic mail, loopback only'
+    : 'Real local GoTrue/PostgREST/Next; synthetic Gmail/IMAP readers and loopback Gmail HTTP/SMTP TLS send; internal verification SMTP sink; .test identities; not hosted/provider interoperability'
+  writeFileSync(evidenceFile, JSON.stringify({ date: new Date().toISOString(), provenance, images:{ auth:'supabase/gotrue:v2.197.0',rest:'postgrest/postgrest:v14.18',mail:'axllent/mailpit:v1.28.1',db:'postgres:16' }, outcomes },null,2)+'\n')
 } finally {
   if (next && next.exitCode === null) {
     next.kill('SIGTERM')
