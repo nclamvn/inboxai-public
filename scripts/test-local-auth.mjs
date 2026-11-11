@@ -5,6 +5,7 @@ import { readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { setTimeout as delay } from 'node:timers/promises'
 import { createClient } from '@supabase/supabase-js'
 import assert from 'node:assert/strict'
+import { seedLegacyVault, rehearseVault, vaultKeys } from '../tests/local-auth/vault.mjs'
 
 // Real local Auth/PostgREST/Next integration; fixed synthetic credentials only.
 // Containers have no internet route and SMTP goes only to an internal capture sink.
@@ -49,7 +50,7 @@ async function waitFor(url, predicate = r => r.ok) {
 }
 try {
   // A failed future run must never leave a stale success report behind.
-  rmSync('docs/phase-2/evidence/m0e-local-auth.json', { force:true })
+  rmSync('docs/phase-2/evidence/m1a-local-auth.json', { force:true })
   const freeKB = Number(execFileSync('df', ['-Pk', '/'], { encoding: 'utf8' }).trim().split('\n').at(-1).split(/\s+/)[3])
   assert.ok(freeKB >= 10 * 1024 * 1024, 'less than 10 GiB free')
   assert.equal(docker(['ps', '-aq']).trim(), '', 'existing test project found; will not replace it')
@@ -80,7 +81,10 @@ try {
   const { data: seed, error: seedError } = await admin.auth.admin.createUser({ email: 'preupgrade@example.test', password: 'Synthetic-passphrase-123', email_confirm: true })
   assert.equal(seedError, null)
   const previousId = seed.user.id
-  for (const file of migrations.filter(f => f >= '20261111010000')) sql(readFileSync(`supabase/migrations/${file}`, 'utf8'))
+  for (const file of migrations.filter(f => f >= '20261111010000')) {
+    if (file === '20261111020000_credential_vault.sql') seedLegacyVault(sql,previousId)
+    sql(readFileSync(`supabase/migrations/${file}`, 'utf8'))
+  }
   record('upgrade preserves existing profile', Number(sql("SELECT count(*) FROM public.profiles WHERE email='preupgrade@example.test'")) === 1)
   const { error: blocked } = await createClient(base, anon).auth.signUp({ email: 'blocked@example.test', password: 'Synthetic-passphrase-123' })
   record('direct Auth API cannot bypass closed registration policy', Boolean(blocked))
@@ -91,6 +95,7 @@ try {
       NODE_ENV:'development', NEXT_PUBLIC_SUPABASE_URL: base, NEXT_PUBLIC_SUPABASE_ANON_KEY: anon,
       SUPABASE_SERVICE_ROLE_KEY: service, NEXT_PUBLIC_APP_URL: app, SIGNUP_ENABLED: 'true',
       SIGNUP_RATE_LIMIT_KEY: 'synthetic-local-registration-key-at-least-32-characters',
+      CREDENTIAL_VAULT_KEYS:vaultKeys,CREDENTIAL_VAULT_ACTIVE_KEY:'local1',
       OPENAI_API_KEY: 'sk-synthetic', RESEND_API_KEY: 're_synthetic', NEXT_TELEMETRY_DISABLED: '1' },
     stdio: ['ignore','pipe','pipe'],
   })
@@ -148,7 +153,10 @@ try {
   record('admin revocation is enforced on the next request', (await appFetch('/api/admin/whitelist')).status === 403)
   sql("UPDATE public.registration_policy SET enabled=false;")
   record('closed policy rejects subsequent Next signups', (await appFetch('/api/signup-whitelist', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({email:'later@example.test',password,fullName:'Later'}) })).status === 503)
-  writeFileSync('docs/phase-2/evidence/m0e-local-auth.json', JSON.stringify({ date: new Date().toISOString(), provenance:'Real local GoTrue/PostgREST/Next; internal SMTP sink; synthetic .test identities; not hosted staging', images:{ auth:'supabase/gotrue:v2.197.0',rest:'postgrest/postgrest:v14.18',mail:'axllent/mailpit:v1.28.1',db:'postgres:16' }, outcomes },null,2)+'\n')
+  const legacyLogin = createClient(base, anon, { auth:{persistSession:false,autoRefreshToken:false} })
+  assert.equal((await legacyLogin.auth.signInWithPassword({email:'preupgrade@example.test',password})).error,null)
+  await rehearseVault({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,base,service,record})
+  writeFileSync('docs/phase-2/evidence/m1a-local-auth.json', JSON.stringify({ date: new Date().toISOString(), provenance:'Real local GoTrue/PostgREST/Next; internal SMTP sink; synthetic .test identities; not hosted staging', images:{ auth:'supabase/gotrue:v2.197.0',rest:'postgrest/postgrest:v14.18',mail:'axllent/mailpit:v1.28.1',db:'postgres:16' }, outcomes },null,2)+'\n')
 } finally {
   if (next && next.exitCode === null) {
     next.kill('SIGTERM')

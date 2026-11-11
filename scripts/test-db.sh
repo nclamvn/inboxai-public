@@ -31,9 +31,13 @@ fi
 
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/bootstrap.sql
 for task_migration in supabase/migrations/*.sql; do
+  if [[ "$task_migration" == "supabase/migrations/20261111020000_credential_vault.sql" ]]; then
+    psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/credential-upgrade.sql
+  fi
   echo "Applying $task_migration"
   psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f "$task_migration"
 done
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/tenant-isolation.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/registration.sql
 node scripts/test-registration-concurrency.mjs
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/credential-vault.sql
