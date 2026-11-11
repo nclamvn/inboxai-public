@@ -16,6 +16,13 @@ interface UseEmailsOptions {
   accountIds?: string[] // Filter by specific account(s)
 }
 
+const emailListFields = `
+  id, from_name, from_address, to_addresses, subject,
+  received_at, is_read, is_starred, is_archived, is_deleted,
+  priority, category, needs_reply, detected_deadline, direction,
+  summary, ai_confidence, source_account_id`
+const inboxListFields = `${emailListFields}, snippet:inbox_preview, inbox_priority, inbox_priority_version` as const
+
 export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEmailsOptions = {}) {
   const [emails, setEmails] = useState<Email[]>([])
   const [loading, setLoading] = useState(true)
@@ -31,16 +38,9 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
 
   // Build base query with folder filters
   const buildQuery = useCallback((userId: string) => {
-    let query = supabase
-      .from('emails')
-      .select(`
-        id, from_name, from_address, to_addresses, subject,
-        received_at, is_read, is_starred, is_archived, is_deleted,
-        priority, category, needs_reply, detected_deadline, direction,
-        summary, ai_confidence, source_account_id
-        ${folder === 'inbox' ? ', snippet:inbox_preview, inbox_priority, inbox_priority_version' : ''}
-      `)
-      .eq('user_id', userId)
+    const table = supabase.from('emails')
+    const projection = folder === 'inbox' ? table.select(inboxListFields) : table.select(emailListFields)
+    let query = projection.eq('user_id', userId)
 
     // Apply account filter if specified
     if (accountIds && accountIds.length > 0) {
