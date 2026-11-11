@@ -151,7 +151,10 @@ export function AskInbox({ userId, accounts, accountsFailed }: { userId: string;
     <div className="min-h-full min-w-0 bg-[var(--canvas)]">
       <header className="border-b border-[var(--border)] bg-[var(--surface)]">
         <div className="mx-auto max-w-4xl px-4 py-5 sm:px-6">
-          <h1 className="neo-title">Ask Inbox</h1>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h1 className="neo-title">Ask Inbox</h1>
+            <Link href="/operator" prefetch={false} className="neo-target inline-flex min-h-11 items-center text-sm font-medium text-[var(--accent-foreground)] underline md:hidden">AI Operator</Link>
+          </div>
           <form key={key} action="/search" method="get" onSubmit={search} role="search" aria-label="Ask Inbox" className="mt-4 space-y-3">
             <div className="grid grid-cols-2 items-end gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
               <label className="col-span-2 block min-w-0 space-y-1 text-sm font-medium sm:col-span-1">

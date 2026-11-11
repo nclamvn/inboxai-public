@@ -28,7 +28,8 @@
     "vault:local": "node --import tsx --conditions=react-server scripts/credential-vault.ts",
     "ask-inbox:model": "node scripts/prepare-ask-inbox-model.mjs",
     "test:ask-inbox": "npm run test:local-auth -- --ask-inbox",
-    "test:ask-answer": "npm run test:local-auth -- --ask-answer"
+    "test:ask-answer": "npm run test:local-auth -- --ask-answer",
+    "test:operator": "npm run test:local-auth -- --operator"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

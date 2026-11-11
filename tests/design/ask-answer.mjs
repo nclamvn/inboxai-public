@@ -128,7 +128,7 @@ export async function rehearseAskAnswer({ app, appFetch, cookies, admin, login, 
   async function capture(page, name) {
     captures.push({ name, viewport: page.viewportSize(), axe: await audit(page) })
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false)
-    await page.screenshot({ path: output + '/' + name + '.png', animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' })
+    await page.screenshot({ path: output + '/' + name + '.png', animations: 'disabled', caret: 'initial', style: 'nextjs-portal { visibility: hidden; }' })
   }
   let staleUrl
   try {
@@ -182,7 +182,7 @@ export async function rehearseAskAnswer({ app, appFetch, cookies, admin, login, 
         await page.getByText('21/11/2026', { exact: true }).waitFor()
         assert.ok(await page.getByRole('link', { name: /Mở nguồn/ }).count() >= 4)
         assert.equal((await admin.from('emails').update({ body_text: 'Hạn thanh toán: 2026-11-22.' }).eq('id', invoice.id).eq('user_id', userId)).error, null)
-        await page.goto(app + staleUrl, { waitUntil: 'domcontentloaded' })
+        await page.goto(app + staleUrl, { waitUntil: 'networkidle' })
         await page.getByText(/Email đã thay đổi kể từ lúc đối chiếu/).waitFor()
         await capture(page, 'stale-source')
       }

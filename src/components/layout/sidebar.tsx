@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   PanelLeft, Pencil, Inbox, Send, Star, Archive, Trash2,
-  BarChart3, Settings, Newspaper, ListTodo, Bell, Mail, ClipboardCheck, Search,
+  BarChart3, Settings, Newspaper, ListTodo, Bell, Mail, ClipboardCheck, Search, ListChecks,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useBreakpoint } from '@/hooks/use-media-query'
@@ -21,6 +21,7 @@ const groups = [
   ] },
   { label: 'Công cụ', items: [
     { href: '/search', icon: Search, label: 'Ask Inbox' },
+    { href: '/operator', icon: ListChecks, label: 'AI Operator' },
     { href: '/commitments', icon: ClipboardCheck, label: 'Cam kết' },
     { href: '/follow-ups', icon: Bell, label: 'Theo dõi' },
     { href: '/subscriptions', icon: Newspaper, label: 'Bản tin' },
