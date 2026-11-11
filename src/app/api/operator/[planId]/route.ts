@@ -24,6 +24,15 @@ export async function PATCH(request: NextRequest, { params }: Context) {
     const input = operatorActionInput.safeParse(body.body)
     if (!input.success) return privateJson({ error: 'Yêu cầu phê duyệt hoặc thực thi không hợp lệ.' }, 400)
     const action = input.data
+    if (action.operation === 'verify' || action.operation === 'undo') {
+      const key = z.uuidv4().safeParse(request.headers.get('Idempotency-Key'))
+      if (!key.success) return privateJson({ error: 'Thiếu mã yêu cầu hợp lệ.' }, 400)
+      const result = await operatorRpc(client, 'operator_outcome_action', {
+        p_id: id.data, p_operation: action.operation, p_request_key: key.data,
+        p_undo_hash: action.operation === 'undo' ? action.undoHash : null,
+      })
+      return result instanceof Response ? result : privateJson(result)
+    }
     const result = await operatorRpc(client, 'operator_plan_action', {
       p_id: id.data, p_phase: action.operation,
       p_scope_hash: action.operation === 'approve' ? action.previewHash : action.approvedHash,

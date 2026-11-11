@@ -4,7 +4,7 @@ import { createClientForRequest } from '@/lib/supabase/server'
 import { privateJson } from '@/lib/http/private-json'
 
 type Session = Awaited<ReturnType<typeof createClientForRequest>>
-type Rpc = 'create_operator_plan' | 'list_operator_plans' | 'read_operator_plan' | 'operator_plan_action'
+type Rpc = 'create_operator_plan' | 'list_operator_plans' | 'read_operator_plan' | 'operator_plan_action' | 'operator_outcome_action'
 
 export async function withOperatorSession(request: NextRequest, handle: (client: Session) => Promise<Response>) {
   try {

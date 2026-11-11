@@ -37,10 +37,16 @@ for task_migration in supabase/migrations/*.sql; do
   if [[ "$task_migration" == "supabase/migrations/20261111090000_ask_inbox.sql" ]]; then
     psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -v seed_ask_mail=true -f tests/db/ask-inbox-upgrade.sql
   fi
+  if [[ "$task_migration" == "supabase/migrations/20261112010000_operator_outcomes.sql" ]]; then
+    psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -v seed_operator_legacy=true -f tests/db/operator-outcomes-upgrade.sql
+  fi
   echo "Applying $task_migration"
   psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f "$task_migration"
   if [[ "$task_migration" == "supabase/migrations/20261111090000_ask_inbox.sql" ]]; then
     psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -v seed_ask_mail=false -f tests/db/ask-inbox-upgrade.sql
+  fi
+  if [[ "$task_migration" == "supabase/migrations/20261112010000_operator_outcomes.sql" ]]; then
+    psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -v seed_operator_legacy=false -f tests/db/operator-outcomes-upgrade.sql
   fi
 done
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/tenant-isolation.sql
@@ -56,3 +62,4 @@ psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/commitment-detection
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/ask-inbox.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/ask-inbox-answer.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/operator-plans.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/operator-outcomes.sql

@@ -33,12 +33,29 @@ export type OperatorTarget = {
   available: boolean
   matchesPreview: boolean
 }
+export type OperatorOutcomeReceipt = {
+  id: string
+  event: 'verified' | 'undone' | 'undo_blocked'
+  at: string
+  matched: number
+  changed: number
+  unavailable: number
+  replayed: boolean
+}
+export type OperatorOutcome = {
+  tracked: boolean
+  undone: boolean
+  undoHash: string | null
+  targets: { id: string; before: boolean | null; state: 'matched' | 'changed' | 'unavailable' }[]
+  events: OperatorOutcomeReceipt[]
+}
 export type OperatorPlan = OperatorReceipt & {
   spec: OperatorSpec
   cutoff: string | null
   createdAt: string
   targets: OperatorTarget[]
   events: { event: OperatorStatus; count: number; at: string; scopeHash: string }[]
+  outcome: OperatorOutcome | null
 }
 export type OperatorHistory = {
   id: string
@@ -47,3 +64,12 @@ export type OperatorHistory = {
   targetCount: number
   createdAt: string
 }[]
+
+const date = new Intl.DateTimeFormat('vi-VN', {
+  dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Ho_Chi_Minh',
+})
+
+export function operatorDate(at: string) {
+  const instant = Date.parse(at)
+  return Number.isFinite(instant) ? date.format(instant) : 'Chưa xác định'
+}

@@ -8,4 +8,6 @@ export const operatorPlanInput = z.strictObject({
 export const operatorActionInput = z.discriminatedUnion('operation', [
   z.strictObject({ operation: z.literal('approve'), previewHash: scopeHash, selectedIds: z.array(z.uuid()).min(1).max(40) }),
   z.strictObject({ operation: z.literal('execute'), approvedHash: scopeHash }),
+  z.strictObject({ operation: z.literal('verify') }),
+  z.strictObject({ operation: z.literal('undo'), undoHash: scopeHash }),
 ])
