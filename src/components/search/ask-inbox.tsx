@@ -4,10 +4,12 @@ import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
-import { Bookmark, ChevronDown, FileText, Search } from 'lucide-react'
+import { Bookmark, ChevronDown, FileText, MessageSquare, Search } from 'lucide-react'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
+import { AskAnswerPanel } from './ask-answer-panel'
+import type { AskAnswer } from '@/lib/search/ask-answer-contracts'
 import type { AskHit, AskResults } from '@/lib/search/ask-contracts'
 
 type Account = { id: string; email_address: string }
@@ -50,8 +52,8 @@ function Citation({ hit }: { hit: AskHit }) {
   )
 }
 
-async function findEmails(filters: object, signal: AbortSignal): Promise<AskResults> {
-  const response = await fetch('/api/ask-inbox', {
+async function loadAskResult<T>(path: string, filters: object, signal: AbortSignal): Promise<T> {
+  const response = await fetch(path, {
     method: 'POST', body: JSON.stringify(filters), headers: { 'Content-Type': 'application/json' },
     cache: 'no-store', signal,
   })
@@ -63,6 +65,7 @@ async function findEmails(filters: object, signal: AbortSignal): Promise<AskResu
 export function AskInbox({ userId, accounts, accountsFailed }: { userId: string; accounts: Account[]; accountsFailed: boolean }) {
   const router = useRouter()
   const params = useSearchParams()
+  const answering = params.get('view') === 'answer'
   const query = params.get('q') ?? ''
   const accountIds = params.getAll('account')
   const sender = params.get('sender') ?? ''
@@ -72,13 +75,18 @@ export function AskInbox({ userId, accounts, accountsFailed }: { userId: string;
   const filterCount = Number(Boolean(accountIds.length)) + Number(Boolean(sender)) + Number(Boolean(from || until)) + Number(attachment)
   const started = Boolean(query.trim() || filterCount)
   const key = params.toString()
+  const filters = { query, accountIds, sender, from: from || undefined, until: until || undefined, attachment }
   const results = useQuery({
     queryKey: ['ask-inbox', userId, key],
-    queryFn: ({ signal }) => findEmails({
-      query, accountIds, sender, from: from || undefined, until: until || undefined, attachment,
-    }, signal),
-    enabled: started, retry: false, staleTime: 0, gcTime: 120_000, refetchOnWindowFocus: false,
+    queryFn: ({ signal }) => loadAskResult<AskResults>('/api/ask-inbox', filters, signal),
+    enabled: started && !answering, retry: false, staleTime: 0, gcTime: 120_000, refetchOnWindowFocus: false,
   })
+  const answers = useQuery({
+    queryKey: ['ask-inbox-answer', userId, key],
+    queryFn: ({ signal }) => loadAskResult<AskAnswer>('/api/ask-inbox/answer', filters, signal),
+    enabled: answering, retry: false, staleTime: 0, gcTime: 120_000, refetchOnWindowFocus: false,
+  })
+  const active = answering ? answers : results
   const [more, setMore] = useState({ key: '', count: 12 })
   const [save, setSave] = useState({ key: '', state: '' })
   const [filterPanel, setFilterPanel] = useState<{ key: string; open: boolean } | null>(null)
@@ -86,21 +94,23 @@ export function AskInbox({ userId, accounts, accountsFailed }: { userId: string;
   const heading = useRef<HTMLHeadingElement>(null)
   const requested = useRef<string | null>(null)
   const shown = more.key === key ? more.count : 12
-  const result = results.data
+  const result = answering ? undefined : results.data
   const hasUnindexed = Boolean(result?.coverage && result.coverage.indexed < result.coverage.eligible)
   const saveState = save.key === key ? save.state : ''
   const filtersOpen = filterPanel?.key === key ? filterPanel.open : filterCount > 0
 
   useEffect(() => {
-    if (requested.current === key && !results.isFetching && !results.isPending) {
+    if (requested.current === key && !active.isFetching && !active.isPending) {
       heading.current?.focus()
       requested.current = null
     }
-  }, [key, results.isFetching, results.isPending])
+  }, [key, active.isFetching, active.isPending])
 
   function search(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
+    const submitter = (event.nativeEvent as SubmitEvent).submitter
+    const wantsAnswer = submitter ? submitter.getAttribute('value') === 'answer' : answering
     const next = new URLSearchParams()
     const text = String(form.get('q') ?? '').trim()
     if (text) next.set('q', text)
@@ -110,10 +120,11 @@ export function AskInbox({ userId, accounts, accountsFailed }: { userId: string;
       if (value) next.set(field, value)
     }
     if (form.has('attachment')) next.set('attachment', '1')
+    if (wantsAnswer) next.set('view', 'answer')
     setMore({ key: next.toString(), count: 12 })
     requested.current = next.size ? next.toString() : null
     if (next.toString() === key) {
-      if (next.size) void results.refetch()
+      if (next.size) void active.refetch()
     }
     else router.push(next.size ? '/search?' + next.toString() : '/search', { scroll: false })
     if (text) {
@@ -141,14 +152,20 @@ export function AskInbox({ userId, accounts, accountsFailed }: { userId: string;
       <header className="border-b border-[var(--border)] bg-[var(--surface)]">
         <div className="mx-auto max-w-4xl px-4 py-5 sm:px-6">
           <h1 className="neo-title">Ask Inbox</h1>
-          <form key={key} onSubmit={search} role="search" aria-label="Ask Inbox" className="mt-4 space-y-3">
-            <div className="flex items-end gap-2">
-              <label className="block min-w-0 flex-1 space-y-1 text-sm font-medium">
-                <span>Nội dung tìm kiếm</span>
+          <form key={key} action="/search" method="get" onSubmit={search} role="search" aria-label="Ask Inbox" className="mt-4 space-y-3">
+            <div className="grid grid-cols-2 items-end gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
+              <label className="col-span-2 block min-w-0 space-y-1 text-sm font-medium sm:col-span-1">
+                <span>{answering ? 'Câu hỏi về email' : 'Nội dung tìm kiếm'}</span>
                 <input name="q" type="search" maxLength={300} defaultValue={query} className={inputClass}
-                  placeholder="Ví dụ: Nhà cung cấp dời lịch giao hàng" />
+                  placeholder={answering ? 'Ví dụ: Tổng tiền hóa đơn INV-1042 là bao nhiêu?' : 'Ví dụ: Nhà cung cấp dời lịch giao hàng'} />
               </label>
-              <Button type="submit" className="min-h-11 shrink-0" leftIcon={<Search size={16} aria-hidden="true" />}>Tìm thư</Button>
+              {(answering ? ['answer', 'search'] : ['search', 'answer']).map(intent => (
+                <Button key={intent} type="submit" name="view" value={intent} className="min-h-11 shrink-0"
+                  variant={(intent === 'answer') === answering ? 'primary' : 'outline'}
+                  leftIcon={intent === 'answer' ? <MessageSquare size={16} aria-hidden="true" /> : <Search size={16} aria-hidden="true" />}>
+                  {intent === 'answer' ? 'Hỏi email' : 'Tìm thư'}
+                </Button>
+              ))}
             </div>
             <div className="border-b border-[var(--border)]">
               <button type="button" aria-expanded={filtersOpen} aria-controls={panelId}
@@ -164,7 +181,7 @@ export function AskInbox({ userId, accounts, accountsFailed }: { userId: string;
                     <input name="sender" maxLength={120} defaultValue={sender} placeholder="Tên hoặc địa chỉ email" className={inputClass} />
                   </label>
                   <label className="neo-target flex min-h-11 items-center gap-2 self-end text-sm">
-                    <input name="attachment" type="checkbox" defaultChecked={attachment} className="size-4 accent-[var(--primary)]" /> Có tệp đính kèm
+                    <input name="attachment" type="checkbox" value="1" defaultChecked={attachment} className="size-4 accent-[var(--primary)]" /> Có tệp đính kèm
                   </label>
                   <label className="min-w-0 space-y-1 text-sm font-medium">
                     <span>Từ ngày</span><input name="from" type="date" defaultValue={from} className={inputClass} />
@@ -191,7 +208,7 @@ export function AskInbox({ userId, accounts, accountsFailed }: { userId: string;
                     </>
                   ) : !accountsFailed && <p className="mt-1 text-xs text-[var(--foreground-muted)]">Chưa có tài khoản thư được liên kết.</p>}
                 </fieldset>
-                {started && <Link href="/search" className="neo-target mt-2 inline-flex min-h-11 items-center text-sm text-[var(--accent-foreground)] underline">Xóa tìm kiếm và bộ lọc</Link>}
+                {(started || answering) && <Link href="/search" className="neo-target mt-2 inline-flex min-h-11 items-center text-sm text-[var(--accent-foreground)] underline">Xóa tìm kiếm và bộ lọc</Link>}
               </div>
             </div>
           </form>
@@ -200,19 +217,20 @@ export function AskInbox({ userId, accounts, accountsFailed }: { userId: string;
 
       <section aria-labelledby="ask-results" className="mx-auto max-w-4xl px-4 py-5 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 ref={heading} id="ask-results" tabIndex={-1} className="text-base font-semibold">Email nguồn</h2>
+          <h2 ref={heading} id="ask-results" tabIndex={-1} className="text-base font-semibold">{answering ? 'Câu trả lời theo nguồn' : 'Email nguồn'}</h2>
           {query && result && <Button type="button" variant="ghost" size="sm" onClick={() => void saveQuery()}
             disabled={saveState === 'Đang lưu…'} leftIcon={<Bookmark size={16} aria-hidden="true" />}>
             Lưu cụm tìm kiếm
           </Button>}
         </div>
         {saveState && <p role="status" className="text-sm">{saveState}</p>}
-        {!started && <EmptyState type="no-results" title="Tìm trong hộp thư của bạn" description="Nhập nội dung bạn nhớ, hoặc chọn tài khoản, người gửi và khoảng ngày." />}
-        {started && results.isPending && <p role="status" className="py-5 text-sm text-[var(--foreground-muted)]">Đang tìm và đối chiếu nguồn…</p>}
-        {results.isError && <div className="my-4 space-y-3">
-          <Alert variant="error" title="Chưa tải được kết quả">{results.error.message}</Alert>
-          <Button type="button" variant="outline" onClick={() => void results.refetch()}>Thử lại</Button>
+        {!answering && !started && <EmptyState type="no-results" title="Tìm trong hộp thư của bạn" description="Nhập nội dung bạn nhớ, hoặc chọn tài khoản, người gửi và khoảng ngày." />}
+        {(answering || started) && active.isPending && <p role="status" className="py-5 text-sm text-[var(--foreground-muted)]">Đang tìm và đối chiếu nguồn…</p>}
+        {active.isError && <div className="my-4 space-y-3">
+          <Alert variant="error" title="Chưa tải được kết quả">{active.error.message}</Alert>
+          <Button type="button" variant="outline" onClick={() => void active.refetch()}>Thử lại</Button>
         </div>}
+        {answering && answers.data && <AskAnswerPanel answer={answers.data} />}
         {result && <>
           <div className="mb-3 mt-2 flex flex-wrap items-center justify-between gap-2 text-sm text-[var(--foreground-secondary)]">
             <p role="status">{results.isFetching ? 'Đang cập nhật nguồn…' : 'Hiển thị ' + Math.min(shown, result.hits.length) + ' thư phù hợp'}</p>

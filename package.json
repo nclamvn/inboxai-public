@@ -27,7 +27,8 @@
     "design:bundle": "node scripts/report-design-bundle.mjs",
     "vault:local": "node --import tsx --conditions=react-server scripts/credential-vault.ts",
     "ask-inbox:model": "node scripts/prepare-ask-inbox-model.mjs",
-    "test:ask-inbox": "npm run test:local-auth -- --ask-inbox"
+    "test:ask-inbox": "npm run test:local-auth -- --ask-inbox",
+    "test:ask-answer": "npm run test:local-auth -- --ask-answer"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
