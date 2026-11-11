@@ -1,0 +1,132 @@
+[
+  {
+    "name": "glob",
+    "version": "13.0.7",
+    "location": "node_modules/glob",
+    "isWorkspace": false,
+    "dependents": [
+      {
+        "type": "prod",
+        "name": "glob",
+        "spec": "^13.0.6",
+        "from": {
+          "name": "@sentry/bundler-plugins",
+          "version": "10.78.0",
+          "location": "node_modules/@sentry/bundler-plugins",
+          "isWorkspace": false,
+          "dependents": [
+            {
+              "type": "prod",
+              "name": "@sentry/bundler-plugins",
+              "spec": "10.78.0",
+              "from": {
+                "name": "@sentry/nextjs",
+                "version": "10.78.0",
+                "location": "node_modules/@sentry/nextjs",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "@sentry/nextjs",
+                    "spec": "^10.30.0",
+                    "from": {
+                      "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "prod",
+              "name": "@sentry/bundler-plugins",
+              "spec": "^10.76.0",
+              "from": {
+                "name": "@sentry/webpack-plugin",
+                "version": "5.4.1",
+                "location": "node_modules/@sentry/webpack-plugin",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "@sentry/webpack-plugin",
+                    "spec": "^5.4.1",
+                    "from": {
+                      "name": "@sentry/nextjs",
+                      "version": "10.78.0",
+                      "location": "node_modules/@sentry/nextjs",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@sentry/nextjs",
+                          "spec": "^10.30.0",
+                          "from": {
+                            "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "dev": false,
+    "optional": false,
+    "devOptional": false,
+    "peer": false,
+    "bundled": false,
+    "overridden": false
+  },
+  {
+    "name": "glob",
+    "version": "14.0.4",
+    "location": "node_modules/rimraf/node_modules/glob",
+    "isWorkspace": false,
+    "dependents": [
+      {
+        "type": "prod",
+        "name": "glob",
+        "spec": "^14.0.3",
+        "from": {
+          "name": "rimraf",
+          "version": "6.1.4",
+          "location": "node_modules/rimraf",
+          "isWorkspace": false,
+          "dependents": [
+            {
+              "type": "prod",
+              "name": "rimraf",
+              "spec": "^6.0.1",
+              "from": {
+                "name": "@capacitor/cli",
+                "version": "8.6.0",
+                "location": "node_modules/@capacitor/cli",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "@capacitor/cli",
+                    "spec": "^8.0.0",
+                    "from": {
+                      "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "dev": false,
+    "optional": false,
+    "devOptional": false,
+    "peer": false,
+    "bundled": false,
+    "overridden": false
+  }
+]

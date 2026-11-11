@@ -3,6 +3,11 @@
 These are reviewable PR scopes, not claims that remote PRs were created.
 Keep M0 on the assigned branch. Stage/commit small scopes; do not merge to main.
 
+Owner steering on 2026-11-11 narrowed the current handoff to **local only**.
+M0-E local evidence is recorded in M0E_LOCAL_HANDOFF.md. Remote PRs/CI and hosted
+settings remain deferred, not passed. M1 may proceed locally after this baseline;
+the real-mail/production gate remains closed throughout.
+
 | PR | Dependencies | Scope | Acceptance criteria |
 | --- | --- | --- | --- |
 | M0-A audit and authority | none | AGENTS, standard, map/debt/risk, baseline logs | Source SHA, coverage limits, missing documents resolved from owner, no invented PASS |

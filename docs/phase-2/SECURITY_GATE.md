@@ -4,8 +4,8 @@ No real email, external send, production deploy, main merge or live migration ha
 been authorized in this task. Passing local tests does not open this gate.
 
 Required evidence before proposing a supervised real-mailbox test:
-- [ ] Request-security fixes pass adversarial unit/route integration tests.
-- [ ] Fresh and upgrade migrations, two-tenant/anonymous SQL boundaries verified.
+- [x] Request-security fixes pass local adversarial unit/route integration tests.
+- [x] Fresh and synthetic local upgrade migrations, two-tenant/anonymous SQL boundaries verified; hosted deployed-schema rehearsal remains pending.
 - [ ] Server credential vault, AEAD rotation and no client credential visibility.
 - [ ] No unresolved applicable critical/high dependency or application vulnerabilities.
 - [ ] Gmail scope minimization and OAuth verification/security-assessment applicability checked.

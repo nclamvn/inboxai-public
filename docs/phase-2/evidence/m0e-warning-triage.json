@@ -1,0 +1,55 @@
+{
+  "source": "eslint JSON captured before M0-E changes",
+  "totals": {
+    "@typescript-eslint/no-unused-vars": 86,
+    "react-hooks/exhaustive-deps": 6,
+    "@next/next/no-img-element": 4,
+    "unused-eslint-directive": 1,
+    "react-hooks/incompatible-library": 1,
+    "import/no-anonymous-default-export": 8
+  },
+  "reviewTargets": [
+    {
+      "file": "src/app/(dashboard)/actions/page.tsx",
+      "line": 83,
+      "rule": "react-hooks/exhaustive-deps",
+      "message": "React Hook useEffect has a missing dependency: 'fetchActions'. Either include it or remove the dependency array."
+    },
+    {
+      "file": "src/app/(dashboard)/inbox/page.tsx",
+      "line": 282,
+      "rule": "react-hooks/exhaustive-deps",
+      "message": "React Hook useCallback has missing dependencies: 'CATEGORY_LABELS' and 'IMPORTANT_CATEGORIES'. Either include them or remove the dependency array."
+    },
+    {
+      "file": "src/components/ai/reply-assistant.tsx",
+      "line": 53,
+      "rule": "react-hooks/exhaustive-deps",
+      "message": "React Hook useEffect has a missing dependency: 'analyzeEmail'. Either include it or remove the dependency array."
+    },
+    {
+      "file": "src/components/email/action-items-card.tsx",
+      "line": 73,
+      "rule": "react-hooks/exhaustive-deps",
+      "message": "React Hook useEffect has a missing dependency: 'fetchActions'. Either include it or remove the dependency array."
+    },
+    {
+      "file": "src/components/email/email-detail.tsx",
+      "line": 68,
+      "rule": "react-hooks/exhaustive-deps",
+      "message": "React Hook useEffect has a missing dependency: 'email'. Either include it or remove the dependency array."
+    },
+    {
+      "file": "src/components/email/email-list-virtual.tsx",
+      "line": 176,
+      "rule": "react-hooks/incompatible-library",
+      "message": "Compilation Skipped: Use of incompatible library\n\nThis API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.\n\n/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list-virtual.tsx:176:23\n  174 |   const parentRef = useRef<HTMLDivElement>(null)\n  175 |\n> 176 |   const virtualizer = useVirtualizer({\n      |                       ^^^^^^^^^^^^^^ TanStack Virtual's `useVirtualizer()` API returns functions that cannot be memoized safely\n  177 |     count: emails.length,\n  178 |     getScrollElement: () => parentRef.current,\n  179 |     estimateSize: () => 76, // Estimated row height"
+    },
+    {
+      "file": "src/components/email/smart-reply.tsx",
+      "line": 71,
+      "rule": "react-hooks/exhaustive-deps",
+      "message": "React Hook useEffect has a missing dependency: 'fetchSuggestions'. Either include it or remove the dependency array."
+    }
+  ]
+}

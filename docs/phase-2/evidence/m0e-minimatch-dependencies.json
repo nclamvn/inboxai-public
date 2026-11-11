@@ -1,0 +1,3136 @@
+[
+  {
+    "name": "minimatch",
+    "version": "3.1.5",
+    "location": "node_modules/minimatch",
+    "isWorkspace": false,
+    "dependents": [
+      {
+        "type": "prod",
+        "name": "minimatch",
+        "spec": "^3.1.2",
+        "from": {
+          "name": "eslint",
+          "version": "9.39.1",
+          "location": "node_modules/eslint",
+          "isWorkspace": false,
+          "dependents": [
+            {
+              "type": "dev",
+              "name": "eslint",
+              "spec": "^9",
+              "from": {
+                "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+              }
+            },
+            {
+              "type": "peer",
+              "name": "eslint",
+              "spec": ">=9.0.0",
+              "from": {
+                "name": "eslint-config-next",
+                "version": "16.0.8",
+                "location": "node_modules/eslint-config-next",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "dev",
+                    "name": "eslint-config-next",
+                    "spec": "16.0.8",
+                    "from": {
+                      "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "peer",
+              "name": "eslint",
+              "spec": "^2 || ^3 || ^4 || ^5 || ^6 || ^7.2.0 || ^8 || ^9",
+              "from": {
+                "name": "eslint-plugin-import",
+                "version": "2.32.0",
+                "location": "node_modules/eslint-plugin-import",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "eslint-plugin-import",
+                    "spec": "^2.32.0",
+                    "from": {
+                      "name": "eslint-config-next",
+                      "version": "16.0.8",
+                      "location": "node_modules/eslint-config-next",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "dev",
+                          "name": "eslint-config-next",
+                          "spec": "16.0.8",
+                          "from": {
+                            "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peerOptional",
+                    "name": "eslint-plugin-import",
+                    "spec": "*",
+                    "from": {
+                      "name": "eslint-import-resolver-typescript",
+                      "version": "3.10.1",
+                      "location": "node_modules/eslint-import-resolver-typescript",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "eslint-import-resolver-typescript",
+                          "spec": "^3.5.2",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "peer",
+              "name": "eslint",
+              "spec": "^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9",
+              "from": {
+                "name": "eslint-plugin-jsx-a11y",
+                "version": "6.10.2",
+                "location": "node_modules/eslint-plugin-jsx-a11y",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "eslint-plugin-jsx-a11y",
+                    "spec": "^6.10.0",
+                    "from": {
+                      "name": "eslint-config-next",
+                      "version": "16.0.8",
+                      "location": "node_modules/eslint-config-next",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "dev",
+                          "name": "eslint-config-next",
+                          "spec": "16.0.8",
+                          "from": {
+                            "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "peer",
+              "name": "eslint",
+              "spec": "*",
+              "from": {
+                "name": "eslint-import-resolver-typescript",
+                "version": "3.10.1",
+                "location": "node_modules/eslint-import-resolver-typescript",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "eslint-import-resolver-typescript",
+                    "spec": "^3.5.2",
+                    "from": {
+                      "name": "eslint-config-next",
+                      "version": "16.0.8",
+                      "location": "node_modules/eslint-config-next",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "dev",
+                          "name": "eslint-config-next",
+                          "spec": "16.0.8",
+                          "from": {
+                            "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "peer",
+              "name": "eslint",
+              "spec": "^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7",
+              "from": {
+                "name": "eslint-plugin-react",
+                "version": "7.37.5",
+                "location": "node_modules/eslint-plugin-react",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "eslint-plugin-react",
+                    "spec": "^7.37.0",
+                    "from": {
+                      "name": "eslint-config-next",
+                      "version": "16.0.8",
+                      "location": "node_modules/eslint-config-next",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "dev",
+                          "name": "eslint-config-next",
+                          "spec": "16.0.8",
+                          "from": {
+                            "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "peer",
+              "name": "eslint",
+              "spec": "^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0",
+              "from": {
+                "name": "eslint-plugin-react-hooks",
+                "version": "7.0.1",
+                "location": "node_modules/eslint-plugin-react-hooks",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "eslint-plugin-react-hooks",
+                    "spec": "^7.0.0",
+                    "from": {
+                      "name": "eslint-config-next",
+                      "version": "16.0.8",
+                      "location": "node_modules/eslint-config-next",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "dev",
+                          "name": "eslint-config-next",
+                          "spec": "16.0.8",
+                          "from": {
+                            "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "peer",
+              "name": "eslint",
+              "spec": "^8.57.0 || ^9.0.0 || ^10.0.0",
+              "from": {
+                "name": "typescript-eslint",
+                "version": "8.72.2",
+                "location": "node_modules/typescript-eslint",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "typescript-eslint",
+                    "spec": "^8.46.0",
+                    "from": {
+                      "name": "eslint-config-next",
+                      "version": "16.0.8",
+                      "location": "node_modules/eslint-config-next",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "dev",
+                          "name": "eslint-config-next",
+                          "spec": "16.0.8",
+                          "from": {
+                            "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "peer",
+              "name": "eslint",
+              "spec": "^6.0.0 || ^7.0.0 || >=8.0.0",
+              "from": {
+                "name": "@eslint-community/eslint-utils",
+                "version": "4.10.1",
+                "location": "node_modules/@eslint-community/eslint-utils",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "@eslint-community/eslint-utils",
+                    "spec": "^4.8.0",
+                    "from": {
+                      "name": "eslint",
+                      "version": "9.39.1"
+                    }
+                  },
+                  {
+                    "type": "prod",
+                    "name": "@eslint-community/eslint-utils",
+                    "spec": "^4.9.1",
+                    "from": {
+                      "name": "@typescript-eslint/utils",
+                      "version": "8.72.2",
+                      "location": "node_modules/@typescript-eslint/utils",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/utils",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "typescript-eslint",
+                            "version": "8.72.2",
+                            "location": "node_modules/typescript-eslint",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "typescript-eslint",
+                                "spec": "^8.46.0",
+                                "from": {
+                                  "name": "eslint-config-next",
+                                  "version": "16.0.8",
+                                  "location": "node_modules/eslint-config-next",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "dev",
+                                      "name": "eslint-config-next",
+                                      "spec": "16.0.8",
+                                      "from": {
+                                        "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/utils",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "@typescript-eslint/eslint-plugin",
+                            "version": "8.72.2",
+                            "location": "node_modules/@typescript-eslint/eslint-plugin",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/eslint-plugin",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "typescript-eslint",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/typescript-eslint",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "typescript-eslint",
+                                      "spec": "^8.46.0",
+                                      "from": {
+                                        "name": "eslint-config-next",
+                                        "version": "16.0.8",
+                                        "location": "node_modules/eslint-config-next",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "dev",
+                                            "name": "eslint-config-next",
+                                            "spec": "16.0.8",
+                                            "from": {
+                                              "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/utils",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "@typescript-eslint/type-utils",
+                            "version": "8.72.2",
+                            "location": "node_modules/@typescript-eslint/type-utils",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/type-utils",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "@typescript-eslint/eslint-plugin",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/@typescript-eslint/eslint-plugin",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "@typescript-eslint/eslint-plugin",
+                                      "spec": "8.72.2",
+                                      "from": {
+                                        "name": "typescript-eslint",
+                                        "version": "8.72.2",
+                                        "location": "node_modules/typescript-eslint",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "prod",
+                                            "name": "typescript-eslint",
+                                            "spec": "^8.46.0",
+                                            "from": {
+                                              "name": "eslint-config-next",
+                                              "version": "16.0.8",
+                                              "location": "node_modules/eslint-config-next",
+                                              "isWorkspace": false,
+                                              "dependents": [
+                                                {
+                                                  "type": "dev",
+                                                  "name": "eslint-config-next",
+                                                  "spec": "16.0.8",
+                                                  "from": {
+                                                    "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "peer",
+              "name": "eslint",
+              "spec": "^8.57.0 || ^9.0.0 || ^10.0.0",
+              "from": {
+                "name": "@typescript-eslint/eslint-plugin",
+                "version": "8.72.2",
+                "location": "node_modules/@typescript-eslint/eslint-plugin",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "@typescript-eslint/eslint-plugin",
+                    "spec": "8.72.2",
+                    "from": {
+                      "name": "typescript-eslint",
+                      "version": "8.72.2",
+                      "location": "node_modules/typescript-eslint",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "typescript-eslint",
+                          "spec": "^8.46.0",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "peer",
+              "name": "eslint",
+              "spec": "^8.57.0 || ^9.0.0 || ^10.0.0",
+              "from": {
+                "name": "@typescript-eslint/parser",
+                "version": "8.72.2",
+                "location": "node_modules/@typescript-eslint/parser",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "@typescript-eslint/parser",
+                    "spec": "8.72.2",
+                    "from": {
+                      "name": "typescript-eslint",
+                      "version": "8.72.2",
+                      "location": "node_modules/typescript-eslint",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "typescript-eslint",
+                          "spec": "^8.46.0",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "@typescript-eslint/parser",
+                    "spec": "^8.72.2",
+                    "from": {
+                      "name": "@typescript-eslint/eslint-plugin",
+                      "version": "8.72.2",
+                      "location": "node_modules/@typescript-eslint/eslint-plugin",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/eslint-plugin",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "typescript-eslint",
+                            "version": "8.72.2",
+                            "location": "node_modules/typescript-eslint",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "typescript-eslint",
+                                "spec": "^8.46.0",
+                                "from": {
+                                  "name": "eslint-config-next",
+                                  "version": "16.0.8",
+                                  "location": "node_modules/eslint-config-next",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "dev",
+                                      "name": "eslint-config-next",
+                                      "spec": "16.0.8",
+                                      "from": {
+                                        "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "peer",
+              "name": "eslint",
+              "spec": "^8.57.0 || ^9.0.0 || ^10.0.0",
+              "from": {
+                "name": "@typescript-eslint/type-utils",
+                "version": "8.72.2",
+                "location": "node_modules/@typescript-eslint/type-utils",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "@typescript-eslint/type-utils",
+                    "spec": "8.72.2",
+                    "from": {
+                      "name": "@typescript-eslint/eslint-plugin",
+                      "version": "8.72.2",
+                      "location": "node_modules/@typescript-eslint/eslint-plugin",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/eslint-plugin",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "typescript-eslint",
+                            "version": "8.72.2",
+                            "location": "node_modules/typescript-eslint",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "typescript-eslint",
+                                "spec": "^8.46.0",
+                                "from": {
+                                  "name": "eslint-config-next",
+                                  "version": "16.0.8",
+                                  "location": "node_modules/eslint-config-next",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "dev",
+                                      "name": "eslint-config-next",
+                                      "spec": "16.0.8",
+                                      "from": {
+                                        "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "peer",
+              "name": "eslint",
+              "spec": "^8.57.0 || ^9.0.0 || ^10.0.0",
+              "from": {
+                "name": "@typescript-eslint/utils",
+                "version": "8.72.2",
+                "location": "node_modules/@typescript-eslint/utils",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "@typescript-eslint/utils",
+                    "spec": "8.72.2",
+                    "from": {
+                      "name": "typescript-eslint",
+                      "version": "8.72.2",
+                      "location": "node_modules/typescript-eslint",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "typescript-eslint",
+                          "spec": "^8.46.0",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "prod",
+                    "name": "@typescript-eslint/utils",
+                    "spec": "8.72.2",
+                    "from": {
+                      "name": "@typescript-eslint/eslint-plugin",
+                      "version": "8.72.2",
+                      "location": "node_modules/@typescript-eslint/eslint-plugin",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/eslint-plugin",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "typescript-eslint",
+                            "version": "8.72.2",
+                            "location": "node_modules/typescript-eslint",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "typescript-eslint",
+                                "spec": "^8.46.0",
+                                "from": {
+                                  "name": "eslint-config-next",
+                                  "version": "16.0.8",
+                                  "location": "node_modules/eslint-config-next",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "dev",
+                                      "name": "eslint-config-next",
+                                      "spec": "16.0.8",
+                                      "from": {
+                                        "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "prod",
+                    "name": "@typescript-eslint/utils",
+                    "spec": "8.72.2",
+                    "from": {
+                      "name": "@typescript-eslint/type-utils",
+                      "version": "8.72.2",
+                      "location": "node_modules/@typescript-eslint/type-utils",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/type-utils",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "@typescript-eslint/eslint-plugin",
+                            "version": "8.72.2",
+                            "location": "node_modules/@typescript-eslint/eslint-plugin",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/eslint-plugin",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "typescript-eslint",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/typescript-eslint",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "typescript-eslint",
+                                      "spec": "^8.46.0",
+                                      "from": {
+                                        "name": "eslint-config-next",
+                                        "version": "16.0.8",
+                                        "location": "node_modules/eslint-config-next",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "dev",
+                                            "name": "eslint-config-next",
+                                            "spec": "16.0.8",
+                                            "from": {
+                                              "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "prod",
+        "name": "minimatch",
+        "spec": "^3.1.2",
+        "from": {
+          "name": "eslint-plugin-import",
+          "version": "2.32.0",
+          "location": "node_modules/eslint-plugin-import",
+          "isWorkspace": false,
+          "dependents": [
+            {
+              "type": "prod",
+              "name": "eslint-plugin-import",
+              "spec": "^2.32.0",
+              "from": {
+                "name": "eslint-config-next",
+                "version": "16.0.8",
+                "location": "node_modules/eslint-config-next",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "dev",
+                    "name": "eslint-config-next",
+                    "spec": "16.0.8",
+                    "from": {
+                      "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "peerOptional",
+              "name": "eslint-plugin-import",
+              "spec": "*",
+              "from": {
+                "name": "eslint-import-resolver-typescript",
+                "version": "3.10.1",
+                "location": "node_modules/eslint-import-resolver-typescript",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "eslint-import-resolver-typescript",
+                    "spec": "^3.5.2",
+                    "from": {
+                      "name": "eslint-config-next",
+                      "version": "16.0.8",
+                      "location": "node_modules/eslint-config-next",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "dev",
+                          "name": "eslint-config-next",
+                          "spec": "16.0.8",
+                          "from": {
+                            "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "prod",
+        "name": "minimatch",
+        "spec": "^3.1.2",
+        "from": {
+          "name": "eslint-plugin-jsx-a11y",
+          "version": "6.10.2",
+          "location": "node_modules/eslint-plugin-jsx-a11y",
+          "isWorkspace": false,
+          "dependents": [
+            {
+              "type": "prod",
+              "name": "eslint-plugin-jsx-a11y",
+              "spec": "^6.10.0",
+              "from": {
+                "name": "eslint-config-next",
+                "version": "16.0.8",
+                "location": "node_modules/eslint-config-next",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "dev",
+                    "name": "eslint-config-next",
+                    "spec": "16.0.8",
+                    "from": {
+                      "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "prod",
+        "name": "minimatch",
+        "spec": "^3.1.2",
+        "from": {
+          "name": "eslint-plugin-react",
+          "version": "7.37.5",
+          "location": "node_modules/eslint-plugin-react",
+          "isWorkspace": false,
+          "dependents": [
+            {
+              "type": "prod",
+              "name": "eslint-plugin-react",
+              "spec": "^7.37.0",
+              "from": {
+                "name": "eslint-config-next",
+                "version": "16.0.8",
+                "location": "node_modules/eslint-config-next",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "dev",
+                    "name": "eslint-config-next",
+                    "spec": "16.0.8",
+                    "from": {
+                      "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "prod",
+        "name": "minimatch",
+        "spec": "^3.1.2",
+        "from": {
+          "name": "@eslint/config-array",
+          "version": "0.21.1",
+          "location": "node_modules/@eslint/config-array",
+          "isWorkspace": false,
+          "dependents": [
+            {
+              "type": "prod",
+              "name": "@eslint/config-array",
+              "spec": "^0.21.1",
+              "from": {
+                "name": "eslint",
+                "version": "9.39.1",
+                "location": "node_modules/eslint",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "dev",
+                    "name": "eslint",
+                    "spec": "^9",
+                    "from": {
+                      "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": ">=9.0.0",
+                    "from": {
+                      "name": "eslint-config-next",
+                      "version": "16.0.8",
+                      "location": "node_modules/eslint-config-next",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "dev",
+                          "name": "eslint-config-next",
+                          "spec": "16.0.8",
+                          "from": {
+                            "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^2 || ^3 || ^4 || ^5 || ^6 || ^7.2.0 || ^8 || ^9",
+                    "from": {
+                      "name": "eslint-plugin-import",
+                      "version": "2.32.0",
+                      "location": "node_modules/eslint-plugin-import",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "eslint-plugin-import",
+                          "spec": "^2.32.0",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "type": "peerOptional",
+                          "name": "eslint-plugin-import",
+                          "spec": "*",
+                          "from": {
+                            "name": "eslint-import-resolver-typescript",
+                            "version": "3.10.1",
+                            "location": "node_modules/eslint-import-resolver-typescript",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "eslint-import-resolver-typescript",
+                                "spec": "^3.5.2",
+                                "from": {
+                                  "name": "eslint-config-next",
+                                  "version": "16.0.8",
+                                  "location": "node_modules/eslint-config-next",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "dev",
+                                      "name": "eslint-config-next",
+                                      "spec": "16.0.8",
+                                      "from": {
+                                        "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9",
+                    "from": {
+                      "name": "eslint-plugin-jsx-a11y",
+                      "version": "6.10.2",
+                      "location": "node_modules/eslint-plugin-jsx-a11y",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "eslint-plugin-jsx-a11y",
+                          "spec": "^6.10.0",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "*",
+                    "from": {
+                      "name": "eslint-import-resolver-typescript",
+                      "version": "3.10.1",
+                      "location": "node_modules/eslint-import-resolver-typescript",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "eslint-import-resolver-typescript",
+                          "spec": "^3.5.2",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7",
+                    "from": {
+                      "name": "eslint-plugin-react",
+                      "version": "7.37.5",
+                      "location": "node_modules/eslint-plugin-react",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "eslint-plugin-react",
+                          "spec": "^7.37.0",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0",
+                    "from": {
+                      "name": "eslint-plugin-react-hooks",
+                      "version": "7.0.1",
+                      "location": "node_modules/eslint-plugin-react-hooks",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "eslint-plugin-react-hooks",
+                          "spec": "^7.0.0",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^8.57.0 || ^9.0.0 || ^10.0.0",
+                    "from": {
+                      "name": "typescript-eslint",
+                      "version": "8.72.2",
+                      "location": "node_modules/typescript-eslint",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "typescript-eslint",
+                          "spec": "^8.46.0",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^6.0.0 || ^7.0.0 || >=8.0.0",
+                    "from": {
+                      "name": "@eslint-community/eslint-utils",
+                      "version": "4.10.1",
+                      "location": "node_modules/@eslint-community/eslint-utils",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@eslint-community/eslint-utils",
+                          "spec": "^4.8.0",
+                          "from": {
+                            "name": "eslint",
+                            "version": "9.39.1"
+                          }
+                        },
+                        {
+                          "type": "prod",
+                          "name": "@eslint-community/eslint-utils",
+                          "spec": "^4.9.1",
+                          "from": {
+                            "name": "@typescript-eslint/utils",
+                            "version": "8.72.2",
+                            "location": "node_modules/@typescript-eslint/utils",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/utils",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "typescript-eslint",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/typescript-eslint",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "typescript-eslint",
+                                      "spec": "^8.46.0",
+                                      "from": {
+                                        "name": "eslint-config-next",
+                                        "version": "16.0.8",
+                                        "location": "node_modules/eslint-config-next",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "dev",
+                                            "name": "eslint-config-next",
+                                            "spec": "16.0.8",
+                                            "from": {
+                                              "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/utils",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "@typescript-eslint/eslint-plugin",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/@typescript-eslint/eslint-plugin",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "@typescript-eslint/eslint-plugin",
+                                      "spec": "8.72.2",
+                                      "from": {
+                                        "name": "typescript-eslint",
+                                        "version": "8.72.2",
+                                        "location": "node_modules/typescript-eslint",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "prod",
+                                            "name": "typescript-eslint",
+                                            "spec": "^8.46.0",
+                                            "from": {
+                                              "name": "eslint-config-next",
+                                              "version": "16.0.8",
+                                              "location": "node_modules/eslint-config-next",
+                                              "isWorkspace": false,
+                                              "dependents": [
+                                                {
+                                                  "type": "dev",
+                                                  "name": "eslint-config-next",
+                                                  "spec": "16.0.8",
+                                                  "from": {
+                                                    "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/utils",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "@typescript-eslint/type-utils",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/@typescript-eslint/type-utils",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "@typescript-eslint/type-utils",
+                                      "spec": "8.72.2",
+                                      "from": {
+                                        "name": "@typescript-eslint/eslint-plugin",
+                                        "version": "8.72.2",
+                                        "location": "node_modules/@typescript-eslint/eslint-plugin",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "prod",
+                                            "name": "@typescript-eslint/eslint-plugin",
+                                            "spec": "8.72.2",
+                                            "from": {
+                                              "name": "typescript-eslint",
+                                              "version": "8.72.2",
+                                              "location": "node_modules/typescript-eslint",
+                                              "isWorkspace": false,
+                                              "dependents": [
+                                                {
+                                                  "type": "prod",
+                                                  "name": "typescript-eslint",
+                                                  "spec": "^8.46.0",
+                                                  "from": {
+                                                    "name": "eslint-config-next",
+                                                    "version": "16.0.8",
+                                                    "location": "node_modules/eslint-config-next",
+                                                    "isWorkspace": false,
+                                                    "dependents": [
+                                                      {
+                                                        "type": "dev",
+                                                        "name": "eslint-config-next",
+                                                        "spec": "16.0.8",
+                                                        "from": {
+                                                          "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^8.57.0 || ^9.0.0 || ^10.0.0",
+                    "from": {
+                      "name": "@typescript-eslint/eslint-plugin",
+                      "version": "8.72.2",
+                      "location": "node_modules/@typescript-eslint/eslint-plugin",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/eslint-plugin",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "typescript-eslint",
+                            "version": "8.72.2",
+                            "location": "node_modules/typescript-eslint",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "typescript-eslint",
+                                "spec": "^8.46.0",
+                                "from": {
+                                  "name": "eslint-config-next",
+                                  "version": "16.0.8",
+                                  "location": "node_modules/eslint-config-next",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "dev",
+                                      "name": "eslint-config-next",
+                                      "spec": "16.0.8",
+                                      "from": {
+                                        "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^8.57.0 || ^9.0.0 || ^10.0.0",
+                    "from": {
+                      "name": "@typescript-eslint/parser",
+                      "version": "8.72.2",
+                      "location": "node_modules/@typescript-eslint/parser",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/parser",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "typescript-eslint",
+                            "version": "8.72.2",
+                            "location": "node_modules/typescript-eslint",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "typescript-eslint",
+                                "spec": "^8.46.0",
+                                "from": {
+                                  "name": "eslint-config-next",
+                                  "version": "16.0.8",
+                                  "location": "node_modules/eslint-config-next",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "dev",
+                                      "name": "eslint-config-next",
+                                      "spec": "16.0.8",
+                                      "from": {
+                                        "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "type": "peer",
+                          "name": "@typescript-eslint/parser",
+                          "spec": "^8.72.2",
+                          "from": {
+                            "name": "@typescript-eslint/eslint-plugin",
+                            "version": "8.72.2",
+                            "location": "node_modules/@typescript-eslint/eslint-plugin",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/eslint-plugin",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "typescript-eslint",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/typescript-eslint",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "typescript-eslint",
+                                      "spec": "^8.46.0",
+                                      "from": {
+                                        "name": "eslint-config-next",
+                                        "version": "16.0.8",
+                                        "location": "node_modules/eslint-config-next",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "dev",
+                                            "name": "eslint-config-next",
+                                            "spec": "16.0.8",
+                                            "from": {
+                                              "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^8.57.0 || ^9.0.0 || ^10.0.0",
+                    "from": {
+                      "name": "@typescript-eslint/type-utils",
+                      "version": "8.72.2",
+                      "location": "node_modules/@typescript-eslint/type-utils",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/type-utils",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "@typescript-eslint/eslint-plugin",
+                            "version": "8.72.2",
+                            "location": "node_modules/@typescript-eslint/eslint-plugin",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/eslint-plugin",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "typescript-eslint",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/typescript-eslint",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "typescript-eslint",
+                                      "spec": "^8.46.0",
+                                      "from": {
+                                        "name": "eslint-config-next",
+                                        "version": "16.0.8",
+                                        "location": "node_modules/eslint-config-next",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "dev",
+                                            "name": "eslint-config-next",
+                                            "spec": "16.0.8",
+                                            "from": {
+                                              "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^8.57.0 || ^9.0.0 || ^10.0.0",
+                    "from": {
+                      "name": "@typescript-eslint/utils",
+                      "version": "8.72.2",
+                      "location": "node_modules/@typescript-eslint/utils",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/utils",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "typescript-eslint",
+                            "version": "8.72.2",
+                            "location": "node_modules/typescript-eslint",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "typescript-eslint",
+                                "spec": "^8.46.0",
+                                "from": {
+                                  "name": "eslint-config-next",
+                                  "version": "16.0.8",
+                                  "location": "node_modules/eslint-config-next",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "dev",
+                                      "name": "eslint-config-next",
+                                      "spec": "16.0.8",
+                                      "from": {
+                                        "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/utils",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "@typescript-eslint/eslint-plugin",
+                            "version": "8.72.2",
+                            "location": "node_modules/@typescript-eslint/eslint-plugin",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/eslint-plugin",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "typescript-eslint",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/typescript-eslint",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "typescript-eslint",
+                                      "spec": "^8.46.0",
+                                      "from": {
+                                        "name": "eslint-config-next",
+                                        "version": "16.0.8",
+                                        "location": "node_modules/eslint-config-next",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "dev",
+                                            "name": "eslint-config-next",
+                                            "spec": "16.0.8",
+                                            "from": {
+                                              "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/utils",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "@typescript-eslint/type-utils",
+                            "version": "8.72.2",
+                            "location": "node_modules/@typescript-eslint/type-utils",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/type-utils",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "@typescript-eslint/eslint-plugin",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/@typescript-eslint/eslint-plugin",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "@typescript-eslint/eslint-plugin",
+                                      "spec": "8.72.2",
+                                      "from": {
+                                        "name": "typescript-eslint",
+                                        "version": "8.72.2",
+                                        "location": "node_modules/typescript-eslint",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "prod",
+                                            "name": "typescript-eslint",
+                                            "spec": "^8.46.0",
+                                            "from": {
+                                              "name": "eslint-config-next",
+                                              "version": "16.0.8",
+                                              "location": "node_modules/eslint-config-next",
+                                              "isWorkspace": false,
+                                              "dependents": [
+                                                {
+                                                  "type": "dev",
+                                                  "name": "eslint-config-next",
+                                                  "spec": "16.0.8",
+                                                  "from": {
+                                                    "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "prod",
+        "name": "minimatch",
+        "spec": "^3.1.2",
+        "from": {
+          "name": "@eslint/eslintrc",
+          "version": "3.3.3",
+          "location": "node_modules/@eslint/eslintrc",
+          "isWorkspace": false,
+          "dependents": [
+            {
+              "type": "prod",
+              "name": "@eslint/eslintrc",
+              "spec": "^3.3.1",
+              "from": {
+                "name": "eslint",
+                "version": "9.39.1",
+                "location": "node_modules/eslint",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "dev",
+                    "name": "eslint",
+                    "spec": "^9",
+                    "from": {
+                      "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": ">=9.0.0",
+                    "from": {
+                      "name": "eslint-config-next",
+                      "version": "16.0.8",
+                      "location": "node_modules/eslint-config-next",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "dev",
+                          "name": "eslint-config-next",
+                          "spec": "16.0.8",
+                          "from": {
+                            "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^2 || ^3 || ^4 || ^5 || ^6 || ^7.2.0 || ^8 || ^9",
+                    "from": {
+                      "name": "eslint-plugin-import",
+                      "version": "2.32.0",
+                      "location": "node_modules/eslint-plugin-import",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "eslint-plugin-import",
+                          "spec": "^2.32.0",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "type": "peerOptional",
+                          "name": "eslint-plugin-import",
+                          "spec": "*",
+                          "from": {
+                            "name": "eslint-import-resolver-typescript",
+                            "version": "3.10.1",
+                            "location": "node_modules/eslint-import-resolver-typescript",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "eslint-import-resolver-typescript",
+                                "spec": "^3.5.2",
+                                "from": {
+                                  "name": "eslint-config-next",
+                                  "version": "16.0.8",
+                                  "location": "node_modules/eslint-config-next",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "dev",
+                                      "name": "eslint-config-next",
+                                      "spec": "16.0.8",
+                                      "from": {
+                                        "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9",
+                    "from": {
+                      "name": "eslint-plugin-jsx-a11y",
+                      "version": "6.10.2",
+                      "location": "node_modules/eslint-plugin-jsx-a11y",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "eslint-plugin-jsx-a11y",
+                          "spec": "^6.10.0",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "*",
+                    "from": {
+                      "name": "eslint-import-resolver-typescript",
+                      "version": "3.10.1",
+                      "location": "node_modules/eslint-import-resolver-typescript",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "eslint-import-resolver-typescript",
+                          "spec": "^3.5.2",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7",
+                    "from": {
+                      "name": "eslint-plugin-react",
+                      "version": "7.37.5",
+                      "location": "node_modules/eslint-plugin-react",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "eslint-plugin-react",
+                          "spec": "^7.37.0",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0",
+                    "from": {
+                      "name": "eslint-plugin-react-hooks",
+                      "version": "7.0.1",
+                      "location": "node_modules/eslint-plugin-react-hooks",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "eslint-plugin-react-hooks",
+                          "spec": "^7.0.0",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^8.57.0 || ^9.0.0 || ^10.0.0",
+                    "from": {
+                      "name": "typescript-eslint",
+                      "version": "8.72.2",
+                      "location": "node_modules/typescript-eslint",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "typescript-eslint",
+                          "spec": "^8.46.0",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^6.0.0 || ^7.0.0 || >=8.0.0",
+                    "from": {
+                      "name": "@eslint-community/eslint-utils",
+                      "version": "4.10.1",
+                      "location": "node_modules/@eslint-community/eslint-utils",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@eslint-community/eslint-utils",
+                          "spec": "^4.8.0",
+                          "from": {
+                            "name": "eslint",
+                            "version": "9.39.1"
+                          }
+                        },
+                        {
+                          "type": "prod",
+                          "name": "@eslint-community/eslint-utils",
+                          "spec": "^4.9.1",
+                          "from": {
+                            "name": "@typescript-eslint/utils",
+                            "version": "8.72.2",
+                            "location": "node_modules/@typescript-eslint/utils",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/utils",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "typescript-eslint",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/typescript-eslint",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "typescript-eslint",
+                                      "spec": "^8.46.0",
+                                      "from": {
+                                        "name": "eslint-config-next",
+                                        "version": "16.0.8",
+                                        "location": "node_modules/eslint-config-next",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "dev",
+                                            "name": "eslint-config-next",
+                                            "spec": "16.0.8",
+                                            "from": {
+                                              "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/utils",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "@typescript-eslint/eslint-plugin",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/@typescript-eslint/eslint-plugin",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "@typescript-eslint/eslint-plugin",
+                                      "spec": "8.72.2",
+                                      "from": {
+                                        "name": "typescript-eslint",
+                                        "version": "8.72.2",
+                                        "location": "node_modules/typescript-eslint",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "prod",
+                                            "name": "typescript-eslint",
+                                            "spec": "^8.46.0",
+                                            "from": {
+                                              "name": "eslint-config-next",
+                                              "version": "16.0.8",
+                                              "location": "node_modules/eslint-config-next",
+                                              "isWorkspace": false,
+                                              "dependents": [
+                                                {
+                                                  "type": "dev",
+                                                  "name": "eslint-config-next",
+                                                  "spec": "16.0.8",
+                                                  "from": {
+                                                    "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/utils",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "@typescript-eslint/type-utils",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/@typescript-eslint/type-utils",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "@typescript-eslint/type-utils",
+                                      "spec": "8.72.2",
+                                      "from": {
+                                        "name": "@typescript-eslint/eslint-plugin",
+                                        "version": "8.72.2",
+                                        "location": "node_modules/@typescript-eslint/eslint-plugin",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "prod",
+                                            "name": "@typescript-eslint/eslint-plugin",
+                                            "spec": "8.72.2",
+                                            "from": {
+                                              "name": "typescript-eslint",
+                                              "version": "8.72.2",
+                                              "location": "node_modules/typescript-eslint",
+                                              "isWorkspace": false,
+                                              "dependents": [
+                                                {
+                                                  "type": "prod",
+                                                  "name": "typescript-eslint",
+                                                  "spec": "^8.46.0",
+                                                  "from": {
+                                                    "name": "eslint-config-next",
+                                                    "version": "16.0.8",
+                                                    "location": "node_modules/eslint-config-next",
+                                                    "isWorkspace": false,
+                                                    "dependents": [
+                                                      {
+                                                        "type": "dev",
+                                                        "name": "eslint-config-next",
+                                                        "spec": "16.0.8",
+                                                        "from": {
+                                                          "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^8.57.0 || ^9.0.0 || ^10.0.0",
+                    "from": {
+                      "name": "@typescript-eslint/eslint-plugin",
+                      "version": "8.72.2",
+                      "location": "node_modules/@typescript-eslint/eslint-plugin",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/eslint-plugin",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "typescript-eslint",
+                            "version": "8.72.2",
+                            "location": "node_modules/typescript-eslint",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "typescript-eslint",
+                                "spec": "^8.46.0",
+                                "from": {
+                                  "name": "eslint-config-next",
+                                  "version": "16.0.8",
+                                  "location": "node_modules/eslint-config-next",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "dev",
+                                      "name": "eslint-config-next",
+                                      "spec": "16.0.8",
+                                      "from": {
+                                        "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^8.57.0 || ^9.0.0 || ^10.0.0",
+                    "from": {
+                      "name": "@typescript-eslint/parser",
+                      "version": "8.72.2",
+                      "location": "node_modules/@typescript-eslint/parser",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/parser",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "typescript-eslint",
+                            "version": "8.72.2",
+                            "location": "node_modules/typescript-eslint",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "typescript-eslint",
+                                "spec": "^8.46.0",
+                                "from": {
+                                  "name": "eslint-config-next",
+                                  "version": "16.0.8",
+                                  "location": "node_modules/eslint-config-next",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "dev",
+                                      "name": "eslint-config-next",
+                                      "spec": "16.0.8",
+                                      "from": {
+                                        "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "type": "peer",
+                          "name": "@typescript-eslint/parser",
+                          "spec": "^8.72.2",
+                          "from": {
+                            "name": "@typescript-eslint/eslint-plugin",
+                            "version": "8.72.2",
+                            "location": "node_modules/@typescript-eslint/eslint-plugin",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/eslint-plugin",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "typescript-eslint",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/typescript-eslint",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "typescript-eslint",
+                                      "spec": "^8.46.0",
+                                      "from": {
+                                        "name": "eslint-config-next",
+                                        "version": "16.0.8",
+                                        "location": "node_modules/eslint-config-next",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "dev",
+                                            "name": "eslint-config-next",
+                                            "spec": "16.0.8",
+                                            "from": {
+                                              "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^8.57.0 || ^9.0.0 || ^10.0.0",
+                    "from": {
+                      "name": "@typescript-eslint/type-utils",
+                      "version": "8.72.2",
+                      "location": "node_modules/@typescript-eslint/type-utils",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/type-utils",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "@typescript-eslint/eslint-plugin",
+                            "version": "8.72.2",
+                            "location": "node_modules/@typescript-eslint/eslint-plugin",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/eslint-plugin",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "typescript-eslint",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/typescript-eslint",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "typescript-eslint",
+                                      "spec": "^8.46.0",
+                                      "from": {
+                                        "name": "eslint-config-next",
+                                        "version": "16.0.8",
+                                        "location": "node_modules/eslint-config-next",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "dev",
+                                            "name": "eslint-config-next",
+                                            "spec": "16.0.8",
+                                            "from": {
+                                              "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "eslint",
+                    "spec": "^8.57.0 || ^9.0.0 || ^10.0.0",
+                    "from": {
+                      "name": "@typescript-eslint/utils",
+                      "version": "8.72.2",
+                      "location": "node_modules/@typescript-eslint/utils",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/utils",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "typescript-eslint",
+                            "version": "8.72.2",
+                            "location": "node_modules/typescript-eslint",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "typescript-eslint",
+                                "spec": "^8.46.0",
+                                "from": {
+                                  "name": "eslint-config-next",
+                                  "version": "16.0.8",
+                                  "location": "node_modules/eslint-config-next",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "dev",
+                                      "name": "eslint-config-next",
+                                      "spec": "16.0.8",
+                                      "from": {
+                                        "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/utils",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "@typescript-eslint/eslint-plugin",
+                            "version": "8.72.2",
+                            "location": "node_modules/@typescript-eslint/eslint-plugin",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/eslint-plugin",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "typescript-eslint",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/typescript-eslint",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "typescript-eslint",
+                                      "spec": "^8.46.0",
+                                      "from": {
+                                        "name": "eslint-config-next",
+                                        "version": "16.0.8",
+                                        "location": "node_modules/eslint-config-next",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "dev",
+                                            "name": "eslint-config-next",
+                                            "spec": "16.0.8",
+                                            "from": {
+                                              "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/utils",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "@typescript-eslint/type-utils",
+                            "version": "8.72.2",
+                            "location": "node_modules/@typescript-eslint/type-utils",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/type-utils",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "@typescript-eslint/eslint-plugin",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/@typescript-eslint/eslint-plugin",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "@typescript-eslint/eslint-plugin",
+                                      "spec": "8.72.2",
+                                      "from": {
+                                        "name": "typescript-eslint",
+                                        "version": "8.72.2",
+                                        "location": "node_modules/typescript-eslint",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "prod",
+                                            "name": "typescript-eslint",
+                                            "spec": "^8.46.0",
+                                            "from": {
+                                              "name": "eslint-config-next",
+                                              "version": "16.0.8",
+                                              "location": "node_modules/eslint-config-next",
+                                              "isWorkspace": false,
+                                              "dependents": [
+                                                {
+                                                  "type": "dev",
+                                                  "name": "eslint-config-next",
+                                                  "spec": "16.0.8",
+                                                  "from": {
+                                                    "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "dev": true,
+    "optional": false,
+    "devOptional": false,
+    "peer": false,
+    "bundled": false,
+    "overridden": false
+  },
+  {
+    "name": "minimatch",
+    "version": "10.2.6",
+    "location": "node_modules/glob/node_modules/minimatch",
+    "isWorkspace": false,
+    "dependents": [
+      {
+        "type": "prod",
+        "name": "minimatch",
+        "spec": "^10.2.2",
+        "from": {
+          "name": "glob",
+          "version": "13.0.7",
+          "location": "node_modules/glob",
+          "isWorkspace": false,
+          "dependents": [
+            {
+              "type": "prod",
+              "name": "glob",
+              "spec": "^13.0.6",
+              "from": {
+                "name": "@sentry/bundler-plugins",
+                "version": "10.78.0",
+                "location": "node_modules/@sentry/bundler-plugins",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "@sentry/bundler-plugins",
+                    "spec": "10.78.0",
+                    "from": {
+                      "name": "@sentry/nextjs",
+                      "version": "10.78.0",
+                      "location": "node_modules/@sentry/nextjs",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@sentry/nextjs",
+                          "spec": "^10.30.0",
+                          "from": {
+                            "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "prod",
+                    "name": "@sentry/bundler-plugins",
+                    "spec": "^10.76.0",
+                    "from": {
+                      "name": "@sentry/webpack-plugin",
+                      "version": "5.4.1",
+                      "location": "node_modules/@sentry/webpack-plugin",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@sentry/webpack-plugin",
+                          "spec": "^5.4.1",
+                          "from": {
+                            "name": "@sentry/nextjs",
+                            "version": "10.78.0",
+                            "location": "node_modules/@sentry/nextjs",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "@sentry/nextjs",
+                                "spec": "^10.30.0",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "dev": false,
+    "optional": false,
+    "devOptional": false,
+    "peer": false,
+    "bundled": false,
+    "overridden": false
+  },
+  {
+    "name": "minimatch",
+    "version": "11.0.7",
+    "location": "node_modules/rimraf/node_modules/minimatch",
+    "isWorkspace": false,
+    "dependents": [
+      {
+        "type": "prod",
+        "name": "minimatch",
+        "spec": "^11.0.5",
+        "from": {
+          "name": "glob",
+          "version": "14.0.4",
+          "location": "node_modules/rimraf/node_modules/glob",
+          "isWorkspace": false,
+          "dependents": [
+            {
+              "type": "prod",
+              "name": "glob",
+              "spec": "^14.0.3",
+              "from": {
+                "name": "rimraf",
+                "version": "6.1.4",
+                "location": "node_modules/rimraf",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "rimraf",
+                    "spec": "^6.0.1",
+                    "from": {
+                      "name": "@capacitor/cli",
+                      "version": "8.6.0",
+                      "location": "node_modules/@capacitor/cli",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@capacitor/cli",
+                          "spec": "^8.0.0",
+                          "from": {
+                            "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "dev": false,
+    "optional": false,
+    "devOptional": false,
+    "peer": false,
+    "bundled": false,
+    "overridden": false
+  },
+  {
+    "name": "minimatch",
+    "version": "10.2.6",
+    "location": "node_modules/@typescript-eslint/typescript-estree/node_modules/minimatch",
+    "isWorkspace": false,
+    "dependents": [
+      {
+        "type": "prod",
+        "name": "minimatch",
+        "spec": "^10.2.2",
+        "from": {
+          "name": "@typescript-eslint/typescript-estree",
+          "version": "8.72.2",
+          "location": "node_modules/@typescript-eslint/typescript-estree",
+          "isWorkspace": false,
+          "dependents": [
+            {
+              "type": "prod",
+              "name": "@typescript-eslint/typescript-estree",
+              "spec": "8.72.2",
+              "from": {
+                "name": "typescript-eslint",
+                "version": "8.72.2",
+                "location": "node_modules/typescript-eslint",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "typescript-eslint",
+                    "spec": "^8.46.0",
+                    "from": {
+                      "name": "eslint-config-next",
+                      "version": "16.0.8",
+                      "location": "node_modules/eslint-config-next",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "dev",
+                          "name": "eslint-config-next",
+                          "spec": "16.0.8",
+                          "from": {
+                            "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "prod",
+              "name": "@typescript-eslint/typescript-estree",
+              "spec": "8.72.2",
+              "from": {
+                "name": "@typescript-eslint/parser",
+                "version": "8.72.2",
+                "location": "node_modules/@typescript-eslint/parser",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "@typescript-eslint/parser",
+                    "spec": "8.72.2",
+                    "from": {
+                      "name": "typescript-eslint",
+                      "version": "8.72.2",
+                      "location": "node_modules/typescript-eslint",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "typescript-eslint",
+                          "spec": "^8.46.0",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "peer",
+                    "name": "@typescript-eslint/parser",
+                    "spec": "^8.72.2",
+                    "from": {
+                      "name": "@typescript-eslint/eslint-plugin",
+                      "version": "8.72.2",
+                      "location": "node_modules/@typescript-eslint/eslint-plugin",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/eslint-plugin",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "typescript-eslint",
+                            "version": "8.72.2",
+                            "location": "node_modules/typescript-eslint",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "typescript-eslint",
+                                "spec": "^8.46.0",
+                                "from": {
+                                  "name": "eslint-config-next",
+                                  "version": "16.0.8",
+                                  "location": "node_modules/eslint-config-next",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "dev",
+                                      "name": "eslint-config-next",
+                                      "spec": "16.0.8",
+                                      "from": {
+                                        "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "prod",
+              "name": "@typescript-eslint/typescript-estree",
+              "spec": "8.72.2",
+              "from": {
+                "name": "@typescript-eslint/type-utils",
+                "version": "8.72.2",
+                "location": "node_modules/@typescript-eslint/type-utils",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "@typescript-eslint/type-utils",
+                    "spec": "8.72.2",
+                    "from": {
+                      "name": "@typescript-eslint/eslint-plugin",
+                      "version": "8.72.2",
+                      "location": "node_modules/@typescript-eslint/eslint-plugin",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/eslint-plugin",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "typescript-eslint",
+                            "version": "8.72.2",
+                            "location": "node_modules/typescript-eslint",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "typescript-eslint",
+                                "spec": "^8.46.0",
+                                "from": {
+                                  "name": "eslint-config-next",
+                                  "version": "16.0.8",
+                                  "location": "node_modules/eslint-config-next",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "dev",
+                                      "name": "eslint-config-next",
+                                      "spec": "16.0.8",
+                                      "from": {
+                                        "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "prod",
+              "name": "@typescript-eslint/typescript-estree",
+              "spec": "8.72.2",
+              "from": {
+                "name": "@typescript-eslint/utils",
+                "version": "8.72.2",
+                "location": "node_modules/@typescript-eslint/utils",
+                "isWorkspace": false,
+                "dependents": [
+                  {
+                    "type": "prod",
+                    "name": "@typescript-eslint/utils",
+                    "spec": "8.72.2",
+                    "from": {
+                      "name": "typescript-eslint",
+                      "version": "8.72.2",
+                      "location": "node_modules/typescript-eslint",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "typescript-eslint",
+                          "spec": "^8.46.0",
+                          "from": {
+                            "name": "eslint-config-next",
+                            "version": "16.0.8",
+                            "location": "node_modules/eslint-config-next",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "dev",
+                                "name": "eslint-config-next",
+                                "spec": "16.0.8",
+                                "from": {
+                                  "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "prod",
+                    "name": "@typescript-eslint/utils",
+                    "spec": "8.72.2",
+                    "from": {
+                      "name": "@typescript-eslint/eslint-plugin",
+                      "version": "8.72.2",
+                      "location": "node_modules/@typescript-eslint/eslint-plugin",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/eslint-plugin",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "typescript-eslint",
+                            "version": "8.72.2",
+                            "location": "node_modules/typescript-eslint",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "typescript-eslint",
+                                "spec": "^8.46.0",
+                                "from": {
+                                  "name": "eslint-config-next",
+                                  "version": "16.0.8",
+                                  "location": "node_modules/eslint-config-next",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "dev",
+                                      "name": "eslint-config-next",
+                                      "spec": "16.0.8",
+                                      "from": {
+                                        "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "prod",
+                    "name": "@typescript-eslint/utils",
+                    "spec": "8.72.2",
+                    "from": {
+                      "name": "@typescript-eslint/type-utils",
+                      "version": "8.72.2",
+                      "location": "node_modules/@typescript-eslint/type-utils",
+                      "isWorkspace": false,
+                      "dependents": [
+                        {
+                          "type": "prod",
+                          "name": "@typescript-eslint/type-utils",
+                          "spec": "8.72.2",
+                          "from": {
+                            "name": "@typescript-eslint/eslint-plugin",
+                            "version": "8.72.2",
+                            "location": "node_modules/@typescript-eslint/eslint-plugin",
+                            "isWorkspace": false,
+                            "dependents": [
+                              {
+                                "type": "prod",
+                                "name": "@typescript-eslint/eslint-plugin",
+                                "spec": "8.72.2",
+                                "from": {
+                                  "name": "typescript-eslint",
+                                  "version": "8.72.2",
+                                  "location": "node_modules/typescript-eslint",
+                                  "isWorkspace": false,
+                                  "dependents": [
+                                    {
+                                      "type": "prod",
+                                      "name": "typescript-eslint",
+                                      "spec": "^8.46.0",
+                                      "from": {
+                                        "name": "eslint-config-next",
+                                        "version": "16.0.8",
+                                        "location": "node_modules/eslint-config-next",
+                                        "isWorkspace": false,
+                                        "dependents": [
+                                          {
+                                            "type": "dev",
+                                            "name": "eslint-config-next",
+                                            "spec": "16.0.8",
+                                            "from": {
+                                              "location": "/Users/os/Documents/ChatGPT/InboxAI2.0"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "dev": true,
+    "optional": false,
+    "devOptional": false,
+    "peer": false,
+    "bundled": false,
+    "overridden": false
+  }
+]

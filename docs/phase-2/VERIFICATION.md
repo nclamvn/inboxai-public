@@ -1,5 +1,8 @@
 # M0 verification and handoff
 
+This is the original M0 baseline record. The subsequent local-only M0-E work,
+updated test counts and real local Auth evidence are in [M0E_LOCAL_HANDOFF.md](M0E_LOCAL_HANDOFF.md).
+
 Date: 2026-11-11 (Asia/Ho_Chi_Minh). Source baseline: `240d9e1`.
 Branch: `phase2/m0-security-baseline-20261111`.
 Verified implementation commit: `2230c63` (preceded by audit `0a05e64` and
