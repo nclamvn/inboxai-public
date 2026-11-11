@@ -13,6 +13,8 @@ those decisions, not an independently retrieved Library document or concept pack
 - [Ordered PR plan and acceptance criteria](IMPLEMENTATION_PLAN.md)
 - [Security gate](SECURITY_GATE.md)
 - [Actual verification](VERIFICATION.md)
-- [Latest M0-E local handoff](M0E_LOCAL_HANDOFF.md)
+- [M1-A credential vault and maintenance](CREDENTIAL_VAULT.md)
+- [Latest M1-A local handoff](M1A_LOCAL_HANDOFF.md)
+- [Previous M0-E local handoff](M0E_LOCAL_HANDOFF.md)
 
 Implementation status is evidence-driven. M0 does not authorize M1-M6 shortcuts.

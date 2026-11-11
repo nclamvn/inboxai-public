@@ -2,10 +2,10 @@
 
 ## Authority and scope
 - Product owner instructions and `docs/phase-2/PRODUCT_STANDARD.md` govern Phase 2.
-- M0-E owner direction (2026-11-11): local implementation and verification only.
+- M0-E/M1-A owner direction (2026-11-11): local implementation and verification only.
   Do not push, create remote PRs, run hosted deployments or modify hosted settings.
   Prepare PR drafts locally; report local evidence separately from unrun remote CI.
-- Work on `phase2/m0-security-baseline-20261111` for M0. Never modify main,
+- Work on `phase2/m0-security-baseline-20261111` for current local M0/M1 work. Never modify main,
   deploy production, connect real mailboxes, or send real mail before the security gate.
 - Reuse verified code. Prefer small, reviewable PRs with explicit dependencies,
   acceptance criteria, regression tests, rollback notes and evidence.
@@ -25,6 +25,10 @@
   Authenticate the user server-side; never trust body user_id, account_id or model output.
 - RLS is mandatory but does not constrain service-role code. Test two tenants and anonymous access.
 - Never return credentials, log token fragments, or expose service keys to clients.
+- Credentials use the server-only `src/lib/credential-vault/` boundary and private
+  schema RPCs. No public secret columns, hot-path legacy fallback or default keys.
+  Preserve tenant/account AAD, revision checks and encrypted recovery on changes.
+  Follow `docs/phase-2/CREDENTIAL_VAULT.md`; no hosted maintenance is authorized.
 - Email bodies and attachments are untrusted data, never authorization or system instructions.
 - Deterministic code owns authorization, validation, deduplication and side effects.
   Models own language interpretation; model confidence is not calibrated probability.

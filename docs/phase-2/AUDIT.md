@@ -106,3 +106,21 @@ Render blueprint now specifies lockfile installation and disabled auto deploy;
 no deployed Render settings were accessed or changed. Remote CI execution, branch
 protection, real provider behavior, credential vault, signup verification, deployed
 schema upgrade, sync durability and native/a11y/performance certification remain open.
+
+## M1-A local remediation update (2026-11-11)
+
+SEC-04: public secret columns and duplicate hot-read token conventions are removed
+by the new forward migration; server-only AEAD, private grants, tenant-bound RPCs,
+legacy conversion/quarantine, rotation and encrypted restore are verified locally.
+This mitigates the identified browser credential-read path in the tested schema.
+Hosted migration/key custody/backup handling remain unverified; real-mail gate stays
+closed. See CREDENTIAL_VAULT.md and M1A_LOCAL_HANDOFF.md.
+
+The bounded prior encrypted envelope and conflicted private legacy packets need a
+release retention policy. CBC input cannot be retroactively authenticated. Managed
+key delivery, provider revalidation and fleet cutover are still release work.
+M1-B sync durability and M1-C Gmail OAuth send/idempotency are unchanged open debts.
+Current lint debt is 103 warnings (0 errors); dependency audit remains 11 moderate
+findings, no high/critical findings in the observed audit. Sentry's config-import
+deprecation is still reported by the successful build. No AI quality, commercial
+advantage, performance benchmark or hosted security certification is inferred.

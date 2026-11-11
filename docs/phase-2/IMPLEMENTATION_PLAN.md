@@ -5,7 +5,7 @@ Keep M0 on the assigned branch. Stage/commit small scopes; do not merge to main.
 
 Owner steering on 2026-11-11 narrowed the current handoff to **local only**.
 M0-E local evidence is recorded in M0E_LOCAL_HANDOFF.md. Remote PRs/CI and hosted
-settings remain deferred, not passed. M1 may proceed locally after this baseline;
+settings remain deferred, not passed. M1-A was explicitly authorized locally and is recorded in M1A_LOCAL_HANDOFF.md;
 the real-mail/production gate remains closed throughout.
 
 | PR | Dependencies | Scope | Acceptance criteria |
@@ -32,3 +32,17 @@ the real-mail/production gate remains closed throughout.
 For every PR record what changed, why, test commands/outcomes, remaining risk,
 and rollback. Database forward migrations should not be reversed by dropping data.
 Security failures must remain closed even if rolling application code back.
+
+## M1-A local review units
+
+These are local commit/PR drafts, not remote PRs.
+
+| Unit | Dependency | Scope | Acceptance |
+| --- | --- | --- | --- |
+| M1-A1 | M0-E | AEAD, keyring, private schema/RPC, bounded local CLI | Tampering/scope swap rejected, no public secrets/grants, atomic writes, safe conflict code, encrypted backup rotation/restore |
+| M1-A2 | M1-A1 | OAuth/IMAP/attachment/send/refresh consumers | Server-only scoped reads, refresh preservation, persistence failure closed, no raw provider exception leakage in changed credential paths |
+| M1-A3 | M1-A1,A2 | SQL upgrade + native Auth/PostgREST rehearsal and handoff | Synthetic legacy conversion/quarantine, concurrent CAS, key retirement/restore, bounded pages, regression/build evidence |
+
+Review/rollback procedure and exact remaining limits: CREDENTIAL_VAULT.md. These
+units form one coordinated schema/application cutover; do not deploy individual
+intermediate commits against a live database. Hosted cutover remains unauthorized.

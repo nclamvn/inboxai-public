@@ -1,0 +1,53 @@
+# npm audit report
+
+glob  9.0.0 - 14.0.1
+Severity: moderate
+Glob: AbortSignal cancellation bypass allows post-timeout filesystem traversal - https://github.com/advisories/GHSA-3g3m-2fjr-6pw4
+Depends on vulnerable versions of minimatch
+fix available via `npm audit fix`
+node_modules/glob
+  @sentry/bundler-plugins  <=11.10.0
+  Depends on vulnerable versions of glob
+  node_modules/@sentry/bundler-plugins
+    @sentry/nextjs  10.76.2 - 11.10.0
+    Depends on vulnerable versions of @sentry/bundler-plugins
+    Depends on vulnerable versions of @sentry/webpack-plugin
+    node_modules/@sentry/nextjs
+    @sentry/webpack-plugin  5.4.0 - 11.10.0
+    Depends on vulnerable versions of @sentry/bundler-plugins
+    node_modules/@sentry/webpack-plugin
+
+minimatch  7.0.0 - 11.0.0
+Severity: moderate
+minimatch has potential denial of service via globparts amplification - https://github.com/advisories/GHSA-g3hv-75wg-m249
+fix available via `npm audit fix`
+node_modules/@typescript-eslint/typescript-estree/node_modules/minimatch
+node_modules/glob/node_modules/minimatch
+  @typescript-eslint/typescript-estree  6.16.0 - 8.72.2
+  Depends on vulnerable versions of minimatch
+  node_modules/@typescript-eslint/typescript-estree
+    @typescript-eslint/parser  6.16.0 - 8.72.2
+    Depends on vulnerable versions of @typescript-eslint/typescript-estree
+    node_modules/@typescript-eslint/parser
+      typescript-eslint  <=8.72.2
+      Depends on vulnerable versions of @typescript-eslint/eslint-plugin
+      Depends on vulnerable versions of @typescript-eslint/parser
+      Depends on vulnerable versions of @typescript-eslint/typescript-estree
+      Depends on vulnerable versions of @typescript-eslint/utils
+      node_modules/typescript-eslint
+    @typescript-eslint/type-utils  6.16.0 - 8.72.2
+    Depends on vulnerable versions of @typescript-eslint/typescript-estree
+    Depends on vulnerable versions of @typescript-eslint/utils
+    node_modules/@typescript-eslint/type-utils
+    @typescript-eslint/utils  6.16.0 - 8.72.2
+    Depends on vulnerable versions of @typescript-eslint/typescript-estree
+    node_modules/@typescript-eslint/utils
+      @typescript-eslint/eslint-plugin  6.16.0 - 8.72.2
+      Depends on vulnerable versions of @typescript-eslint/type-utils
+      Depends on vulnerable versions of @typescript-eslint/utils
+      node_modules/@typescript-eslint/eslint-plugin
+
+11 moderate severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix

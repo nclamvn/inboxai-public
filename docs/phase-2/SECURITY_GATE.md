@@ -6,7 +6,8 @@ been authorized in this task. Passing local tests does not open this gate.
 Required evidence before proposing a supervised real-mailbox test:
 - [x] Request-security fixes pass local adversarial unit/route integration tests.
 - [x] Fresh and synthetic local upgrade migrations, two-tenant/anonymous SQL boundaries verified; hosted deployed-schema rehearsal remains pending.
-- [ ] Server credential vault, AEAD rotation and no client credential visibility.
+- [x] Local synthetic server credential vault, AEAD rotation/restore and no browser credential visibility verified (M1A_LOCAL_HANDOFF.md).
+- [ ] Hosted key management, deployed-schema/backup cutover and credential migration/retirement reviewed and rehearsed.
 - [ ] No unresolved applicable critical/high dependency or application vulnerabilities.
 - [ ] Gmail scope minimization and OAuth verification/security-assessment applicability checked.
 - [ ] Durable sync checkpoints, duplicate/retry/concurrency behavior and Gmail send verified.

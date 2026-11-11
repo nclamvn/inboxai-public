@@ -1,3 +1,8 @@
+# Verification record
+
+Latest: [M1-A local credential vault evidence](M1A_LOCAL_HANDOFF.md). The M0 record
+below is historical; M1-A removes the public secret columns described as pending there.
+
 # M0 verification and handoff
 
 This is the original M0 baseline record. The subsequent local-only M0-E work,
