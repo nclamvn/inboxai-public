@@ -2,7 +2,7 @@
 
 ## Authority and scope
 - Product owner instructions and `docs/phase-2/PRODUCT_STANDARD.md` govern Phase 2.
-- Owner direction through M4-A (2026-11-11): local implementation and verification only.
+- Owner direction through M4-B (2026-11-11): local implementation and verification only.
   Do not push, create remote PRs, run hosted deployments or modify hosted settings.
   Prepare PR drafts locally; report local evidence separately from unrun remote CI.
 - Work on `phase2/m0-security-baseline-20261111` for current local Phase 2 work. Never modify main,
@@ -45,6 +45,9 @@
 - Ask Inbox applies authenticated ownership and account filters before ranking.
   Cite exact source text, invalidate vectors when indexed content changes or a
   source is deleted, and show whether semantic retrieval is available.
+- Ask Inbox answers must bind facts to exact case references and source versions.
+  Compare structured dates and currencies without guessing missing values,
+  and preserve discrepancies with their separate citations.
 - Sync writes must use the private checkpoint/lease RPC boundary in `src/lib/sync/`.
   Commit page data and cursor together; retain fences, owner checks, UID epochs and
   source tombstones. No timestamp/newest-N fallback. See `docs/phase-2/SYNC_CONTRACTS.md`.

@@ -1,0 +1,45 @@
+{
+  "provenance": "Auth/PostgREST/Next local synthetic mail. Same extraction rules for both arms; the baseline receives only the newest source.",
+  "comparison": [
+    {
+      "query": "Hạn thanh toán, tổng tiền hóa đơn và số tiền đã thanh toán của INV-6422?",
+      "expected": "answered",
+      "examined": 2,
+      "firstEmail": "partial",
+      "allScopedEmails": "answered",
+      "latencyMs": 59
+    },
+    {
+      "query": "Hạn thanh toán và tổng tiền hóa đơn INV-8403?",
+      "expected": "conflicting",
+      "examined": 2,
+      "firstEmail": "answered",
+      "allScopedEmails": "conflicting",
+      "latencyMs": 60
+    },
+    {
+      "query": "Hạn thanh toán và tổng tiền hóa đơn INV-852?",
+      "expected": "insufficient",
+      "examined": 1,
+      "firstEmail": "insufficient",
+      "allScopedEmails": "insufficient",
+      "latencyMs": 62
+    },
+    {
+      "query": "Tổng tiền hóa đơn INV-903?",
+      "expected": "insufficient",
+      "examined": 1,
+      "firstEmail": "insufficient",
+      "allScopedEmails": "insufficient",
+      "latencyMs": 55
+    },
+    {
+      "query": "Tổng tiền hóa đơn INV-0007?",
+      "expected": "insufficient",
+      "examined": 0,
+      "firstEmail": "insufficient",
+      "allScopedEmails": "insufficient",
+      "latencyMs": 62
+    }
+  ]
+}

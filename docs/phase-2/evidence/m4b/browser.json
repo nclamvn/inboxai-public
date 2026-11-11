@@ -1,0 +1,38 @@
+{
+  "engine": "157.0.8103.51",
+  "captures": [
+    {
+      "name": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "axe": []
+    },
+    {
+      "name": "tablet",
+      "viewport": {
+        "width": 834,
+        "height": 1112
+      },
+      "axe": []
+    },
+    {
+      "name": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "axe": []
+    },
+    {
+      "name": "stale-source",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "axe": []
+    }
+  ],
+  "runtimeErrors": []
+}

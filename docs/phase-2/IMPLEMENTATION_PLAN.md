@@ -134,3 +134,13 @@ See the [M3-C handoff](M3C_LOCAL_HANDOFF.md) for the supported language and veri
 | M4-A3 | M4-A2 | Ask Inbox search surface and local evidence | Accessible filters, source opening and return, held-out keyword comparison, recorded misses and latency |
 
 See the [M4-A handoff](M4A_LOCAL_HANDOFF.md) for setup and local verification.
+
+## M4-B local review units
+
+| Unit | Dependency | Scope | Acceptance |
+| --- | --- | --- | --- |
+| M4-B1 | M4-A | Exact reference evidence and authenticated citation checks | Read-only scoped snapshots, correct case boundaries, deleted and changed sources reported |
+| M4-B2 | M4-B1 | Structured synthesis for dates and money | Verbatim evidence per value, explicit missing or ambiguous fields, alternatives preserved on disagreement |
+| M4-B3 | M4-B2 | Ask email surface and local verification | Responsive source navigation, synthetic contradictions and abstention, same-rule single-email comparison |
+
+See the [M4-B handoff](M4B_LOCAL_HANDOFF.md) for supported questions and verification.
