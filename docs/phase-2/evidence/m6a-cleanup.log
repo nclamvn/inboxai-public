@@ -1,0 +1,27 @@
+Removed android/build
+Removed android/.gradle
+Removed android/app/build
+Removed android/capacitor-cordova-android-plugins
+Removed android/app/src/main/assets
+Removed ios/DerivedData
+Removed ios/App/App/public
+Removed ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
+Removed node_modules/@capacitor/android/capacitor/build
+Removed node_modules/@capacitor/app/android/build
+Removed node_modules/@capacitor/haptics/android/build
+Removed node_modules/@capacitor/keyboard/android/build
+Removed node_modules/@capacitor/push-notifications/android/build
+Removed node_modules/@capacitor/splash-screen/android/build
+Removed node_modules/@capacitor/status-bar/android/build
+Removed android/app/src/debug/res/xml/network_security_config.xml
+Removed android/app/src/main/res/xml/config.xml
+Removed ios/App/App/config.xml
+Removed ios/App/App/capacitor.config.json
+Removed android/app/src/debug/res/xml
+Removed android/app/src/debug/res
+Removed android/app/src/debug
+List of devices attached
+
+Filesystem        Size    Used   Avail Capacity iused ifree %iused  Mounted on
+/dev/disk3s1s1   460Gi    13Gi    25Gi    35%    487k  260M    0%   /
+Total reclaimed space: 0B

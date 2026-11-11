@@ -1,0 +1,8 @@
+{
+  "device": "iPhone 17 Simulator",
+  "runtime": "iOS 27.0",
+  "timestamp": "2026-11-12 04:55:19.00 +0700",
+  "exception": "EXC_BREAKPOINT",
+  "signal": "SIGTRAP",
+  "firstFrame": "___UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption_block_invoke"
+}

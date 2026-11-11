@@ -1,0 +1,48 @@
+{
+  "engine": "157.0.8103.51",
+  "mode": "next start",
+  "accounts": 2,
+  "emails": 600,
+  "briefingBytes": 3802787,
+  "measurements": [
+    {
+      "name": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "firstRowMs": 1173,
+      "jsBytes": 431351,
+      "requests": {
+        "briefing": 2,
+        "profiles": 1
+      }
+    },
+    {
+      "name": "tablet",
+      "viewport": {
+        "width": 834,
+        "height": 1112
+      },
+      "firstRowMs": 1029,
+      "jsBytes": 431351,
+      "requests": {
+        "briefing": 2,
+        "profiles": 1
+      }
+    },
+    {
+      "name": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "firstRowMs": 1055,
+      "jsBytes": 431351,
+      "requests": {
+        "briefing": 1,
+        "profiles": 1
+      }
+    }
+  ]
+}

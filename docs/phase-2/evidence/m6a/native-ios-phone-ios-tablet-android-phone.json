@@ -1,0 +1,55 @@
+[
+  {
+    "device": "ios-phone",
+    "reading": {
+      "stage": "reading",
+      "platform": "ios",
+      "keyboard": "native",
+      "viewport": {
+        "width": 402,
+        "height": 840
+      },
+      "overflow": false,
+      "axe": []
+    },
+    "returned": {
+      "stage": "returned",
+      "restoredFocus": true
+    }
+  },
+  {
+    "device": "ios-tablet",
+    "reading": {
+      "stage": "reading",
+      "platform": "ios",
+      "keyboard": "native",
+      "viewport": {
+        "width": 744,
+        "height": 1113
+      },
+      "overflow": false,
+      "axe": []
+    },
+    "returned": {
+      "stage": "returned",
+      "restoredFocus": true
+    }
+  },
+  {
+    "device": "android-phone",
+    "reading": {
+      "stage": "reading",
+      "platform": "android",
+      "viewport": {
+        "width": 412,
+        "height": 915
+      },
+      "overflow": false,
+      "axe": []
+    },
+    "returned": {
+      "stage": "returned",
+      "restoredFocus": true
+    }
+  }
+]

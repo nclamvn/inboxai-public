@@ -163,3 +163,12 @@ See the [M5-A handoff](M5A_LOCAL_HANDOFF.md) for local scope and verification.
 | M5-B2 | M5-B1, M5-A3 | Verification status, confirmation and undo receipt | Preview shows every approved email and its prior state, retries preserve the request key, and reload preserves the recorded outcome |
 
 See the [M5-B handoff](M5B_LOCAL_HANDOFF.md) for local evidence and remaining provider coverage.
+
+## M6-A local review units
+
+| Unit | Depends on | Scope | Acceptance |
+| --- | --- | --- | --- |
+| M6-A1 | M5-B | Production-mode Inbox benchmark and dashboard request reduction | Two accounts and 600 synthetic emails. Same briefing counts and keyboard access within a declared local payload and timing budget. |
+| M6-A2 | M6-A1 | Reading focus, touch target and Capacitor shell integration | Email opening and return preserve focus on the three web sizes. Verify native behavior with simulator evidence and record untested device or assistive-technology coverage. |
+
+See the [M6-A handoff](M6A_LOCAL_HANDOFF.md) for measurements, fixtures and release limitations.

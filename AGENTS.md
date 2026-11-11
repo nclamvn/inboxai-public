@@ -2,7 +2,7 @@
 
 ## Authority and scope
 - Product owner instructions and `docs/phase-2/PRODUCT_STANDARD.md` govern Phase 2.
-- Owner direction through M5-B (2026-11-12): local implementation and verification only.
+- Owner direction through M6-A (2026-11-12): local implementation and verification only.
   Do not push, create remote PRs, run hosted deployments or modify hosted settings.
   Prepare PR drafts locally; report local evidence separately from unrun remote CI.
 - Work on `phase2/m0-security-baseline-20261111` for current local Phase 2 work. Never modify main,
@@ -78,6 +78,8 @@
 - Do not redesign UI during security work without a product reason and regression coverage.
 - Run `npm run test:design` against local synthetic fixtures when changing the
   reference Inbox, dashboard shell, Compose or shared dialog.
+- Run `npm run test:platform` for production-mode Inbox performance and accessibility.
+  Record native simulator evidence separately from browser viewport checks.
 
 ## Evidence and release
 - Run lint, TypeScript, unit, integration and build. Record actual commands, environment,
