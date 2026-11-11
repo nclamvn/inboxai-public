@@ -36,7 +36,6 @@ export function getGoogleAuthUrl(state: string, customRedirectUri?: string, code
 
   const scopes = [
     'https://www.googleapis.com/auth/gmail.readonly',
-    'https://www.googleapis.com/auth/gmail.modify',
     'https://www.googleapis.com/auth/gmail.send',
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile',
@@ -95,7 +94,7 @@ export async function exchangeCodeForTokens(code: string, customRedirectUri?: st
 /**
  * Refresh access token using refresh token
  */
-export async function refreshAccessToken(refreshToken: string): Promise<GoogleTokens> {
+export async function refreshAccessToken(refreshToken: string, signal?: AbortSignal): Promise<GoogleTokens> {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
@@ -104,6 +103,8 @@ export async function refreshAccessToken(refreshToken: string): Promise<GoogleTo
   }
 
   const response = await fetch(GOOGLE_TOKEN_URL, {
+    signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(10_000)]) : AbortSignal.timeout(10_000),
+    redirect: 'error',
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',

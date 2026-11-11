@@ -134,6 +134,7 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
     // Navigate to compose with pre-filled draft
     const params = new URLSearchParams({
       replyTo: email.from_address || '',
+      replyToEmailId: email.id,
       subject,
       body,
     })

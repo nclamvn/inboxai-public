@@ -21,6 +21,8 @@ interface SendEmailParams {
   text?: string
   html?: string
   replyTo?: string
+  messageId?: string
+  inReplyTo?: string
   attachments?: Array<{
     filename: string
     content: Buffer | string
@@ -32,6 +34,7 @@ interface SendResult {
   success: boolean
   messageId?: string
   error?: string
+  state?: 'accepted' | 'partial' | 'unknown' | 'rejected'
 }
 
 export async function testSmtpConnection(config: SmtpConfig): Promise<{ success: boolean; error?: string }> {
@@ -56,12 +59,17 @@ export async function testSmtpConnection(config: SmtpConfig): Promise<{ success:
 
 export async function sendEmailViaSMTP(
   config: SmtpConfig,
-  params: SendEmailParams
+  params: SendEmailParams,
+  signal = AbortSignal.timeout(25_000),
 ): Promise<SendResult> {
   const transporter = nodemailer.createTransport({
     host: config.host,
     port: config.port,
     secure: config.secure,
+    requireTLS: !config.secure,
+    connectionTimeout: 8_000,
+    greetingTimeout: 8_000,
+    socketTimeout: 15_000,
     auth: {
       user: config.username,
       pass: config.password
@@ -70,7 +78,8 @@ export async function sendEmailViaSMTP(
 
   try {
     const info = await transporter.sendMail({
-      from: `"${params.from.name}" <${params.from.address}>`,
+      signal,
+      from: params.from,
       to: Array.isArray(params.to) ? params.to.join(', ') : params.to,
       cc: params.cc?.join(', '),
       bcc: params.bcc?.join(', '),
@@ -78,6 +87,11 @@ export async function sendEmailViaSMTP(
       text: params.text,
       html: params.html,
       replyTo: params.replyTo,
+      messageId: params.messageId,
+      inReplyTo: params.inReplyTo,
+      references: params.inReplyTo,
+      disableFileAccess: true,
+      disableUrlAccess: true,
       attachments: params.attachments?.map(a => ({
         filename: a.filename,
         content: a.content,
@@ -87,13 +101,19 @@ export async function sendEmailViaSMTP(
 
     return {
       success: true,
-      messageId: info.messageId
+      messageId: info.messageId,
+      state: info.rejected?.length ? 'partial' : 'accepted'
     }
-  } catch {
+  } catch (error) {
+    const smtpError = error as { code?: string; command?: string; responseCode?: number } | null
+    const explicitRejection = smtpError?.code === 'EAUTH' ||
+      (typeof smtpError?.responseCode === 'number' && smtpError.responseCode >= 400 &&
+        smtpError.responseCode < 600 && ['MAIL FROM', 'RCPT TO', 'DATA'].includes(smtpError.command ?? ''))
     const errorMsg = 'SMTP send failed'
     return {
       success: false,
-      error: errorMsg
+      error: errorMsg,
+      state: explicitRejection ? 'rejected' : 'unknown'
     }
   }
 }

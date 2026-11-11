@@ -1,12 +1,16 @@
 import { beforeEach, expect, it, vi } from 'vitest'
 import { NextRequest } from 'next/server'
 
+const accountA = '10000000-0000-4000-8000-000000000001'
+const accountB = '10000000-0000-4000-8000-000000000002'
+const foreignEmail = '20000000-0000-4000-8000-000000000002'
+const requestKey = '30000000-0000-4000-8000-000000000001'
 const mocks = vi.hoisted(() => ({
   user: { id: 'alice' } as { id: string; email?: string; app_metadata?: Record<string, unknown> } | null,
-  from: vi.fn(), send: vi.fn(), secret: vi.fn(), trust: vi.fn(), upsert: vi.fn(),
+  from: vi.fn(), send: vi.fn(), secret: vi.fn(), trust: vi.fn(), upsert: vi.fn(), rpc: vi.fn(),
 }))
 vi.mock('@/lib/supabase/server', () => ({ createClient: async () => ({ auth: { getUser: async () => ({ data: { user: mocks.user } }) } }) }))
-vi.mock('@supabase/supabase-js', () => ({ createClient: () => ({ from: mocks.from }) }))
+vi.mock('@supabase/supabase-js', () => ({ createClient: () => ({ from: mocks.from, rpc: mocks.rpc }) }))
 vi.mock('@/lib/email/smtp-client', () => ({ sendEmailViaSMTP: mocks.send }))
 vi.mock('@/lib/email/imap-client', () => ({ EMAIL_PROVIDERS: {} }))
 vi.mock('@/lib/credential-vault/vault', () => ({ getImapPassword: mocks.secret }))
@@ -20,6 +24,13 @@ import { GET as debugGmail } from '@/app/api/debug/gmail-sync/route'
 
 beforeEach(() => {
   mocks.user = { id: 'alice' }
+  mocks.rpc.mockImplementation(async (name, args) => ({
+    error: null,
+    data: name === 'begin_mail_send' && !args.p_payload ? null : {
+      id: requestKey, provider: 'smtp', state: name === 'finish_mail_send' ? 'accepted' : 'dispatching',
+      messageId: '<test@inboxai.invalid>', providerId: null, reconcile: false, claimed: name === 'begin_mail_send',
+    },
+  }))
   mocks.send.mockResolvedValue({ success: true, messageId: 'synthetic-message' })
   mocks.secret.mockResolvedValue('synthetic-password')
   mocks.upsert.mockReturnValue({ select: () => ({ single: async () => ({ data: { user_id: 'alice' } }) }) })
@@ -31,12 +42,12 @@ beforeEach(() => {
       eq(key: string, value: string) { filters[key] = value; return this },
       async single() {
         if (table === 'source_accounts') {
-          return { data: filters.user_id === 'alice' && filters.id === 'account-a' ? {
-            id: 'account-a', user_id: 'alice', smtp_host: 'smtp.example.test', email_address: 'alice@example.test', password_encrypted: 'synthetic',
+          return { data: filters.user_id === 'alice' && filters.id === accountA ? {
+            id: accountA, user_id: 'alice', is_active: true, smtp_host: 'smtp.example.test', email_address: 'alice@example.test', password_encrypted: 'synthetic',
           } : null }
         }
         if (table === 'emails') {
-          const row = { id: 'email-b', user_id: 'bob', subject: 'PRIVATE_BOB_SUBJECT', from_address: 'bob@example.test' }
+          const row = { id: foreignEmail, user_id: 'bob', subject: 'PRIVATE_BOB_SUBJECT', from_address: 'bob@example.test' }
           return { data: filters.id === row.id && (!filters.user_id || filters.user_id === row.user_id) ? row : null }
         }
         return { data: null }
@@ -47,11 +58,11 @@ beforeEach(() => {
   })
 })
 
-const mailBody = { sourceAccountId: 'account-a', to: 'recipient@example.test', subject: 'Hello', text: 'Synthetic test' }
-const req = (body: object) => new NextRequest('http://localhost/api/test', { method: 'POST', body: JSON.stringify(body) })
+const mailBody = { sourceAccountId: accountA, to: 'recipient@example.test', subject: 'Hello', text: 'Synthetic test' }
+const req = (body: object) => new NextRequest('http://localhost/api/test', { method: 'POST', body: JSON.stringify(body), headers: { 'Idempotency-Key': requestKey } })
 
 it('foreign reply ID is rejected before decrypt, SMTP or sender-trust changes', async () => {
-  const response = await send(req({ ...mailBody, replyToEmailId: 'email-b' }))
+  const response = await send(req({ ...mailBody, replyToEmailId: foreignEmail }))
   expect(response.status).toBe(404)
   expect(await response.text()).not.toContain('PRIVATE_BOB_SUBJECT')
   expect(mocks.secret).not.toHaveBeenCalled()
@@ -59,7 +70,7 @@ it('foreign reply ID is rejected before decrypt, SMTP or sender-trust changes', 
   expect(mocks.trust).not.toHaveBeenCalled()
 })
 it('foreign sending account cannot be used', async () => {
-  expect((await send(req({ ...mailBody, sourceAccountId: 'account-b' }))).status).toBe(404)
+  expect((await send(req({ ...mailBody, sourceAccountId: accountB }))).status).toBe(404)
   expect(mocks.send).not.toHaveBeenCalled()
 })
 it('ordinary own-account send still reaches mocked SMTP', async () => {

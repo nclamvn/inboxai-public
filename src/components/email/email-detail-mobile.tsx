@@ -195,7 +195,8 @@ export function EmailDetailMobile({
             emailId={email.id}
             onReply={(content, subject) => {
               const params = new URLSearchParams({
-                to: email.from_address || '',
+                replyTo: email.from_address || '',
+                replyToEmailId: email.id,
                 subject,
                 body: content,
               })
@@ -242,7 +243,14 @@ export function EmailDetailMobile({
         {/* FLOATING ACTION BUTTONS - pill design */}
         <div className="flex items-center justify-center gap-4 px-6 py-3 border-t border-[var(--border)]">
           <button
-            onClick={() => window.location.href = `/compose?replyTo=${email.id}`}
+            onClick={() => {
+              const params = new URLSearchParams({
+                replyTo: email.from_address || '',
+                replyToEmailId: email.id,
+                subject: /^re:/i.test(email.subject || '') ? email.subject || '' : `Re: ${email.subject || ''}`,
+              })
+              window.location.href = `/compose?${params}`
+            }}
             className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-full active:opacity-80 max-w-[160px]"
           >
             <Reply className="w-4 h-4" />

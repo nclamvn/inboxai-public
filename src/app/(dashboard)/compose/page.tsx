@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Send, Paperclip, X, Loader2, Sparkles, ChevronDown, Wand2, FileText, Minus, Plus, Briefcase, Smile } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { composeFingerprint, readComposeKey, saveComposeKey } from '@/lib/mail-send/compose-key'
 
 interface SourceAccount {
   id: string
@@ -22,6 +23,9 @@ export default function ComposePage() {
   const [body, setBody] = useState('')
   const [showCc, setShowCc] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [sendAction, setSendAction] = useState<'send' | 'retry' | 'check'>('send')
+  const sendBusy = useRef(false)
+  const attempt = useRef<{ fingerprint: string; key: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isFromAI, setIsFromAI] = useState(false)
 
@@ -122,6 +126,7 @@ export default function ComposePage() {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (sendBusy.current) return
     setError(null)
 
     if (!to.trim() || !subject.trim()) {
@@ -134,36 +139,52 @@ export default function ComposePage() {
       return
     }
 
+    sendBusy.current = true
     setLoading(true)
 
     try {
-      const replyToEmailId = searchParams.get('replyToEmailId')
-
+      const recipients = (value: string) => value.split(',').map(email => email.trim()).filter(Boolean)
+      const data = JSON.stringify({
+        sourceAccountId: selectedAccountId,
+        to: recipients(to),
+        subject,
+        text: body,
+        cc: recipients(cc),
+        replyToEmailId: searchParams.get('replyToEmailId') || undefined,
+      })
+      const fingerprint = await composeFingerprint(data)
+      if (attempt.current && attempt.current.fingerprint !== fingerprint) {
+        setError('Hãy khôi phục nội dung của lần gửi trước để kiểm tra kết quả.')
+        return
+      }
+      const key = attempt.current?.key ?? readComposeKey(fingerprint) ?? crypto.randomUUID()
+      attempt.current = { fingerprint, key }
+      saveComposeKey(fingerprint, key)
+      setSendAction(action => action === 'check' ? action : 'retry')
       const response = await fetch('/api/emails/send', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sourceAccountId: selectedAccountId,
-          to: to.split(',').map(e => e.trim()),
-          subject,
-          text: body,
-          html: body.replace(/\n/g, '<br>'),
-          cc: cc ? cc.split(',').map(e => e.trim()) : undefined,
-          replyToEmailId: replyToEmailId || undefined
-        })
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key },
+        body: data,
       })
-
       const result = await response.json()
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Gửi email thất bại')
+      if (result.state === 'rejected' || [400, 404, 413].includes(response.status)) {
+        attempt.current = null
+        saveComposeKey(fingerprint, null)
+        setSendAction('send')
+      }
+      if (['dispatching', 'unknown', 'partial'].includes(result.state)) setSendAction('check')
+      if (!response.ok || result.success !== true) {
+        setError(result.error || 'Chưa thể xác nhận yêu cầu. Hãy kiểm tra lại.')
+        return
       }
 
+      saveComposeKey(fingerprint, null)
       router.push('/sent')
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Không thể gửi email. Vui lòng thử lại.'
-      setError(errorMessage)
+    } catch {
+      setError('Chưa thể xác nhận yêu cầu. Hãy kiểm tra lại trạng thái với cùng nội dung.')
     } finally {
+      sendBusy.current = false
       setLoading(false)
     }
   }
@@ -194,7 +215,7 @@ export default function ComposePage() {
       {/* Form */}
       <form onSubmit={handleSend} className="flex-1 flex flex-col">
         {error && (
-          <div className="mx-4 mt-4 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg text-red-600 dark:text-red-400 text-[14px]">
+          <div role="status" className="mx-4 mt-4 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg text-red-600 dark:text-red-400 text-[14px]">
             {error}
           </div>
         )}
@@ -478,7 +499,7 @@ export default function ComposePage() {
               ) : (
                 <>
                   <Send className="w-5 h-5" strokeWidth={1.5} />
-                  Gửi
+                  {sendAction === 'check' ? 'Kiểm tra trạng thái' : sendAction === 'retry' ? 'Thử lại yêu cầu' : 'Gửi'}
                 </>
               )}
             </button>
