@@ -124,3 +124,22 @@ Current lint debt is 103 warnings (0 errors); dependency audit remains 11 modera
 findings, no high/critical findings in the observed audit. Sentry's config-import
 deprecation is still reported by the successful build. No AI quality, commercial
 advantage, performance benchmark or hosted security certification is inferred.
+
+## M1-B local remediation update (2026-11-11)
+
+Timestamp/newest-N progression is replaced by atomic private checkpoints, leases and
+fences. Synthetic full/history/UID overflow, retry, expunge, reset and lost-acknowledgement
+scenarios now run against actual local PostgREST/PostgreSQL. Provider message identity
+is account/epoch scoped; RFC Message-ID is metadata. Historical rows/evidence are
+retained under legacy namespaces pending a complete rebaseline. See SYNC_CONTRACTS.md.
+
+Remaining release debt: real-provider interoperability, hosted legacy annotation
+mapping/cutover, large-message streaming, multi-folder IMAP, efficient flag deltas,
+Gmail attachment download/push, operational load/recovery measurement and M1-C send
+idempotency. The local mirror is not an immutable commitment ledger. User local flags
+are preserved against source replays until provider acknowledgement; actual provider
+flag mutation remains later work. Existing LLM classification/notification paths and
+provider quotas were not verified with real services. No production security sign-off.
+
+Final M1-B checks: 0 lint errors / 97 warnings, dependency audit 11 moderate and
+no high/critical in the observed run; these remain debt rather than a zero-risk claim.

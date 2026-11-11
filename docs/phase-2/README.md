@@ -14,7 +14,9 @@ those decisions, not an independently retrieved Library document or concept pack
 - [Security gate](SECURITY_GATE.md)
 - [Actual verification](VERIFICATION.md)
 - [M1-A credential vault and maintenance](CREDENTIAL_VAULT.md)
-- [Latest M1-A local handoff](M1A_LOCAL_HANDOFF.md)
+- [Sync contracts and recovery](SYNC_CONTRACTS.md)
+- [Latest M1-B local handoff](M1B_LOCAL_HANDOFF.md)
+- [Previous M1-A local handoff](M1A_LOCAL_HANDOFF.md)
 - [Previous M0-E local handoff](M0E_LOCAL_HANDOFF.md)
 
 Implementation status is evidence-driven. M0 does not authorize M1-M6 shortcuts.

@@ -46,3 +46,19 @@ These are local commit/PR drafts, not remote PRs.
 Review/rollback procedure and exact remaining limits: CREDENTIAL_VAULT.md. These
 units form one coordinated schema/application cutover; do not deploy individual
 intermediate commits against a live database. Hosted cutover remains unauthorized.
+
+## M1-B local review units
+
+M1-B was authorized locally after M1-A. No remote PR or deployment is created.
+
+| Unit | Dependency | Scope | Acceptance |
+| --- | --- | --- | --- |
+| M1-B0 | M1-A | Private lease/checkpoint RPCs, provider identity, atomic page commits | Tenant/grants, rollback, CAS/fencing, source tombstones, preserved annotations |
+| M1-B1 | M1-B0 | Gmail full/history paging, durable history worklist, body normalization | Overflow/restart, final-page anchor, expired history, failed fetch/write do not advance progress |
+| M1-B2 | M1-B0 | IMAP INBOX epoch/ascending UID scan and reconciliation | UID backlog, reset/mid-page reset, flags/expunge, duplicate MIME filenames, lazy-read epoch guard |
+| M1-B3 | M1-B1,B2 | Fair account dispatch, bounded runs, synthetic native rehearsal | One active worker, stale worker rejected, uncertain commit recovery, account/tenant isolation and pending state |
+
+Local source commits group the shared contracts/providers before wiring callers, then
+add native rehearsal and evidence. Schema/application cutover is coordinated across
+these units. See SYNC_CONTRACTS.md for explicit support limits and rollback notes.
+Next implementation milestone: M1-C Gmail OAuth send and external-send idempotency.
