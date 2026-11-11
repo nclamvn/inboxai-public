@@ -92,3 +92,14 @@ components to expose contextual ranking, source evidence and corrections.
 
 The [M2-B handoff](M2B_LOCAL_HANDOFF.md) records behavior and evaluation limits.
 M3-A owns persistent commitment identity, revisions and lifecycle evidence.
+
+## M3-A local review units
+
+| Unit | Dependency | Scope | Acceptance |
+| --- | --- | --- | --- |
+| M3-A1 | M2-B | Private ledger, immutable revisions and evidence anchors | One stable identity, atomic head and revision, replay-safe writes, quote and tenant validation |
+| M3-A2 | M3-A1 | Authenticated list, detail, create, revise and review API | Unknown owner and deadlines retained, concurrent edits rejected, conflicting evidence preserves confirmed state |
+| M3-A3 | M3-A2 | Fresh and upgrade verification | Local SQL and HTTP prove source links, tenant isolation, revision history and source unavailability |
+
+See the [M3-A handoff](M3A_LOCAL_HANDOFF.md) for the API contract. M3-B
+consumes it for commitment tracking and review workflows.

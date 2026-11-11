@@ -1,0 +1,150 @@
+{
+  "id": "6e66769f-335e-48a4-a413-5fe7e30f7172",
+  "state": {
+    "dueAt": null,
+    "dueOn": "2026-11-19",
+    "title": "Giao 200 bộ linh kiện",
+    "review": null,
+    "status": "completed",
+    "ownerName": "Nhà cung cấp",
+    "ownerEmail": "supplier@example.test"
+  },
+  "history": [
+    {
+      "kind": "revised",
+      "state": {
+        "dueAt": null,
+        "dueOn": "2026-11-19",
+        "title": "Giao 200 bộ linh kiện",
+        "review": null,
+        "status": "completed",
+        "ownerName": "Nhà cung cấp",
+        "ownerEmail": "supplier@example.test"
+      },
+      "sources": [
+        {
+          "href": "/inbox?email=044b9aa1-d82e-4a12-b3a8-765f2fda4cb0",
+          "field": "body_text",
+          "quote": "Kho đã nhận đủ 200 bộ.",
+          "emailId": "044b9aa1-d82e-4a12-b3a8-765f2fda4cb0",
+          "subject": "Xác nhận nhận hàng",
+          "receivedAt": null,
+          "availability": "available"
+        }
+      ],
+      "version": 4,
+      "recordedAt": "2026-11-11T13:12:22.663261+00:00",
+      "changedFields": [
+        "review",
+        "status"
+      ]
+    },
+    {
+      "kind": "review_flagged",
+      "state": {
+        "dueAt": null,
+        "dueOn": "2026-11-19",
+        "title": "Giao 200 bộ linh kiện",
+        "review": {
+          "kind": "conflicting",
+          "note": "Ngày giao khác nhau giữa thư xác nhận và phiếu vận tải."
+        },
+        "status": "open",
+        "ownerName": "Nhà cung cấp",
+        "ownerEmail": "supplier@example.test"
+      },
+      "sources": [
+        {
+          "href": "/inbox?email=12a85b2b-cb69-4028-8279-34b29f0b0902",
+          "field": "body_text",
+          "quote": "Xác nhận lùi ngày giao 200 bộ sang 19/11.",
+          "emailId": "12a85b2b-cb69-4028-8279-34b29f0b0902",
+          "subject": "Đổi lịch PO-1042",
+          "receivedAt": null,
+          "availability": "available"
+        },
+        {
+          "href": "/inbox?email=6d943101-6720-4bce-8473-3cb2a262d14f",
+          "field": "body_text",
+          "quote": "Phiếu vận tải vẫn ghi ngày 18/11.",
+          "emailId": "6d943101-6720-4bce-8473-3cb2a262d14f",
+          "subject": "Phiếu vận tải",
+          "receivedAt": null,
+          "availability": "available"
+        }
+      ],
+      "version": 3,
+      "recordedAt": "2026-11-11T13:12:22.48166+00:00",
+      "changedFields": [
+        "review"
+      ]
+    },
+    {
+      "kind": "revised",
+      "state": {
+        "dueAt": null,
+        "dueOn": "2026-11-19",
+        "title": "Giao 200 bộ linh kiện",
+        "review": null,
+        "status": "open",
+        "ownerName": "Nhà cung cấp",
+        "ownerEmail": "supplier@example.test"
+      },
+      "sources": [
+        {
+          "href": "/inbox?email=12a85b2b-cb69-4028-8279-34b29f0b0902",
+          "field": "body_text",
+          "quote": "Xác nhận lùi ngày giao 200 bộ sang 19/11.",
+          "emailId": "12a85b2b-cb69-4028-8279-34b29f0b0902",
+          "subject": "Đổi lịch PO-1042",
+          "receivedAt": null,
+          "availability": "available"
+        }
+      ],
+      "version": 2,
+      "recordedAt": "2026-11-11T13:12:22.156361+00:00",
+      "changedFields": [
+        "dueOn"
+      ]
+    },
+    {
+      "kind": "created",
+      "state": {
+        "dueAt": null,
+        "dueOn": "2026-11-15",
+        "title": "Giao 200 bộ linh kiện",
+        "review": null,
+        "status": "open",
+        "ownerName": "Nhà cung cấp",
+        "ownerEmail": "supplier@example.test"
+      },
+      "sources": [
+        {
+          "href": "/inbox?email=541688c6-a8b2-4e90-92e2-ec7a3907640e",
+          "field": "body_text",
+          "quote": "Giao 200 bộ linh kiện vào 15/11.",
+          "emailId": "541688c6-a8b2-4e90-92e2-ec7a3907640e",
+          "subject": "Lịch giao PO-1042",
+          "receivedAt": null,
+          "availability": "available"
+        }
+      ],
+      "version": 1,
+      "recordedAt": "2026-11-11T13:12:20.081655+00:00",
+      "changedFields": [
+        "dueAt",
+        "dueOn",
+        "ownerEmail",
+        "ownerName",
+        "review",
+        "status",
+        "title"
+      ]
+    }
+  ],
+  "version": 4,
+  "createdAt": "2026-11-11T13:12:20.080187+00:00",
+  "updatedAt": "2026-11-11T13:12:22.663261+00:00",
+  "referenceKey": "po-1042:delivery",
+  "nextBeforeVersion": null
+}
