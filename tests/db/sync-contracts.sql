@@ -6,7 +6,7 @@ DO $$ BEGIN
 END $$;
 RESET ROLE;
 SET LOCAL ROLE service_role;
-DO $$ DECLARE lease jsonb; v_revision integer; cursor jsonb:='{"provider":"gmail","phase":"history","historyId":"100"}'; BEGIN
+DO $$ DECLARE lease jsonb; v_revision integer; cursor jsonb:='{"provider":"gmail","phase":"history","historyId":"100"}'; v_messages jsonb; BEGIN
  lease:=public.claim_account_sync('90000000-0000-0000-0000-000000000001','91000000-0000-0000-0000-000000000001','gmail');
  IF lease IS NULL THEN RAISE EXCEPTION 'initial claim rejected'; END IF;
  IF public.claim_account_sync('90000000-0000-0000-0000-000000000001','91000000-0000-0000-0000-000000000001','gmail') IS NOT NULL THEN
@@ -15,11 +15,21 @@ DO $$ DECLARE lease jsonb; v_revision integer; cursor jsonb:='{"provider":"gmail
   PERFORM public.commit_account_sync_page('90000000-0000-0000-0000-000000000001','91000000-0000-0000-0000-000000000001',(lease->>'id')::uuid,(lease->>'fence')::bigint,0,
    cursor,'gmail','[{"uid":"must-rollback","from_address":"synthetic@example.test","received_at":"bad-date","attachments":[]}]','[]');
   RAISE EXCEPTION 'malformed page accepted'; EXCEPTION WHEN invalid_datetime_format THEN NULL; END;
- v_revision:=public.commit_account_sync_page('90000000-0000-0000-0000-000000000001','91000000-0000-0000-0000-000000000001',(lease->>'id')::uuid,(lease->>'fence')::bigint,0,cursor,'gmail','[{"uid":"valid-page","message_id":"same-rfc@example.test","from_address":"synthetic@example.test","subject":"SQL fixture","body_text":"Synthetic","received_at":"2026-11-11T00:00:00Z","is_read":false,"is_starred":false,"is_archived":false,"is_deleted":false,"direction":"inbound","attachments":[{"part_key":"0","filename":"same.txt","content_type":"text/plain","size":3}]}]','[]');
+ v_messages:='[{"uid":"valid-page","message_id":"same-rfc@example.test","from_address":"synthetic@example.test","subject":"SQL fixture","body_text":"Synthetic","received_at":"2026-11-11T00:00:00Z","is_read":false,"is_starred":false,"is_archived":false,"is_deleted":false,"direction":"inbound","attachments":[{"part_key":"0","filename":"same.txt","content_type":"text/plain","size":3}]}]';
+ v_revision:=public.commit_account_sync_page('90000000-0000-0000-0000-000000000001','91000000-0000-0000-0000-000000000001',(lease->>'id')::uuid,(lease->>'fence')::bigint,0,cursor,'gmail',v_messages,'[]');
  IF v_revision<>1 THEN RAISE EXCEPTION 'valid commit failed'; END IF;
  BEGIN
   PERFORM public.commit_account_sync_page('90000000-0000-0000-0000-000000000001','91000000-0000-0000-0000-000000000001',(lease->>'id')::uuid,(lease->>'fence')::bigint,0,cursor,'gmail','[]','[]');
   RAISE EXCEPTION 'stale revision allowed'; EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;
+ UPDATE public.emails SET inbox_priority='action', inbox_priority_version=1
+ WHERE user_id='90000000-0000-0000-0000-000000000001' AND source_account_id='91000000-0000-0000-0000-000000000001'
+   AND sync_namespace='gmail' AND original_uid='valid-page';
+ v_revision:=public.commit_account_sync_page('90000000-0000-0000-0000-000000000001','91000000-0000-0000-0000-000000000001',(lease->>'id')::uuid,(lease->>'fence')::bigint,1,cursor,'gmail',v_messages,'[]');
+ IF v_revision<>2 OR NOT EXISTS (
+   SELECT 1 FROM public.emails WHERE user_id='90000000-0000-0000-0000-000000000001'
+   AND source_account_id='91000000-0000-0000-0000-000000000001' AND sync_namespace='gmail'
+   AND original_uid='valid-page' AND inbox_priority='action' AND inbox_priority_version=1
+ ) THEN RAISE EXCEPTION 'provider replay lost inbox priority'; END IF;
  PERFORM public.release_account_sync('90000000-0000-0000-0000-000000000001','91000000-0000-0000-0000-000000000001',(lease->>'id')::uuid,(lease->>'fence')::bigint,false);
 END $$;
 RESET ROLE;
@@ -29,4 +39,4 @@ DO $$ BEGIN
    RAISE EXCEPTION 'private checkpoint exposed'; END IF;
 END $$;
 ROLLBACK;
-SELECT 'PASS: sync RPC grants, lease exclusion, atomic rollback and revision fencing' AS result;
+SELECT 'PASS: sync RPC grants, lease exclusion, atomic rollback, revision fencing and preserved user priority' AS result;

@@ -10,6 +10,8 @@ export type Category =
   | 'spam'
   | 'uncategorized'
 
+export type InboxPriority = 'action' | 'later' | null
+
 export type EmailDirection = 'inbound' | 'outbound'
 
 export type SendStatus = 'draft' | 'queued' | 'sent' | 'delivered' | 'bounced' | 'failed'
@@ -36,6 +38,8 @@ export interface Email {
   direction: EmailDirection
 
   priority: Priority
+  inbox_priority?: InboxPriority
+  inbox_priority_version?: number
   category: Category
   summary: string | null
   detected_deadline: string | null
@@ -47,6 +51,7 @@ export interface Email {
   is_starred: boolean
   is_archived: boolean
   is_deleted: boolean
+  provider_deleted?: boolean
   snoozed_until: string | null
   user_notes: string | null
   attachment_count: number | null
