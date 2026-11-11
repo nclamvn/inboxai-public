@@ -1,58 +1,29 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import type { NextRequest } from 'next/server'
 import { createClientForRequest } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
-import { AskQueryError, askRequest, parseAskQuery } from '@/lib/search/ask-query'
+import { AskQueryError, parseAskQuery } from '@/lib/search/ask-query'
 import type { AskResults } from '@/lib/search/ask-contracts'
 import { embedTexts } from '@/lib/search/ask-embeddings'
+import { askReply, readAskRequest } from '@/lib/search/ask-http'
 
 export const runtime = 'nodejs'
 
 let inferenceBusy = false
-
-function reply(body: unknown, status = 200) {
-  return NextResponse.json(body, { status, headers: { 'Cache-Control': 'private, no-store' } })
-}
 
 type Pending = { id: string; fingerprint: string; subject: string; passages: string[] }
 
 export async function POST(request: NextRequest) {
   const client = await createClientForRequest(request)
   const { data: { user } } = await client.auth.getUser()
-  if (!user) return reply({ error: 'Yêu cầu đăng nhập.' }, 401)
-  if (request.headers.get('content-type')?.split(';', 1)[0].trim() !== 'application/json') {
-    return reply({ error: 'Nội dung phải là JSON.' }, 415)
-  }
-  let body: unknown
-  const reader = request.body?.getReader()
-  if (!reader) return reply({ error: 'Thiếu nội dung tìm kiếm.' }, 400)
+  if (!user) return askReply({ error: 'Yêu cầu đăng nhập.' }, 401)
+  const input = await readAskRequest(request)
+  if (input instanceof Response) return input
   try {
-    const decoder = new TextDecoder('utf-8', { fatal: true })
-    let size = 0
-    let raw = ''
-    while (true) {
-      const chunk = await reader.read()
-      if (chunk.done) break
-      size += chunk.value.byteLength
-      if (size > 8192) {
-        await reader.cancel().catch(() => {})
-        return reply({ error: 'Nội dung tìm kiếm vượt quá giới hạn.' }, 413)
-      }
-      raw += decoder.decode(chunk.value, { stream: true })
-    }
-    body = JSON.parse(raw + decoder.decode())
-  } catch {
-    return reply({ error: 'JSON không hợp lệ.' }, 400)
-  } finally {
-    reader.releaseLock()
-  }
-  const input = askRequest.safeParse(body)
-  if (!input.success) return reply({ error: 'Nội dung hoặc bộ lọc tìm kiếm không hợp lệ.' }, 400)
-  try {
-    const { query, filters, keywords } = parseAskQuery(input.data)
+    const { query, filters, keywords } = parseAskQuery(input)
     let semantic: AskResults['semantic'] = 'off'
     let vector: number[] | null = null
 
-    if (query && input.data.mode === 'hybrid') {
+    if (query && input.mode === 'hybrid') {
       if (inferenceBusy) {
         semantic = 'busy'
       } else {
@@ -60,7 +31,7 @@ export async function POST(request: NextRequest) {
         const signal = AbortSignal.any([request.signal, AbortSignal.timeout(18_000)])
         try {
           const pending = await client.rpc('ask_inbox_pending', { p_filters: filters }).abortSignal(signal)
-          if (pending.error?.code === 'PT404') return reply({ error: 'Tài khoản email không khả dụng.' }, 404)
+          if (pending.error?.code === 'PT404') return askReply({ error: 'Tài khoản email không khả dụng.' }, 404)
           if (pending.error || !Array.isArray(pending.data)) throw new Error('Search index read failed')
           const documents = pending.data as Pending[]
           const texts = documents.flatMap(doc => doc.passages.map(passage => 'passage: ' + doc.subject + '\n' + passage))
@@ -93,11 +64,11 @@ export async function POST(request: NextRequest) {
     const { data, error } = await client.rpc('ask_inbox_search', {
       p_text: keywords, p_filters: filters, p_vector: vector, p_limit: 50,
     }).abortSignal(AbortSignal.any([request.signal, AbortSignal.timeout(10_000)]))
-    if (error?.code === 'PT404') return reply({ error: 'Tài khoản email không khả dụng.' }, 404)
-    if (error || !data) return reply({ error: 'Chưa tìm được thư. Hãy thử lại.' }, 503)
-    return reply({ ...data, semantic })
+    if (error?.code === 'PT404') return askReply({ error: 'Tài khoản email không khả dụng.' }, 404)
+    if (error || !data) return askReply({ error: 'Chưa tìm được thư. Hãy thử lại.' }, 503)
+    return askReply({ ...data, semantic })
   } catch (error) {
-    if (error instanceof AskQueryError) return reply({ error: error.message }, 400)
-    return reply({ error: 'Chưa tìm được thư. Hãy thử lại.' }, 503)
+    if (error instanceof AskQueryError) return askReply({ error: error.message }, 400)
+    return askReply({ error: 'Chưa tìm được thư. Hãy thử lại.' }, 503)
   }
 }

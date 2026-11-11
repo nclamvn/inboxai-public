@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { isQuotedMailBoundary } from '@/lib/email/plain-text'
 import type { CommitmentState } from './contracts'
 
 export type DetectionSignal = {
@@ -19,7 +20,6 @@ const cancellation = new RegExp('^' + speaker + ' (?:(?:đã )?hủy cam kết|h
 const reassignment = new RegExp('^' + speaker + ' (?:chuyển trách nhiệm cho|are assigning the commitment to) (\\S+)$', 'iu')
 const dueSuffix = new RegExp(' (?:trước ngày|chậm nhất ngày|vào ngày|trước|by|on) (' + dateToken + ')$', 'iu')
 const uncertain = /(?:^|\s)(?:nếu|trừ khi|có thể|có lẽ|dự kiến|cố gắng|if|unless|might|may|try to|subject to)(?:\s|$)/iu
-const boundary = /^(?:>|--(?:\s|$)|-{2,}\s*(?:original message|forwarded message|thư gốc|thư được chuyển tiếp)|begin forwarded message:|from:|từ:|on .+ wrote:|vào .+ đã viết:)/iu
 
 function calendarDate(raw: string) {
   const [day, month, year] = raw.split('/')
@@ -38,7 +38,7 @@ export function detectCommitment(body: string | null): DetectionSignal | null {
   const signals: DetectionSignal[] = []
   for (const raw of body.split(/\r?\n/u)) {
     const quote = raw.trim()
-    if (boundary.test(quote)) break
+    if (isQuotedMailBoundary(quote)) break
     if (!quote || quote.length > 480) continue
     const line = quote.replace(/\s+/gu, ' ').replace(/[.!]$/u, '')
     if (uncertain.test(line) || /[?;:"“”]/u.test(line)) continue
