@@ -70,4 +70,14 @@ these units. See SYNC_CONTRACTS.md for explicit support limits and rollback note
 | M1-C3 | M1-C2 | Local Auth/PostgREST rehearsal and fault injection | Concurrent requests, missing acknowledgements, partial SMTP acceptance and replay verified |
 
 The [local handoff](M1C_LOCAL_HANDOFF.md) records evidence and provider limitations.
-Next implementation milestone is M2-A Design System.
+
+## M2-A local review units
+
+| Unit | Dependency | Scope | Acceptance |
+| --- | --- | --- | --- |
+| M2-A1 | M1-C | CSS tokens, self-hosted Inter, accessible primitives | Exact light palette and spacing, common focus and dialog behavior, dark theme persists |
+| M2-A2 | M2-A1 | Dashboard shell, Inbox, reading and Compose reference surfaces | Current navigation and selected mail use straight 2 px rules, desktop split and narrow single pane, loading/empty/error/offline states distinct |
+| M2-A3 | M2-A2 | Synthetic browser rehearsal and bundle report | Screenshots at desktop/tablet/mobile, keyboard/touch cases, sampled axe results, before/after build evidence and explicit verification limits |
+
+See [the local M2-A handoff](M2A_LOCAL_HANDOFF.md). M2-B uses the Inbox
+components to expose contextual ranking, source evidence and corrections.

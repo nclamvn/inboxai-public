@@ -46,11 +46,16 @@
 ## Precision Neo-Flat 2027
 - Navy #174A72; canvas #F7F9FA; surface #FFFFFF; border #E1E7EB; text #192532.
 - Inter typography, Lucide icons, 4px spacing grid, straight 2px blue accents.
+- `src/styles/neo-flat.css` owns semantic color, spacing and focus tokens. Use
+  the shared primitives in `src/components/ui/` and self-hosted Inter in
+  `src/styles/inter.css` for new dashboard surfaces.
 - No purple, gradients, glass, glow, decorative AI icons, curved accent strips or
   large fragmented colored panels. Use typography, alignment and quiet boundaries.
 - Responsive desktop, tablet and mobile web/native shells; keyboard, focus, reduced
   motion, screen-reader labels and touch affordances are acceptance criteria.
 - Do not redesign UI during security work without a product reason and regression coverage.
+- Run `npm run test:design` against local synthetic fixtures when changing the
+  reference Inbox, dashboard shell, Compose or shared dialog.
 
 ## Evidence and release
 - Run lint, TypeScript, unit, integration and build. Record actual commands, environment,
