@@ -24,7 +24,7 @@ export function useAutoSync({
   onError,
   onNewEmails
 }: UseAutoSyncOptions = {}) {
-  const lastSyncRef = useRef<number>(0)
+  const lastAttemptRef = useRef<number>(0)
   const syncingRef = useRef<boolean>(false)
   const [isSyncing, setIsSyncing] = useState(false)
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null)
@@ -34,13 +34,14 @@ export function useAutoSync({
     // Skip if already syncing
     if (syncingRef.current) return null
 
-    // Skip if synced recently (unless forced)
+    // Throttle automatic attempts even when the request failed.
     const now = Date.now()
-    if (!force && now - lastSyncRef.current < interval) {
+    if (!force && now - lastAttemptRef.current < interval) {
       return { success: true, synced: 0, skipped: true }
     }
 
     syncingRef.current = true
+    lastAttemptRef.current = now
     setIsSyncing(true)
     setSyncError(null)
 
@@ -56,7 +57,6 @@ export function useAutoSync({
       }
 
       const result = await res.json() as SyncResult
-      lastSyncRef.current = now
       setLastSyncTime(new Date())
 
       if (result.synced > 0) {
@@ -88,8 +88,7 @@ export function useAutoSync({
     // Sync on visibility change (when user comes back to tab)
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        // Only sync if last sync was more than 10 seconds ago
-        if (Date.now() - lastSyncRef.current > 10000) {
+        if (Date.now() - lastAttemptRef.current > 10000) {
           sync(true)
         }
       }
@@ -98,7 +97,7 @@ export function useAutoSync({
 
     // Sync on window focus
     const handleFocus = () => {
-      if (Date.now() - lastSyncRef.current > 10000) {
+      if (Date.now() - lastAttemptRef.current > 10000) {
         sync()
       }
     }

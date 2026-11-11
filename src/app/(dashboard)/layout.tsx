@@ -21,7 +21,7 @@ export default async function DashboardLayout({
 
   return (
     <AutoSyncProvider enabled={true} interval={30000}>
-      <div className="h-dvh flex bg-[var(--background)]">
+      <div className="h-dvh flex bg-[var(--background)] safe-area-top">
         {/* Sidebar - Hidden on mobile */}
         <a className="skip-link" href="#main-content">Đến nội dung chính</a>
         <Sidebar />

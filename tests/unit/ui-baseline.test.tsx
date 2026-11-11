@@ -11,6 +11,8 @@ import { AISummary } from '@/components/email/ai-summary'
 import { ThemeProvider, useTheme } from '@/contexts/theme-context'
 import { Modal } from '@/components/ui/modal'
 import { InstallPrompt } from '@/components/pwa/install-prompt'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { AutoSyncProvider } from '@/providers/auto-sync-provider'
 
 const media = new Map<string, { matches: boolean; target: EventTarget }>()
 beforeEach(() => {
@@ -65,6 +67,21 @@ it('shows offline and reconnection status through the accessible banner', () => 
   expect(screen.getByRole('status').textContent).toContain('Đã kết nối lại')
   act(() => vi.advanceTimersByTime(3000))
   expect(screen.queryByRole('status')).toBeNull()
+})
+
+it('keeps failed background sync attempts on the configured polling cadence', async () => {
+  vi.useFakeTimers()
+  const request = vi.fn(async () => new Response(null, { status: 503 }))
+  vi.stubGlobal('fetch', request)
+  const queryClient = new QueryClient()
+  render(<QueryClientProvider client={queryClient}><AutoSyncProvider>Inbox</AutoSyncProvider></QueryClientProvider>)
+  await act(async () => { await vi.advanceTimersByTimeAsync(2000) })
+  expect(request).toHaveBeenCalledTimes(1)
+  act(() => { window.dispatchEvent(new Event('focus')) })
+  await act(async () => { await vi.advanceTimersByTimeAsync(8000) })
+  expect(request).toHaveBeenCalledTimes(1)
+  await act(async () => { await vi.advanceTimersByTimeAsync(50_000) })
+  expect(request).toHaveBeenCalledTimes(2)
 })
 
 it('summary can cross hidden/visible states without changing hook order', () => {

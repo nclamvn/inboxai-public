@@ -242,10 +242,10 @@ export function EmailDetailMobile({
           ) : email.body_html ? (
             <div
               dangerouslySetInnerHTML={{ __html: sanitizeEmailHtml(email.body_html) }}
-              className="prose prose-sm dark:prose-invert max-w-none text-[14px] leading-relaxed email-content animate-fadeIn"
+              className="prose prose-sm dark:prose-invert max-w-none text-[14px] leading-relaxed email-content"
             />
           ) : email.body_text ? (
-            <pre className="whitespace-pre-wrap [overflow-wrap:anywhere] font-sans text-[14px] text-[var(--foreground)] leading-relaxed animate-fadeIn">
+            <pre className="whitespace-pre-wrap [overflow-wrap:anywhere] font-sans text-[14px] text-[var(--foreground)] leading-relaxed">
               {email.body_text}
             </pre>
           ) : null}
