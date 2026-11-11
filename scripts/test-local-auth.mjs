@@ -5,6 +5,7 @@ import { readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { setTimeout as delay } from 'node:timers/promises'
 import { createClient } from '@supabase/supabase-js'
 import assert from 'node:assert/strict'
+import { seedLegacySync,rehearseSync } from '../tests/local-auth/sync.mjs'
 import { seedLegacyVault, rehearseVault, vaultKeys } from '../tests/local-auth/vault.mjs'
 
 // Real local Auth/PostgREST/Next integration; fixed synthetic credentials only.
@@ -50,7 +51,7 @@ async function waitFor(url, predicate = r => r.ok) {
 }
 try {
   // A failed future run must never leave a stale success report behind.
-  rmSync('docs/phase-2/evidence/m1a-local-auth.json', { force:true })
+  rmSync('docs/phase-2/evidence/m1b-local-auth.json', { force:true })
   const freeKB = Number(execFileSync('df', ['-Pk', '/'], { encoding: 'utf8' }).trim().split('\n').at(-1).split(/\s+/)[3])
   assert.ok(freeKB >= 10 * 1024 * 1024, 'less than 10 GiB free')
   assert.equal(docker(['ps', '-aq']).trim(), '', 'existing test project found; will not replace it')
@@ -83,6 +84,7 @@ try {
   const previousId = seed.user.id
   for (const file of migrations.filter(f => f >= '20261111010000')) {
     if (file === '20261111020000_credential_vault.sql') seedLegacyVault(sql,previousId)
+    if (file === '20261111030000_sync_contracts.sql') seedLegacySync(sql,previousId)
     sql(readFileSync(`supabase/migrations/${file}`, 'utf8'))
   }
   record('upgrade preserves existing profile', Number(sql("SELECT count(*) FROM public.profiles WHERE email='preupgrade@example.test'")) === 1)
@@ -156,7 +158,8 @@ try {
   const legacyLogin = createClient(base, anon, { auth:{persistSession:false,autoRefreshToken:false} })
   assert.equal((await legacyLogin.auth.signInWithPassword({email:'preupgrade@example.test',password})).error,null)
   await rehearseVault({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,base,service,record})
-  writeFileSync('docs/phase-2/evidence/m1a-local-auth.json', JSON.stringify({ date: new Date().toISOString(), provenance:'Real local GoTrue/PostgREST/Next; internal SMTP sink; synthetic .test identities; not hosted staging', images:{ auth:'supabase/gotrue:v2.197.0',rest:'postgrest/postgrest:v14.18',mail:'axllent/mailpit:v1.28.1',db:'postgres:16' }, outcomes },null,2)+'\n')
+  await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
+  writeFileSync('docs/phase-2/evidence/m1b-local-auth.json', JSON.stringify({ date: new Date().toISOString(), provenance:'Real local GoTrue/PostgREST/Next; synthetic Gmail/IMAP readers; internal SMTP sink; .test identities; not hosted/provider interoperability', images:{ auth:'supabase/gotrue:v2.197.0',rest:'postgrest/postgrest:v14.18',mail:'axllent/mailpit:v1.28.1',db:'postgres:16' }, outcomes },null,2)+'\n')
 } finally {
   if (next && next.exitCode === null) {
     next.kill('SIGTERM')

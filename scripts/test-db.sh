@@ -41,3 +41,4 @@ psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/tenant-isolation.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/registration.sql
 node scripts/test-registration-concurrency.mjs
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/credential-vault.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/sync-contracts.sql

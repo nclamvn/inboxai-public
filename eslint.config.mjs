@@ -9,6 +9,7 @@ const eslintConfig = defineConfig([
   globalIgnores([
     // Default ignores of eslint-config-next:
     ".next/**",
+    ".codex-db-test-*/**", // Disposable local PostgreSQL files, not application source.
     "out/**",
     "build/**",
     "next-env.d.ts",
