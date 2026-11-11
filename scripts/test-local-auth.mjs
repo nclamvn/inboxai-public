@@ -12,6 +12,8 @@ import { seedLegacyVault, rehearseVault, vaultKeys } from '../tests/local-auth/v
 
 // Real local Auth/PostgREST/Next integration; fixed synthetic credentials only.
 // Containers have no internet route and SMTP goes only to an internal capture sink.
+const design = process.argv.includes('--design')
+const evidenceFile = design ? 'docs/phase-2/evidence/m2a-browser-run.json' : 'docs/phase-2/evidence/m1c-local-auth.json'
 const compose = ['compose', '-p', 'inboxai-m0e-local', '-f', 'tests/local-auth/compose.yml']
 const docker = args => execFileSync('docker', [...compose, ...args], { encoding: 'utf8', maxBuffer: 2e6 })
 const sql = source => execFileSync('docker', [...compose, 'exec', '-T', 'db', 'psql', '-U', 'postgres', '-d', 'inboxai_security_test', '-X', '-v', 'ON_ERROR_STOP=1', '-At'], { input: source, encoding: 'utf8' })
@@ -53,7 +55,7 @@ async function waitFor(url, predicate = r => r.ok) {
 }
 try {
   // A failed future run must never leave a stale success report behind.
-  rmSync('docs/phase-2/evidence/m1c-local-auth.json', { force:true })
+  rmSync(evidenceFile, { force:true })
   const freeKB = Number(execFileSync('df', ['-Pk', '/'], { encoding: 'utf8' }).trim().split('\n').at(-1).split(/\s+/)[3])
   assert.ok(freeKB >= 10 * 1024 * 1024, 'less than 10 GiB free')
   assert.equal(docker(['ps', '-aq']).trim(), '', 'existing test project found; will not replace it')
@@ -159,12 +161,18 @@ try {
   record('admin revocation is enforced on the next request', (await appFetch('/api/admin/whitelist')).status === 403)
   sql("UPDATE public.registration_policy SET enabled=false;")
   record('closed policy rejects subsequent Next signups', (await appFetch('/api/signup-whitelist', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({email:'later@example.test',password,fullName:'Later'}) })).status === 503)
-  const legacyLogin = createClient(base, anon, { auth:{persistSession:false,autoRefreshToken:false} })
-  assert.equal((await legacyLogin.auth.signInWithPassword({email:'preupgrade@example.test',password})).error,null)
-  await rehearseVault({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,base,service,record})
-  await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
-  await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
-  writeFileSync('docs/phase-2/evidence/m1c-local-auth.json', JSON.stringify({ date: new Date().toISOString(), provenance:'Real local GoTrue/PostgREST/Next; synthetic Gmail/IMAP readers and loopback Gmail HTTP/SMTP TLS send; internal verification SMTP sink; .test identities; not hosted/provider interoperability', images:{ auth:'supabase/gotrue:v2.197.0',rest:'postgrest/postgrest:v14.18',mail:'axllent/mailpit:v1.28.1',db:'postgres:16' }, outcomes },null,2)+'\n')
+  if (design) {
+    sql(`DELETE FROM public.emails WHERE id='${ownEmailId}' AND user_id='${userId}';`)
+    const { rehearseDesign } = await import('../tests/design/browser.mjs')
+    await rehearseDesign({ app, cookies, admin, userId, record })
+  } else {
+    const legacyLogin = createClient(base, anon, { auth:{persistSession:false,autoRefreshToken:false} })
+    assert.equal((await legacyLogin.auth.signInWithPassword({email:'preupgrade@example.test',password})).error,null)
+    await rehearseVault({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,base,service,record})
+    await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
+    await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
+  }
+  writeFileSync(evidenceFile, JSON.stringify({ date: new Date().toISOString(), provenance:design ? 'Authenticated local Chromium with synthetic mail, loopback only' : 'Real local GoTrue/PostgREST/Next; synthetic Gmail/IMAP readers and loopback Gmail HTTP/SMTP TLS send; internal verification SMTP sink; .test identities; not hosted/provider interoperability', images:{ auth:'supabase/gotrue:v2.197.0',rest:'postgrest/postgrest:v14.18',mail:'axllent/mailpit:v1.28.1',db:'postgres:16' }, outcomes },null,2)+'\n')
 } finally {
   if (next && next.exitCode === null) {
     next.kill('SIGTERM')

@@ -19,6 +19,8 @@
     "test:integration": "vitest run tests/integration",
     "test:db": "bash scripts/test-db.sh",
     "test:local-auth": "node --import tsx --conditions=react-server scripts/test-local-auth.mjs",
+    "test:design": "npm run test:local-auth -- --design",
+    "design:bundle": "node scripts/report-design-bundle.mjs",
     "vault:local": "node --import tsx --conditions=react-server scripts/credential-vault.ts"
   },
   "dependencies": {
