@@ -16,6 +16,9 @@ const state = z.strictObject({
   status: z.enum(['open', 'completed', 'cancelled']),
 }).refine(value => value.dueOn === null || value.dueAt === null)
 
+export type CommitmentState = z.infer<typeof state>
+export type CommitmentEvidence = z.infer<typeof evidence>[number]
+
 const version = z.number().int().min(1).max(2_147_483_647)
 const review = z.strictObject({ kind: z.enum(['ambiguous', 'conflicting']), note: boundedText(500) })
 

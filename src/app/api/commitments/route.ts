@@ -1,4 +1,5 @@
 import type { NextRequest } from 'next/server'
+import { isCommitmentGroup } from '@/lib/commitments/view'
 import { commitmentId, createCommitment, pageLimit, requestKey } from '@/lib/commitments/contracts'
 import { ledgerJson, ledgerRpc, readCommitmentJson, saveCommitment, withLedgerSession } from '@/lib/commitments/http'
 
@@ -7,6 +8,13 @@ export async function GET(request: NextRequest) {
     const limit = pageLimit.safeParse(request.nextUrl.searchParams.get('limit') ?? '20')
     const before = commitmentId.nullable().safeParse(request.nextUrl.searchParams.get('beforeId'))
     if (!limit.success || !before.success) return ledgerJson({ error: 'Phân trang không hợp lệ.' }, 400)
+    const group = request.nextUrl.searchParams.get('group')
+    if (group !== null) {
+      if (!isCommitmentGroup(group)) return ledgerJson({ error: 'Nhóm cam kết không hợp lệ.' }, 400)
+      return ledgerJson(await ledgerRpc(client, 'list_commitment_board', {
+        p_group: group, p_limit: limit.data, p_before_id: before.data,
+      }))
+    }
     return ledgerJson(await ledgerRpc(client, 'list_commitments', { p_limit: limit.data, p_before_id: before.data }))
   })
 }
