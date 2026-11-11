@@ -23,7 +23,7 @@ if [[ -z "${TEST_DATABASE_URL:-}" ]]; then
 else
   node - <<'JS'
 const u = new URL(process.env.TEST_DATABASE_URL);
-if (!['localhost','127.0.0.1','[::1]'].includes(u.hostname) || u.pathname !== '/inboxai_security_test') {
+if (!['localhost','127.0.0.1','[::1]'].includes(u.hostname) || u.pathname !== '/inboxai_security_test' || u.search) {
   throw new Error('TEST_DATABASE_URL must be the dedicated local inboxai_security_test database');
 }
 JS
@@ -35,3 +35,5 @@ for task_migration in supabase/migrations/*.sql; do
   psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f "$task_migration"
 done
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/tenant-isolation.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/registration.sql
+node scripts/test-registration-concurrency.mjs

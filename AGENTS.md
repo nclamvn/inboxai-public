@@ -2,6 +2,9 @@
 
 ## Authority and scope
 - Product owner instructions and `docs/phase-2/PRODUCT_STANDARD.md` govern Phase 2.
+- M0-E owner direction (2026-11-11): local implementation and verification only.
+  Do not push, create remote PRs, run hosted deployments or modify hosted settings.
+  Prepare PR drafts locally; report local evidence separately from unrun remote CI.
 - Work on `phase2/m0-security-baseline-20261111` for M0. Never modify main,
   deploy production, connect real mailboxes, or send real mail before the security gate.
 - Reuse verified code. Prefer small, reviewable PRs with explicit dependencies,
@@ -61,3 +64,13 @@
 - Word/PDF/book deliverables use white, neutral gray and black; no U+2014 em dashes.
 - Preserve wording and semantic content; avoid single prose words stranded on a line.
   Render and inspect final files; keep Word and PDF synchronized.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

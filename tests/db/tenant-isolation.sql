@@ -1,5 +1,6 @@
 \set ON_ERROR_STOP on
 BEGIN;
+UPDATE public.registration_policy SET enabled=true;
 INSERT INTO auth.users (id,email) VALUES
  ('00000000-0000-0000-0000-000000000001','alice@example.test'),
  ('00000000-0000-0000-0000-000000000002','bob@example.test');
@@ -9,7 +10,7 @@ INSERT INTO public.source_accounts (id,user_id,email_address) VALUES
 INSERT INTO public.emails (id,user_id,source_account_id,from_address) VALUES
  ('20000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-000000000001','source@example.test'),
  ('20000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-000000000002','10000000-0000-0000-0000-000000000002','source@example.test');
-INSERT INTO public.whitelist (email) VALUES ('alice@example.test'), ('bob@example.test');
+INSERT INTO public.whitelist (email) VALUES ('alice@example.test'), ('bob@example.test') ON CONFLICT(email) DO NOTHING;
 
 SET LOCAL ROLE anon;
 DO $$ BEGIN
