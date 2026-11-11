@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
   // Get emails without body (body_text is null or empty)
   const { data: emails, error: emailsError } = await supabaseAdmin
     .from('emails')
-    .select('id, original_uid')
+    .select('id, original_uid,sync_namespace')
     .eq('source_account_id', accountId)
     .eq('user_id', user.id)
     .or('body_text.is.null,body_text.eq.')
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     if (!email.original_uid) continue
 
     try {
-      const body = await fetchEmailBody(account, email.original_uid)
+      const body = await fetchEmailBody(account, email.original_uid,email.sync_namespace)
 
       if (body) {
         const { error: updateError } = await supabaseAdmin
@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
             body_fetched: true
           })
           .eq('id', email.id)
+            .eq('user_id',user.id)
 
         if (!updateError) {
           refetched++

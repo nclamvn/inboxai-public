@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { matchesImapNamespace } from '@/lib/sync/imap-identity'
 import { getImapPassword } from '@/lib/credential-vault/vault'
 
 export const maxDuration = 30
@@ -22,7 +23,7 @@ export async function GET(
     .select(`
       *,
       emails!inner (
-        id, original_uid, user_id,
+        id, original_uid, user_id, sync_namespace,
         source_accounts (
           id, imap_host, imap_port, imap_secure,
           username
@@ -45,6 +46,7 @@ export async function GET(
   const email = attachment.emails as {
     id: string
     original_uid: string
+    sync_namespace: string
     source_accounts: {
       id: string
       imap_host: string
@@ -58,6 +60,10 @@ export async function GET(
 
   if (!account || !email?.original_uid) {
     return NextResponse.json({ error: 'Source account not found' }, { status: 400 })
+  }
+
+  if(!email.sync_namespace?.startsWith('INBOX:') || !/^\d+$/.test(email.original_uid)) {
+    return NextResponse.json({error:'Email requires synchronization'},{status:409})
   }
 
   // Decrypt password
@@ -78,13 +84,15 @@ export async function GET(
       port: account.imap_port,
       secure: account.imap_secure !== false,
       auth: { user: account.username, pass: password },
-      logger: false
+      logger: false,connectionTimeout:10000,greetingTimeout:10000,socketTimeout:10000
     })
 
     await client.connect()
-    const lock = await client.getMailboxLock('INBOX')
+    const lock = await client.getMailboxLock('INBOX',{readOnly:true})
 
     try {
+      const status=await client.status('INBOX',{uidValidity:true})
+      if(!matchesImapNamespace(email.sync_namespace,status.uidValidity))return NextResponse.json({error:'Mailbox changed; sync required'},{status:409})
       // Fetch email by UID
       const message = await client.fetchOne(email.original_uid, {
         source: true
@@ -94,14 +102,13 @@ export async function GET(
         return NextResponse.json({ error: 'Email not found on server' }, { status: 404 })
       }
 
+      if(!matchesImapNamespace(email.sync_namespace,(await client.status('INBOX',{uidValidity:true})).uidValidity))return NextResponse.json({error:'Mailbox changed; sync required'},{status:409})
       // Parse email
       const parsed = await simpleParser(message.source)
 
       // Find attachment by filename or content ID
-      const att = parsed.attachments?.find(a =>
-        a.filename === attachment.filename ||
-        a.contentId?.replace(/[<>]/g, '') === attachment.content_id
-      )
+      const partKey=attachment.sync_part_key
+      const att=typeof partKey==='string' && /^\d+$/.test(partKey) ? parsed.attachments?.[Number(partKey)] : undefined
 
       if (!att) {
         return NextResponse.json({ error: 'Attachment not found in email' }, { status: 404 })

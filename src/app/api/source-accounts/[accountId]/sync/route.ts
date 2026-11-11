@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { syncEmails } from '@/lib/email/imap-client'
-import { syncGmailEmails } from '@/lib/gmail/sync'
+import { syncAccount } from '@/lib/sync/account'
 
 // Longer timeout for optimized batch sync
 export const maxDuration = 120 // Increased to 2 minutes
@@ -53,27 +52,7 @@ export async function POST(
 
   console.log(`[SYNC-API] Starting sync for ${account.email_address}, auth_type=${account.auth_type}, limit=${limit}`)
 
-  let result: { success: boolean; synced?: number; syncedCount?: number; errors?: string[]; error?: string; lastUid?: string }
-
-  // Route to appropriate sync method based on auth_type
-  if (account.auth_type === 'oauth_google') {
-    // Gmail OAuth - use Gmail API sync
-    console.log(`[SYNC-API] Using Gmail API sync for OAuth account`)
-    result = await syncGmailEmails(user.id, accountId, {
-      maxResults: limit,
-      fullSync
-    })
-    // Normalize result format
-    result = {
-      success: result.success,
-      synced: result.syncedCount,
-      errors: result.error ? [result.error] : []
-    }
-  } else {
-    // IMAP - use IMAP sync
-    console.log(`[SYNC-API] Using IMAP sync`)
-    result = await syncEmails(account, { limit, fullSync })
-  }
+  const result = await syncAccount(account,{limit,fullSync})
 
   const duration = Date.now() - startTime
   console.log(`[SYNC-API] Done in ${duration}ms: ${result.synced} synced`)
@@ -81,10 +60,11 @@ export async function POST(
   return NextResponse.json({
     success: result.success,
     synced: result.synced || 0,
-    lastUid: result.lastUid,
+    pending: result.pending,
+    busy: result.busy,
     duration: `${duration}ms`,
     errors: (result.errors || []).slice(0, 3),
-    message: (result.synced || 0) > 0
+    message: result.pending ? 'Đồng bộ chưa hoàn tất; sẽ tiếp tục từ checkpoint' : (result.synced || 0) > 0
       ? `Đã đồng bộ ${result.synced} email`
       : 'Không có email mới'
   })

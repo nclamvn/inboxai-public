@@ -76,11 +76,12 @@ export async function GET(
       .from('source_accounts')
       .select('*')
       .eq('id', email.source_account_id)
+      .eq('user_id',user.id)
       .single()
 
     if (account) {
       try {
-        const body = await fetchEmailBody(account, email.original_uid)
+        const body = await fetchEmailBody(account, email.original_uid,email.sync_namespace)
 
         if (body) {
           // Update database with fetched body
@@ -92,6 +93,7 @@ export async function GET(
               body_fetched: true
             })
             .eq('id', email.id)
+            .eq('user_id',user.id)
 
           // Update response
           email.body_text = body.body_text
@@ -105,6 +107,7 @@ export async function GET(
             .from('emails')
             .update({ body_fetched: true })
             .eq('id', email.id)
+            .eq('user_id',user.id)
           email.body_fetched = true
           console.log(`[API] No body found for email ${email.id}, marked as fetched`)
         }

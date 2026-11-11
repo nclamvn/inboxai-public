@@ -26,7 +26,7 @@ beforeEach(() => {
     range: vi.fn().mockReturnThis(), gte: vi.fn().mockReturnThis(), lt: vi.fn().mockReturnThis(),
     then(resolve: (value: { data: unknown[]; error: null }) => unknown) { return Promise.resolve({ data: [], error: null }).then(resolve) },
   }
-  mocks.client.mockReturnValue({ from: () => query })
+  mocks.client.mockReturnValue({ from: () => query,rpc:vi.fn().mockResolvedValue({data:[],error:null}) })
   mocks.aggregate.mockResolvedValue({ success: true, count: 0 })
 })
 

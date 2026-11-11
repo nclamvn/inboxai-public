@@ -1,7 +1,7 @@
 import { requireCronAuthorization } from '@/lib/security/cron'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { syncEmails } from '@/lib/email/imap-client'
+import { syncAccount } from '@/lib/sync/account'
 import { getUnsubscribeService } from '@/lib/email/unsubscribe-service'
 import { classifyEmail } from '@/lib/ai/classifier'
 import { notifySyncComplete, notifyAiClassified } from '@/lib/notifications/create'
@@ -63,6 +63,7 @@ async function classifyUserEmails(
             }
           })
           .eq('id', email.id)
+          .eq('user_id',userId)
 
         classified++
       } catch {
@@ -97,6 +98,7 @@ export async function GET(request: NextRequest) {
         email: string
         synced: number
         classified: number
+        pending:boolean
         errors: string[]
       }>
     } = {
@@ -109,12 +111,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all active source accounts
-    const { data: accounts, error: accountsError } = await supabase
-      .from('source_accounts')
-      .select('*')
-      .eq('is_active', true)
-      .order('last_sync_at', { ascending: true, nullsFirst: true })
-      .limit(10) // Process max 10 accounts per run
+    const { data: accounts, error: accountsError } = await supabase.rpc('list_due_sync_accounts',{p_limit:10})
 
     if (accountsError) {
       console.error('[CRON] Error fetching accounts:', accountsError)
@@ -137,17 +134,19 @@ export async function GET(request: NextRequest) {
 
     // Process each account
     for (const account of accounts) {
+      if(Date.now()-startTime>230000)break
       results.processed++
       const accountResult = {
         email: account.email_address,
         synced: 0,
+        pending:true,
         classified: 0,
         errors: [] as string[]
       }
 
       try {
         // Check if account was synced recently (within 1 minute)
-        if (account.last_sync_at) {
+        if (account.sync_status==='idle' && account.last_sync_at) {
           const lastSync = new Date(account.last_sync_at)
           const oneMinuteAgo = new Date(Date.now() - 60 * 1000)
           if (lastSync > oneMinuteAgo) {
@@ -159,11 +158,12 @@ export async function GET(request: NextRequest) {
         console.log(`[CRON] Syncing: ${account.email_address}`)
 
         // Perform OPTIMIZED IMAP sync
-        const syncResult = await syncEmails(account, {
+        const syncResult = await syncAccount(account, {
           limit: CRON_EMAILS_PER_ACCOUNT,
           fullSync: false
         })
 
+        accountResult.pending=syncResult.pending
         if (syncResult.success) {
           accountResult.synced = syncResult.synced
           results.synced += syncResult.synced
@@ -192,8 +192,8 @@ export async function GET(request: NextRequest) {
           results.errors.push(`${account.email_address}: ${syncResult.errors.join(', ')}`)
         }
 
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+      } catch {
+        const errorMsg = 'Sync failed'
         accountResult.errors.push(errorMsg)
         results.errors.push(`${account.email_address}: ${errorMsg}`)
 
@@ -204,6 +204,7 @@ export async function GET(request: NextRequest) {
             sync_error: errorMsg
           })
           .eq('id', account.id)
+          .eq('user_id',account.user_id)
       }
 
       results.accounts.push(accountResult)
