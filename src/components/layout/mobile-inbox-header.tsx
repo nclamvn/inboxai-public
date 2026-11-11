@@ -1,6 +1,7 @@
 'use client'
 
 import { memo, useRef, useState } from 'react'
+import Link from 'next/link'
 import { Search, Pencil, SlidersHorizontal, X } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
 import { cn } from '@/lib/utils'
@@ -71,7 +72,7 @@ export const MobileInboxHeader = memo(function MobileInboxHeader({
         </div>
       </div>
 
-      {searchOpen && (
+      {searchOpen && (<>
         <div className="mb-2 flex min-h-11 items-center gap-2 px-4" role="search">
           <input
             ref={input} type="search" aria-label="Tìm kiếm email" placeholder="Tìm theo người gửi hoặc tiêu đề"
@@ -87,7 +88,11 @@ export const MobileInboxHeader = memo(function MobileInboxHeader({
             <X size={20} aria-hidden="true" />
           </button>
         </div>
-      )}
+        <Link href={query.trim() ? "/search?q=" + encodeURIComponent(query.trim()) : "/search"}
+          className="neo-target mx-4 mb-2 inline-flex min-h-11 items-center text-sm font-medium text-[var(--accent-foreground)] underline">
+          Mở Ask Inbox
+        </Link>
+      </>)}
 
       <div role="group" aria-label="Lọc hộp thư" className="flex gap-4 overflow-x-auto px-4">
         {segments.map(segment => {

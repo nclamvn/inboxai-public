@@ -17,7 +17,9 @@ const design = actionInbox || process.argv.includes('--design')
 const commitments = process.argv.includes('--commitment-ledger')
 const commitmentUi = process.argv.includes('--commitment-ui')
 const commitmentDetection = process.argv.includes('--commitment-detection')
-const evidenceFile = commitmentDetection ? 'docs/phase-2/evidence/m3c-browser-run.json'
+const askInbox = process.argv.includes('--ask-inbox')
+const evidenceFile = askInbox ? 'docs/phase-2/evidence/m4a-browser-run.json'
+  : commitmentDetection ? 'docs/phase-2/evidence/m3c-browser-run.json'
   : commitmentUi ? 'docs/phase-2/evidence/m3b-browser-run.json'
   : commitments ? 'docs/phase-2/evidence/m3a-local-auth.json'
   : actionInbox ? 'docs/phase-2/evidence/m2b-browser-run.json'
@@ -114,7 +116,8 @@ try {
   mailProvider = await startMailProvider()
   smtpWire = await startSmtpWire()
   next = spawn(process.execPath, ['--import', './tests/local-auth/mail-network.mjs', 'node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', '55300'], {
-    env: { ...Object.fromEntries(['PATH','HOME','LANG','TMPDIR'].filter(key => process.env[key]).map(key => [key,process.env[key]])),
+    env: { ...Object.fromEntries(['PATH','HOME','LANG','TMPDIR', ...(askInbox ? ['ASK_INBOX_MODEL_DIR'] : [])]
+        .filter(key => process.env[key]).map(key => [key,process.env[key]])),
       INBOXAI_TEST_GMAIL_URL: mailProvider.url, NODE_EXTRA_CA_CERTS: smtpWire.cert, NODE_ENV:'development', NEXT_PUBLIC_SUPABASE_URL: base, NEXT_PUBLIC_SUPABASE_ANON_KEY: anon,
       SUPABASE_SERVICE_ROLE_KEY: service, NEXT_PUBLIC_APP_URL: app, SIGNUP_ENABLED: 'true',
       SIGNUP_RATE_LIMIT_KEY: 'synthetic-local-registration-key-at-least-32-characters',
@@ -176,7 +179,14 @@ try {
   record('admin revocation is enforced on the next request', (await appFetch('/api/admin/whitelist')).status === 403)
   sql("UPDATE public.registration_policy SET enabled=false;")
   record('closed policy rejects subsequent Next signups', (await appFetch('/api/signup-whitelist', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({email:'later@example.test',password,fullName:'Later'}) })).status === 503)
-  if (commitmentDetection) {
+  if (askInbox) {
+    const foreignLogin = createClient(base, anon, { auth: { persistSession: false, autoRefreshToken: false } })
+    const foreignSession = await foreignLogin.auth.signInWithPassword({ email: 'preupgrade@example.test', password })
+    assert.equal(foreignSession.error, null)
+    const { rehearseAskInbox } = await import('../tests/design/ask-inbox.mjs')
+    await rehearseAskInbox({ app, appFetch, cookies, admin, userId, foreignId: previousId,
+      foreignToken: foreignSession.data.session.access_token, loopbackFetch, record })
+  } else if (commitmentDetection) {
     const legacyLogin = createClient(base, anon, { auth: { persistSession: false, autoRefreshToken: false } })
     const foreignSession = await legacyLogin.auth.signInWithPassword({ email: 'preupgrade@example.test', password })
     assert.equal(foreignSession.error, null)
@@ -209,7 +219,8 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = commitmentDetection ? 'Local Chromium, Next, GoTrue, PostgREST and PostgreSQL with synthetic commitment sources'
+  const provenance = askInbox ? 'Local Chromium and authenticated Next/PostgREST/PostgreSQL with real local E5 embeddings and synthetic mail'
+    : commitmentDetection ? 'Local Chromium, Next, GoTrue, PostgREST and PostgreSQL with synthetic commitment sources'
     : commitmentUi ? 'Authenticated local Chromium and real ledger API with synthetic mail only'
     : commitments ? 'Local Next/GoTrue/PostgREST/PostgreSQL, synthetic mail and .test accounts'
     : design ? 'Authenticated local Chromium with synthetic mail, loopback only'

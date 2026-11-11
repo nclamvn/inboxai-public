@@ -26,7 +26,8 @@
     "test:commitment-detection": "npm run test:local-auth -- --commitment-detection",
     "design:bundle": "node scripts/report-design-bundle.mjs",
     "vault:local": "node --import tsx --conditions=react-server scripts/credential-vault.ts",
-    "ask-inbox:model": "node scripts/prepare-ask-inbox-model.mjs"
+    "ask-inbox:model": "node scripts/prepare-ask-inbox-model.mjs",
+    "test:ask-inbox": "npm run test:local-auth -- --ask-inbox"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

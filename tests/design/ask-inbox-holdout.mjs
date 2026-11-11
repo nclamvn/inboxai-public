@@ -1,0 +1,42 @@
+// Authored synthetic queries and labels, fixed before the first end-to-end run.
+// Calibration prompts are separate. Both arms use this same mailbox and query scope.
+export const documents = [
+  ['freight', 'work', 'Cập nhật chuyến vận tải', 'Container thiết bị về kho trễ ba hôm do phương tiện gặp sự cố. Mốc dự kiến mới là chiều thứ Sáu.'],
+  ['transfer', 'work', 'Đối soát chuyển khoản RZ-4927', 'Ngân hàng ghi có 12.500.000 đồng vào tài khoản thụ hưởng. Mã giao dịch RZ-4927.'],
+  ['family', 'personal', 'Chính sách nghỉ việc riêng', 'Nhân sự được hưởng nguyên lương trong hai ngày vắng mặt khi người thân nhập viện.'],
+  ['quality', 'work', 'Quality hold on shipment lot', 'Dimensional inspection failed acceptance. All defective units must be quarantined and returned to the vendor.'],
+  ['subscription', 'personal', 'Duy trì gói sử dụng', 'Bật thanh toán định kỳ trước khi hết hạn để dịch vụ tiếp tục liền mạch.'],
+  ['recovery', 'work', 'Khôi phục truy cập', 'Dùng mã xác thực dự phòng để đặt lại mật khẩu và đăng nhập trở lại.'],
+  ['maintenance', 'work', 'Báo cáo bảo trì máy nén', 'Kỹ thuật thay van an toàn FM-128 và kiểm tra áp suất đầu ra.'],
+  ['statement', 'personal', 'Biểu phí thẻ ghi nợ', 'Bảng kê hàng tháng có phí rút tiền ở máy ATM nước ngoài.'],
+  ['freight2', 'personal', 'Chuyến du lịch cuối tuần', 'Đoàn có mặt ở cổng ga lúc 7 giờ. Đặt xe trung chuyển để tới khách sạn.'],
+  ['pricing', 'work', 'Phụ lục giá dịch vụ', 'Giá duy trì thay đổi từ quý sau. Gửi báo giá cập nhật cho bộ phận mua sắm.'],
+  ['insurance', 'work', 'Gia hạn bảo hiểm tài sản', 'Hợp đồng mới bảo vệ máy móc khỏi hư hỏng do ngập lụt và hỏa hoạn.'],
+  ['software', 'work', 'Ghi chú bản phát hành', 'Sửa bộ lọc giao diện cho danh sách đơn mua và cập nhật trình điều khiển máy in.'],
+  ['photography', 'personal', 'Điều chỉnh ống kính máy ảnh', 'Khép khẩu độ và kiểm tra cân bằng trắng trước khi chụp.'],
+  ['weather', 'personal', 'Thông tin thời tiết', 'Mưa rào chiều nay. Nhiệt độ dự báo giảm vào đêm muộn.'],
+  ['meet', 'work', 'Họp ban điều hành', 'Biên bản và tài liệu cuộc họp được chia sẻ trong thư mục của nhóm.'],
+  ['training', 'work', 'Security training room', 'Participants should arrive early and bring their building access badge.'],
+  ['plants', 'personal', 'Chăm sóc cây trong nhà', 'Tưới nước khi đất khô và tránh ánh nắng trực tiếp vào giữa trưa.'],
+  ['packing', 'work', 'Shipping label guide', 'Print one barcode for each pallet and attach it to the exterior wrapping.'],
+  ['parking', 'personal', 'Vé giữ xe tháng', 'Làm thủ tục tại quầy lễ tân để nhận thẻ ra vào hầm xe.'],
+  ['reschedule', 'work', 'Đặt lại phòng họp', 'Đổi khung giờ của cuộc gặp nội bộ vì phòng cũ đang sửa.'],
+  ['invoice', 'personal', 'Lịch lập hóa đơn', 'Bên bán phát hành chứng từ sau ngày đầu tiên của tháng.'],
+  ['care', 'personal', 'Nội quy trông thú cưng', 'Để thức ăn khô trong túi kín, chia mỗi ngày hai phần.'],
+  ['safety', 'work', 'Checklist kiểm định kho', 'Các lối thoát hiểm và đèn chỉ dẫn đã được kiểm tra theo quy trình.'],
+  ['xss', 'work', 'Thư nguyên văn XR-125 <img src=x onerror=window.askInjected=1>', 'Ký hiệu XR-125 là nội dung thử. <img src=x onerror=window.askInjected=1>'],
+]
+
+export const queries = [
+  ['exact', 'RZ-4927', 'transfer'],
+  ['exact', 'FM-128', 'maintenance'],
+  ['exact', 'bao cao bao tri', 'maintenance'],
+  ['paraphrase', 'nhà cung cấp hoãn lịch giao hàng', 'freight'],
+  ['paraphrase', 'Ai xác nhận đã trả tiền?', 'transfer'],
+  ['paraphrase', 'paid leave for a family medical emergency', 'family'],
+  ['paraphrase', 'renew the subscription without interruption', 'subscription'],
+  ['paraphrase', 'where did the team reject nonconforming parts', 'quality'],
+  ['paraphrase', 'cách lấy lại quyền vào hệ thống', 'recovery'],
+  ['no-source', 'ZYQ882091404', null],
+  ['no-source', 'vắc-xin sốt xuất huyết', null],
+]

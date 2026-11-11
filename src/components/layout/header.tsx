@@ -153,7 +153,7 @@ export function Header() {
     <header className="h-14 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4 ">
       {/* Search */}
       <div className="flex-1 max-w-xl">
-        <SearchBox />
+        {pathname !== '/search' && <SearchBox />}
       </div>
 
       {/* Right Actions */}
