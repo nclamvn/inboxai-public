@@ -259,6 +259,11 @@ function ToastItem({
   const duration = toast.duration ?? defaultDurations[toast.type];
   const isPersistent = toast.persistent || duration === 0;
 
+  const handleDismiss = useCallback(() => {
+    setIsExiting(true);
+    setTimeout(onDismiss, 150);
+  }, [onDismiss]);
+
   // Auto dismiss timer
   useEffect(() => {
     if (isPersistent) return;
@@ -282,12 +287,7 @@ function ToastItem({
       clearInterval(progressInterval);
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [duration, isPersistent]);
-
-  const handleDismiss = () => {
-    setIsExiting(true);
-    setTimeout(onDismiss, 150);
-  };
+  }, [duration, isPersistent, handleDismiss]);
 
   const handleUndo = () => {
     toast.onUndo?.();

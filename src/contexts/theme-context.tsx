@@ -12,10 +12,10 @@ import React, {
   useEffect,
   useCallback,
   useMemo,
-  useRef,
   type ReactNode,
 } from 'react';
 import { lightColors, darkColors, getShadows } from '@/styles/design-tokens';
+import { useHydrated } from '@/hooks/use-hydrated';
 
 // Types
 export type ThemeMode = 'light' | 'dark' | 'system';
@@ -95,8 +95,7 @@ export function ThemeProvider({
   enableSystem = true,
   attribute = 'class',
 }: ThemeProviderProps) {
-  const initRef = useRef(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useHydrated();
 
   // Initialize mode from storage or default
   const [mode, setModeState] = useState<ThemeMode>(() => {
@@ -150,18 +149,6 @@ export function ThemeProvider({
     // Also set color-scheme for native elements
     root.style.colorScheme = theme;
   }, [theme, attribute]);
-
-  // Initialize on mount
-  useEffect(() => {
-    if (initRef.current) return;
-    initRef.current = true;
-
-    const stored = getStoredTheme();
-    if (stored) {
-      setModeState(stored);
-    }
-    setMounted(true);
-  }, []);
 
   // Set mode handler
   const setMode = useCallback((newMode: ThemeMode) => {

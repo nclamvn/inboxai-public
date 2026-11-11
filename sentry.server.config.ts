@@ -26,8 +26,8 @@ Sentry.init({
 
     // Don't send expected client errors (4xx)
     if (error?.name === 'ApiError') {
-      const statusCode = (error as any).statusCode
-      if (statusCode >= 400 && statusCode < 500) {
+      const statusCode = (error as Error & { statusCode?: number }).statusCode
+      if (typeof statusCode === 'number' && statusCode >= 400 && statusCode < 500) {
         return null
       }
     }

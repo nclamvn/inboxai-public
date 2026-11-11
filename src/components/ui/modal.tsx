@@ -10,6 +10,7 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './button';
+import { useHydrated } from '@/hooks/use-hydrated';
 
 // Modal sizes
 const modalSizes = {
@@ -67,12 +68,7 @@ export function Modal({
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
-  const [mounted, setMounted] = React.useState(false);
-
-  // Mount check for SSR
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHydrated();
 
   // Handle escape key
   useEffect(() => {

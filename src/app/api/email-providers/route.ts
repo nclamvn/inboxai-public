@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       providers: providers || getDefaultProviders()
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error('[Providers] Error:', error)
     return NextResponse.json({
       providers: getDefaultProviders()

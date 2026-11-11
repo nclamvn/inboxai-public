@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSyncExternalStore, useCallback } from 'react';
 import { breakpoints } from '@/styles/design-tokens';
 
 type BreakpointKey = keyof typeof breakpoints;
@@ -14,35 +14,13 @@ type BreakpointKey = keyof typeof breakpoints;
  * Check if a media query matches
  */
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(false);
-  const initializedRef = useRef(false);
-
-  const updateMatches = useCallback((value: boolean) => {
-    setMatches((prev) => (prev !== value ? value : prev));
-  }, []);
-
-  useEffect(() => {
+  const subscribe = useCallback((notify: () => void) => {
     const media = window.matchMedia(query);
-
-    // Set initial value only once
-    if (!initializedRef.current) {
-      initializedRef.current = true;
-      updateMatches(media.matches);
-    }
-
-    // Create listener
-    const listener = (event: MediaQueryListEvent) => {
-      updateMatches(event.matches);
-    };
-
-    // Add listener
-    media.addEventListener('change', listener);
-
-    // Cleanup
-    return () => media.removeEventListener('change', listener);
-  }, [query, updateMatches]);
-
-  return matches;
+    media.addEventListener('change', notify);
+    return () => media.removeEventListener('change', notify);
+  }, [query]);
+  const getSnapshot = useCallback(() => window.matchMedia(query).matches, [query]);
+  return useSyncExternalStore(subscribe, getSnapshot, () => false);
 }
 
 /**

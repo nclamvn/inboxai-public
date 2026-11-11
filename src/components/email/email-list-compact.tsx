@@ -385,7 +385,7 @@ export function EmailListCompact({
   }, [selectedIds, onBulkAction, clearSelection, setIsSelecting])
 
   // Mobile Selection Toolbar Component
-  const MobileSelectionToolbar = () => {
+  const renderMobileSelectionToolbar = () => {
     if (!isSelecting || selectedIds.size === 0) return null
 
     return (
@@ -631,7 +631,7 @@ export function EmailListCompact({
     )
   }
 
-  const LoadMoreIndicator = () => (
+  const renderLoadMoreIndicator = () => (
     <div ref={loadMoreRef} className="py-4 flex justify-center">
       {loadingMore ? (
         <div className="flex items-center gap-2 text-[var(--muted-foreground)]">
@@ -719,9 +719,9 @@ export function EmailListCompact({
               </div>
             )
           })}
-          {onLoadMore && <LoadMoreIndicator />}
+          {onLoadMore && renderLoadMoreIndicator()}
         </div>
-        <MobileSelectionToolbar />
+        {renderMobileSelectionToolbar()}
         {ContextMenuPortal}
         {CategoryPickerPortal}
       </>
@@ -734,9 +734,9 @@ export function EmailListCompact({
         <div className="divide-y divide-[var(--border)]">
           {emails.map(renderEmailItem)}
         </div>
-        {onLoadMore && <LoadMoreIndicator />}
+        {onLoadMore && renderLoadMoreIndicator()}
       </div>
-      <MobileSelectionToolbar />
+      {renderMobileSelectionToolbar()}
       {ContextMenuPortal}
       {CategoryPickerPortal}
     </>

@@ -221,6 +221,8 @@ export function AISummary({
     setError(null);
   }, [emailId, existingSummary]);
 
+  const summaryBullets = useMemo(() => parseSummaryData(summary), [summary]);
+
   // Don't render if shouldn't show
   if (!shouldShowComponent()) {
     return null;
@@ -292,7 +294,6 @@ export function AISummary({
   }
 
   // Parse summary into bullet points
-  const summaryBullets = useMemo(() => parseSummaryData(summary), [summary]);
 
   // Show summary
   if (!summary || !summaryBullets || summaryBullets.length === 0) {

@@ -9,36 +9,24 @@ import { useEffect, useState } from 'react'
 import { WifiOff, Wifi, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useNetworkStatus } from '@/hooks/use-network-status'
+import { useHydrated } from '@/hooks/use-hydrated'
 
 export function OfflineBanner() {
   const { isOnline, wasOffline } = useNetworkStatus()
-  const [showBackOnline, setShowBackOnline] = useState(false)
+  const showBackOnline = wasOffline && isOnline
   const [dismissed, setDismissed] = useState(false)
-  const [mounted, setMounted] = useState(false)
-
-  // Wait for client-side hydration to prevent flash
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  // Show "back online" message when connection restored
-  useEffect(() => {
-    if (wasOffline && isOnline) {
-      setShowBackOnline(true)
-      setDismissed(false)
-      const timer = setTimeout(() => {
-        setShowBackOnline(false)
-      }, 3000)
-      return () => clearTimeout(timer)
-    }
-  }, [wasOffline, isOnline])
+  const mounted = useHydrated()
 
   // Reset dismissed state when going offline
   useEffect(() => {
-    if (!isOnline) {
-      setDismissed(false)
+    const reset = () => setDismissed(false)
+    window.addEventListener('online', reset)
+    window.addEventListener('offline', reset)
+    return () => {
+      window.removeEventListener('online', reset)
+      window.removeEventListener('offline', reset)
     }
-  }, [isOnline])
+  }, [])
 
   // Don't render until client-side hydration is complete (prevents flash)
   if (!mounted) return null
@@ -51,6 +39,8 @@ export function OfflineBanner() {
 
   return (
     <div
+      role="status"
+      aria-live="polite"
       className={cn(
         'fixed top-0 left-0 right-0 z-[100] px-4 py-2 flex items-center justify-center gap-2 text-sm font-medium transition-all duration-300',
         !isOnline && 'bg-amber-500 text-white',
