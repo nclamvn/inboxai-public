@@ -22,6 +22,7 @@
     "test:design": "npm run test:local-auth -- --design",
     "test:action-inbox": "npm run test:local-auth -- --action-inbox",
     "test:commitment-ledger": "npm run test:local-auth -- --commitment-ledger",
+    "test:commitment-ui": "npm run test:local-auth -- --commitment-ui",
     "design:bundle": "node scripts/report-design-bundle.mjs",
     "vault:local": "node --import tsx --conditions=react-server scripts/credential-vault.ts"
   },

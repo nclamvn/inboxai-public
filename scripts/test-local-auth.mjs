@@ -15,7 +15,9 @@ import { seedLegacyVault, rehearseVault, vaultKeys } from '../tests/local-auth/v
 const actionInbox = process.argv.includes('--action-inbox')
 const design = actionInbox || process.argv.includes('--design')
 const commitments = process.argv.includes('--commitment-ledger')
-const evidenceFile = commitments ? 'docs/phase-2/evidence/m3a-local-auth.json'
+const commitmentUi = process.argv.includes('--commitment-ui')
+const evidenceFile = commitmentUi ? 'docs/phase-2/evidence/m3b-browser-run.json'
+  : commitments ? 'docs/phase-2/evidence/m3a-local-auth.json'
   : actionInbox ? 'docs/phase-2/evidence/m2b-browser-run.json'
   : design ? 'docs/phase-2/evidence/m2a-browser-run.json' : 'docs/phase-2/evidence/m1c-local-auth.json'
 const compose = ['compose', '-p', 'inboxai-m0e-local', '-f', 'tests/local-auth/compose.yml']
@@ -172,7 +174,10 @@ try {
   record('admin revocation is enforced on the next request', (await appFetch('/api/admin/whitelist')).status === 403)
   sql("UPDATE public.registration_policy SET enabled=false;")
   record('closed policy rejects subsequent Next signups', (await appFetch('/api/signup-whitelist', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({email:'later@example.test',password,fullName:'Later'}) })).status === 503)
-  if (commitments) {
+  if (commitmentUi) {
+    const { rehearseCommitmentUi } = await import('../tests/design/commitments.mjs')
+    await rehearseCommitmentUi({ app, appFetch, cookies, admin, userId, record })
+  } else if (commitments) {
     const legacyLogin = createClient(base, anon, { auth: { persistSession: false, autoRefreshToken: false } })
     const legacySession = await legacyLogin.auth.signInWithPassword({ email: 'preupgrade@example.test', password })
     assert.equal(legacySession.error, null)
@@ -195,7 +200,8 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = commitments ? 'Local Next/GoTrue/PostgREST/PostgreSQL, synthetic mail and .test accounts'
+  const provenance = commitmentUi ? 'Authenticated local Chromium and real ledger API with synthetic mail only'
+    : commitments ? 'Local Next/GoTrue/PostgREST/PostgreSQL, synthetic mail and .test accounts'
     : design ? 'Authenticated local Chromium with synthetic mail, loopback only'
     : 'Real local GoTrue/PostgREST/Next; synthetic Gmail/IMAP readers and loopback Gmail HTTP/SMTP TLS send; internal verification SMTP sink; .test identities; not hosted/provider interoperability'
   writeFileSync(evidenceFile, JSON.stringify({ date: new Date().toISOString(), provenance, images:{ auth:'supabase/gotrue:v2.197.0',rest:'postgrest/postgrest:v14.18',mail:'axllent/mailpit:v1.28.1',db:'postgres:16' }, outcomes },null,2)+'\n')

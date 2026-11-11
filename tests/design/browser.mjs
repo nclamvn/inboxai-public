@@ -38,7 +38,7 @@ async function seed(admin, userId) {
   return { subject: emails[0].subject, accountId: accounts[0].id, otherAccountId: accounts[1].id }
 }
 
-async function audit(page) {
+export async function audit(page) {
   if (!await page.evaluate(() => Boolean(window.axe))) {
     await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') })
   }
