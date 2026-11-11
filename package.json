@@ -17,7 +17,8 @@
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
-    "test:db": "bash scripts/test-db.sh"
+    "test:db": "bash scripts/test-db.sh",
+    "test:local-auth": "node scripts/test-local-auth.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

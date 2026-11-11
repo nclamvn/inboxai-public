@@ -1,0 +1,159 @@
+import { createHmac, randomUUID } from 'node:crypto'
+import { createServer, request as httpRequest } from 'node:http'
+import { execFileSync, spawn } from 'node:child_process'
+import { readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { setTimeout as delay } from 'node:timers/promises'
+import { createClient } from '@supabase/supabase-js'
+import assert from 'node:assert/strict'
+
+// Real local Auth/PostgREST/Next integration; fixed synthetic credentials only.
+// Containers have no internet route and SMTP goes only to an internal capture sink.
+const compose = ['compose', '-p', 'inboxai-m0e-local', '-f', 'tests/local-auth/compose.yml']
+const docker = args => execFileSync('docker', [...compose, ...args], { encoding: 'utf8', maxBuffer: 2e6 })
+const sql = source => execFileSync('docker', [...compose, 'exec', '-T', 'db', 'psql', '-U', 'postgres', '-d', 'inboxai_security_test', '-X', '-v', 'ON_ERROR_STOP=1', '-At'], { input: source, encoding: 'utf8' })
+const secret = 'synthetic-local-jwt-secret-at-least-32-characters'
+const token = role => {
+  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url')
+  const payload = Buffer.from(JSON.stringify({ role, iss: 'supabase', iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 3600 })).toString('base64url')
+  return `${header}.${payload}.${createHmac('sha256', secret).update(`${header}.${payload}`).digest('base64url')}`
+}
+const anon = token('anon'), service = token('service_role')
+const base = 'http://127.0.0.1:55321', app = 'http://127.0.0.1:55300'
+const loopbackFetch = (input, init) => {
+  const url = new URL(typeof input === 'string' ? input : input.url ?? input)
+  assert.equal(url.hostname, '127.0.0.1', 'test attempted non-loopback fetch')
+  return fetch(input, { ...init, signal: init?.signal ?? AbortSignal.timeout(10_000) })
+}
+const admin = createClient(base, service, { auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: loopbackFetch } })
+const outcomes = []
+const record = (name, condition) => { assert.ok(condition, name); outcomes.push({ name, status: 'PASS' }); console.log(`PASS: ${name}`) }
+let started = false, next, proxy
+const cookies = new Map()
+const appFetch = async (path, init = {}) => {
+  const headers = new Headers(init.headers)
+  if (cookies.size) headers.set('cookie', [...cookies].map(([k,v]) => `${k}=${v}`).join('; '))
+  const response = await loopbackFetch(`${app}${path}`, { ...init, headers, redirect: 'manual' })
+  for (const cookie of response.headers.getSetCookie()) {
+    const pair = cookie.split(';')[0], index = pair.indexOf('=')
+    cookies.set(pair.slice(0,index), pair.slice(index+1))
+  }
+  return response
+}
+async function waitFor(url, predicate = r => r.ok) {
+  const deadline = Date.now() + 90_000
+  while (Date.now() < deadline) {
+    try { const response = await loopbackFetch(url); if (await predicate(response)) return } catch {}
+    await delay(500)
+  }
+  throw new Error(`Local service did not become ready: ${new URL(url).port}`)
+}
+try {
+  // A failed future run must never leave a stale success report behind.
+  rmSync('docs/phase-2/evidence/m0e-local-auth.json', { force:true })
+  const freeKB = Number(execFileSync('df', ['-Pk', '/'], { encoding: 'utf8' }).trim().split('\n').at(-1).split(/\s+/)[3])
+  assert.ok(freeKB >= 10 * 1024 * 1024, 'less than 10 GiB free')
+  assert.equal(docker(['ps', '-aq']).trim(), '', 'existing test project found; will not replace it')
+  // Assert no unexpected external SMTP configuration can enter this fixture.
+  const config = docker(['config', '--format', 'json'])
+  assert.equal(JSON.parse(config).services.auth.environment.GOTRUE_SMTP_HOST, 'mail')
+  started = true
+  docker(['up', '-d', '--pull', 'never'])
+  await waitFor('http://127.0.0.1:55999/health')
+  // Current Supabase helper contract; GoTrue's historical bootstrap migration
+  // defines the legacy GUC-only uid helper. PostgREST 14 supplies JSON claims.
+  sql(`CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS
+    $$ SELECT (NULLIF(current_setting('request.jwt.claims', true), '')::jsonb->>'sub')::uuid $$;`)
+  proxy = createServer((req,res) => {
+    const auth = req.url.startsWith('/auth/v1/')
+    const rest = req.url.startsWith('/rest/v1/')
+    if (!auth && !rest) { res.writeHead(404); res.end(); return }
+    const upstream = httpRequest({ hostname: '127.0.0.1', port: auth ? 55999 : 55400,
+      path: req.url.replace(auth ? '/auth/v1' : '/rest/v1', ''), method: req.method, headers: req.headers }, response => {
+      res.writeHead(response.statusCode, response.headers); response.pipe(res)
+    })
+    upstream.on('error', () => { res.writeHead(502); res.end() })
+    req.pipe(upstream)
+  })
+  await new Promise(resolve => proxy.listen(55321, '127.0.0.1', resolve))
+  const migrations = readdirSync('supabase/migrations').filter(f => f.endsWith('.sql')).sort()
+  for (const file of migrations.filter(f => f < '20261111010000')) sql(readFileSync(`supabase/migrations/${file}`, 'utf8'))
+  const { data: seed, error: seedError } = await admin.auth.admin.createUser({ email: 'preupgrade@example.test', password: 'Synthetic-passphrase-123', email_confirm: true })
+  assert.equal(seedError, null)
+  const previousId = seed.user.id
+  for (const file of migrations.filter(f => f >= '20261111010000')) sql(readFileSync(`supabase/migrations/${file}`, 'utf8'))
+  record('upgrade preserves existing profile', Number(sql("SELECT count(*) FROM public.profiles WHERE email='preupgrade@example.test'")) === 1)
+  const { error: blocked } = await createClient(base, anon).auth.signUp({ email: 'blocked@example.test', password: 'Synthetic-passphrase-123' })
+  record('direct Auth API cannot bypass closed registration policy', Boolean(blocked))
+  sql("UPDATE public.registration_policy SET enabled=true, max_users=100; NOTIFY pgrst, 'reload schema';")
+  await delay(1000)
+  next = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', '55300'], {
+    env: { ...Object.fromEntries(['PATH','HOME','LANG','TMPDIR'].filter(key => process.env[key]).map(key => [key,process.env[key]])),
+      NODE_ENV:'development', NEXT_PUBLIC_SUPABASE_URL: base, NEXT_PUBLIC_SUPABASE_ANON_KEY: anon,
+      SUPABASE_SERVICE_ROLE_KEY: service, NEXT_PUBLIC_APP_URL: app, SIGNUP_ENABLED: 'true',
+      SIGNUP_RATE_LIMIT_KEY: 'synthetic-local-registration-key-at-least-32-characters',
+      OPENAI_API_KEY: 'sk-synthetic', RESEND_API_KEY: 're_synthetic', NEXT_TELEMETRY_DISABLED: '1' },
+    stdio: ['ignore','pipe','pipe'],
+  })
+  let output = ''
+  next.stdout.on('data', chunk => { output = (output + chunk).slice(-10000) })
+  next.stderr.on('data', chunk => { output = (output + chunk).slice(-10000) })
+  await waitFor(`${app}/login`)
+  const email = 'verified@example.test', password = 'Synthetic-passphrase-123'
+  const response = await appFetch('/api/signup-whitelist', { method: 'POST', headers: { 'content-type':'application/json' }, body: JSON.stringify({ email,password,fullName:'Synthetic Verified' }) })
+  if (response.status !== 202) throw new Error(`Next signup returned ${response.status}: ${await response.text()}\n${output}`)
+  record('Next signup requires email verification', (await response.json()).requires_email_verification === true)
+  record('signup sets no authenticated access-token cookie', ![...cookies].some(([k,v]) => k.includes('auth-token') && !k.includes('code-verifier') && v))
+  const unauthenticated = await appFetch('/api/admin/whitelist')
+  record('unverified signup has no admin access', unauthenticated.status === 403)
+  const login = createClient(base, anon, { auth: { persistSession:false,autoRefreshToken:false } })
+  record('password login rejected before verification', Boolean((await login.auth.signInWithPassword({ email,password })).error))
+  let link
+  for (let attempt = 0; attempt < 30 && !link; attempt++) {
+    const listing = await (await loopbackFetch('http://127.0.0.1:55825/api/v1/messages')).json()
+    for (const message of listing.messages ?? []) {
+      const content = await (await loopbackFetch(`http://127.0.0.1:55825/api/v1/message/${message.ID}`)).json()
+      if (!(content.To ?? []).some(to => to.Address === email)) continue
+      link = content.HTML?.match(/href="(http:\/\/127\.0\.0\.1:55321[^"<>]+)"/)?.[1]?.replaceAll('&amp;','&')
+    }
+    if (!link) await delay(200)
+  }
+  assert.ok(link, 'verification message absent from internal mail sink')
+  assert.equal(new URL(link).pathname, '/auth/v1/verify', 'unexpected verification path')
+  const confirmation = await loopbackFetch(link, { redirect:'manual' })
+  assert.ok(confirmation.headers.get('location'), `confirmation returned ${confirmation.status} without redirect`)
+  const callback = new URL(confirmation.headers.get('location'))
+  assert.equal(callback.origin, app)
+  assert.equal(callback.pathname, '/auth/callback', 'confirmation has unexpected callback path')
+  const sessionResponse = await appFetch(`${callback.pathname}${callback.search}`)
+  if (sessionResponse.status !== 307 || sessionResponse.headers.get('location') !== `${app}/inbox`) {
+    const location = sessionResponse.headers.get('location')
+    console.log('Callback diagnostic:', { status: sessionResponse.status, destination: location ? new URL(location).pathname : null,
+      cookieNames: [...cookies.keys()], authErrors: output.split('\n').filter(line => line.includes('Auth callback exchange failed')) })
+  }
+  record('PKCE email callback creates a verified session', sessionResponse.status === 307 && sessionResponse.headers.get('location') === `${app}/inbox`)
+  record('verified admitted user can open the inbox page', (await appFetch('/inbox')).status === 200)
+  const signedIn = await login.auth.signInWithPassword({ email,password })
+  assert.equal(signedIn.error, null)
+  const userId = signedIn.data.user.id
+  record('non-admin verified user cannot access global whitelist', (await appFetch('/api/admin/whitelist')).status === 403)
+  const ownEmailId = randomUUID(), otherEmailId = randomUUID()
+  sql(`INSERT INTO public.emails(id,user_id,from_address) VALUES('${ownEmailId}','${userId}','synthetic@example.test'),('${otherEmailId}','${previousId}','synthetic@example.test');`)
+  const own = await login.from('emails').select('id')
+  record('real PostgREST JWT/RLS returns only own email', !own.error && own.data.length === 1 && own.data[0].id === ownEmailId)
+  const anonymous = await createClient(base, anon).from('emails').select('id')
+  record('anonymous PostgREST cannot read tenant email', !anonymous.error && anonymous.data.length === 0)
+  assert.equal((await admin.auth.admin.updateUserById(userId, { app_metadata: { role:'admin' } })).error, null)
+  record('server-provisioned admin role grants whitelist access', (await appFetch('/api/admin/whitelist')).status === 200)
+  assert.equal((await admin.auth.admin.updateUserById(userId, { app_metadata: { role:'user' } })).error, null)
+  record('admin revocation is enforced on the next request', (await appFetch('/api/admin/whitelist')).status === 403)
+  sql("UPDATE public.registration_policy SET enabled=false;")
+  record('closed policy rejects subsequent Next signups', (await appFetch('/api/signup-whitelist', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({email:'later@example.test',password,fullName:'Later'}) })).status === 503)
+  writeFileSync('docs/phase-2/evidence/m0e-local-auth.json', JSON.stringify({ date: new Date().toISOString(), provenance:'Real local GoTrue/PostgREST/Next; internal SMTP sink; synthetic .test identities; not hosted staging', images:{ auth:'supabase/gotrue:v2.197.0',rest:'postgrest/postgrest:v14.18',mail:'axllent/mailpit:v1.28.1',db:'postgres:16' }, outcomes },null,2)+'\n')
+} finally {
+  if (next && next.exitCode === null) {
+    next.kill('SIGTERM')
+    await Promise.race([new Promise(resolve => next.once('exit', resolve)), delay(5000).then(() => next.kill('SIGKILL'))])
+  }
+  if (proxy) await new Promise(resolve => proxy.close(resolve))
+  if (started) docker(['down'])
+}

@@ -81,3 +81,20 @@ jobs:
       - run: npm ci --ignore-scripts
       # Intentionally blocking until the legacy dependency debt is resolved.
       - run: npm audit --audit-level=high
+
+  local-auth-rehearsal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: docker compose -f tests/local-auth/compose.yml pull
+      - run: npm run test:local-auth
+      - if: always()
+        run: docker compose -p inboxai-m0e-local -f tests/local-auth/compose.yml down
