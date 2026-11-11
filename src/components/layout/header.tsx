@@ -13,6 +13,7 @@ import { SearchBox } from '@/components/search/search-box'
 import { NotificationDropdown } from '@/components/notifications/notification-dropdown'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
 import { FollowUpBadge } from '@/components/follow-up/follow-up-badge'
+import { useIsMobile } from '@/hooks/use-media-query'
 
 interface BriefingItem {
   type: string
@@ -33,48 +34,43 @@ interface UserData {
 }
 
 export function Header() {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const isMobile = useIsMobile()
+
+  if (pathname === '/inbox' || (isMobile && searchParams.has('email'))) return null
+  return <DashboardHeader pathname={pathname} />
+}
+
+function DashboardHeader({ pathname }: { pathname: string }) {
   const [user, setUser] = useState<UserData | null>(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showAIPopover, setShowAIPopover] = useState(false)
   const [briefing, setBriefing] = useState<BriefingData | null>(null)
-  const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
   const supabase = createClient()
   const aiPopoverRef = useRef<HTMLDivElement>(null)
   const userMenuRef = useRef<HTMLDivElement>(null)
 
-  // Hide header on /inbox page - UnifiedTopBar handles it
-  const isInboxPage = pathname === '/inbox'
-
-  // Hide header on mobile when viewing email detail
-  const isViewingEmail = searchParams.get('email') !== null
-
-  // Detect mobile
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  useEffect(() => {
+    const controller = new AbortController()
+    const { signal } = controller
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
+      if (user && !signal.aborted) {
         const { data: profile } = await supabase
           .from('profiles')
           .select('full_name')
           .eq('id', user.id)
+          .abortSignal(signal)
           .single()
-        setUser({ email: user.email, profile: profile || undefined })
+        if (!signal.aborted) setUser({ email: user.email, profile: profile || undefined })
       }
     }
 
     const fetchBriefing = async () => {
       try {
-        const res = await fetch('/api/ai/briefing')
+        const res = await fetch('/api/ai/briefing', { signal })
         if (res.ok) {
           const data = await res.json()
           setBriefing({
@@ -84,12 +80,13 @@ export function Header() {
           })
         }
       } catch {
-        console.error('Failed to fetch briefing')
+        if (!signal.aborted) console.error('Failed to fetch briefing')
       }
     }
 
     getUser()
     fetchBriefing()
+    return () => controller.abort()
   }, [supabase])
 
   // Close popovers when clicking outside
@@ -138,16 +135,6 @@ export function Header() {
     .join('')
     .toUpperCase()
     .slice(0, 2) || 'U'
-
-  // Hide header on mobile when viewing email - let EmailDetailMobile handle header
-  if (isMobile && isViewingEmail) {
-    return null
-  }
-
-  // Hide header on inbox page - UnifiedTopBar handles everything
-  if (isInboxPage) {
-    return null
-  }
 
   return (
     <header className="h-14 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4 ">

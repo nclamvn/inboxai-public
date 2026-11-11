@@ -70,6 +70,20 @@ function buildCSP(directives: Record<string, string[]>): string {
     .join('; ')
 }
 
+const loopbackHosts = ['localhost', '127.0.0.1', '[::1]']
+
+function configuredSupabaseOrigin(localApp: boolean): string | null {
+  try {
+    const url = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '')
+    if (url.protocol === 'https:' || (url.protocol === 'http:' && loopbackHosts.includes(url.hostname) && localApp)) {
+      return url.origin
+    }
+  } catch {
+    // Keep the default allowlist when Supabase configuration is absent or invalid.
+  }
+  return null
+}
+
 // Routes that are completely public (no security headers needed)
 const PUBLIC_ASSETS = [
   '/favicon',
@@ -95,7 +109,12 @@ export async function proxy(request: NextRequest) {
   })
 
   // Add CSP header (less strict in development)
-  const csp = buildCSP(cspDirectives)
+  const localApp = request.nextUrl.protocol === 'http:' && loopbackHosts.includes(request.nextUrl.hostname)
+  const supabaseOrigin = configuredSupabaseOrigin(localApp)
+  const directives = { ...cspDirectives }
+  if (supabaseOrigin) directives['connect-src'] = [...directives['connect-src'], supabaseOrigin]
+  if (localApp) delete directives['upgrade-insecure-requests']
+  const csp = buildCSP(directives)
   if (process.env.NODE_ENV === 'production') {
     response.headers.set('Content-Security-Policy', csp)
     // Add HSTS header (only in production with HTTPS)
