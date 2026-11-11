@@ -144,3 +144,13 @@ See the [M4-A handoff](M4A_LOCAL_HANDOFF.md) for setup and local verification.
 | M4-B3 | M4-B2 | Ask email surface and local verification | Responsive source navigation, synthetic contradictions and abstention, same-rule single-email comparison |
 
 See the [M4-B handoff](M4B_LOCAL_HANDOFF.md) for supported questions and verification.
+
+## M5-A local review units
+
+| Unit | Dependency | Scope | Acceptance |
+| --- | --- | --- | --- |
+| M5-A1 | M4-B | Scoped plan snapshot and frozen approval | Explicit owned IDs, cap and expiry, typed action allowlist, cross-tenant and stale requests refused |
+| M5-A2 | M5-A1 | Transactional local execution and audit | One receipt per plan, duplicate and concurrent retries, all-or-nothing changes and recorded outcomes |
+| M5-A3 | M5-A2 | Operator preview, selection, approval and history | Preview opens source, selected set visible at approval, execution is separate, lost-response retry and mobile rehearsal |
+
+See the [M5-A handoff](M5A_LOCAL_HANDOFF.md) for local scope and verification.

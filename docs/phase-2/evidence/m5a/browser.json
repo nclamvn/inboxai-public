@@ -1,0 +1,46 @@
+{
+  "engine": "157.0.8103.51",
+  "captures": [
+    {
+      "name": "desktop-preview",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "axe": []
+    },
+    {
+      "name": "desktop-approval",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "axe": []
+    },
+    {
+      "name": "desktop-receipt",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "axe": []
+    },
+    {
+      "name": "tablet-stale",
+      "viewport": {
+        "width": 834,
+        "height": 1112
+      },
+      "axe": []
+    },
+    {
+      "name": "mobile-approval",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "axe": []
+    }
+  ],
+  "runtimeErrors": []
+}
