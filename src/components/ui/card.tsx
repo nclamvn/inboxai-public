@@ -11,8 +11,8 @@ import { cn } from '@/lib/utils';
 // Card variants
 const cardVariants = {
   variant: {
-    default: 'bg-[var(--card)] border border-[var(--border)] shadow-sm',
-    elevated: 'bg-[var(--card)] shadow-lg border-0 dark:border dark:border-[var(--border)] dark:shadow-none',
+    default: 'bg-[var(--card)] border border-[var(--border)]',
+    elevated: 'bg-[var(--card)] border border-[var(--border-strong)]',
     outlined: 'bg-transparent border border-[var(--border)]',
     filled: 'bg-[var(--secondary)] border-0',
     ghost: 'bg-transparent border-0',
@@ -66,22 +66,21 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         ref={ref}
         className={cn(
           // Base
-          'rounded-xl',
-          'transition-all duration-150',
+          'rounded-[var(--radius-panel)]',
+          'transition-colors duration-150',
           // Variant
           cardVariants.variant[variant],
           // Padding
           cardVariants.padding[padding],
           // Interactive
           isInteractive && [
-            'hover:shadow-md',
+            'hover:bg-[var(--hover)]',
             'hover:border-[var(--border-strong)]',
             'cursor-pointer',
           ],
           // Selected
           selected && [
-            'ring-2 ring-[var(--primary)]',
-            'border-[var(--primary)]',
+            'border-s-2 border-s-[var(--selection-line)]',
           ],
           // Focus for keyboard navigation
           isClickable && [
@@ -96,7 +95,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         onKeyDown={
           isClickable
             ? (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
+                if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
                   e.preventDefault();
                   onClick?.(e as unknown as React.MouseEvent<HTMLDivElement>);
                 }

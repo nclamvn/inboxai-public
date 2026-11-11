@@ -299,7 +299,7 @@ function ToastItem({
       className={cn(
         'pointer-events-auto',
         'w-80 max-w-[calc(100vw-2rem)]',
-        'bg-[var(--card)] border border-[var(--border)] rounded-lg shadow-lg',
+        'bg-[var(--surface)] border border-[var(--border-strong)] rounded-[var(--radius-panel)]',
         'overflow-hidden',
         'transition-all duration-150',
         isExiting

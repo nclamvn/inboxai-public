@@ -16,7 +16,7 @@ export const Skeleton = memo(function Skeleton({
 }) {
   return (
     <div className={cn(
-      'animate-pulse bg-gray-200 dark:bg-gray-700 rounded',
+      'bg-[var(--secondary)] rounded-[var(--radius-control)]',
       className
     )} />
   );
@@ -91,7 +91,7 @@ export const EmailDetailSkeleton = memo(function EmailDetailSkeleton() {
 // Stats card skeleton
 export const StatsCardSkeleton = memo(function StatsCardSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+    <div className="bg-[var(--surface)] rounded-[var(--radius-panel)] border border-[var(--border)] p-6">
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <Skeleton className="h-3 w-20" />

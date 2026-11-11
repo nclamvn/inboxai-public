@@ -15,12 +15,12 @@ const inputVariants = {
     default: [
       'bg-[var(--input)] border-[var(--input-border)]',
       'hover:border-[var(--border-strong)]',
-      'focus:border-[var(--input-focus)] focus:ring-2 focus:ring-[var(--input-focus)]/20',
+      'focus:border-[var(--input-focus)] focus-ring',
     ].join(' '),
     filled: [
       'bg-[var(--secondary)] border-transparent',
       'hover:bg-[var(--hover)]',
-      'focus:bg-[var(--input)] focus:border-[var(--input-focus)] focus:ring-2 focus:ring-[var(--input-focus)]/20',
+      'focus:bg-[var(--input)] focus:border-[var(--input-focus)] focus-ring',
     ].join(' '),
     flushed: [
       'bg-transparent border-transparent border-b border-b-[var(--border)] rounded-none',
@@ -113,7 +113,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div
         className={cn(
-          'flex flex-col gap-1.5',
+          'flex flex-col gap-2',
           fullWidth && 'w-full',
           containerClassName
         )}
@@ -141,7 +141,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             <label
               htmlFor={id}
               className={cn(
-                'absolute left-3 transition-all duration-150 pointer-events-none z-10',
+                'absolute left-3 transition-colors duration-150 pointer-events-none z-10',
                 'text-[var(--foreground-muted)]',
                 showFloatingLabel
                   ? 'top-0 -translate-y-1/2 text-xs bg-[var(--background)] px-1 text-[var(--input-focus)]'
@@ -174,8 +174,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             defaultValue={defaultValue}
             className={cn(
               // Base styles
-              'w-full rounded-lg border outline-none',
-              'transition-all duration-150',
+              'w-full rounded-[var(--radius-control)] border',
+              'transition-colors duration-150',
               'placeholder:text-[var(--foreground-muted)]',
               'disabled:opacity-50 disabled:cursor-not-allowed',
               // Variant
@@ -189,7 +189,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               // Error state
               hasError && [
                 'border-[var(--error)]',
-                'focus:border-[var(--error)] focus:ring-[var(--error)]/20',
+                'focus:border-[var(--error)] ',
               ],
               // Success state
               hasSuccess && [
@@ -313,7 +313,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div
         className={cn(
-          'flex flex-col gap-1.5',
+          'flex flex-col gap-2',
           fullWidth && 'w-full',
           containerClassName
         )}
@@ -337,16 +337,16 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={id}
           className={cn(
-            'w-full rounded-lg border outline-none',
+            'w-full rounded-[var(--radius-control)] border',
             'bg-[var(--input)] border-[var(--input-border)]',
             'hover:border-[var(--border-strong)]',
-            'focus:border-[var(--input-focus)] focus:ring-2 focus:ring-[var(--input-focus)]/20',
-            'transition-all duration-150',
+            'focus:border-[var(--input-focus)] focus-ring',
+            'transition-colors duration-150',
             'placeholder:text-[var(--foreground-muted)]',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             'min-h-[100px] px-3 py-2 text-[14px]',
             'resize-y',
-            hasError && 'border-[var(--error)] focus:border-[var(--error)] focus:ring-[var(--error)]/20',
+            hasError && 'border-[var(--error)] focus:border-[var(--error)] ',
             className
           )}
           disabled={disabled}

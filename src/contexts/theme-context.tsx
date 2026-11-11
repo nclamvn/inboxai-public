@@ -14,15 +14,11 @@ import React, {
   useMemo,
   type ReactNode,
 } from 'react';
-import { lightColors, darkColors, getShadows } from '@/styles/design-tokens';
 import { useHydrated } from '@/hooks/use-hydrated';
 
 // Types
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type ResolvedTheme = 'light' | 'dark';
-
-// Color palette type (union of light and dark)
-type ColorPalette = typeof lightColors | typeof darkColors;
 
 interface ThemeContextValue {
   /** Current theme mode setting */
@@ -41,10 +37,6 @@ interface ThemeContextValue {
   toggle: () => void;
   /** Toggle (alias) */
   toggleTheme: () => void;
-  /** Current color palette */
-  colors: ColorPalette;
-  /** Current shadows */
-  shadows: ReturnType<typeof getShadows>;
   /** Whether component is mounted */
   mounted: boolean;
 }
@@ -117,10 +109,6 @@ export function ThemeProvider({
 
   const isDark = theme === 'dark';
 
-  // Get colors and shadows based on theme
-  const colors = useMemo(() => (isDark ? darkColors : lightColors), [isDark]);
-  const shadows = useMemo(() => getShadows(isDark), [isDark]);
-
   // Listen to system preference changes
   useEffect(() => {
     if (!enableSystem) return;
@@ -172,11 +160,9 @@ export function ThemeProvider({
       setTheme: setMode, // backwards compatibility
       toggle,
       toggleTheme: toggle, // backwards compatibility
-      colors,
-      shadows,
       mounted,
     }),
-    [mode, theme, isDark, setMode, toggle, colors, shadows, mounted]
+    [mode, theme, isDark, setMode, toggle, mounted]
   );
 
   return (
@@ -203,22 +189,6 @@ export function useTheme(): ThemeContextValue {
 export function useIsDark(): boolean {
   const { isDark } = useTheme();
   return isDark;
-}
-
-/**
- * useThemeColors Hook - Get current colors
- */
-export function useThemeColors() {
-  const { colors } = useTheme();
-  return colors;
-}
-
-/**
- * useThemeShadows Hook - Get current shadows
- */
-export function useThemeShadows() {
-  const { shadows } = useTheme();
-  return shadows;
 }
 
 export default ThemeContext;

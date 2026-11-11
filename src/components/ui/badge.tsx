@@ -23,10 +23,10 @@ const badgeVariants = {
     urgent: 'bg-[var(--error-bg)] text-[var(--error)] border-[var(--error)]/20',
   },
   size: {
-    xs: 'text-[10px] px-1.5 py-0.5 rounded',
-    sm: 'text-xs px-2 py-0.5 rounded-md',
-    md: 'text-xs px-2.5 py-1 rounded-md',
-    lg: 'text-sm px-3 py-1 rounded-lg',
+    xs: 'text-[10px] px-2 py-1 rounded-[var(--radius-control)]',
+    sm: 'text-xs px-2 py-1 rounded-[var(--radius-control)]',
+    md: 'text-xs px-3 py-1 rounded-[var(--radius-control)]',
+    lg: 'text-sm px-3 py-1 rounded-[var(--radius-control)]',
   },
 };
 

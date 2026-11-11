@@ -85,12 +85,32 @@ it('preserves stored theme and manual toggle behavior', () => {
   expect(localStorage.getItem('inboxai-theme-mode')).toBe('light')
 })
 
-it('modal still portals and handles escape after hydration changes', () => {
-  const onClose = vi.fn()
-  render(<Modal open onClose={onClose} title="Synthetic modal">Content</Modal>)
-  expect(screen.getByRole('dialog').textContent).toContain('Content')
-  fireEvent.keyDown(document, { key: 'Escape' })
-  expect(onClose).toHaveBeenCalledOnce()
+it('portals a labelled dialog and honors native cancellation settings', () => {
+  // jsdom lacks the top-layer API. Chromium rehearsal exercises real focus and Escape.
+  const prototype = HTMLDialogElement.prototype
+  const original = Object.getOwnPropertyDescriptors(prototype)
+  Object.defineProperties(prototype, {
+    showModal: { configurable: true, value(this: HTMLDialogElement) { this.open = true } },
+    close: { configurable: true, value(this: HTMLDialogElement) { this.open = false } },
+  })
+  try {
+    const onClose = vi.fn()
+    const view = render(<Modal open onClose={onClose} title="Synthetic modal">Content</Modal>)
+    const dialog = screen.getByRole('dialog', { name: 'Synthetic modal' })
+    expect(view.container.contains(dialog)).toBe(false)
+    expect(dialog.textContent).toContain('Content')
+    fireEvent(dialog, new Event('cancel', { cancelable: true }))
+    expect(onClose).toHaveBeenCalledOnce()
+    view.rerender(<Modal open onClose={onClose} title="Synthetic modal" closeOnEscape={false}>Content</Modal>)
+    fireEvent(dialog, new Event('cancel', { cancelable: true }))
+    expect(onClose).toHaveBeenCalledOnce()
+    view.unmount()
+  } finally {
+    for (const method of ['showModal', 'close']) {
+      if (original[method]) Object.defineProperty(prototype, method, original[method])
+      else Reflect.deleteProperty(prototype, method)
+    }
+  }
 })
 
 it('install-prompt cleanup cancels a pending event timer', () => {

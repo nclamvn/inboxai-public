@@ -19,19 +19,19 @@ import { cn } from '@/lib/utils';
 const alertVariants = {
   variant: {
     info: {
-      container: 'bg-[var(--info-bg)] border-[var(--info)]/20 text-[var(--info)]',
+      container: 'bg-[var(--surface)] border-[var(--border)] border-s-[var(--info)] text-[var(--info)]',
       icon: 'text-[var(--info)]',
     },
     success: {
-      container: 'bg-[var(--success-bg)] border-[var(--success)]/20 text-[var(--success)]',
+      container: 'bg-[var(--surface)] border-[var(--border)] border-s-[var(--success)] text-[var(--success)]',
       icon: 'text-[var(--success)]',
     },
     warning: {
-      container: 'bg-[var(--warning-bg)] border-[var(--warning)]/20 text-[var(--warning)]',
+      container: 'bg-[var(--surface)] border-[var(--border)] border-s-[var(--warning)] text-[var(--warning)]',
       icon: 'text-[var(--warning)]',
     },
     error: {
-      container: 'bg-[var(--error-bg)] border-[var(--error)]/20 text-[var(--error)]',
+      container: 'bg-[var(--surface)] border-[var(--border)] border-s-[var(--error)] text-[var(--error)]',
       icon: 'text-[var(--error)]',
     },
   },
@@ -84,9 +84,9 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
     return (
       <div
         ref={ref}
-        role="alert"
+        role={variant === 'error' ? 'alert' : 'status'}
         className={cn(
-          'flex gap-3 p-4 rounded-lg border',
+          'flex gap-3 p-4 border border-s-2 rounded-[var(--radius-control)]',
           styles.container,
           className
         )}
@@ -107,7 +107,7 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
             </h5>
           )}
           {children && (
-            <div className="text-sm opacity-90">
+            <div className="text-sm text-[var(--foreground-secondary)]">
               {children}
             </div>
           )}
@@ -123,11 +123,11 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
           <button
             onClick={onClose}
             className={cn(
-              'shrink-0 p-1 -m-1 rounded opacity-70 hover:opacity-100',
+              'neo-icon-button -my-2 -me-2',
               'transition-opacity',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-current'
             )}
-            aria-label="Close"
+            aria-label="Đóng thông báo"
           >
             <X className="h-4 w-4" />
           </button>
