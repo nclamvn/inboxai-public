@@ -61,4 +61,13 @@ M1-B was authorized locally after M1-A. No remote PR or deployment is created.
 Local source commits group the shared contracts/providers before wiring callers, then
 add native rehearsal and evidence. Schema/application cutover is coordinated across
 these units. See SYNC_CONTRACTS.md for explicit support limits and rollback notes.
-Next implementation milestone: M1-C Gmail OAuth send and external-send idempotency.
+## M1-C local review units
+
+| Unit | Dependency | Scope | Acceptance |
+| --- | --- | --- | --- |
+| M1-C1 | M1-A,B | Private send ledger and atomic Sent projection | Same key dispatches once, mismatched payload conflicts, tenant checks and finalization rollback |
+| M1-C2 | M1-C1 | Gmail MIME, SMTP TLS and Compose status | Provider outcomes classified, browser retries keep key, Sent evidence resolves only exact Gmail matches |
+| M1-C3 | M1-C2 | Local Auth/PostgREST rehearsal and fault injection | Concurrent requests, missing acknowledgements, partial SMTP acceptance and replay verified |
+
+The [local handoff](M1C_LOCAL_HANDOFF.md) records evidence and provider limitations.
+Next implementation milestone is M2-A Design System.

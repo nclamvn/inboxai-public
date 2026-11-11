@@ -11,7 +11,8 @@ Required evidence before proposing a supervised real-mailbox test:
 - [ ] No unresolved applicable critical/high dependency or application vulnerabilities.
 - [ ] Gmail scope minimization and OAuth verification/security-assessment applicability checked.
 - [x] Synthetic local sync checkpoints, duplicate/retry/concurrency/fencing behavior verified (M1B_LOCAL_HANDOFF.md).
-- [ ] Real-provider sync interoperability, large-message/folder support, Gmail send/idempotency and uncertain-send reconciliation verified.
+- [x] Local Gmail HTTP and SMTP TLS send, duplicate protection, partial acceptance and Gmail Sent reconciliation tested (M1C_LOCAL_HANDOFF.md).
+- [ ] Real-provider sync and send interoperability, SMTP destination controls and large-message/folder support verified.
 - [ ] CI lint/typecheck/tests/build succeed; required checks and branch protection confirmed remotely.
 - [ ] Isolated staging, synthetic data, redacted telemetry and incident/recovery procedure verified.
 - [ ] Explicit owner authorization for the particular supervised mailbox test.

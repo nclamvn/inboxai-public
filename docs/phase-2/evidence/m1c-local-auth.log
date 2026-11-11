@@ -1,0 +1,180 @@
+
+> ai-mailbox@0.1.0 test:local-auth
+> node --import tsx --conditions=react-server scripts/test-local-auth.mjs
+
+ Network inboxai-m0e-local_host_access Creating
+ Network inboxai-m0e-local_isolated Creating
+ Network inboxai-m0e-local_host_access Creating
+ Network inboxai-m0e-local_isolated Creating
+ Network inboxai-m0e-local_host_access Created
+ Network inboxai-m0e-local_host_access Created
+ Network inboxai-m0e-local_isolated Created
+ Network inboxai-m0e-local_isolated Created
+ Container inboxai-m0e-local-gateway-1 Creating
+ Container inboxai-m0e-local-mail-1 Creating
+ Container inboxai-m0e-local-db-1 Creating
+ Container inboxai-m0e-local-mail-1 Created
+ Container inboxai-m0e-local-gateway-1 Created
+ Container inboxai-m0e-local-db-1 Created
+ Container inboxai-m0e-local-rest-1 Creating
+ Container inboxai-m0e-local-auth-1 Creating
+ Container inboxai-m0e-local-rest-1 Created
+ Container inboxai-m0e-local-auth-1 Created
+ Container inboxai-m0e-local-db-1 Starting
+ Container inboxai-m0e-local-gateway-1 Starting
+ Container inboxai-m0e-local-mail-1 Starting
+ Container inboxai-m0e-local-db-1 Started
+ Container inboxai-m0e-local-db-1 Waiting
+ Container inboxai-m0e-local-db-1 Waiting
+ Container inboxai-m0e-local-gateway-1 Started
+ Container inboxai-m0e-local-mail-1 Started
+ Container inboxai-m0e-local-db-1 Healthy
+ Container inboxai-m0e-local-rest-1 Starting
+ Container inboxai-m0e-local-db-1 Healthy
+ Container inboxai-m0e-local-auth-1 Starting
+ Container inboxai-m0e-local-rest-1 Started
+ Container inboxai-m0e-local-auth-1 Started
+NOTICE:  trigger "on_auth_user_created" for relation "auth.users" does not exist, skipping
+NOTICE:  trigger "update_profiles_updated_at" for relation "profiles" does not exist, skipping
+NOTICE:  trigger "update_emails_updated_at" for relation "emails" does not exist, skipping
+NOTICE:  trigger "update_source_accounts_updated_at" for relation "source_accounts" does not exist, skipping
+NOTICE:  trigger "update_action_items_updated_at" for relation "action_items" does not exist, skipping
+NOTICE:  trigger "update_follow_ups_updated_at" for relation "follow_ups" does not exist, skipping
+NOTICE:  trigger "update_automation_rules_updated_at" for relation "automation_rules" does not exist, skipping
+NOTICE:  trigger "trigger_update_domain_reputation" for relation "email_action_logs" does not exist, skipping
+NOTICE:  column "phishing_score" of relation "emails" already exists, skipping
+NOTICE:  column "phishing_risk" of relation "emails" already exists, skipping
+NOTICE:  column "phishing_reasons" of relation "emails" already exists, skipping
+NOTICE:  column "is_phishing_reviewed" of relation "emails" already exists, skipping
+NOTICE:  trigger "trigger_update_phishing_risk" for relation "emails" does not exist, skipping
+NOTICE:  policy "Users can view own sender_reputation" for relation "sender_reputation" does not exist, skipping
+NOTICE:  policy "Users can insert own sender_reputation" for relation "sender_reputation" does not exist, skipping
+NOTICE:  policy "Users can update own sender_reputation" for relation "sender_reputation" does not exist, skipping
+NOTICE:  policy "Users can delete own sender_reputation" for relation "sender_reputation" does not exist, skipping
+NOTICE:  trigger "trigger_sender_reputation_updated_at" for relation "sender_reputation" does not exist, skipping
+NOTICE:  policy "Anyone can read feature definitions" for relation "ai_feature_definitions" does not exist, skipping
+NOTICE:  policy "Anyone can read feature defaults" for relation "ai_feature_defaults" does not exist, skipping
+NOTICE:  policy "Users can manage own config" for relation "ai_feature_user_config" does not exist, skipping
+NOTICE:  policy "Users can manage own VIP senders" for relation "ai_vip_senders" does not exist, skipping
+NOTICE:  policy "Users can read global or own triggers" for relation "ai_content_triggers" does not exist, skipping
+NOTICE:  policy "Users can manage own triggers" for relation "ai_content_triggers" does not exist, skipping
+NOTICE:  policy "Users can manage own usage" for relation "ai_feature_usage" does not exist, skipping
+NOTICE:  policy "Users can view own costs" for relation "ai_cost_daily" does not exist, skipping
+NOTICE:  column "access_token" of relation "source_accounts" already exists, skipping
+NOTICE:  column "refresh_token" of relation "source_accounts" already exists, skipping
+NOTICE:  column "token_expires_at" of relation "source_accounts" already exists, skipping
+NOTICE:  trigger "trigger_auto_primary" for relation "source_accounts" does not exist, skipping
+NOTICE:  column "imap_host" of relation "source_accounts" already exists, skipping
+NOTICE:  column "imap_port" of relation "source_accounts" already exists, skipping
+NOTICE:  column "imap_secure" of relation "source_accounts" already exists, skipping
+NOTICE:  column "smtp_host" of relation "source_accounts" already exists, skipping
+NOTICE:  column "smtp_port" of relation "source_accounts" already exists, skipping
+NOTICE:  column "smtp_secure" of relation "source_accounts" already exists, skipping
+NOTICE:  column "message_id" of relation "emails" already exists, skipping
+NOTICE:  trigger "guard_profile_admin" for relation "public.profiles" does not exist, skipping
+PASS: upgrade preserves existing profile
+PASS: direct Auth API cannot bypass closed registration policy
+PASS: Next signup requires email verification
+PASS: signup sets no authenticated access-token cookie
+PASS: unverified signup has no admin access
+PASS: password login rejected before verification
+PASS: PKCE email callback creates a verified session
+PASS: verified admitted user can open the inbox page
+PASS: non-admin verified user cannot access global whitelist
+PASS: real PostgREST JWT/RLS returns only own email
+PASS: anonymous PostgREST cannot read tenant email
+PASS: server-provisioned admin role grants whitelist access
+PASS: admin revocation is enforced on the next request
+PASS: closed policy rejects subsequent Next signups
+PASS: actual PostgREST denies browser secret RPC, inventory and private schema
+PASS: owner metadata SELECT star has no secret fields or values
+PASS: browser cannot write removed plaintext token column
+PASS: hot reads fail closed while legacy conversion is pending
+PASS: maintenance defaults to dry run without changing revision
+PASS: local CLI converts quarantined OAuth packet
+PASS: legacy CBC text-key upgrade preserves synthetic password
+PASS: conflicting legacy tokens remain quarantined without mutation
+PASS: successful conversion removes plaintext legacy packet
+PASS: service RPC rejects mismatched tenant reads and writes
+PASS: concurrent compare-and-swap admits exactly one writer
+PASS: rotation rewraps both current and rollback envelope
+PASS: rollback works after retiring old key without plaintext fallback
+PASS: maintenance does not reactivate a disabled account
+PASS: rotation is idempotent under the active key
+PASS: CLI rotation, encrypted restore and key inventory execute locally
+PASS: maintenance refuses hosted URL before any database request
+PASS: metadata and maintenance output contain no synthetic credential values
+PASS: tampered stored authentication tag fails closed through real RPC
+PASS: account deletion cascades encrypted vault rows
+PASS: bounded maintenance page resumes without omissions or duplicate accounts
+PASS: legacy sync rows retain evidence under a legacy namespace
+PASS: real JWT callers cannot claim sync leases or read checkpoints
+PASS: service sync RPC rejects a mismatched account tenant
+PASS: Gmail first bounded invocation persists page and pending checkpoint
+PASS: Gmail restart resumes all remaining pages and catches history
+PASS: large Gmail history record retains unprocessed IDs durably
+PASS: Gmail replay updates labels without duplicates or lost annotations
+PASS: Gmail message deletion becomes a scoped evidence-preserving tombstone
+PASS: expired Gmail history rebaselines and reconciles current source
+PASS: same Gmail IDs and RFC Message-ID coexist in separate accounts
+PASS: authenticated tenant cannot read another synced account
+PASS: provider failure preserves checkpoint and durable backoff suppresses contact
+PASS: targeted retry recovers all provider messages after failure
+PASS: SQL page failure rolls back earlier rows and the checkpoint
+PASS: IMAP overflow progresses in ascending UID order
+PASS: IMAP keeps duplicate filenames as separate MIME parts
+PASS: sync replay preserves local flag edits pending provider acknowledgement
+PASS: IMAP replay preserves email and attachment identities
+PASS: IMAP reconciliation updates flags and preserves expunged evidence
+PASS: UIDVALIDITY reset creates a new UID identity and tombstones the old epoch
+PASS: concurrent real HTTP claims admit exactly one active worker
+PASS: expired worker cannot commit or release a replacement lease
+PASS: lost commit acknowledgement recovers from database checkpoint without duplicates
+PASS: account disabled during fetch cannot accept a page
+PASS: source account deletion cascades private sync state
+PASS: cron due-work selection excludes active leases and backoff and favors untouched accounts
+PASS: missing send key is rejected before provider dispatch
+PASS: foreign account and foreign reply fail before provider dispatch
+PASS: malformed recipients are rejected before provider dispatch
+PASS: browser roles cannot read or claim private send operations
+PASS: concurrent Gmail route calls dispatch one MIME message
+PASS: Gmail route preserves Bcc, Unicode and verified reply threading
+PASS: accepted response replays without provider contact
+PASS: changed content under the same key conflicts
+PASS: Gmail accepted then dropped response leaves durable unknown outcome
+PASS: unindexed Gmail Sent lookup stays unknown and has durable cooldown
+PASS: exact Gmail Sent evidence resolves the original operation with no second dispatch
+PASS: explicit rejection is terminal and provider error details stay private
+PASS: accepted Gmail operations appear once in the tenant Sent mirror
+PASS: terminal operations discard pending message content
+PASS: actual TLS SMTP accepts a subset, hides Bcc header and never repeats a partial send
+PASS: SMTP socket loss after DATA remains unknown without another SMTP transaction
+PASS: partial SMTP acceptance is durable and never re-dispatched for the same key
+PASS: abandoned SMTP dispatch expires to unknown and grants no new dispatch
+PASS: lost database acknowledgement recovers the committed receipt without a second send
+PASS: IMAP reconciliation preserves local SMTP sent receipts
+PASS: foreign tenant cannot mutate a terminal send receipt
+ Container inboxai-m0e-local-rest-1 Stopping
+ Container inboxai-m0e-local-mail-1 Stopping
+ Container inboxai-m0e-local-gateway-1 Stopping
+ Container inboxai-m0e-local-auth-1 Stopping
+ Container inboxai-m0e-local-auth-1 Stopped
+ Container inboxai-m0e-local-auth-1 Removing
+ Container inboxai-m0e-local-rest-1 Stopped
+ Container inboxai-m0e-local-rest-1 Removing
+ Container inboxai-m0e-local-auth-1 Removed
+ Container inboxai-m0e-local-rest-1 Removed
+ Container inboxai-m0e-local-db-1 Stopping
+ Container inboxai-m0e-local-gateway-1 Stopped
+ Container inboxai-m0e-local-gateway-1 Removing
+ Container inboxai-m0e-local-gateway-1 Removed
+ Container inboxai-m0e-local-mail-1 Stopped
+ Container inboxai-m0e-local-mail-1 Removing
+ Container inboxai-m0e-local-db-1 Stopped
+ Container inboxai-m0e-local-db-1 Removing
+ Container inboxai-m0e-local-mail-1 Removed
+ Container inboxai-m0e-local-db-1 Removed
+ Network inboxai-m0e-local_host_access Removing
+ Network inboxai-m0e-local_isolated Removing
+ Network inboxai-m0e-local_isolated Removed
+ Network inboxai-m0e-local_host_access Removed
