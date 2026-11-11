@@ -25,6 +25,10 @@ interface DiagnosticStep {
 }
 
 export async function GET(request: NextRequest) {
+  // Diagnostics expose mailbox metadata and previously leaked token prefixes.
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
   const diagnostics: DiagnosticStep[] = [];
   const startTime = Date.now();
 
@@ -128,7 +132,6 @@ export async function GET(request: NextRequest) {
         has_refresh_token: !!account.oauth_refresh_token,
         expires_at: account.oauth_expires_at,
         is_expired: tokenExpired,
-        token_preview: account.oauth_access_token?.substring(0, 20) + '...'
       }
     });
 

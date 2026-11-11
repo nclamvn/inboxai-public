@@ -1,3 +1,4 @@
+import { requireCronAuthorization } from '@/lib/security/cron'
 import { NextRequest, NextResponse } from 'next/server'
 import { aggregateDailyMetrics } from '@/lib/ai/classification-logger'
 
@@ -9,13 +10,8 @@ export const dynamic = 'force-dynamic'
  * Should run once per day (e.g., at 00:05 UTC)
  */
 export async function GET(request: NextRequest) {
-  // Verify cron secret
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const denied = requireCronAuthorization(request)
+  if (denied) return denied
 
   try {
     const startTime = Date.now()

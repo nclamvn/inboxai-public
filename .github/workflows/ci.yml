@@ -1,0 +1,83 @@
+name: Phase 2 quality and security
+
+on:
+  pull_request:
+  push:
+    branches: [phase2/m0-security-baseline-20261111]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase2-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        command: [lint, typecheck, test:unit, test:integration, build]
+    env:
+      # Synthetic build-only values. Never use repository production secrets.
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:9
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: synthetic-build-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: synthetic-build-service-key
+      OPENAI_API_KEY: sk-synthetic-build-only
+      ANTHROPIC_API_KEY: sk-ant-synthetic-build-only
+      RESEND_API_KEY: re_synthetic_build_only
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run ${{ matrix.command }}
+
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-test-password
+          POSTGRES_DB: inboxai_security_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm run test:db
+        env:
+          TEST_DATABASE_URL: postgresql://postgres:synthetic-test-password@127.0.0.1:5432/inboxai_security_test
+
+  dependency-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      # Intentionally blocking until the legacy dependency debt is resolved.
+      - run: npm audit --audit-level=high

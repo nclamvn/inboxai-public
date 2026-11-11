@@ -26,7 +26,7 @@ export interface GoogleUserInfo {
  * @param state - Optional state for CSRF protection
  * @param customRedirectUri - Optional custom redirect URI (for add account flow)
  */
-export function getGoogleAuthUrl(state?: string, customRedirectUri?: string): string {
+export function getGoogleAuthUrl(state: string, customRedirectUri?: string, codeChallenge?: string): string {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const redirectUri = customRedirectUri || process.env.GOOGLE_REDIRECT_URI;
 
@@ -50,6 +50,7 @@ export function getGoogleAuthUrl(state?: string, customRedirectUri?: string): st
     access_type: 'offline', // Get refresh token
     prompt: 'consent', // Force consent to get refresh token
     ...(state && { state }),
+    ...(codeChallenge && { code_challenge: codeChallenge, code_challenge_method: 'S256' }),
   });
 
   return `${GOOGLE_AUTH_URL}?${params.toString()}`;
@@ -60,7 +61,7 @@ export function getGoogleAuthUrl(state?: string, customRedirectUri?: string): st
  * @param code - Authorization code from OAuth callback
  * @param customRedirectUri - Optional custom redirect URI (must match the one used in getGoogleAuthUrl)
  */
-export async function exchangeCodeForTokens(code: string, customRedirectUri?: string): Promise<GoogleTokens> {
+export async function exchangeCodeForTokens(code: string, customRedirectUri?: string, codeVerifier?: string): Promise<GoogleTokens> {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   const redirectUri = customRedirectUri || process.env.GOOGLE_REDIRECT_URI;
@@ -80,12 +81,11 @@ export async function exchangeCodeForTokens(code: string, customRedirectUri?: st
       client_secret: clientSecret,
       redirect_uri: redirectUri,
       grant_type: 'authorization_code',
+      ...(codeVerifier && { code_verifier: codeVerifier }),
     }),
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    console.error('Token exchange error:', error);
     throw new Error('Failed to exchange code for tokens');
   }
 
@@ -117,8 +117,6 @@ export async function refreshAccessToken(refreshToken: string): Promise<GoogleTo
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    console.error('Token refresh error:', error);
     throw new Error('Failed to refresh access token');
   }
 

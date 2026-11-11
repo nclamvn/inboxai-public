@@ -6,6 +6,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getGoogleAuthUrl } from '@/lib/oauth/google';
+import { createOAuthState, oauthCookieName, oauthCookieOptions } from '@/lib/oauth/state';
 
 // Get base URL for redirects (Render uses internal proxy URLs)
 function getBaseUrl(): string {
@@ -25,15 +26,16 @@ export async function GET() {
     }
 
     // Generate state for CSRF protection
-    const state = Buffer.from(JSON.stringify({
-      userId: user.id,
-      timestamp: Date.now(),
-    })).toString('base64');
+    const transaction = createOAuthState(user.id, 'connect');
 
     // Get authorization URL
-    const authUrl = getGoogleAuthUrl(state);
+    const authUrl = getGoogleAuthUrl(transaction.state, undefined, transaction.challenge);
 
-    return NextResponse.redirect(authUrl);
+    const response = NextResponse.redirect(authUrl);
+    response.cookies.set(oauthCookieName('connect'), transaction.cookie, oauthCookieOptions());
+    response.headers.set('Cache-Control', 'no-store');
+    response.headers.set('Referrer-Policy', 'no-referrer');
+    return response;
   } catch (error) {
     console.error('OAuth initiation error:', error);
     return NextResponse.redirect(

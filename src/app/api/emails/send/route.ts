@@ -5,11 +5,6 @@ import { decryptPassword, EMAIL_PROVIDERS } from '@/lib/email/imap-client'
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
 import { markSenderAsTrusted } from '@/lib/ai/sender-trust'
 
-const supabaseAdmin = createSupabaseAdmin(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -36,6 +31,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const supabaseAdmin = createSupabaseAdmin(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
     // Get source account with SMTP settings
     const { data: account, error: accountError } = await supabaseAdmin
       .from('source_accounts')
@@ -49,6 +48,25 @@ export async function POST(request: NextRequest) {
         { error: 'Không tìm thấy tài khoản gửi' },
         { status: 404 }
       )
+    }
+
+    // Resolve the reply within this tenant before decrypting or sending anything.
+    let finalSubject = subject
+    let replyTo: string | undefined
+    if (replyToEmailId) {
+      const { data: originalEmail, error: replyError } = await supabaseAdmin
+        .from('emails')
+        .select('subject, from_address')
+        .eq('id', replyToEmailId)
+        .eq('user_id', user.id)
+        .single()
+      if (replyError || !originalEmail) {
+        return NextResponse.json({ error: 'Reply email not found' }, { status: 404 })
+      }
+      if (!subject.toLowerCase().startsWith('re:')) {
+        finalSubject = `Re: ${originalEmail.subject || ''}`
+      }
+      replyTo = originalEmail.from_address
     }
 
     // Get SMTP config from provider presets or custom settings
@@ -85,25 +103,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Handle reply - get original email subject
-    let finalSubject = subject
-    let replyTo: string | undefined
-
-    if (replyToEmailId) {
-      const { data: originalEmail } = await supabaseAdmin
-        .from('emails')
-        .select('subject, from_address')
-        .eq('id', replyToEmailId)
-        .single()
-
-      if (originalEmail) {
-        if (!subject.toLowerCase().startsWith('re:')) {
-          finalSubject = `Re: ${originalEmail.subject || ''}`
-        }
-        replyTo = originalEmail.from_address
-      }
-    }
-
     // Send via SMTP
     const result = await sendEmailViaSMTP(
       {
@@ -137,18 +136,8 @@ export async function POST(request: NextRequest) {
     }
 
     // IMPORTANT: Mark sender as trusted when replying
-    if (replyToEmailId) {
-      const { data: originalEmail } = await supabaseAdmin
-        .from('emails')
-        .select('from_address')
-        .eq('id', replyToEmailId)
-        .single()
-
-      if (originalEmail?.from_address) {
-        // User is replying = they trust this sender
-        await markSenderAsTrusted(user.id, originalEmail.from_address, 'replied')
-        console.log(`[SEND] Marked ${originalEmail.from_address} as trusted (replied)`)
-      }
+    if (replyTo) {
+      await markSenderAsTrusted(user.id, replyTo, 'replied')
     }
 
     // Also mark all recipients as trusted (we're sending to them)

@@ -1,3 +1,4 @@
+import { requireCronAuthorization } from '@/lib/security/cron'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { calculateConfidence } from '@/lib/ai/sender-reputation'
@@ -13,13 +14,8 @@ export const dynamic = 'force-dynamic'
  * 3. Ensure data consistency
  */
 export async function GET(request: NextRequest) {
-  // Verify cron secret
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const denied = requireCronAuthorization(request)
+  if (denied) return denied
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

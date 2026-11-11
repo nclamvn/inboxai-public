@@ -1,25 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { z } from 'zod'
 
 const supabaseAdmin = createAdminClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-interface AISettings {
-  sender_reputation_threshold: number
-  sender_reputation_enabled: boolean
-  phishing_score_threshold: number
-  phishing_auto_spam: boolean
-  low_confidence_threshold: number
-  domain_weight_open: number
-  domain_weight_reply: number
-  domain_weight_archive: number
-  domain_weight_delete: number
-  domain_weight_spam: number
-  domain_weight_phishing: number
-}
+const settingsSchema = z.object({
+  sender_reputation_threshold: z.number().min(0).max(1),
+  sender_reputation_enabled: z.boolean(),
+  phishing_score_threshold: z.number().min(0).max(100),
+  phishing_auto_spam: z.boolean(),
+  low_confidence_threshold: z.number().min(0).max(1),
+  domain_weight_open: z.number().finite(),
+  domain_weight_reply: z.number().finite(),
+  domain_weight_archive: z.number().finite(),
+  domain_weight_delete: z.number().finite(),
+  domain_weight_spam: z.number().finite(),
+  domain_weight_phishing: z.number().finite(),
+}).partial().strict()
 
 /**
  * GET /api/admin/ai-settings
@@ -84,7 +85,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body: Partial<AISettings> = await request.json()
+    const parsed = settingsSchema.safeParse(await request.json().catch(() => null))
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid settings' }, { status: 400 })
+    }
+    const body = parsed.data
 
     // Validate settings
     if (body.sender_reputation_threshold !== undefined) {
@@ -107,8 +112,8 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabaseAdmin
       .from('ai_settings')
       .upsert({
-        user_id: user.id,
         ...body,
+        user_id: user.id,
         updated_at: new Date().toISOString()
       }, {
         onConflict: 'user_id'

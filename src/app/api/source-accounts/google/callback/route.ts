@@ -1,3 +1,4 @@
+import { oauthCookieName, oauthCookieOptions, validateOAuthState } from '@/lib/oauth/state'
 /**
  * GET /api/source-accounts/google/callback
  * Handle Google OAuth callback for adding new account
@@ -28,68 +29,63 @@ export async function GET(request: NextRequest) {
   // Base URL for redirects
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
+  const redirect = (url: string) => {
+    const response = NextResponse.redirect(url)
+    response.cookies.set(oauthCookieName('add-account'), '', { ...oauthCookieOptions(), maxAge: 0 })
+    response.headers.set('Cache-Control', 'no-store')
+    response.headers.set('Referrer-Policy', 'no-referrer')
+    return response
+  }
+
   // Handle OAuth errors
   if (error) {
     console.error('[Google OAuth Callback] Error:', error)
-    return NextResponse.redirect(
-      `${baseUrl}/settings/accounts?error=${encodeURIComponent(error)}`
+    return redirect(
+      `${baseUrl}/settings?error=oauth_denied`
     )
   }
 
   if (!code) {
-    return NextResponse.redirect(
+    return redirect(
       `${baseUrl}/settings/accounts?error=${encodeURIComponent('No authorization code received')}`
     )
   }
 
   try {
-    // Parse state to get user info
-    let stateData: { user_id: string; action: string; timestamp: number } | null = null
-    if (state) {
-      try {
-        stateData = JSON.parse(Buffer.from(state, 'base64').toString())
-      } catch (e) {
-        console.error('[Google OAuth Callback] Invalid state:', e)
-      }
-    }
-
     // Verify user is authenticated
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.redirect(
+      return redirect(
         `${baseUrl}/login?error=${encodeURIComponent('Please login first')}`
       )
     }
 
-    // Verify state matches user (security check)
-    if (stateData && stateData.user_id !== user.id) {
-      return NextResponse.redirect(
-        `${baseUrl}/settings/accounts?error=${encodeURIComponent('Invalid state')}`
-      )
-    }
+    const verifier = validateOAuthState(state, request.cookies.get(oauthCookieName('add-account'))?.value, user.id, 'add-account')
+    if (!verifier) return redirect(`${baseUrl}/settings?error=invalid_state`)
 
     // Build the same redirect URI used in the initial request
     const redirectUri = `${baseUrl}/api/source-accounts/google/callback`
 
     // Exchange code for tokens
-    const tokens = await exchangeCodeForTokens(code, redirectUri)
+    const tokens = await exchangeCodeForTokens(code, redirectUri, verifier)
 
     // Get user info from Google
     const googleUser = await getGoogleUserInfo(tokens.access_token)
 
     // Check if account already exists
-    const { data: existingAccount } = await supabase
+    const { data: existingAccount, error: lookupError } = await supabase
       .from('source_accounts')
       .select('id')
       .eq('user_id', user.id)
       .eq('email_address', googleUser.email)
-      .single()
+      .maybeSingle()
+    if (lookupError) throw new Error('Account lookup failed')
 
     if (existingAccount) {
       // Update existing account with new tokens
-      await supabase
+      const { error: saveError } = await supabase
         .from('source_accounts')
         .update({
           access_token: tokens.access_token,
@@ -100,8 +96,10 @@ export async function GET(request: NextRequest) {
           sync_error: null,
         })
         .eq('id', existingAccount.id)
+        .eq('user_id', user.id)
+      if (saveError) throw new Error('Account update failed')
 
-      return NextResponse.redirect(
+      return redirect(
         `${baseUrl}/settings/accounts?success=${encodeURIComponent('Account reconnected successfully')}`
       )
     }
@@ -140,18 +138,18 @@ export async function GET(request: NextRequest) {
 
     if (insertError) {
       console.error('[Google OAuth Callback] Insert error:', insertError)
-      return NextResponse.redirect(
-        `${baseUrl}/settings/accounts?error=${encodeURIComponent(insertError.message)}`
+      return redirect(
+        `${baseUrl}/settings?error=account_save_failed`
       )
     }
 
-    return NextResponse.redirect(
+    return redirect(
       `${baseUrl}/settings/accounts?success=${encodeURIComponent('Account added successfully')}`
     )
-  } catch (error: any) {
+  } catch (error) {
     console.error('[Google OAuth Callback] Error:', error)
-    return NextResponse.redirect(
-      `${baseUrl}/settings/accounts?error=${encodeURIComponent(error.message || 'Failed to add account')}`
+    return redirect(
+      `${baseUrl}/settings/accounts?error=${encodeURIComponent('Failed to add account')}`
     )
   }
 }

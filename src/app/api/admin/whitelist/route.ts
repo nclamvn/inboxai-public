@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient, SupabaseClient } from '@supabase/supabase-js'
 import { sendWaitlistApproval } from '@/lib/resend/waitlist-emails'
-
-// Admin emails that can manage whitelist
-const ADMIN_EMAILS = ['nclamvn@gmail.com']
+import { hasAdminRole } from '@/lib/security/admin'
 
 let adminInstance: SupabaseClient | null = null
 
@@ -18,19 +16,16 @@ function getSupabaseAdmin(): SupabaseClient {
   return adminInstance
 }
 
-async function isAdmin(request: NextRequest): Promise<boolean> {
+async function isAdmin(): Promise<boolean> {
   const supabase = await createClient()
   const { data: { user }, error } = await supabase.auth.getUser()
 
-  console.log(`[ADMIN] Auth check - user: ${user?.email}, error: ${error?.message}`)
-
-  if (!user?.email) return false
-  return ADMIN_EMAILS.includes(user.email.toLowerCase())
+  return !error && hasAdminRole(user)
 }
 
 // GET - List whitelist and access requests
 export async function GET(request: NextRequest) {
-  if (!await isAdmin(request)) {
+  if (!await isAdmin()) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
@@ -65,7 +60,7 @@ export async function GET(request: NextRequest) {
 
 // POST - Add to whitelist
 export async function POST(request: NextRequest) {
-  if (!await isAdmin(request)) {
+  if (!await isAdmin()) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
@@ -123,7 +118,7 @@ export async function POST(request: NextRequest) {
 
 // PATCH - Update whitelist entry or approve/reject request
 export async function PATCH(request: NextRequest) {
-  if (!await isAdmin(request)) {
+  if (!await isAdmin()) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
@@ -251,7 +246,7 @@ export async function OPTIONS() {
 
 // DELETE - Remove from whitelist
 export async function DELETE(request: NextRequest) {
-  if (!await isAdmin(request)) {
+  if (!await isAdmin()) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 

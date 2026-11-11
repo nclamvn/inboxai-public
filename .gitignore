@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+/.codex-db-test-*/
 
 # next.js
 /.next/

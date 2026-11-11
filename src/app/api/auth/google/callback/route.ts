@@ -1,3 +1,4 @@
+import { oauthCookieName, oauthCookieOptions, validateOAuthState } from '@/lib/oauth/state';
 /**
  * GET /api/auth/google/callback
  * Handle Google OAuth callback
@@ -22,16 +23,24 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get('error');
   const baseUrl = getBaseUrl();
 
+  const redirect = (url: URL) => {
+    const response = NextResponse.redirect(url);
+    response.cookies.set(oauthCookieName('connect'), '', { ...oauthCookieOptions(), maxAge: 0 });
+    response.headers.set('Cache-Control', 'no-store');
+    response.headers.set('Referrer-Policy', 'no-referrer');
+    return response;
+  };
+
   // Handle OAuth errors
   if (error) {
     console.error('OAuth error:', error);
-    return NextResponse.redirect(
-      new URL(`/settings?error=${error}`, baseUrl)
+    return redirect(
+      new URL('/settings?error=oauth_denied', baseUrl)
     );
   }
 
   if (!code) {
-    return NextResponse.redirect(
+    return redirect(
       new URL('/settings?error=no_code', baseUrl)
     );
   }
@@ -42,30 +51,14 @@ export async function GET(request: NextRequest) {
     // Verify user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.redirect(new URL('/login', baseUrl));
+      return redirect(new URL('/login', baseUrl));
     }
 
-    // Verify state (CSRF protection)
-    if (state) {
-      try {
-        const stateData = JSON.parse(Buffer.from(state, 'base64').toString());
-        if (stateData.userId !== user.id) {
-          throw new Error('State mismatch');
-        }
-        // Check timestamp (5 minute expiry)
-        if (Date.now() - stateData.timestamp > 5 * 60 * 1000) {
-          throw new Error('State expired');
-        }
-      } catch (e) {
-        console.error('State verification failed:', e);
-        return NextResponse.redirect(
-          new URL('/settings?error=invalid_state', baseUrl)
-        );
-      }
-    }
+    const verifier = validateOAuthState(state, request.cookies.get(oauthCookieName('connect'))?.value, user.id, 'connect');
+    if (!verifier) return redirect(new URL('/settings?error=invalid_state', baseUrl));
 
     // Exchange code for tokens
-    const tokens = await exchangeCodeForTokens(code);
+    const tokens = await exchangeCodeForTokens(code, undefined, verifier);
 
     // Get user info
     const googleUser = await getGoogleUserInfo(tokens.access_token);
@@ -74,31 +67,34 @@ export async function GET(request: NextRequest) {
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
 
     // Check if account already exists
-    const { data: existingAccount } = await supabase
+    const { data: existingAccount, error: lookupError } = await supabase
       .from('source_accounts')
       .select('id')
       .eq('user_id', user.id)
       .eq('email_address', googleUser.email)
-      .single();
+      .maybeSingle();
+    if (lookupError) throw new Error('Account lookup failed');
 
     if (existingAccount) {
       // Update existing account
-      await supabase
+      const { error: saveError } = await supabase
         .from('source_accounts')
         .update({
           auth_type: 'oauth_google',
           oauth_access_token: tokens.access_token,
-          oauth_refresh_token: tokens.refresh_token,
+          ...(tokens.refresh_token && { oauth_refresh_token: tokens.refresh_token }),
           oauth_expires_at: expiresAt.toISOString(),
           oauth_scope: tokens.scope,
           is_connected: true,
           last_error: null,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', existingAccount.id);
+        .eq('id', existingAccount.id)
+        .eq('user_id', user.id);
+      if (saveError) throw new Error('Account update failed');
     } else {
       // Create new account
-      await supabase
+      const { error: saveError } = await supabase
         .from('source_accounts')
         .insert({
           user_id: user.id,
@@ -113,16 +109,17 @@ export async function GET(request: NextRequest) {
           is_active: true,
           display_name: googleUser.name,
         });
+      if (saveError) throw new Error('Account insert failed');
     }
 
     // Redirect to settings with success
-    return NextResponse.redirect(
+    return redirect(
       new URL('/settings?success=gmail_connected', baseUrl)
     );
 
   } catch (error) {
     console.error('OAuth callback error:', error);
-    return NextResponse.redirect(
+    return redirect(
       new URL('/settings?error=callback_failed', getBaseUrl())
     );
   }
