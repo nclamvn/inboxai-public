@@ -6,6 +6,8 @@ import { setTimeout as delay } from 'node:timers/promises'
 import { createClient } from '@supabase/supabase-js'
 import assert from 'node:assert/strict'
 import { seedLegacySync,rehearseSync } from '../tests/local-auth/sync.mjs'
+import { startSmtpWire } from '../tests/local-auth/smtp-wire.mjs'
+import { startMailProvider, rehearseMailSend } from '../tests/local-auth/mail-send.mjs'
 import { seedLegacyVault, rehearseVault, vaultKeys } from '../tests/local-auth/vault.mjs'
 
 // Real local Auth/PostgREST/Next integration; fixed synthetic credentials only.
@@ -29,7 +31,7 @@ const loopbackFetch = (input, init) => {
 const admin = createClient(base, service, { auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: loopbackFetch } })
 const outcomes = []
 const record = (name, condition) => { assert.ok(condition, name); outcomes.push({ name, status: 'PASS' }); console.log(`PASS: ${name}`) }
-let started = false, next, proxy
+let started = false, next, proxy, mailProvider, smtpWire
 const cookies = new Map()
 const appFetch = async (path, init = {}) => {
   const headers = new Headers(init.headers)
@@ -51,7 +53,7 @@ async function waitFor(url, predicate = r => r.ok) {
 }
 try {
   // A failed future run must never leave a stale success report behind.
-  rmSync('docs/phase-2/evidence/m1b-local-auth.json', { force:true })
+  rmSync('docs/phase-2/evidence/m1c-local-auth.json', { force:true })
   const freeKB = Number(execFileSync('df', ['-Pk', '/'], { encoding: 'utf8' }).trim().split('\n').at(-1).split(/\s+/)[3])
   assert.ok(freeKB >= 10 * 1024 * 1024, 'less than 10 GiB free')
   assert.equal(docker(['ps', '-aq']).trim(), '', 'existing test project found; will not replace it')
@@ -92,9 +94,11 @@ try {
   record('direct Auth API cannot bypass closed registration policy', Boolean(blocked))
   sql("UPDATE public.registration_policy SET enabled=true, max_users=100; NOTIFY pgrst, 'reload schema';")
   await delay(1000)
-  next = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', '55300'], {
+  mailProvider = await startMailProvider()
+  smtpWire = await startSmtpWire()
+  next = spawn(process.execPath, ['--import', './tests/local-auth/mail-network.mjs', 'node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', '55300'], {
     env: { ...Object.fromEntries(['PATH','HOME','LANG','TMPDIR'].filter(key => process.env[key]).map(key => [key,process.env[key]])),
-      NODE_ENV:'development', NEXT_PUBLIC_SUPABASE_URL: base, NEXT_PUBLIC_SUPABASE_ANON_KEY: anon,
+      INBOXAI_TEST_GMAIL_URL: mailProvider.url, NODE_EXTRA_CA_CERTS: smtpWire.cert, NODE_ENV:'development', NEXT_PUBLIC_SUPABASE_URL: base, NEXT_PUBLIC_SUPABASE_ANON_KEY: anon,
       SUPABASE_SERVICE_ROLE_KEY: service, NEXT_PUBLIC_APP_URL: app, SIGNUP_ENABLED: 'true',
       SIGNUP_RATE_LIMIT_KEY: 'synthetic-local-registration-key-at-least-32-characters',
       CREDENTIAL_VAULT_KEYS:vaultKeys,CREDENTIAL_VAULT_ACTIVE_KEY:'local1',
@@ -159,12 +163,15 @@ try {
   assert.equal((await legacyLogin.auth.signInWithPassword({email:'preupgrade@example.test',password})).error,null)
   await rehearseVault({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,base,service,record})
   await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
-  writeFileSync('docs/phase-2/evidence/m1b-local-auth.json', JSON.stringify({ date: new Date().toISOString(), provenance:'Real local GoTrue/PostgREST/Next; synthetic Gmail/IMAP readers; internal SMTP sink; .test identities; not hosted/provider interoperability', images:{ auth:'supabase/gotrue:v2.197.0',rest:'postgrest/postgrest:v14.18',mail:'axllent/mailpit:v1.28.1',db:'postgres:16' }, outcomes },null,2)+'\n')
+  await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
+  writeFileSync('docs/phase-2/evidence/m1c-local-auth.json', JSON.stringify({ date: new Date().toISOString(), provenance:'Real local GoTrue/PostgREST/Next; synthetic Gmail/IMAP readers and loopback Gmail HTTP/SMTP TLS send; internal verification SMTP sink; .test identities; not hosted/provider interoperability', images:{ auth:'supabase/gotrue:v2.197.0',rest:'postgrest/postgrest:v14.18',mail:'axllent/mailpit:v1.28.1',db:'postgres:16' }, outcomes },null,2)+'\n')
 } finally {
   if (next && next.exitCode === null) {
     next.kill('SIGTERM')
     await Promise.race([new Promise(resolve => next.once('exit', resolve)), delay(5000).then(() => next.kill('SIGKILL'))])
   }
+  if (mailProvider) await mailProvider.close()
+  if (smtpWire) await smtpWire.close()
   if (proxy) await new Promise(resolve => proxy.close(resolve))
   if (started) docker(['down'])
 }
