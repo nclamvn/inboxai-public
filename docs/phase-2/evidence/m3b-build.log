@@ -1,0 +1,138 @@
+
+> ai-mailbox@0.1.0 build
+> next build
+
+▲ Next.js 16.4.6 (Turbopack)
+[@sentry/nextjs] Importing `withSentryConfig` from `@sentry/nextjs` is deprecated and will stop working in v11. Import it from `@sentry/nextjs/config` instead:
+  import { withSentryConfig } from '@sentry/nextjs/config';
+✓ Running next.config.ts took 2.2s
+- Experiments (use with caution):
+  · clientTraceMetadata
+  · optimizePackageImports
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 17.8s
+  Running next.config.js provided runAfterProductionCompile ...
+✓ Completed runAfterProductionCompile in 3.4s
+  Running TypeScript ...
+  Finished TypeScript in 43s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/83) ...
+  Generating static pages using 9 workers (20/83)
+  Generating static pages using 9 workers (41/83)
+  Generating static pages using 9 workers (62/83)
+✓ Generating static pages using 9 workers (83/83) in 2.4s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /access-denied
+├ ƒ /actions
+├ ƒ /admin
+├ ƒ /api/access-request
+├ ƒ /api/action-items
+├ ƒ /api/action-items/[itemId]
+├ ƒ /api/admin/ai-metrics
+├ ƒ /api/admin/ai-settings
+├ ƒ /api/admin/domain-reputation
+├ ƒ /api/admin/whitelist
+├ ƒ /api/ai/analyze
+├ ƒ /api/ai/briefing
+├ ƒ /api/ai/classify
+├ ƒ /api/ai/classify-all
+├ ƒ /api/ai/classify-batch
+├ ƒ /api/ai/compose
+├ ƒ /api/ai/draft
+├ ƒ /api/ai/features/[emailId]
+├ ƒ /api/ai/features/[emailId]/auto
+├ ƒ /api/ai/features/[emailId]/debug
+├ ƒ /api/ai/features/batch
+├ ƒ /api/ai/feedback
+├ ƒ /api/ai/insights/daily
+├ ƒ /api/ai/insights/weekly
+├ ƒ /api/ai/reclassify
+├ ƒ /api/ai/research
+├ ƒ /api/ai/sender-insights
+├ ƒ /api/ai/smart-reply
+├ ƒ /api/ai/test
+├ ƒ /api/ai/urgent-check
+├ ƒ /api/ai/usage
+├ ƒ /api/attachments/[attachmentId]
+├ ƒ /api/auth/google
+├ ƒ /api/auth/google/callback
+├ ƒ /api/automation/rules
+├ ƒ /api/automation/rules/[ruleId]
+├ ƒ /api/automation/run
+├ ƒ /api/check-whitelist
+├ ƒ /api/commitments
+├ ƒ /api/commitments/[commitmentId]
+├ ƒ /api/cron/aggregate-ai-costs
+├ ƒ /api/cron/aggregate-metrics
+├ ƒ /api/cron/classify-emails
+├ ƒ /api/cron/recalculate-reputation
+├ ƒ /api/cron/sync-emails
+├ ƒ /api/dashboard/stats
+├ ƒ /api/debug/gmail-sync
+├ ƒ /api/email-providers
+├ ƒ /api/email/sync/gmail
+├ ƒ /api/emails
+├ ƒ /api/emails/[emailId]
+├ ƒ /api/emails/[emailId]/archive
+├ ƒ /api/emails/[emailId]/attachments
+├ ƒ /api/emails/[emailId]/extract-actions
+├ ƒ /api/emails/[emailId]/feedback
+├ ƒ /api/emails/[emailId]/phishing-review
+├ ƒ /api/emails/[emailId]/read
+├ ƒ /api/emails/[emailId]/star
+├ ƒ /api/emails/[emailId]/summary
+├ ƒ /api/emails/[emailId]/unread
+├ ƒ /api/emails/batch
+├ ƒ /api/emails/bulk
+├ ƒ /api/emails/bulk-action
+├ ƒ /api/emails/refetch-bodies
+├ ƒ /api/emails/search
+├ ƒ /api/emails/send
+├ ƒ /api/emails/smart-views
+├ ƒ /api/follow-ups
+├ ƒ /api/follow-ups/counts
+├ ƒ /api/health
+├ ƒ /api/notifications
+├ ƒ /api/search
+├ ƒ /api/search/history
+├ ƒ /api/settings/ai-features
+├ ƒ /api/settings/vip-senders
+├ ƒ /api/signup-whitelist
+├ ƒ /api/source-accounts
+├ ƒ /api/source-accounts/[accountId]
+├ ƒ /api/source-accounts/[accountId]/sync
+├ ƒ /api/source-accounts/google
+├ ƒ /api/source-accounts/google/callback
+├ ƒ /api/source-accounts/sync
+├ ƒ /api/subscriptions
+├ ƒ /api/subscriptions/unsubscribe
+├ ƒ /api/track
+├ ƒ /api/unsubscribe
+├ ƒ /api/waitlist
+├ ƒ /api/webhooks/resend
+├ ƒ /archive
+├ ƒ /auth/callback
+├ ƒ /commitments
+├ ƒ /compose
+├ ƒ /follow-ups
+├ ƒ /inbox
+├ ƒ /insights
+├ ○ /login
+├ ƒ /search
+├ ƒ /sent
+├ ƒ /settings
+├ ○ /signup
+├ ƒ /starred
+├ ƒ /subscriptions
+└ ƒ /trash
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand

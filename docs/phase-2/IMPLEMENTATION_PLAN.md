@@ -103,3 +103,13 @@ M3-A owns persistent commitment identity, revisions and lifecycle evidence.
 
 See the [M3-A handoff](M3A_LOCAL_HANDOFF.md) for the API contract. M3-B
 consumes it for commitment tracking and review workflows.
+
+## M3-B local review units
+
+| Unit | Dependency | Scope | Acceptance |
+| --- | --- | --- | --- |
+| M3-B1 | M3-A | Tenant-owned groups, deadline boundaries and pagination | Exact counts, UTC+7 date-only boundary, expired instants, linked addresses and scoped cursors |
+| M3-B2 | M3-B1 | Commitment screen, history and source navigation | Direct links, five visible states including unknown/closed, responsive details and keyboard focus |
+| M3-B3 | M3-B2 | Evidence-backed confirmation and local rehearsal | Preview before writing, stale version blocked, retries keep their key and completion appears in the closed group |
+
+See the [M3-B handoff](M3B_LOCAL_HANDOFF.md) for browser evidence and scope.
