@@ -12,8 +12,10 @@ import { seedLegacyVault, rehearseVault, vaultKeys } from '../tests/local-auth/v
 
 // Real local Auth/PostgREST/Next integration; fixed synthetic credentials only.
 // Containers have no internet route and SMTP goes only to an internal capture sink.
-const design = process.argv.includes('--design')
-const evidenceFile = design ? 'docs/phase-2/evidence/m2a-browser-run.json' : 'docs/phase-2/evidence/m1c-local-auth.json'
+const actionInbox = process.argv.includes('--action-inbox')
+const design = actionInbox || process.argv.includes('--design')
+const evidenceFile = actionInbox ? 'docs/phase-2/evidence/m2b-browser-run.json'
+  : design ? 'docs/phase-2/evidence/m2a-browser-run.json' : 'docs/phase-2/evidence/m1c-local-auth.json'
 const compose = ['compose', '-p', 'inboxai-m0e-local', '-f', 'tests/local-auth/compose.yml']
 const docker = args => execFileSync('docker', [...compose, ...args], { encoding: 'utf8', maxBuffer: 2e6 })
 const sql = source => execFileSync('docker', [...compose, 'exec', '-T', 'db', 'psql', '-U', 'postgres', '-d', 'inboxai_security_test', '-X', '-v', 'ON_ERROR_STOP=1', '-At'], { input: source, encoding: 'utf8' })
@@ -89,6 +91,9 @@ try {
   for (const file of migrations.filter(f => f >= '20261111010000')) {
     if (file === '20261111020000_credential_vault.sql') seedLegacyVault(sql,previousId)
     if (file === '20261111030000_sync_contracts.sql') seedLegacySync(sql,previousId)
+    if (actionInbox && file === '20261111050000_action_inbox.sql') {
+      sql(`INSERT INTO public.emails(user_id,from_address,subject,body_text) VALUES('${previousId}','legacy@example.test','Priority before upgrade','Legacy body');`)
+    }
     sql(readFileSync(`supabase/migrations/${file}`, 'utf8'))
   }
   record('upgrade preserves existing profile', Number(sql("SELECT count(*) FROM public.profiles WHERE email='preupgrade@example.test'")) === 1)
@@ -162,9 +167,13 @@ try {
   sql("UPDATE public.registration_policy SET enabled=false;")
   record('closed policy rejects subsequent Next signups', (await appFetch('/api/signup-whitelist', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({email:'later@example.test',password,fullName:'Later'}) })).status === 503)
   if (design) {
+    if (actionInbox) {
+      const { rehearsePriorityRpc } = await import('../tests/local-auth/action-inbox.mjs')
+      await rehearsePriorityRpc({ login, anonymous: createClient(base, anon), sql, appFetch, ownEmailId, otherEmailId, record })
+    }
     sql(`DELETE FROM public.emails WHERE id='${ownEmailId}' AND user_id='${userId}';`)
     const { rehearseDesign } = await import('../tests/design/browser.mjs')
-    await rehearseDesign({ app, cookies, admin, userId, record })
+    await rehearseDesign({ app, cookies, admin, userId, record, actionInbox })
   } else {
     const legacyLogin = createClient(base, anon, { auth:{persistSession:false,autoRefreshToken:false} })
     assert.equal((await legacyLogin.auth.signInWithPassword({email:'preupgrade@example.test',password})).error,null)

@@ -5,7 +5,6 @@ import { createRequire } from 'node:module'
 import { chromium } from 'playwright-core'
 
 const require = createRequire(import.meta.url)
-const output = 'docs/phase-2/evidence/m2a'
 const scenarios = [
   { name: 'desktop', viewport: { width: 1440, height: 900 } },
   { name: 'tablet', viewport: { width: 834, height: 1112 }, hasTouch: true },
@@ -36,7 +35,7 @@ async function seed(admin, userId) {
     summary: index === 0 ? 'Đối chiếu lịch nhận kho trước 16:00.' : null,
   }))
   assert.equal((await admin.from('emails').insert(emails)).error, null)
-  return emails[0].subject
+  return { subject: emails[0].subject, accountId: accounts[0].id, otherAccountId: accounts[1].id }
 }
 
 async function audit(page) {
@@ -49,13 +48,14 @@ async function audit(page) {
   })
 }
 
-function screenshot(page, name) {
-  return page.screenshot({ path: `${output}/${name}.png`, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' })
-}
-
-export async function rehearseDesign({ app, cookies, admin, userId, record }) {
+export async function rehearseDesign({ app, cookies, admin, userId, record, actionInbox = false }) {
+  const output = `docs/phase-2/evidence/${actionInbox ? 'm2b' : 'm2a'}`
+  const screenshot = (page, name) => page.screenshot({
+    path: `${output}/${name}.png`, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }',
+  })
   mkdirSync(output, { recursive: true })
-  const subject = await seed(admin, userId)
+  const { subject, accountId, otherAccountId } = await seed(admin, userId)
+  const action = actionInbox ? await seedActionInbox(admin, userId, accountId, otherAccountId) : null
   const browser = await chromium.launch(process.env.INBOXAI_CHROMIUM_PATH
     ? { executablePath: process.env.INBOXAI_CHROMIUM_PATH }
     : { channel: 'chrome' })
@@ -68,9 +68,17 @@ export async function rehearseDesign({ app, cookies, admin, userId, record }) {
       await context.addInitScript(() => localStorage.setItem('inboxai_onboarding_seen', 'true'))
       let inboxMode = 'data'
       let sendRequests = 0
-      await context.route('**/*', route => {
+      let dropSaveResponse = false
+      let failNextPage = false
+      await context.route('**/*', async route => {
         const url = new URL(route.request().url())
         if (url.hostname !== '127.0.0.1') return route.abort()
+        if (url.pathname === '/rest/v1/rpc/set_inbox_priority' && dropSaveResponse) {
+          dropSaveResponse = false
+          const reply = await route.fetch()
+          assert.ok(reply.ok())
+          return route.abort()
+        }
         if (url.pathname === '/api/source-accounts/sync') return route.abort()
         if (url.pathname === '/api/emails/send') {
           sendRequests++
@@ -80,6 +88,10 @@ export async function rehearseDesign({ app, cookies, admin, userId, record }) {
         if (url.pathname === '/api/ai/smart-reply') return route.fulfill({ json: { suggestions: [] } })
         if (/^\/api\/ai\/features\/[^/]+\/auto$/.test(url.pathname)) {
           return route.fulfill({ json: { summary: 'Đối chiếu lịch nhận kho trước 16:00.' } })
+        }
+        if (url.pathname === '/rest/v1/emails' && url.searchParams.has('or') && failNextPage) {
+          failNextPage = false
+          return route.fulfill({ status: 503, json: { message: 'Synthetic page failure' } })
         }
         if (url.pathname === '/rest/v1/emails' && route.request().method() === 'GET' && inboxMode !== 'data') {
           return inboxMode === 'empty'
@@ -161,6 +173,16 @@ export async function rehearseDesign({ app, cookies, admin, userId, record }) {
         results.at(-1).readingAxe = await audit(page)
         await screenshot(page, 'desktop-reading')
         record('desktop keyboard skip, focus outline and split reading selection', true)
+        if (action) {
+          await rehearsePriorityUi({
+            page, app, admin, action, record, screenshot, result: results.at(-1),
+            loseSaveResponse: () => { dropSaveResponse = true },
+          })
+          await rehearsePagination({
+            page, app, admin, userId, accountId, record,
+            failPage: () => { failNextPage = true },
+          })
+        }
       }
 
       if (name === 'tablet') {
@@ -199,6 +221,18 @@ export async function rehearseDesign({ app, cookies, admin, userId, record }) {
         await page.getByRole('button', { name: 'Chuyển sang sáng' }).click()
         await opener.click()
         await page.getByRole('heading', { name: subject, exact: true }).waitFor()
+        if (action) {
+          const showPriority = page.getByRole('button', { name: 'Ưu tiên và nguồn', exact: true })
+          await showPriority.tap()
+          const priority = page.getByRole('dialog', { name: 'Ưu tiên và nguồn' })
+          await priority.getByRole('link', { name: subject, exact: true }).waitFor()
+          results.at(-1).priorityAxe = await audit(page)
+          await screenshot(page, 'mobile-priority')
+          await page.keyboard.press('Escape')
+          await priority.waitFor({ state: 'hidden' })
+          assert.equal(await showPriority.evaluate(el => document.activeElement === el), true)
+          record('mobile reading opens cited priority and returns focus on Escape', true)
+        }
         await page.getByRole('button', { name: 'Về hộp thư' }).click()
         await page.getByRole('heading', { name: 'Hộp thư', exact: true }).waitFor()
         record('mobile touch targets, dialog focus and Escape, search, persisted theme and reading navigation', true)
@@ -251,8 +285,117 @@ export async function rehearseDesign({ app, cookies, admin, userId, record }) {
     writeFileSync(`${output}/browser.json`, JSON.stringify({ engine: browser.version(), results }, null, 2) + '\n')
     await browser.close()
   }
-  const violations = results.flatMap(result => [...result.axe, ...(result.readingAxe || []), ...(result.dialogAxe || []), ...(result.composeAxe || [])])
+  const violations = results.flatMap(result => [...result.axe, ...(result.readingAxe || []), ...(result.dialogAxe || []), ...(result.composeAxe || []), ...(result.priorityAxe || [])])
   assert.deepEqual(violations, [], 'axe found violations in the sampled views')
-  record('axe reports no WCAG-tagged violations in four Inbox views, desktop reading, mobile filter and mobile compose', true)
+  record('axe reports no WCAG-tagged violations across sampled Inbox states', true)
   assert.deepEqual(results.flatMap(result => result.runtimeErrors), [], 'browser raised an uncaught exception')
+}
+
+async function seedActionInbox(admin, userId, accountId, otherAccountId) {
+  const base = {
+    user_id: userId, source_account_id: accountId, from_name: 'Tổ vận hành',
+    from_address: 'operations@example.test', category: 'work', priority: 3,
+    direction: 'inbound', is_read: true, body_fetched: true,
+  }
+  const seed = (subject, hours, fields = {}) => ({
+    ...base, id: randomUUID(), subject,
+    received_at: new Date(Date.now() - hours * 3_600_000).toISOString(), ...fields,
+  })
+  const incident = seed('Cảnh báo dừng dây chuyền số 3', 1, {
+    category: 'personal', priority: 1, body_text: 'Cảm biến báo dừng dây chuyền. Đội ca tối đang kiểm tra.',
+    from_name: 'Mai Trần', from_address: 'new-sender@example.test',
+  })
+  const receipt = seed('Thanh toán thành công cho PO-098', 2, {
+    source_account_id: otherAccountId, category: 'transaction', priority: 5, is_read: false, needs_reply: true,
+  })
+  const current = seed('Báo cáo tồn kho quý IV', 3)
+  const history = [
+    seed('Đối chiếu phiếu nhập kho số 09', 30, { inbox_priority: 'action', inbox_priority_version: 1 }),
+    seed('Đối chiếu phiếu nhập kho số 08', 54, { inbox_priority: 'action', inbox_priority_version: 1 }),
+  ]
+  assert.equal((await admin.from('emails').insert([incident, receipt, current, ...history], { defaultToNull: false })).error, null)
+  return { incident, receipt, current, history }
+}
+
+async function rehearsePriorityUi({ page, app, admin, action, record, screenshot, result, loseSaveResponse }) {
+  const { incident, receipt, current, history } = action
+  await page.goto(`${app}/inbox`)
+  const openIncident = page.getByRole('button', { name: new RegExp(`^Mở thư: ${incident.subject}`) })
+  await openIncident.waitFor()
+  assert.ok((await page.locator('.neo-mail-row').first().textContent()).includes(incident.subject))
+  assert.equal(await page.getByRole('button', { name: new RegExp(`^Mở thư: ${receipt.subject}`) }).count(), 0)
+  record('read low-priority incident rises above manual and classifier hints; high-priority receipt stays in Read later', true)
+
+  await page.getByRole('button', { name: `Ưu tiên và nguồn: ${current.subject}`, exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Ưu tiên và nguồn' })
+  await dialog.getByText(/hai thư gần đây/).waitFor()
+  for (const email of history) {
+    assert.equal(await dialog.getByRole('link', { name: email.subject }).getAttribute('href'), `/inbox?email=${email.id}`)
+  }
+  await dialog.getByRole('link', { name: history[0].subject }).click()
+  await page.getByRole('heading', { name: history[0].subject, exact: true }).waitFor()
+  assert.equal(new URL(page.url()).searchParams.get('email'), history[0].id)
+  record('same-sender learned tie-break cites and opens the actual historical email', true)
+
+  await page.getByRole('button', { name: `Ưu tiên và nguồn: ${incident.subject}`, exact: true }).click()
+  await dialog.locator('q').getByText('dừng dây chuyền', { exact: true }).waitFor()
+  assert.equal(await dialog.getByRole('link', { name: incident.subject }).getAttribute('href'), `/inbox?email=${incident.id}`)
+  result.priorityAxe = await audit(page)
+  await screenshot(page, 'desktop-priority')
+  await dialog.getByRole('radio', { name: 'Đọc sau', exact: true }).check()
+  loseSaveResponse()
+  await dialog.getByRole('button', { name: 'Lưu ưu tiên' }).click()
+  await dialog.getByRole('alert').getByText(/Chưa xác nhận được thay đổi/).waitFor()
+  const committed = await admin.from('emails').select('inbox_priority, inbox_priority_version').eq('id', incident.id).single()
+  assert.deepEqual(committed.data, { inbox_priority: 'later', inbox_priority_version: 1 })
+  await dialog.getByRole('button', { name: 'Lưu ưu tiên' }).click()
+  await dialog.getByText('Đã lưu ưu tiên.', { exact: true }).waitFor()
+  record('losing a committed save response permits retry of the same correction without a new revision', true)
+
+  await page.goto(`${app}/inbox`)
+  await page.getByRole('button', { name: /^Đọc sau/ }).click()
+  await openIncident.waitFor()
+  await page.getByRole('button', { name: `Ưu tiên và nguồn: ${incident.subject}`, exact: true }).click()
+  assert.equal(await dialog.getByRole('radio', { name: 'Đọc sau', exact: true }).isChecked(), true)
+  await dialog.getByText(/Bạn đã chọn đọc sau/).waitFor()
+  await dialog.getByRole('radio', { name: 'Tự động' }).check()
+  await dialog.getByRole('button', { name: 'Lưu ưu tiên' }).click()
+  await dialog.getByText('Đã lưu ưu tiên.', { exact: true }).waitFor()
+  await dialog.getByRole('button', { name: 'Đóng', exact: true }).click()
+  assert.ok((await page.locator('.neo-mail-row').first().textContent()).includes(incident.subject))
+  record('correction survives reload and resetting to automatic restores incident priority', true)
+
+  await page.goto(`${app}/inbox?email=${randomUUID()}`)
+  await page.getByRole('heading', { name: 'Chưa mở được email nguồn' }).waitFor()
+  record('unavailable evidence shows a recoverable source state', true)
+}
+
+async function rehearsePagination({ page, app, admin, userId, accountId, record, failPage }) {
+  const tiedAt = new Date(Date.now() - 3 * 86_400_000).toISOString()
+  const emails = Array.from({ length: 54 }, (_, index) => ({
+    id: randomUUID(), user_id: userId, source_account_id: accountId, from_address: 'batch@example.test',
+    subject: `Lô thử nghiệm ${index}`, direction: 'inbound', is_read: true, received_at: index < 52 ? tiedAt : null,
+  }))
+  assert.equal((await admin.from('emails').insert(emails)).error, null)
+  try {
+    await page.goto(`${app}/inbox`)
+    const search = page.getByRole('searchbox', { name: 'Tìm kiếm email' })
+    await search.fill('Lô thử nghiệm 53')
+    await search.press('Enter')
+    await page.getByRole('heading', { name: 'Không tìm thấy kết quả' }).waitFor()
+    failPage()
+    const loadMore = page.getByRole('button', { name: 'Tải thêm', exact: true })
+    await loadMore.click()
+    await page.getByText('Chưa tải được trang tiếp theo.', { exact: true }).waitFor()
+    await page.getByRole('button', { name: 'Thử tải thêm' }).click()
+    await page.getByRole('button', { name: /^Mở thư: Lô thử nghiệm 53,/ }).waitFor()
+    record('an empty search can retry a failed page and reveal an older source', true)
+    await page.getByRole('button', { name: 'Xóa tìm kiếm' }).click()
+    await page.getByText('Đã hiển thị tất cả', { exact: true }).waitFor()
+    const messages = page.getByRole('button', { name: /^Mở thư: Lô thử nghiệm \d+,/ })
+    assert.equal(await messages.count(), emails.length)
+    record('Inbox loads all messages across a timestamp tie and legacy null timestamps with no duplicates', true)
+  } finally {
+    assert.equal((await admin.from('emails').delete().eq('user_id', userId).in('id', emails.map(email => email.id))).error, null)
+  }
 }
