@@ -1,0 +1,108 @@
+{
+  "date": "2026-11-11T20:50:09.022Z",
+  "provenance": "Local Chromium and authenticated Next/PostgREST/PostgreSQL with actual in-database Operator actions on synthetic mail",
+  "images": {
+    "auth": "supabase/gotrue:v2.197.0",
+    "rest": "postgrest/postgrest:v14.18",
+    "mail": "axllent/mailpit:v1.28.1",
+    "db": "postgres:16"
+  },
+  "outcomes": [
+    {
+      "name": "upgrade preserves existing profile",
+      "status": "PASS"
+    },
+    {
+      "name": "direct Auth API cannot bypass closed registration policy",
+      "status": "PASS"
+    },
+    {
+      "name": "Next signup requires email verification",
+      "status": "PASS"
+    },
+    {
+      "name": "signup sets no authenticated access-token cookie",
+      "status": "PASS"
+    },
+    {
+      "name": "unverified signup has no admin access",
+      "status": "PASS"
+    },
+    {
+      "name": "password login rejected before verification",
+      "status": "PASS"
+    },
+    {
+      "name": "PKCE email callback creates a verified session",
+      "status": "PASS"
+    },
+    {
+      "name": "verified admitted user can open the inbox page",
+      "status": "PASS"
+    },
+    {
+      "name": "non-admin verified user cannot access global whitelist",
+      "status": "PASS"
+    },
+    {
+      "name": "real PostgREST JWT/RLS returns only own email",
+      "status": "PASS"
+    },
+    {
+      "name": "anonymous PostgREST cannot read tenant email",
+      "status": "PASS"
+    },
+    {
+      "name": "server-provisioned admin role grants whitelist access",
+      "status": "PASS"
+    },
+    {
+      "name": "admin revocation is enforced on the next request",
+      "status": "PASS"
+    },
+    {
+      "name": "closed policy rejects subsequent Next signups",
+      "status": "PASS"
+    },
+    {
+      "name": "plan captures two owner emails, excludes other accounts, deleted mail and attachment records without changing data",
+      "status": "PASS"
+    },
+    {
+      "name": "plan creation replays the exact request and refuses reuse of a key for another action",
+      "status": "PASS"
+    },
+    {
+      "name": "execution without approval, cross-account expansion, and an altered preview digest are rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "approval freezes the explicit subset and leaves email untouched",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent execution returns one applied receipt and one replay without re-running the selection",
+      "status": "PASS"
+    },
+    {
+      "name": "other tenant cannot list the plan, open its detail, plan against the account or replay execution",
+      "status": "PASS"
+    },
+    {
+      "name": "desktop source review, explicit subset, and lost-response retry produce one local change",
+      "status": "PASS"
+    },
+    {
+      "name": "a changed email rejects the entire approved batch and logs the stale outcome",
+      "status": "PASS"
+    },
+    {
+      "name": "mobile mark-read action preserves the receipt on reload",
+      "status": "PASS"
+    },
+    {
+      "name": "responsive previews, confirmations and receipts show no overflow or sampled axe violations",
+      "status": "PASS"
+    }
+  ]
+}

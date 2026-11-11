@@ -2,7 +2,7 @@
 
 ## Authority and scope
 - Product owner instructions and `docs/phase-2/PRODUCT_STANDARD.md` govern Phase 2.
-- Owner direction through M5-A (2026-11-12): local implementation and verification only.
+- Owner direction through M5-B (2026-11-12): local implementation and verification only.
   Do not push, create remote PRs, run hosted deployments or modify hosted settings.
   Prepare PR drafts locally; report local evidence separately from unrun remote CI.
 - Work on `phase2/m0-security-baseline-20261111` for current local Phase 2 work. Never modify main,
@@ -60,6 +60,9 @@
 - Operator planning may read owned email metadata. Approval freezes an explicit
   subset of the preview. Execution rechecks the frozen scope under row locks
   and commits local changes and their receipt together. Never rerun filters at execution.
+- Operator verification records the observed outcome for that scope. Undo requires
+  recorded prior flags, a matching effect revision and explicit confirmation. Restore,
+  read-back and audit commit together. Legacy plans without prior flags can only be verified.
 - Do not rewrite applied migrations; add forward migrations and test fresh + upgrade paths.
 
 ## Precision Neo-Flat 2027

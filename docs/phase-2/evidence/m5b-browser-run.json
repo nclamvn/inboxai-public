@@ -1,0 +1,100 @@
+{
+  "date": "2026-11-11T20:52:01.995Z",
+  "provenance": "Local Chromium, authenticated Next/PostgREST/PostgreSQL, real local state verification and undo on synthetic mail",
+  "images": {
+    "auth": "supabase/gotrue:v2.197.0",
+    "rest": "postgrest/postgrest:v14.18",
+    "mail": "axllent/mailpit:v1.28.1",
+    "db": "postgres:16"
+  },
+  "outcomes": [
+    {
+      "name": "upgrade preserves existing profile",
+      "status": "PASS"
+    },
+    {
+      "name": "direct Auth API cannot bypass closed registration policy",
+      "status": "PASS"
+    },
+    {
+      "name": "Next signup requires email verification",
+      "status": "PASS"
+    },
+    {
+      "name": "signup sets no authenticated access-token cookie",
+      "status": "PASS"
+    },
+    {
+      "name": "unverified signup has no admin access",
+      "status": "PASS"
+    },
+    {
+      "name": "password login rejected before verification",
+      "status": "PASS"
+    },
+    {
+      "name": "PKCE email callback creates a verified session",
+      "status": "PASS"
+    },
+    {
+      "name": "verified admitted user can open the inbox page",
+      "status": "PASS"
+    },
+    {
+      "name": "non-admin verified user cannot access global whitelist",
+      "status": "PASS"
+    },
+    {
+      "name": "real PostgREST JWT/RLS returns only own email",
+      "status": "PASS"
+    },
+    {
+      "name": "anonymous PostgREST cannot read tenant email",
+      "status": "PASS"
+    },
+    {
+      "name": "server-provisioned admin role grants whitelist access",
+      "status": "PASS"
+    },
+    {
+      "name": "admin revocation is enforced on the next request",
+      "status": "PASS"
+    },
+    {
+      "name": "closed policy rejects subsequent Next signups",
+      "status": "PASS"
+    },
+    {
+      "name": "execution read-back logs a single automatic verification despite execute replay",
+      "status": "PASS"
+    },
+    {
+      "name": "verification retry replays the same journal entry and forged undo inputs are rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "foreign and anonymous callers cannot invoke verification or undo",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent undo with different keys returns one restoration and one identical receipt",
+      "status": "PASS"
+    },
+    {
+      "name": "browser lost-response retry restores exact NULL and false once and preserves the original key",
+      "status": "PASS"
+    },
+    {
+      "name": "a change after preview blocks the full undo and verification records the discrepancy",
+      "status": "PASS"
+    },
+    {
+      "name": "mobile undo restores the original read flag and history survives reload",
+      "status": "PASS"
+    },
+    {
+      "name": "desktop, tablet and mobile verification and undo states have no sampled axe violations or overflow",
+      "status": "PASS"
+    }
+  ]
+}

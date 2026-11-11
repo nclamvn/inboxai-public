@@ -1,7 +1,8 @@
 # Verification record
 
-Latest: [M5-A local AI Operator evidence](M5A_LOCAL_HANDOFF.md).
-Previous: [M4-B local Ask Inbox answer evidence](M4B_LOCAL_HANDOFF.md),
+Latest: [M5-B local AI Operator verification and undo evidence](M5B_LOCAL_HANDOFF.md).
+Previous: [M5-A local AI Operator evidence](M5A_LOCAL_HANDOFF.md),
+[M4-B local Ask Inbox answer evidence](M4B_LOCAL_HANDOFF.md),
 [M4-A local Ask Inbox evidence](M4A_LOCAL_HANDOFF.md),
 [M3-C local commitment detection evidence](M3C_LOCAL_HANDOFF.md),
 [M3-B local commitment workflow evidence](M3B_LOCAL_HANDOFF.md) and

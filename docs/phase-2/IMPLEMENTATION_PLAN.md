@@ -26,7 +26,7 @@ the real-mail/production gate remains closed throughout.
 | M4-A retrieval | M3-A | tenant-scoped metadata/keyword/semantic retrieval | Cross-account allowed scope only; index isolation/deletion, held-out recall and latency measured |
 | M4-B Ask Inbox | M4-A | cited synthesis, structured amounts/dates, abstention | Important conclusions linked to source/version; contradictions visible; adversarial unsupported claims rejected |
 | M5-A execution contracts | M4-B | plans, preview, immutable scope/approval, audit/idempotency | Stale or expanded plan needs new approval; email content cannot grant authority; concurrent/replayed requests safe |
-| M5-B verify/undo | M5-A | provider verification and reversible actions | Actual outcome verified; undo limited to reversible actions and recorded; irreversible actions clearly previewed |
+| M5-B verify/undo | M5-A | local read-back, reversible flag changes and outcome audit | Read-back confirms persisted outcome, undo restores exact prior flags only on unchanged scope, verification and undo are recorded. Provider verification is pending an approved provider write scope. |
 | M6-A hardening | M5-B | performance, e2e, a11y and native shells | Defined representative datasets/devices and budgets; measured results, regression tests and accessible workflows |
 | M6-B staging | M6-A | isolated staging, migration rehearsal, observability/recovery | Synthetic/consented data policy, least privilege, rollback/restore rehearsal; production deploy remains separate authorization |
 
@@ -154,3 +154,12 @@ See the [M4-B handoff](M4B_LOCAL_HANDOFF.md) for supported questions and verific
 | M5-A3 | M5-A2 | Operator preview, selection, approval and history | Preview opens source, selected set visible at approval, execution is separate, lost-response retry and mobile rehearsal |
 
 See the [M5-A handoff](M5A_LOCAL_HANDOFF.md) for local scope and verification.
+
+## M5-B local review units
+
+| Unit | Depends on | Scope | Acceptance |
+| --- | --- | --- | --- |
+| M5-B1 | M5-A2 | Transactional read-back, outcome journal and scoped undo | Fresh and upgrade paths, exact false/null restoration, no writes on drift, tenant isolation, idempotent receipt and rollback if audit fails |
+| M5-B2 | M5-B1, M5-A3 | Verification status, confirmation and undo receipt | Preview shows every approved email and its prior state, retries preserve the request key, and reload preserves the recorded outcome |
+
+See the [M5-B handoff](M5B_LOCAL_HANDOFF.md) for local evidence and remaining provider coverage.

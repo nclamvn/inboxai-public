@@ -1,0 +1,38 @@
+{
+  "engine": "157.0.8103.51",
+  "captures": [
+    {
+      "name": "desktop-undo-preview",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "axe": []
+    },
+    {
+      "name": "desktop-undo-receipt",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "axe": []
+    },
+    {
+      "name": "tablet-drift",
+      "viewport": {
+        "width": 834,
+        "height": 1112
+      },
+      "axe": []
+    },
+    {
+      "name": "mobile-undone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "axe": []
+    }
+  ],
+  "runtimeErrors": []
+}
