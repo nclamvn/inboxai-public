@@ -447,6 +447,7 @@ export function EmailListCompact({
 
         <button
           type="button"
+          data-email-opener={email.id}
           onClick={event => handleTap(email, event)}
           aria-current={open ? 'true' : undefined}
           aria-label={`${isSelecting ? 'Chọn' : 'Mở'} thư: ${subject}, ${sender}${email.is_read ? '' : ', chưa đọc'}${rank?.band === 'action' ? ', cần xử lý' : ''}`}

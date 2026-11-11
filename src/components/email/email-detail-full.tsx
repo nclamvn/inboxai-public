@@ -55,6 +55,9 @@ export function EmailDetailFull({
   const blockMenuRef = useRef<HTMLDivElement>(null)
   const moreMenuRef = useRef<HTMLDivElement>(null)
   const previousEmailId = useRef<string | null>(null)
+  const heading = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => { heading.current?.focus({ preventScroll: true }) }, [email.id])
 
   // Reset UI state when switching emails - instant feedback
   useEffect(() => {
@@ -469,7 +472,7 @@ export function EmailDetailFull({
           <button
             type="button"
             onClick={handleClose}
-            className="p-2 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--muted)] hover:bg-[var(--hover)] transition-colors"
+            className="neo-icon-button"
             title="Đóng"
           >
             <X className="w-5 h-5" strokeWidth={1.5} />
@@ -479,7 +482,7 @@ export function EmailDetailFull({
 
       {/* Email Header */}
       <div className="px-6 py-4 border-b border-[var(--border)]">
-        <h1 className="mb-4 break-words text-xl font-semibold leading-7">
+        <h1 ref={heading} tabIndex={-1} className="mb-4 break-words text-xl font-semibold leading-7">
           {email.subject || '(Không có tiêu đề)'}
         </h1>
 
@@ -567,7 +570,7 @@ export function EmailDetailFull({
       </div>
 
       {/* Email Body */}
-      <div className="flex-1 overflow-y-auto px-6 py-6">
+      <div role="region" aria-label="Nội dung thư" tabIndex={0} className="flex-1 overflow-y-auto px-6 py-6">
         {email.body_html && email.body_html.replace(/<[^>]*>/g, '').trim().length > 10 ? (
           <div
             className="email-content prose prose-sm dark:prose-invert max-w-none text-[var(--foreground)] "

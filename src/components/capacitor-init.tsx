@@ -1,73 +1,60 @@
-'use client';
+'use client'
 
-import { useEffect } from 'react';
-import {
-  isNative,
-  getPlatform,
-  initAppLifecycle,
-  removeAppLifecycleListeners,
-  configureStatusBar,
-  hideSplashScreen,
-  setupAndroidBackButton,
-  initKeyboard,
-  setupKeyboardListeners,
-  removeKeyboardListeners,
-  setKeyboardTheme,
-} from '@/lib/capacitor';
+import { useEffect } from 'react'
+import type { Capacitor, PluginListenerHandle } from '@capacitor/core'
+import { useTheme } from '@/contexts/theme-context'
 
-export function CapacitorInit() {
-  useEffect(() => {
-    const initCapacitor = async () => {
-      if (!isNative()) return;
-
-      const platform = getPlatform();
-      console.log('[CapacitorInit] Initializing for platform:', platform);
-
-      // Initialize app lifecycle listeners
-      initAppLifecycle();
-
-      // Setup Android back button handling
-      if (platform === 'android') {
-        setupAndroidBackButton();
-      }
-
-      // Initialize keyboard
-      await initKeyboard();
-      setupKeyboardListeners();
-
-      // Configure status bar (dark mode by default)
-      await configureStatusBar(true);
-
-      // Hide splash screen after app is ready
-      // Small delay to ensure web content is loaded
-      setTimeout(async () => {
-        await hideSplashScreen();
-        console.log('[CapacitorInit] Splash screen hidden');
-      }, 500);
-
-      console.log('[CapacitorInit] Initialization complete');
-    };
-
-    initCapacitor();
-
-    return () => {
-      removeAppLifecycleListeners();
-      removeKeyboardListeners();
-    };
-  }, []);
-
-  return null;
+function nativeBridge() {
+  return (window as Window & { Capacitor?: typeof Capacitor }).Capacitor
 }
 
-/**
- * Hook to update native settings when theme changes
- * Use this in your theme provider or root layout
- */
-export function useCapacitorTheme(isDark: boolean) {
-  useEffect(() => {
-    if (!isNative()) return;
+export function CapacitorInit() {
+  const { isDark, mounted } = useTheme()
 
-    configureStatusBar(isDark);
-    setKeyboardTheme(isDark);
-  }, [isDark]);
+  useEffect(() => {
+    const bridge = nativeBridge()
+    if (!bridge?.isNativePlatform()) return
+    let active = true
+    let backListener: PluginListenerHandle | undefined
+    const frame = requestAnimationFrame(() => {
+      void import('@capacitor/splash-screen').then(({ SplashScreen }) => {
+        if (active) return SplashScreen.hide({ fadeOutDuration: 0 })
+      }).catch(console.warn)
+    })
+    if (bridge.getPlatform() === 'ios') {
+      void import('@capacitor/keyboard').then(({ Keyboard, KeyboardResize }) => {
+        if (active) return Keyboard.setResizeMode({ mode: KeyboardResize.Native })
+      }).catch(console.warn)
+    }
+    if (bridge.getPlatform() === 'android') {
+      void import('@/lib/capacitor/android-back-button').then(async ({ setupAndroidBackButton }) => {
+        if (!active) return
+        const listener = await setupAndroidBackButton()
+        if (active) backListener = listener
+        else await listener?.remove()
+      }).catch(console.warn)
+    }
+    return () => {
+      active = false
+      cancelAnimationFrame(frame)
+      void backListener?.remove().catch(console.warn)
+    }
+  }, [])
+
+  useEffect(() => {
+    const bridge = nativeBridge()
+    if (!mounted || !bridge?.isNativePlatform()) return
+    let active = true
+    void import('@capacitor/status-bar').then(({ StatusBar, Style }) => {
+      if (active) return StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light })
+    }).catch(console.warn)
+    if (bridge.getPlatform() === 'ios') {
+      void import('@capacitor/keyboard').then(({ Keyboard, KeyboardStyle }) => {
+        if (active) return Keyboard.setStyle({ style: isDark ? KeyboardStyle.Dark : KeyboardStyle.Light })
+      }).catch(console.warn)
+    }
+    return () => { active = false }
+  }, [isDark, mounted])
+
+  return null
 }

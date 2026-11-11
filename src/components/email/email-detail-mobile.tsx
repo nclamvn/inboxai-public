@@ -46,6 +46,9 @@ export function EmailDetailMobile({
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const previousId = useRef<string | null>(null)
+  const heading = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => { heading.current?.focus({ preventScroll: true }) }, [email.id])
 
   // Fetch attachments - defined before useEffect to fix variable access order
   const fetchAttachments = async (emailId: string) => {
@@ -130,7 +133,7 @@ export function EmailDetailMobile({
         </button>
 
         {/* Subject - truncate */}
-        <h1 className="flex-1 text-[15px] font-medium text-[var(--foreground)] truncate mx-2">
+        <h1 ref={heading} tabIndex={-1} className="flex-1 text-[15px] font-medium text-[var(--foreground)] truncate mx-2">
           {email.subject || '(Không có tiêu đề)'}
         </h1>
 
@@ -161,7 +164,7 @@ export function EmailDetailMobile({
       </header>
 
       {/* CONTENT - maximum space */}
-      <div className="flex-1 overflow-y-auto overscroll-contain">
+      <div role="region" aria-label="Nội dung thư" tabIndex={0} className="flex-1 overflow-y-auto overscroll-contain">
         {/* Sender info - compact 2 lines max */}
         <div className="flex items-start gap-3 px-4 py-3 border-b border-[var(--border)]">
           {/* Avatar */}
@@ -242,7 +245,7 @@ export function EmailDetailMobile({
               className="prose prose-sm dark:prose-invert max-w-none text-[14px] leading-relaxed email-content animate-fadeIn"
             />
           ) : email.body_text ? (
-            <pre className="whitespace-pre-wrap font-sans text-[14px] text-[var(--foreground)] leading-relaxed animate-fadeIn">
+            <pre className="whitespace-pre-wrap [overflow-wrap:anywhere] font-sans text-[14px] text-[var(--foreground)] leading-relaxed animate-fadeIn">
               {email.body_text}
             </pre>
           ) : null}
@@ -255,7 +258,7 @@ export function EmailDetailMobile({
       </div>
 
       {/* Footer wrapper với spacing từ đáy màn hình */}
-      <div className="pb-6 bg-[var(--card)] flex-shrink-0">
+      <div className="pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-[var(--card)] flex-shrink-0">
         {/* FLOATING ACTION BUTTONS - pill design */}
         <div className="flex items-center justify-center gap-4 px-6 py-3 border-t border-[var(--border)]">
           <button

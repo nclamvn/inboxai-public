@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useMemo, useState, useCallback, useEffect } from 'react'
+import { Suspense, useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { Loader2, X, ListFilter } from 'lucide-react'
@@ -78,6 +78,7 @@ function InboxContent() {
 
   // URL-based state - selectedId from URL
   const selectedId = searchParams.get('email')
+  const lastOpenedEmail = useRef<string | null>(selectedId)
   const briefingType = searchParams.get('briefing')
 
   // Local UI state only
@@ -334,6 +335,29 @@ function InboxContent() {
     router.push('/inbox', { scroll: false })
     setViewMode('list')
   }, [router])
+
+  useEffect(() => {
+    if (!selectedId) return
+    const back = (event: Event) => {
+      event.preventDefault()
+      handleCloseEmail()
+    }
+    window.addEventListener('inboxai:native-back', back)
+    return () => window.removeEventListener('inboxai:native-back', back)
+  }, [selectedId, handleCloseEmail])
+
+  useEffect(() => {
+    if (selectedId) {
+      lastOpenedEmail.current = selectedId
+      return
+    }
+    const emailId = lastOpenedEmail.current
+    if (loading || !emailId) return
+    lastOpenedEmail.current = null
+    const opener = document.querySelector<HTMLElement>(`[data-email-opener="${CSS.escape(emailId)}"]`)
+    const target = opener ?? document.getElementById('main-content')
+    target?.focus()
+  }, [selectedId, loading])
 
   const handleMaximize = () => {
     setViewMode(viewMode === 'full' ? 'split' : 'full')

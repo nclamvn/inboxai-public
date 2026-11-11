@@ -21,16 +21,6 @@ export const initAppLifecycle = () => {
     }
   });
 
-  // Handle back button (Android)
-  App.addListener('backButton', ({ canGoBack }) => {
-    if (canGoBack) {
-      window.history.back();
-    } else {
-      // Minimize app instead of closing
-      App.minimizeApp();
-    }
-  });
-
   // Handle deep links
   App.addListener('appUrlOpen', ({ url }) => {
     console.log('[Capacitor] App opened with URL:', url);
