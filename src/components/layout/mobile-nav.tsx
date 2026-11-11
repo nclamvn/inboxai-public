@@ -2,13 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { Inbox, Send, Star, Settings, Pencil } from 'lucide-react'
+import { Inbox, Send, Star, Settings, Pencil, ClipboardCheck } from 'lucide-react'
 
 const navItems = [
   { href: '/inbox', icon: Inbox, label: 'Hộp thư' },
   { href: '/sent', icon: Send, label: 'Đã gửi' },
   { href: '/compose', icon: Pencil, label: 'Soạn thư' },
   { href: '/starred', icon: Star, label: 'Gắn sao' },
+  { href: '/commitments', icon: ClipboardCheck, label: 'Cam kết' },
   { href: '/settings', icon: Settings, label: 'Cài đặt' },
 ]
 
@@ -20,7 +21,7 @@ export function MobileNav() {
   return (
     <nav
       aria-label="Điều hướng di động"
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-[var(--border)] bg-[var(--surface)] pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-6 border-t border-[var(--border)] bg-[var(--surface)] pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       {navItems.map(({ href, icon: Icon, label }) => (
         <Link

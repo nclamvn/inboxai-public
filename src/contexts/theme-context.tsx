@@ -90,7 +90,7 @@ export function ThemeProvider({
   const mounted = useHydrated();
 
   // Initialize mode from storage or default
-  const [mode, setModeState] = useState<ThemeMode>(() => {
+  const [storedMode, setModeState] = useState<ThemeMode>(() => {
     if (typeof window === 'undefined') return defaultMode;
     const stored = getStoredTheme();
     return stored ?? defaultMode;
@@ -98,14 +98,15 @@ export function ThemeProvider({
 
   // Track system preference
   const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(() => getSystemTheme());
+  const mode = mounted ? storedMode : defaultMode;
 
   // Resolve actual theme
   const theme: ResolvedTheme = useMemo(() => {
-    if (mode === 'system' && enableSystem) {
+    if (mounted && mode === 'system' && enableSystem) {
       return systemTheme;
     }
     return mode === 'dark' ? 'dark' : 'light';
-  }, [mode, systemTheme, enableSystem]);
+  }, [mode, systemTheme, enableSystem, mounted]);
 
   const isDark = theme === 'dark';
 
@@ -125,6 +126,7 @@ export function ThemeProvider({
 
   // Apply theme to document
   useEffect(() => {
+    if (!mounted) return;
     const root = document.documentElement;
 
     if (attribute === 'class') {
@@ -136,7 +138,7 @@ export function ThemeProvider({
 
     // Also set color-scheme for native elements
     root.style.colorScheme = theme;
-  }, [theme, attribute]);
+  }, [theme, attribute, mounted]);
 
   // Set mode handler
   const setMode = useCallback((newMode: ThemeMode) => {

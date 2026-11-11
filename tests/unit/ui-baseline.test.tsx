@@ -85,6 +85,19 @@ it('preserves stored theme and manual toggle behavior', () => {
   expect(localStorage.getItem('inboxai-theme-mode')).toBe('light')
 })
 
+it('hydrates a deterministic theme snapshot before applying the stored dark setting', () => {
+  localStorage.setItem('inboxai-theme-mode', 'dark')
+  function State() { const { theme } = useTheme(); return <span>{theme}</span> }
+  const ui = <ThemeProvider><State /></ThemeProvider>
+  const container = document.createElement('div')
+  container.innerHTML = renderToString(ui)
+  expect(container.textContent).toBe('light')
+  const onRecoverableError = vi.fn()
+  render(ui, { container, hydrate: true, onRecoverableError })
+  expect(container.textContent).toBe('dark')
+  expect(onRecoverableError).not.toHaveBeenCalled()
+})
+
 it('portals a labelled dialog and honors native cancellation settings', () => {
   // jsdom lacks the top-layer API. Chromium rehearsal exercises real focus and Escape.
   const prototype = HTMLDialogElement.prototype
