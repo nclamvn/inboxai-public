@@ -6,8 +6,9 @@ import { Paperclip } from 'lucide-react'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
+import { OperatorOutcomePanel } from './operator-outcome'
 import { changeOperatorPlan, OperatorApiError } from '@/lib/operator/client'
-import { operatorActions, type OperatorPlan, type OperatorReceipt, type OperatorStatus } from '@/lib/operator/contracts'
+import { operatorActions, operatorDate, type OperatorPlan, type OperatorReceipt, type OperatorStatus } from '@/lib/operator/contracts'
 
 export const statusLabels: Record<OperatorStatus, string> = {
   planned: 'Chờ phê duyệt',
@@ -17,20 +18,11 @@ export const statusLabels: Record<OperatorStatus, string> = {
   expired: 'Đã hết hạn',
 }
 const eventLabels: Record<OperatorStatus, string> = { ...statusLabels, planned: 'Đã lập kế hoạch' }
-const date = new Intl.DateTimeFormat('vi-VN', {
-  dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Ho_Chi_Minh',
-})
-
-export function operatorDate(at: string) {
-  const instant = Date.parse(at)
-  return Number.isFinite(instant) ? date.format(instant) : 'Chưa xác định'
-}
-
 export function OperatorPreview({ plan, account, updated, refresh }: {
   plan: OperatorPlan
   account: string
   updated: (receipt: OperatorReceipt) => void
-  refresh: () => void
+  refresh: () => Promise<unknown>
 }) {
   const [selected, setSelected] = useState(() => new Set(plan.targets.filter(target => target.matchesPreview).map(target => target.id)))
   const [review, setReview] = useState<string[] | null>(null)
@@ -155,6 +147,7 @@ export function OperatorPreview({ plan, account, updated, refresh }: {
         {plan.status === 'approved' && <Button type="button" loading={busy} onClick={() => void submit('execute')}>
           {error?.uncertain ? 'Thử thực thi lại' : 'Thực thi ' + ids.length + ' thư'}
         </Button>}
+        {plan.outcome && <OperatorOutcomePanel plan={plan} outcome={plan.outcome} refresh={refresh} />}
         <h3 className="text-sm font-semibold">Nhật ký kế hoạch</h3>
         <ol className="divide-y divide-[var(--border)] border-y border-[var(--border)] text-sm">
           {plan.events.map(entry => (

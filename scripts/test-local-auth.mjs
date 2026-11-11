@@ -20,7 +20,9 @@ const commitmentDetection = process.argv.includes('--commitment-detection')
 const askInbox = process.argv.includes('--ask-inbox')
 const askAnswer = process.argv.includes('--ask-answer')
 const operator = process.argv.includes('--operator')
-const evidenceFile = operator ? 'docs/phase-2/evidence/m5a-browser-run.json'
+const operatorOutcomes = process.argv.includes('--operator-outcomes')
+const evidenceFile = operatorOutcomes ? 'docs/phase-2/evidence/m5b-browser-run.json'
+  : operator ? 'docs/phase-2/evidence/m5a-browser-run.json'
   : askAnswer ? 'docs/phase-2/evidence/m4b-browser-run.json'
   : askInbox ? 'docs/phase-2/evidence/m4a-browser-run.json'
   : commitmentDetection ? 'docs/phase-2/evidence/m3c-browser-run.json'
@@ -183,11 +185,11 @@ try {
   record('admin revocation is enforced on the next request', (await appFetch('/api/admin/whitelist')).status === 403)
   sql("UPDATE public.registration_policy SET enabled=false;")
   record('closed policy rejects subsequent Next signups', (await appFetch('/api/signup-whitelist', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({email:'later@example.test',password,fullName:'Later'}) })).status === 503)
-  if (operator) {
+  if (operatorOutcomes || operator) {
     const foreignLogin = createClient(base, anon, { auth: { persistSession: false, autoRefreshToken: false } })
     const foreignSession = await foreignLogin.auth.signInWithPassword({ email: 'preupgrade@example.test', password })
     assert.equal(foreignSession.error, null)
-    const { rehearseOperator } = await import('../tests/design/operator.mjs')
+    const { rehearseOperator } = operatorOutcomes ? await import('../tests/design/operator-outcomes.mjs') : await import('../tests/design/operator.mjs')
     await rehearseOperator({ app, appFetch, cookies, admin, userId, foreignId: previousId,
       foreignToken: foreignSession.data.session.access_token, loopbackFetch, record })
   } else if (askAnswer) {
@@ -237,7 +239,8 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = operator ? 'Local Chromium and authenticated Next/PostgREST/PostgreSQL with actual in-database Operator actions on synthetic mail'
+  const provenance = operatorOutcomes ? 'Local Chromium, authenticated Next/PostgREST/PostgreSQL, real local state verification and undo on synthetic mail'
+    : operator ? 'Local Chromium and authenticated Next/PostgREST/PostgreSQL with actual in-database Operator actions on synthetic mail'
     : askAnswer ? 'Local Chromium and authenticated Next/PostgREST/PostgreSQL with deterministic synthesis of synthetic mail'
     : askInbox ? 'Local Chromium and authenticated Next/PostgREST/PostgreSQL with real local E5 embeddings and synthetic mail'
     : commitmentDetection ? 'Local Chromium, Next, GoTrue, PostgREST and PostgreSQL with synthetic commitment sources'

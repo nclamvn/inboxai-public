@@ -1,4 +1,4 @@
-import type { OperatorHistory, OperatorPlan, OperatorReceipt } from './contracts'
+import type { OperatorHistory, OperatorOutcomeReceipt, OperatorPlan, OperatorReceipt } from './contracts'
 
 export class OperatorApiError extends Error {
   constructor(readonly status: number, message: string) { super(message) }
@@ -35,6 +35,13 @@ type OperatorCommand = { operation: 'approve'; previewHash: string; selectedIds:
 export function changeOperatorPlan(id: string, command: OperatorCommand) {
   return operatorRequest<OperatorReceipt>('/' + encodeURIComponent(id), {
     method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(command), signal: AbortSignal.timeout(15_000),
+  })
+}
+
+export function changeOperatorOutcome(id: string, command: { operation: 'verify' } | { operation: 'undo'; undoHash: string }, key: string) {
+  return operatorRequest<OperatorOutcomeReceipt>('/' + encodeURIComponent(id), {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key },
     body: JSON.stringify(command), signal: AbortSignal.timeout(15_000),
   })
 }

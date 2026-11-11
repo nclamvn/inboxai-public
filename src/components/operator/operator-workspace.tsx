@@ -9,8 +9,8 @@ import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { createOperatorPlan, loadOperatorHistory, loadOperatorPlan, OperatorApiError } from '@/lib/operator/client'
-import { operatorActions, type OperatorPlan, type OperatorReceipt } from '@/lib/operator/contracts'
-import { OperatorPreview, operatorDate, statusLabels } from './operator-preview'
+import { operatorActions, operatorDate, type OperatorPlan, type OperatorReceipt } from '@/lib/operator/contracts'
+import { OperatorPreview, statusLabels } from './operator-preview'
 
 type Account = { id: string; email_address: string }
 const example = 'Lưu trữ thư cũ hơn 30 ngày, trừ thư có tệp đính kèm'
@@ -123,7 +123,7 @@ export function OperatorWorkspace({ userId, accounts, accountsFailed }: {
             </div>}
             {detail.data && <OperatorPreview key={detail.data.id} plan={detail.data}
               account={detail.data.spec.accountId ? accounts.find(account => account.id === detail.data?.spec.accountId)?.email_address ?? 'Tài khoản không còn khả dụng' : 'Tất cả tài khoản của bạn'}
-              updated={update} refresh={() => void detail.refetch()} />}
+              updated={update} refresh={() => detail.refetch()} />}
           </section>}
         </div>
 
