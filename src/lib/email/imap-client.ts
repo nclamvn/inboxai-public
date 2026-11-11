@@ -1,36 +1,6 @@
-import crypto from 'crypto'
+import 'server-only'
+import { getImapPassword } from '@/lib/credential-vault/vault'
 import { syncLogger } from '@/lib/logger'
-
-// Encryption helpers
-const IV_LENGTH = 16
-
-function getEncryptionKey(): string {
-  const key = process.env.ENCRYPTION_KEY
-  if (!key) {
-    throw new Error('ENCRYPTION_KEY environment variable is required for password encryption')
-  }
-  return key
-}
-
-export function encryptPassword(password: string): string {
-  const key = getEncryptionKey()
-  const iv = crypto.randomBytes(IV_LENGTH)
-  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key.padEnd(32).slice(0, 32)), iv)
-  let encrypted = cipher.update(password)
-  encrypted = Buffer.concat([encrypted, cipher.final()])
-  return iv.toString('hex') + ':' + encrypted.toString('hex')
-}
-
-export function decryptPassword(encryptedPassword: string): string {
-  const key = getEncryptionKey()
-  const textParts = encryptedPassword.split(':')
-  const iv = Buffer.from(textParts.shift()!, 'hex')
-  const encryptedText = Buffer.from(textParts.join(':'), 'hex')
-  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key.padEnd(32).slice(0, 32)), iv)
-  let decrypted = decipher.update(encryptedText)
-  decrypted = Buffer.concat([decrypted, decipher.final()])
-  return decrypted.toString()
-}
 
 interface SourceAccount {
   id: string
@@ -42,7 +12,6 @@ interface SourceAccount {
   imap_port: number
   imap_secure: boolean
   username: string
-  password_encrypted: string
   last_sync_uid?: string
   total_emails_synced?: number
 }
@@ -181,8 +150,8 @@ export async function testImapConnection(config: {
     await client.connect()
     await client.logout()
     return { success: true }
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Connection failed'
+  } catch {
+    const errorMsg = 'IMAP connection failed'
     return { success: false, error: errorMsg }
   }
 }
@@ -225,8 +194,8 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
 
   let password: string
   try {
-    password = decryptPassword(account.password_encrypted)
-  } catch (e) {
+    password = await getImapPassword(account.user_id, account.id)
+  } catch {
     result.errors.push('Lỗi giải mã mật khẩu')
     return result
   }
@@ -455,8 +424,8 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
             }
           }
 
-        } catch (batchError) {
-          const errMsg = batchError instanceof Error ? batchError.message : 'Batch error'
+        } catch {
+          const errMsg = 'IMAP batch failed'
           result.errors.push(`Batch ${batchIndex + 1}: ${errMsg}`)
           // Continue with next batch
         }
@@ -484,6 +453,7 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
           .from('source_accounts')
           .update(updateData)
           .eq('id', account.id)
+      .eq('user_id', account.user_id)
       }
 
       result.success = true
@@ -494,8 +464,8 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
 
     await client.logout()
 
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Sync failed'
+  } catch {
+    const errorMsg = 'IMAP sync failed'
     result.errors.push(errorMsg)
 
     const { createClient } = await import('@supabase/supabase-js')
@@ -511,6 +481,7 @@ export async function syncEmails(account: SourceAccount, options: SyncOptions = 
         last_sync_at: new Date().toISOString()
       })
       .eq('id', account.id)
+      .eq('user_id', account.user_id)
   }
 
   return result
@@ -523,7 +494,7 @@ export async function fetchEmailBody(
 ): Promise<{ body_text: string; body_html: string | null } | null> {
   let password: string
   try {
-    password = decryptPassword(account.password_encrypted)
+    password = await getImapPassword(account.user_id, account.id)
   } catch {
     return null
   }

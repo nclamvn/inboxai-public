@@ -8,10 +8,12 @@ const mocks = vi.hoisted(() => ({
   info: vi.fn(),
   from: vi.fn(),
   saveError: null as null | { message: string },
+  save: vi.fn(),
 }))
 vi.mock('@/lib/supabase/server', () => ({ createClient: vi.fn(async () => ({
   auth: { getUser: async () => ({ data: { user: mocks.user } }) }, from: mocks.from,
 })) }))
+vi.mock('@/lib/credential-vault/accounts', () => ({ saveGoogleConnection: mocks.save }))
 vi.mock('@/lib/oauth/google', async importOriginal => ({
   ...await importOriginal<typeof import('@/lib/oauth/google')>(),
   exchangeCodeForTokens: mocks.exchange,
@@ -30,6 +32,7 @@ beforeEach(() => {
   vi.stubEnv('NEXT_PUBLIC_APP_URL', 'http://localhost:3000')
   mocks.user = { id: 'alice' }
   mocks.saveError = null
+  mocks.save.mockImplementation(async () => { if (mocks.saveError) throw new Error('Credential unavailable'); return 'account-a' })
   mocks.exchange.mockResolvedValue({ access_token: 'synthetic-token', expires_in: 3600 })
   mocks.info.mockResolvedValue({ email: 'alice@example.test', name: 'Alice' })
   const chain = {
@@ -65,6 +68,7 @@ describe.each([
     expect(mocks.exchange).not.toHaveBeenCalled()
     expect(mocks.info).not.toHaveBeenCalled()
     expect(mocks.from).not.toHaveBeenCalled()
+    expect(mocks.save).not.toHaveBeenCalled()
   })
 
   it('requires an authenticated user', async () => {

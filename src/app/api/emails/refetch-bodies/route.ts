@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
-import { fetchEmailBody, decryptPassword } from '@/lib/email/imap-client'
+import { fetchEmailBody } from '@/lib/email/imap-client'
 
 export const maxDuration = 55
 

@@ -1,6 +1,8 @@
+import { saveImapConnection } from '@/lib/credential-vault/accounts'
+import { getCredentialVault } from '@/lib/credential-vault/vault'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { testImapConnection, encryptPassword, EMAIL_PROVIDERS } from '@/lib/email/imap-client'
+import { testImapConnection, EMAIL_PROVIDERS } from '@/lib/email/imap-client'
 import { testSmtpConnection } from '@/lib/email/smtp-client'
 
 // GET - List user's source accounts with email counts
@@ -106,6 +108,10 @@ export async function POST(request: NextRequest) {
     smtp_secure: smtp_secure ?? providerConfig.smtp_secure
   }
 
+  try { getCredentialVault() } catch {
+    return NextResponse.json({ error: 'Credential storage is unavailable' }, { status: 503 })
+  }
+
   // Test IMAP connection
   const imapTest = await testImapConnection({
     host: config.imap_host,
@@ -138,37 +144,15 @@ export async function POST(request: NextRequest) {
     }, { status: 400 })
   }
 
-  // Encrypt password
-  const password_encrypted = encryptPassword(password)
-
-  // Save account
-  const { data: account, error } = await supabase
-    .from('source_accounts')
-    .insert({
-      user_id: user.id,
-      email_address,
-      display_name: display_name || email_address,
-      provider,
-      imap_host: config.imap_host,
-      imap_port: config.imap_port,
-      imap_secure: config.imap_secure,
-      smtp_host: config.smtp_host,
-      smtp_port: config.smtp_port,
-      smtp_secure: config.smtp_secure,
-      username,
-      password_encrypted,
-      is_active: true
-    })
-    .select('id, email_address, display_name, provider, is_active, created_at')
-    .single()
-
-  if (error) {
-    if (error.code === '23505') {
-      return NextResponse.json({
-        error: 'Email account already connected'
-      }, { status: 409 })
-    }
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  let account
+  try {
+    account = await saveImapConnection(user.id, {
+      email_address, display_name: display_name || email_address, provider, username,
+      imap_host: config.imap_host, imap_port: config.imap_port, imap_secure: config.imap_secure,
+      smtp_host: config.smtp_host, smtp_port: config.smtp_port, smtp_secure: config.smtp_secure,
+    }, password)
+  } catch {
+    return NextResponse.json({ error: 'Cannot store email account credentials' }, { status: 503 })
   }
 
   return NextResponse.json({

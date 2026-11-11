@@ -3,12 +3,13 @@ import { NextRequest } from 'next/server'
 
 const mocks = vi.hoisted(() => ({
   user: { id: 'alice' } as { id: string; email?: string; app_metadata?: Record<string, unknown> } | null,
-  from: vi.fn(), send: vi.fn(), decrypt: vi.fn(), trust: vi.fn(), upsert: vi.fn(),
+  from: vi.fn(), send: vi.fn(), secret: vi.fn(), trust: vi.fn(), upsert: vi.fn(),
 }))
 vi.mock('@/lib/supabase/server', () => ({ createClient: async () => ({ auth: { getUser: async () => ({ data: { user: mocks.user } }) } }) }))
 vi.mock('@supabase/supabase-js', () => ({ createClient: () => ({ from: mocks.from }) }))
 vi.mock('@/lib/email/smtp-client', () => ({ sendEmailViaSMTP: mocks.send }))
-vi.mock('@/lib/email/imap-client', () => ({ decryptPassword: mocks.decrypt, EMAIL_PROVIDERS: {} }))
+vi.mock('@/lib/email/imap-client', () => ({ EMAIL_PROVIDERS: {} }))
+vi.mock('@/lib/credential-vault/vault', () => ({ getImapPassword: mocks.secret }))
 vi.mock('@/lib/ai/sender-trust', () => ({ markSenderAsTrusted: mocks.trust }))
 vi.mock('@/lib/resend/waitlist-emails', () => ({ sendWaitlistApproval: vi.fn() }))
 
@@ -20,7 +21,7 @@ import { GET as debugGmail } from '@/app/api/debug/gmail-sync/route'
 beforeEach(() => {
   mocks.user = { id: 'alice' }
   mocks.send.mockResolvedValue({ success: true, messageId: 'synthetic-message' })
-  mocks.decrypt.mockReturnValue('synthetic-password')
+  mocks.secret.mockResolvedValue('synthetic-password')
   mocks.upsert.mockReturnValue({ select: () => ({ single: async () => ({ data: { user_id: 'alice' } }) }) })
   mocks.from.mockImplementation((table: string) => {
     const filters: Record<string, string> = {}
@@ -53,7 +54,7 @@ it('foreign reply ID is rejected before decrypt, SMTP or sender-trust changes', 
   const response = await send(req({ ...mailBody, replyToEmailId: 'email-b' }))
   expect(response.status).toBe(404)
   expect(await response.text()).not.toContain('PRIVATE_BOB_SUBJECT')
-  expect(mocks.decrypt).not.toHaveBeenCalled()
+  expect(mocks.secret).not.toHaveBeenCalled()
   expect(mocks.send).not.toHaveBeenCalled()
   expect(mocks.trust).not.toHaveBeenCalled()
 })

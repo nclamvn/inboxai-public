@@ -1,3 +1,4 @@
+import { saveGoogleConnection } from '@/lib/credential-vault/accounts';
 import { oauthCookieName, oauthCookieOptions, validateOAuthState } from '@/lib/oauth/state';
 /**
  * GET /api/auth/google/callback
@@ -63,62 +64,15 @@ export async function GET(request: NextRequest) {
     // Get user info
     const googleUser = await getGoogleUserInfo(tokens.access_token);
 
-    // Calculate token expiry
-    const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
-
-    // Check if account already exists
-    const { data: existingAccount, error: lookupError } = await supabase
-      .from('source_accounts')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('email_address', googleUser.email)
-      .maybeSingle();
-    if (lookupError) throw new Error('Account lookup failed');
-
-    if (existingAccount) {
-      // Update existing account
-      const { error: saveError } = await supabase
-        .from('source_accounts')
-        .update({
-          auth_type: 'oauth_google',
-          oauth_access_token: tokens.access_token,
-          ...(tokens.refresh_token && { oauth_refresh_token: tokens.refresh_token }),
-          oauth_expires_at: expiresAt.toISOString(),
-          oauth_scope: tokens.scope,
-          is_connected: true,
-          last_error: null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', existingAccount.id)
-        .eq('user_id', user.id);
-      if (saveError) throw new Error('Account update failed');
-    } else {
-      // Create new account
-      const { error: saveError } = await supabase
-        .from('source_accounts')
-        .insert({
-          user_id: user.id,
-          email_address: googleUser.email,
-          provider: 'gmail',
-          auth_type: 'oauth_google',
-          oauth_access_token: tokens.access_token,
-          oauth_refresh_token: tokens.refresh_token,
-          oauth_expires_at: expiresAt.toISOString(),
-          oauth_scope: tokens.scope,
-          is_connected: true,
-          is_active: true,
-          display_name: googleUser.name,
-        });
-      if (saveError) throw new Error('Account insert failed');
-    }
+    await saveGoogleConnection(user.id, googleUser, tokens);
 
     // Redirect to settings with success
     return redirect(
       new URL('/settings?success=gmail_connected', baseUrl)
     );
 
-  } catch (error) {
-    console.error('OAuth callback error:', error);
+  } catch {
+    console.error('OAuth callback failed');
     return redirect(
       new URL('/settings?error=callback_failed', getBaseUrl())
     );

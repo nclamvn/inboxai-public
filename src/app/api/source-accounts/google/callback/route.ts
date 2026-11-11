@@ -1,3 +1,4 @@
+import { saveGoogleConnection } from '@/lib/credential-vault/accounts'
 import { oauthCookieName, oauthCookieOptions, validateOAuthState } from '@/lib/oauth/state'
 /**
  * GET /api/source-accounts/google/callback
@@ -7,18 +8,6 @@ import { oauthCookieName, oauthCookieOptions, validateOAuthState } from '@/lib/o
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { exchangeCodeForTokens, getGoogleUserInfo } from '@/lib/oauth/google'
-
-// Account colors for multiple accounts
-const ACCOUNT_COLORS = [
-  '#2563EB', // Blue
-  '#10B981', // Green
-  '#F59E0B', // Amber
-  '#EF4444', // Red
-  '#8B5CF6', // Purple
-  '#EC4899', // Pink
-  '#06B6D4', // Cyan
-  '#F97316', // Orange
-]
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -74,80 +63,13 @@ export async function GET(request: NextRequest) {
     // Get user info from Google
     const googleUser = await getGoogleUserInfo(tokens.access_token)
 
-    // Check if account already exists
-    const { data: existingAccount, error: lookupError } = await supabase
-      .from('source_accounts')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('email_address', googleUser.email)
-      .maybeSingle()
-    if (lookupError) throw new Error('Account lookup failed')
-
-    if (existingAccount) {
-      // Update existing account with new tokens
-      const { error: saveError } = await supabase
-        .from('source_accounts')
-        .update({
-          access_token: tokens.access_token,
-          refresh_token: tokens.refresh_token || undefined,
-          token_expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
-          is_active: true,
-          sync_status: 'idle',
-          sync_error: null,
-        })
-        .eq('id', existingAccount.id)
-        .eq('user_id', user.id)
-      if (saveError) throw new Error('Account update failed')
-
-      return redirect(
-        `${baseUrl}/settings/accounts?success=${encodeURIComponent('Account reconnected successfully')}`
-      )
-    }
-
-    // Get existing accounts count for color assignment
-    const { count: existingCount } = await supabase
-      .from('source_accounts')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-
-    // Assign color based on account count
-    const colorIndex = (existingCount || 0) % ACCOUNT_COLORS.length
-    const accountColor = ACCOUNT_COLORS[colorIndex]
-
-    // Check if this is the first account (will be primary)
-    const isFirstAccount = (existingCount || 0) === 0
-
-    // Create new account
-    const { error: insertError } = await supabase
-      .from('source_accounts')
-      .insert({
-        user_id: user.id,
-        email_address: googleUser.email,
-        display_name: googleUser.name || googleUser.email,
-        provider: 'google',
-        auth_type: 'oauth',
-        avatar_url: googleUser.picture,
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        token_expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
-        is_active: true,
-        is_primary: isFirstAccount,
-        color: accountColor,
-        sync_status: 'idle',
-      })
-
-    if (insertError) {
-      console.error('[Google OAuth Callback] Insert error:', insertError)
-      return redirect(
-        `${baseUrl}/settings?error=account_save_failed`
-      )
-    }
+    await saveGoogleConnection(user.id, googleUser, tokens)
 
     return redirect(
       `${baseUrl}/settings/accounts?success=${encodeURIComponent('Account added successfully')}`
     )
-  } catch (error) {
-    console.error('[Google OAuth Callback] Error:', error)
+  } catch {
+    console.error('[Google OAuth Callback] Failed')
     return redirect(
       `${baseUrl}/settings/accounts?error=${encodeURIComponent('Failed to add account')}`
     )

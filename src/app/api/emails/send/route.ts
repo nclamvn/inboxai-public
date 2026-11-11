@@ -1,7 +1,8 @@
+import { getImapPassword } from '@/lib/credential-vault/vault'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { sendEmailViaSMTP } from '@/lib/email/smtp-client'
-import { decryptPassword, EMAIL_PROVIDERS } from '@/lib/email/imap-client'
+import { EMAIL_PROVIDERS } from '@/lib/email/imap-client'
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
 import { markSenderAsTrusted } from '@/lib/ai/sender-trust'
 
@@ -94,12 +95,11 @@ export async function POST(request: NextRequest) {
     // Decrypt password
     let password: string
     try {
-      password = decryptPassword(account.password_encrypted)
-    } catch (decryptError) {
-      console.error('Password decrypt error:', decryptError)
+      password = await getImapPassword(user.id, account.id)
+    } catch {
       return NextResponse.json(
-        { error: 'Không thể giải mã mật khẩu. Vui lòng xóa và thêm lại tài khoản email.' },
-        { status: 500 }
+        { error: 'Chưa thể truy cập thông tin xác thực của tài khoản. Vui lòng thử lại sau.' },
+        { status: 503 }
       )
     }
 
@@ -171,9 +171,7 @@ export async function POST(request: NextRequest) {
       success: true,
       messageId: result.messageId
     })
-  } catch (error) {
-    console.error('Send email API error:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    return NextResponse.json({ error: errorMessage }, { status: 500 })
+  } catch {
+    return NextResponse.json({ error: 'Send email failed' }, { status: 500 })
   }
 }

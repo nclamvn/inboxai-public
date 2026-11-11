@@ -1,3 +1,4 @@
+import { getCredentialVault } from '@/lib/credential-vault/vault';
 /**
  * Gmail Sync Service - OPTIMIZED
  * Sync emails from Gmail API to database with batch processing
@@ -61,58 +62,26 @@ async function parallelLimit<T, R>(
   return results;
 }
 
-/**
- * Get valid access token (refresh if expired)
- * Supports both old (oauth_*) and new (access_token, etc.) column names
- */
-export async function getValidAccessToken(
-  accountId: string
-): Promise<string | null> {
-  const supabase = getSupabaseAdmin();
-
-  const { data: account } = await supabase
-    .from('source_accounts')
-    .select('access_token, refresh_token, token_expires_at, oauth_access_token, oauth_refresh_token, oauth_expires_at')
-    .eq('id', accountId)
-    .single();
-
-  if (!account) return null;
-
-  // Support both old and new column names
-  const accessToken = account.access_token || account.oauth_access_token;
-  const refreshToken = account.refresh_token || account.oauth_refresh_token;
-  const expiresAt = account.token_expires_at || account.oauth_expires_at;
-
-  // Check if token is expired
-  if (expiresAt && isTokenExpired(new Date(expiresAt))) {
-    if (!refreshToken) {
-      return null;
-    }
-
-    try {
-      // Refresh the token
-      const newTokens = await refreshAccessToken(refreshToken);
-      const newExpiresAt = new Date(Date.now() + newTokens.expires_in * 1000);
-
-      // Update in database using new column names
-      await supabase
-        .from('source_accounts')
-        .update({
-          access_token: newTokens.access_token,
-          token_expires_at: newExpiresAt.toISOString(),
-          ...(newTokens.refresh_token && {
-            refresh_token: newTokens.refresh_token
-          }),
-        })
-        .eq('id', accountId);
-
-      return newTokens.access_token;
-    } catch {
-      return null;
-    }
+/** Read and refresh only the credentials bound to this tenant/account. */
+export async function getValidAccessToken(userId: string, accountId: string): Promise<string | null> {
+  try {
+    const vault = getCredentialVault();
+    const scope = { userId, accountId };
+    const { credentials, revision } = await vault.read(scope);
+    if (credentials.kind !== 'google') return null;
+    if (!isTokenExpired(new Date(credentials.expiresAt))) return credentials.accessToken;
+    if (!credentials.refreshToken) return null;
+    const refreshed = await refreshAccessToken(credentials.refreshToken);
+    await vault.write(scope, {
+      ...credentials, accessToken: refreshed.access_token,
+      refreshToken: refreshed.refresh_token || credentials.refreshToken,
+      expiresAt: new Date(Date.now() + refreshed.expires_in * 1000).toISOString(),
+    }, revision);
+    return refreshed.access_token;
+  } catch {
+    // Failed refresh/persistence/CAS never returns a transient or foreign token.
+    return null;
   }
-
-  return accessToken;
 }
 
 /**
@@ -128,20 +97,26 @@ export async function syncGmailEmails(
 ): Promise<SyncResult> {
   const supabase = getSupabaseAdmin();
 
+  const { data: ownedAccount } = await supabase.from('source_accounts').select('id')
+    .eq('id', accountId).eq('user_id', userId).maybeSingle();
+  if (!ownedAccount) return { success: false, syncedCount: 0, error: 'Account not found' };
+
   // Set sync status to syncing
   await supabase
     .from('source_accounts')
     .update({ sync_status: 'syncing', sync_error: null })
-    .eq('id', accountId);
+    .eq('id', accountId)
+    .eq('user_id', userId);
 
   try {
     // Get valid access token
-    const accessToken = await getValidAccessToken(accountId);
+    const accessToken = await getValidAccessToken(userId, accountId);
     if (!accessToken) {
       await supabase
         .from('source_accounts')
         .update({ sync_status: 'error', sync_error: 'Invalid access token' })
-        .eq('id', accountId);
+        .eq('id', accountId)
+        .eq('user_id', userId);
       return { success: false, syncedCount: 0, error: 'Invalid access token' };
     }
 
@@ -150,6 +125,7 @@ export async function syncGmailEmails(
       .from('source_accounts')
       .select('email_address, last_sync_at')
       .eq('id', accountId)
+      .eq('user_id', userId)
       .single();
 
     if (!account) {
@@ -184,7 +160,8 @@ export async function syncGmailEmails(
           sync_status: 'idle',
           sync_error: null,
         })
-        .eq('id', accountId);
+        .eq('id', accountId)
+        .eq('user_id', userId);
 
       return { success: true, syncedCount: 0 };
     }
@@ -212,7 +189,8 @@ export async function syncGmailEmails(
           sync_status: 'idle',
           sync_error: null,
         })
-        .eq('id', accountId);
+        .eq('id', accountId)
+        .eq('user_id', userId);
       return { success: true, syncedCount: 0 };
     }
 
@@ -287,7 +265,8 @@ export async function syncGmailEmails(
         sync_status: 'idle',
         sync_error: null,
       })
-      .eq('id', accountId);
+      .eq('id', accountId)
+      .eq('user_id', userId);
 
     if (updateError) {
       gmailLogger.error('Failed to update source_account:', updateError);
@@ -305,13 +284,15 @@ export async function syncGmailEmails(
             .from('source_accounts')
             .select('total_emails_synced')
             .eq('id', accountId)
+            .eq('user_id', userId)
             .single()
             .then(({ data }) => {
               const currentCount = data?.total_emails_synced || 0;
               supabase
                 .from('source_accounts')
                 .update({ total_emails_synced: currentCount + syncedCount })
-                .eq('id', accountId);
+                .eq('id', accountId)
+                .eq('user_id', userId);
             });
         }
       });
@@ -320,22 +301,23 @@ export async function syncGmailEmails(
     gmailLogger.info(`Sync complete: ${syncedCount} emails synced`);
     return { success: true, syncedCount };
 
-  } catch (error) {
-    gmailLogger.error('Gmail sync error:', error);
+  } catch {
+    gmailLogger.error('Gmail sync failed');
 
     // Update error status
     await supabase
       .from('source_accounts')
       .update({
         sync_status: 'error',
-        sync_error: error instanceof Error ? error.message : 'Sync failed',
+        sync_error: 'Gmail sync failed',
       })
-      .eq('id', accountId);
+      .eq('id', accountId)
+      .eq('user_id', userId);
 
     return {
       success: false,
       syncedCount: 0,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: 'Gmail sync failed'
     };
   }
 }

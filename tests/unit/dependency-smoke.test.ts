@@ -2,7 +2,6 @@ import { expect, it, vi } from 'vitest'
 import nodemailer from 'nodemailer'
 import sharp from 'sharp'
 
-vi.mock('@/lib/email/imap-client', () => ({ decryptPassword: vi.fn() }))
 import { sendEmailViaSMTP } from '@/lib/email/smtp-client'
 
 it('upgraded Nodemailer composes with the actual adapter without network delivery', async () => {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { decryptPassword } from '@/lib/email/imap-client'
+import { getImapPassword } from '@/lib/credential-vault/vault'
 
 export const maxDuration = 30
 
@@ -25,7 +25,7 @@ export async function GET(
         id, original_uid, user_id,
         source_accounts (
           id, imap_host, imap_port, imap_secure,
-          username, password_encrypted
+          username
         )
       )
     `)
@@ -51,7 +51,6 @@ export async function GET(
       imap_port: number
       imap_secure: boolean
       username: string
-      password_encrypted: string
     }
   }
 
@@ -64,9 +63,9 @@ export async function GET(
   // Decrypt password
   let password: string
   try {
-    password = decryptPassword(account.password_encrypted)
-  } catch (e) {
-    return NextResponse.json({ error: 'Decrypt failed' }, { status: 500 })
+    password = await getImapPassword(user.id, account.id)
+  } catch {
+    return NextResponse.json({ error: 'Credential storage unavailable' }, { status: 500 })
   }
 
   // Connect IMAP and fetch attachment
@@ -124,9 +123,7 @@ export async function GET(
       try { await client.logout() } catch {}
     }
 
-  } catch (e: unknown) {
-    const errorMsg = e instanceof Error ? e.message : 'Unknown error'
-    console.error('[ATTACHMENT] Error:', errorMsg)
-    return NextResponse.json({ error: errorMsg }, { status: 500 })
+  } catch {
+    return NextResponse.json({ error: 'Attachment fetch failed' }, { status: 500 })
   }
 }

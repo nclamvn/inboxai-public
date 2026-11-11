@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer'
-import { decryptPassword } from './imap-client'
+import 'server-only'
 
 interface SmtpConfig {
   host: string
@@ -48,8 +48,8 @@ export async function testSmtpConnection(config: SmtpConfig): Promise<{ success:
   try {
     await transporter.verify()
     return { success: true }
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Connection failed'
+  } catch {
+    const errorMsg = 'SMTP connection failed'
     return { success: false, error: errorMsg }
   }
 }
@@ -89,28 +89,11 @@ export async function sendEmailViaSMTP(
       success: true,
       messageId: info.messageId
     }
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Send failed'
+  } catch {
+    const errorMsg = 'SMTP send failed'
     return {
       success: false,
       error: errorMsg
     }
-  }
-}
-
-// Helper to create SMTP config from source account
-export function createSmtpConfigFromAccount(account: {
-  smtp_host: string
-  smtp_port: number
-  smtp_secure: boolean
-  username: string
-  password_encrypted: string
-}): SmtpConfig {
-  return {
-    host: account.smtp_host,
-    port: account.smtp_port,
-    secure: account.smtp_secure,
-    username: account.username,
-    password: decryptPassword(account.password_encrypted)
   }
 }
