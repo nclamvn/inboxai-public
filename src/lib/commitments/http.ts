@@ -56,7 +56,8 @@ export async function readCommitmentJson(request: NextRequest): Promise<unknown>
 
 export async function ledgerRpc(client: LedgerSession, name: 'save_commitment' | 'list_commitments' | 'list_commitment_board' | 'read_commitment'
   | 'scan_commitment_mail' | 'read_commitment_lifecycle_targets' | 'confirm_commitment_detection'
-  | 'list_commitment_attention' | 'read_commitment_reminder', args: Record<string, unknown>) {
+  | 'list_commitment_attention' | 'read_commitment_reminder'
+  | 'read_commitment_catchup' | 'read_commitment_catchup_status' | 'dismiss_commitment_catchup', args: Record<string, unknown>) {
   const { data, error } = await client.rpc(name, args).abortSignal(AbortSignal.timeout(10_000))
   if (!error && data != null) return data
   switch (error?.code) {

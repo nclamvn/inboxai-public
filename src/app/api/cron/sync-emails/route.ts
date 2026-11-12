@@ -2,6 +2,7 @@ import { requireCronAuthorization } from '@/lib/security/cron'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { syncAccount } from '@/lib/sync/account'
+import { processCommitmentCatchup } from '@/lib/commitments/catchup-worker'
 import { getUnsubscribeService } from '@/lib/email/unsubscribe-service'
 import { classifyEmail } from '@/lib/ai/classifier'
 import { notifySyncComplete, notifyAiClassified } from '@/lib/notifications/create'
@@ -160,6 +161,10 @@ export async function GET(request: NextRequest) {
           limit: CRON_EMAILS_PER_ACCOUNT,
           fullSync: false
         })
+
+        if (Date.now() - startTime < 270000) {
+          await processCommitmentCatchup(account.user_id).catch(() => {})
+        }
 
         accountResult.pending=syncResult.pending
         if (syncResult.success) {

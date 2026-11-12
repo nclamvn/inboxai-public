@@ -8,7 +8,7 @@ import { ChevronRight, ClipboardList, FileText, RotateCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { cn } from '@/lib/utils'
-import { loadCommitmentBoard, loadCommitmentDetail, loadCommitmentDetections, LedgerApiError } from '@/lib/commitments/client'
+import { loadCommitmentBoard, loadCommitmentCatchup, loadCommitmentDetail, loadCommitmentDetections, LedgerApiError } from '@/lib/commitments/client'
 import {
   commitmentsHref, formatCommitmentDue, groupLabels, isCommitmentGroup,
   ownerLabel, statusLabels, validCommitmentId, type BoardItem, type CommitmentGroup,
@@ -58,7 +58,9 @@ export function CommitmentLedger({ userId }: { userId: string }) {
   const params = useSearchParams()
   const groupParam = params.get('group')
   const group = isCommitmentGroup(groupParam) ? groupParam : 'mine'
-  const showProposals = params.get('view') === 'proposals'
+  const catchup = params.get('view') === 'catchup'
+  const showProposals = catchup || params.get('view') === 'proposals'
+  const accounts = catchup ? params.getAll('account').filter(validCommitmentId).slice(0, 50) : []
   const source = params.get('source')
   const sourceId = validCommitmentId(source) ? source.toLowerCase() : null
   const idParam = params.get('id')
@@ -88,8 +90,8 @@ export function CommitmentLedger({ userId }: { userId: string }) {
     retry: false,
   })
   const detections = useInfiniteQuery({
-    queryKey: ['commitments', userId, 'detections'],
-    queryFn: ({ pageParam, signal }) => loadCommitmentDetections(pageParam, signal),
+    queryKey: catchup ? ['commitments', userId, 'catchup', accounts, sourceId] : ['commitments', userId, 'detections'],
+    queryFn: ({ pageParam, signal }) => catchup ? loadCommitmentCatchup(accounts, sourceId, pageParam, signal) : loadCommitmentDetections(pageParam, signal),
     initialPageParam: null as string | null,
     getNextPageParam: last => last.nextBeforeId,
     staleTime: 30_000,
@@ -124,7 +126,7 @@ export function CommitmentLedger({ userId }: { userId: string }) {
         </div>
         <div className="flex min-w-0 items-center gap-2">
           <Link href={commitmentsHref(group) + '&view=proposals'} prefetch={false}
-            aria-current={showProposals ? 'page' : undefined}
+            aria-current={showProposals && !catchup ? 'page' : undefined}
             className="neo-nav-item neo-nav-inline neo-target gap-2 px-2 text-sm">
             <FileText size={16} aria-hidden="true" /> Đề xuất từ email
             {proposals.some(proposal => proposal.review) && <>
@@ -139,7 +141,8 @@ export function CommitmentLedger({ userId }: { userId: string }) {
         </div>
       </header>
       {showProposals ? (
-        <CommitmentProposals key={sourceId ?? 'all'} group={group} proposals={proposals} sourceId={sourceId}
+        <CommitmentProposals key={(catchup ? 'catchup:' : '') + (sourceId ?? 'all')} group={group} proposals={proposals} sourceId={sourceId}
+          catchupAccounts={catchup ? accounts : undefined}
           hasMore={detections.hasNextPage} loading={detections.isPending} fetching={detections.isFetching}
           failed={detections.isError} refresh={refresh}
           load={() => { if (detections.isFetchNextPageError || !detections.isError) void detections.fetchNextPage(); else void detections.refetch() }} />

@@ -13,20 +13,20 @@ export async function startGoogleOAuthFixture() {
   const codes = new Map(), access = new Map(), refresh = new Map()
   const calls = { exchanges: 0, refreshes: 0, reads: 0, sendAttempts: 0, sent: [] }
   let sendRevoked = false
+  function issue(grant, withRefresh) {
+    const accessToken = randomUUID(), refreshToken = withRefresh ? randomUUID() : undefined
+    access.set(accessToken, grant)
+    if (refreshToken) refresh.set(refreshToken, grant)
+    return { access_token: accessToken, refresh_token: refreshToken, expires_in: 3600,
+      token_type: 'Bearer', scope: grant.scopes.join(' ') }
+  }
   const server = createServer(async (request, response) => {
     function json(body, status = 200) {
       response.writeHead(status, { 'Content-Type': 'application/json' })
       response.end(JSON.stringify(body))
     }
-    function issue(grant, withRefresh) {
-      const accessToken = randomUUID(), refreshToken = withRefresh ? randomUUID() : undefined
-      access.set(accessToken, grant)
-      if (refreshToken) refresh.set(refreshToken, grant)
-      return { access_token: accessToken, refresh_token: refreshToken, expires_in: 3600,
-        token_type: 'Bearer', scope: grant.scopes.join(' ') }
-    }
     try {
-      const { pathname } = new URL(request.url, 'http://127.0.0.1')
+      const { pathname, searchParams } = new URL(request.url, 'http://127.0.0.1')
       if (pathname === '/token' && request.method === 'POST') {
         const body = new URLSearchParams(Buffer.concat(await Array.fromAsync(request)).toString())
         assert.equal(body.get('client_id'), googleClientId)
@@ -66,6 +66,40 @@ export async function startGoogleOAuthFixture() {
       }
       if (!grant.scopes.includes(gmailReadScope)) return json({ error: 'read_scope_missing' }, 403)
       calls.reads++
+      if (grant.mailbox) {
+        const box = grant.mailbox
+        if (!box.online) {
+          box.drops++
+          response.destroy()
+          return
+        }
+        const offset = Number(searchParams.get('pageToken') ?? 0)
+        const limit = Number(searchParams.get('maxResults') ?? 30)
+        const paginate = rows => ({
+          page: rows.slice(offset, offset + limit),
+          nextPageToken: offset + limit < rows.length ? String(offset + limit) : undefined,
+        })
+        const historyId = String(100 + box.history.length)
+        if (pathname === gmail + '/profile') return json({ historyId })
+        if (pathname === gmail + '/messages') {
+          box.fullReads++
+          const { page, nextPageToken } = paginate([...box.messages.keys()].reverse())
+          return json({ messages: page.map(id => ({ id })), nextPageToken })
+        }
+        if (pathname === gmail + '/history') {
+          const start = Number(searchParams.get('startHistoryId'))
+          box.historyStarts.push(start)
+          const { page, nextPageToken } = paginate(box.history.slice(Math.max(0, start - 100)))
+          return json({ historyId, nextPageToken, history: page.map(id => ({ messagesAdded: [{ message: { id } }] })) })
+        }
+        const id = pathname.startsWith(gmail + '/messages/') ? pathname.slice((gmail + '/messages/').length) : null
+        const item = box.messages.get(id)
+        if (!item) return json({}, 404)
+        return json({ id, internalDate: String(Date.parse(item.at)), labelIds: ['INBOX', 'UNREAD'],
+          payload: { mimeType: 'text/plain', body: { data: Buffer.from(item.body).toString('base64url') },
+            headers: [{ name: 'Subject', value: item.subject }, { name: 'From', value: item.from }, { name: 'To', value: grant.email }] },
+        })
+      }
       if (pathname === gmail + '/profile' || pathname === gmail + '/history') return json({ historyId: '100' })
       if (pathname === gmail + '/messages') return json({ messages: [{ id: 'fixture-inbox-message' }] })
       if (pathname === gmail + '/messages/fixture-inbox-message') return json({
@@ -82,6 +116,19 @@ export async function startGoogleOAuthFixture() {
 
   return {
     url: `http://127.0.0.1:${server.address().port}`, calls,
+    registerMailbox(email) {
+      const box = { online: true, drops: 0, fullReads: 0, historyStarts: [], messages: new Map(), history: [] }
+      const grant = { mailbox: box, email, subject: email, scopes: [gmailReadScope, googleEmailScope] }
+      return {
+        tokens: issue(grant, true), box,
+        deliver(items) {
+          for (const item of items) {
+            box.messages.set(item.id, item)
+            box.history.push(item.id)
+          }
+        },
+      }
+    },
     setSendRevoked(value) { sendRevoked = value },
     revokeAllGrants() { access.clear(); refresh.clear() },
     authorize(url, decision, app, intent) {

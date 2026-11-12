@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 import type { AttentionItem } from '@/lib/commitments/attention'
 import type { CommitmentProposal } from '@/lib/commitments/detection'
-import { scanCommitmentProposals } from '@/lib/commitments/detection-server'
+import { scanCatchupProposals } from '@/lib/commitments/detection-server'
 import { ledgerJson, ledgerRpc, withLedgerSession } from '@/lib/commitments/http'
 
 const accountFilter = z.array(z.uuid().transform(id => id.toLowerCase())).max(50)
@@ -15,10 +15,12 @@ export async function GET(request: NextRequest) {
     const read = async (ids: string[]): Promise<AttentionPage> =>
       ledgerRpc(client, 'list_commitment_attention', { p_accounts: accounts.data, p_reply_ids: ids })
 
-    const initial = await read([])
+    const [initial, status] = await Promise.all([read([]),
+      ledgerRpc(client, 'read_commitment_catchup_status', { p_accounts: accounts.data }),
+    ])
     const replies = new Map<string, CommitmentProposal>()
     if (initial.tracking) {
-      const { proposals } = await scanCommitmentProposals(client, null)
+      const { proposals } = await scanCatchupProposals(client, accounts.data, null, null, true)
       for (const proposal of proposals) {
         if (!proposal.commitmentId || (!proposal.review && proposal.blocked !== 'uncertain' && proposal.blocked !== 'conflicting')) continue
         if (accounts.data.length && (!proposal.accountId || !accounts.data.includes(proposal.accountId))) continue
@@ -27,7 +29,7 @@ export async function GET(request: NextRequest) {
       }
     }
     const page = replies.size ? await read([...replies.keys()]) : initial
-    return ledgerJson({ items: page.items.map(item => {
+    return ledgerJson({ accounts: status, items: page.items.map(item => {
       const proposal = item.reason === 'reply' ? replies.get(item.id) : null
       return { ...item, reply: proposal ? {
         emailId: proposal.emailId, subject: proposal.subject, quote: proposal.quote, needsReview: !proposal.review,

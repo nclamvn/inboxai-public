@@ -10,7 +10,7 @@ import { ledgerRpc, type LedgerSession } from './http'
 type Source = {
   id: string; accountId: string | null; sender: string; senderName: string | null
   subject: string | null; body: string | null; at: string | null; receivedAt: string | null
-  fingerprint: string; usedQuotes: string[]; manualUsed: boolean
+  fingerprint: string; usedQuotes: string[]; manualUsed: boolean; catchupToken?: string | null
 }
 type Signal = {
   source: Source; sender: string; signal: DetectionSignal; reference: string | null; key: string; quoteHash: string
@@ -71,6 +71,7 @@ export function buildProposals(page: ScanPage, signals: Signal[], targets: Targe
       emailId: source.id, accountId: source.accountId, commitmentId: current?.id ?? null,
       subject: source.subject, sender, at, quote: signal.quote,
       kind: signal.kind, reference, previous: current?.state ?? null,
+      ...(source.catchupToken ? { catchupToken: source.catchupToken } : {}),
     }
     if (related.length > 8 || (signal.kind !== 'create' && (open.length > 1 || current?.multiOrigin))) {
       return [{ ...common, review: null, blocked: 'ambiguous' }]
@@ -105,6 +106,17 @@ export function buildProposals(page: ScanPage, signals: Signal[], targets: Targe
 
 export async function scanCommitmentProposals(client: LedgerSession, before: string | null) {
   const page = await ledgerRpc(client, 'scan_commitment_mail', { p_before_id: before }) as ScanPage
+  return proposalsForPage(client, page)
+}
+
+export async function scanCatchupProposals(client: LedgerSession, accounts: string[], before: string | null, source: string | null, focus = false) {
+  const page = await ledgerRpc(client, 'read_commitment_catchup', {
+    p_accounts: accounts, p_before_id: before, p_source_id: source, p_focus: focus,
+  }) as ScanPage
+  return proposalsForPage(client, page)
+}
+
+async function proposalsForPage(client: LedgerSession, page: ScanPage) {
   const signals = interpretScan(page)
   const references = [...new Set(signals.flatMap(signal => signal.reference ? [signal.reference] : []))]
   const targets = references.length ? await ledgerRpc(client, 'read_commitment_lifecycle_targets', { p_references: references }) : []

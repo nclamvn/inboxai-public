@@ -32,7 +32,7 @@ export function useAutoSync({
 
   const sync = useCallback(async (force: boolean = false): Promise<SyncResult | null> => {
     // Skip if already syncing
-    if (syncingRef.current) return null
+    if (syncingRef.current || !navigator.onLine) return null
 
     // Throttle automatic attempts even when the request failed.
     const now = Date.now()
@@ -101,12 +101,15 @@ export function useAutoSync({
         sync()
       }
     }
+    const handleOnline = () => { void sync(true) }
+    window.addEventListener('online', handleOnline)
     window.addEventListener('focus', handleFocus)
 
     return () => {
       clearTimeout(initialTimeout)
       clearInterval(intervalId)
       document.removeEventListener('visibilitychange', handleVisibility)
+      window.removeEventListener('online', handleOnline)
       window.removeEventListener('focus', handleFocus)
     }
   }, [enabled, interval, sync])

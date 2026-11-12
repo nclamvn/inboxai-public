@@ -14,6 +14,7 @@ export type DetectionCommand = {
 
 export type CommitmentProposal = {
   proposalId: string
+  catchupToken?: string
   emailId: string
   accountId: string | null
   commitmentId: string | null

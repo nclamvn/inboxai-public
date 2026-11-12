@@ -19,6 +19,7 @@
 /test-results/commitment-regression/
 /test-results/commitment-attention/
 /test-results/day-preview/
+/test-results/inbox-catchup/
 /.codex-db-test-*/
 
 # next.js

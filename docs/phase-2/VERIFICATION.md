@@ -1,5 +1,17 @@
 # Verification record
 
+## Inbox catch-up after absence
+
+On 2026-11-12, the local catch-up workflow passed 24 checks in a production-mode
+Next build. Two loopback Gmail accounts received 126 synthetic messages during
+three simulated days. After browser disconnection, one provider socket drop and
+a Next process restart, the Inbox showed 132 unique messages and all six
+outstanding replies. There were 125 later messages than the critical reply.
+Source opening, duplicate approval, acknowledgement, tenant isolation and
+zero outbound attempts were verified. Lint, TypeScript, 241 unit tests, 197
+integration tests, 19 SQL groups, 22 daily, 25 design, 19 platform and 41 E2E
+checks completed locally. See the [catch-up handoff](INBOX_CATCHUP_LOCAL_HANDOFF.md).
+
 Latest: [M6-G Commitment Intelligence evaluation](M6G_LOCAL_HANDOFF.md).
 Previous: [M6-F adversarial security rehearsal](#m6-f-adversarial-security-rehearsal),
 [M6-E Gmail consent](#m6-e-gmail-consent),

@@ -1,7 +1,8 @@
 import type { DetectionCommand, DetectionPage } from './detection'
 import type { BoardPage, CommitmentGroup, LedgerDetail } from './view'
 import type { CommitmentEvidence, CommitmentState } from './contracts'
-import type { AttentionItem, ReminderCommand, ReminderPreview, ReminderResult } from './attention'
+import type { CatchupAttention } from './catchup'
+import type { ReminderCommand, ReminderPreview, ReminderResult } from './attention'
 
 export class LedgerApiError extends Error {
   constructor(readonly status: number, message: string) { super(message) }
@@ -59,7 +60,7 @@ export function confirmCommitmentDetection(key: string, command: DetectionComman
 export function loadCommitmentAttention(accounts: string[], signal: AbortSignal) {
   const params = new URLSearchParams()
   for (const id of accounts) params.append('account', id)
-  return ledgerRequest<{ items: AttentionItem[] }>('/attention?' + params, { signal })
+  return ledgerRequest<CatchupAttention>('/attention?' + params, { signal })
 }
 
 export function loadCommitmentReminder(id: string, signal: AbortSignal) {
@@ -70,5 +71,20 @@ export function approveCommitmentReminder(id: string, command: ReminderCommand) 
   return ledgerRequest<ReminderResult>('/' + id + '/reminder', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(command),
     signal: AbortSignal.timeout(45_000),
+  })
+}
+
+export function loadCommitmentCatchup(accounts: string[], source: string | null, before: string | null, signal: AbortSignal) {
+  const params = new URLSearchParams()
+  for (const account of accounts) params.append('account', account)
+  if (source) params.set('source', source)
+  if (before) params.set('beforeId', before)
+  return ledgerRequest<DetectionPage>('/catchup?' + params, { signal })
+}
+
+export function dismissCommitmentCatchup(emailId: string, token: string, hash: string) {
+  return ledgerRequest<{ dismissed: boolean }>('/catchup', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ emailId, token, hash }), signal: AbortSignal.timeout(15_000),
   })
 }

@@ -2,14 +2,15 @@
 
 import { useId, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { RotateCw } from 'lucide-react'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
+import { catchupHref, type CatchupAccount } from '@/lib/commitments/catchup'
 import type { AttentionItem } from '@/lib/commitments/attention'
 import { approveCommitmentReminder, LedgerApiError, loadCommitmentAttention, loadCommitmentReminder } from '@/lib/commitments/client'
-import { commitmentsHref, formatCommitmentDue, ownerLabel } from '@/lib/commitments/view'
+import { commitmentsHref, formatCommitmentDue, formatCommitmentMoment, ownerLabel } from '@/lib/commitments/view'
 
 const link = 'neo-target inline-flex min-h-11 min-w-0 items-center text-sm font-medium text-[var(--accent-foreground)] underline underline-offset-4'
 const reasons = {
@@ -111,6 +112,62 @@ function ReminderReview({ item, userId, onClose, onChange }: {
   )
 }
 
+function syncStatus(account: CatchupAccount) {
+  if (account.status === 'error') return 'Gián đoạn · chờ thử lại'
+  if (account.status === 'syncing' || account.status === 'pending') return 'Đang bắt kịp'
+  if (!account.lastSyncAt) return 'Chưa đồng bộ'
+  if (account.waitingAnalysis) return 'Đang kiểm tra cam kết'
+  return 'Đã đồng bộ'
+}
+
+function CatchupStatus({ userId, accounts, filter }: { userId: string; accounts: CatchupAccount[]; filter: string[] }) {
+  const cache = useQueryClient()
+  const sync = useMutation({
+    networkMode: 'always',
+    mutationFn: async () => {
+      if (!navigator.onLine) throw new Error('Offline')
+      const result = await fetch('/api/source-accounts/sync', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh: true }), signal: AbortSignal.timeout(60_000),
+      })
+      if (!result.ok) throw new Error('Sync unavailable')
+      return result.json()
+    },
+    onSettled: () => {
+      void cache.invalidateQueries({ predicate: ({ queryKey }) =>
+        queryKey[0] === 'emails' || (queryKey[0] === 'commitments' && queryKey[1] === userId &&
+          (queryKey[2] === 'attention' || queryKey[2] === 'catchup')),
+      })
+    },
+  })
+  return (
+    <div className="border-t border-[var(--border)] px-4 sm:px-5">
+      <div className="flex flex-wrap items-center gap-x-5">
+        <Link className={link} href={catchupHref('waiting', filter)} prefetch={false}>Xem toàn bộ việc chờ xử lý</Link>
+        {accounts.length > 0 && (
+          <details className="min-w-0 text-sm">
+            <summary className="neo-target min-h-11 cursor-pointer list-item py-3 text-[var(--foreground-secondary)]">
+              Trạng thái đồng bộ{accounts.some(account => account.status === 'error') ? ' · Có gián đoạn' : ''}
+            </summary>
+            <ul className="space-y-2 pb-2 text-xs">
+              {accounts.map(account => (
+                <li key={account.id} className="min-w-0 break-words">
+                  <span className="font-medium">{account.email}</span> · {syncStatus(account)}
+                  {account.lastSyncAt && <span> · Lần hoàn tất gần nhất {formatCommitmentMoment(account.lastSyncAt)}</span>}
+                  {account.waitingAnalysis > 0 && <span> · {account.waitingAnalysis} thư chờ kiểm tra</span>}
+                </li>
+              ))}
+            </ul>
+            <Button type="button" variant="outline" size="sm" className="mb-3 min-h-11" loading={sync.isPending}
+              onClick={() => sync.mutate()}>Đồng bộ ngay</Button>
+            {sync.isError && <p role="status" className="pb-3 text-xs text-[var(--error)]">Chưa kết nối được. Hãy thử lại.</p>}
+          </details>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function CommitmentAttention({ userId, accounts }: { userId: string; accounts: string[] }) {
   const title = useId()
   const [review, setReview] = useState<AttentionItem | null>(null)
@@ -122,12 +179,13 @@ export function CommitmentAttention({ userId, accounts }: { userId: string; acco
     staleTime: 30_000, refetchOnMount: 'always', refetchInterval: 60_000, retry: false,
   })
   const items = query.data?.items ?? []
+  const status = query.data?.accounts ?? []
   const refresh = () => void query.refetch()
 
-  if (!items.length && !query.isError && !review) return null
+  if (!items.length && !status.length && !query.isError && !review) return null
   return (
     <>
-      {(items.length > 0 || query.isError) && (
+      {(items.length > 0 || status.length > 0 || query.isError) && (
         <section aria-labelledby={title} className="border-b border-[var(--border)] bg-[var(--surface)]">
           <div className="flex min-w-0 items-center justify-between gap-3 border-s-2 border-[var(--selection-line)] px-4 sm:px-5">
             <h2 id={title} ref={heading} tabIndex={-1} className="py-3 text-sm font-semibold">Cam kết cần chú ý</h2>
@@ -153,7 +211,7 @@ export function CommitmentAttention({ userId, accounts }: { userId: string; acco
                       {item.source.href && <Link className={link} href={item.source.href} prefetch={false}>Mở email nguồn</Link>}
                       <Link className={link} href={commitmentsHref(item.group, item.id)} prefetch={false}>Xem lịch sử</Link>
                       {item.reply && (
-                        <Link className={link} href={commitmentsHref(item.group) + '&view=proposals&source=' + item.reply.emailId} prefetch={false}>
+                        <Link className={link} href={catchupHref(item.group, accounts, item.reply.emailId)} prefetch={false}>
                           {item.reply.needsReview ? 'Kiểm tra phản hồi' : 'Xem đề xuất cập nhật'}
                         </Link>
                       )}
@@ -175,6 +233,7 @@ export function CommitmentAttention({ userId, accounts }: { userId: string; acco
               )
             })}
           </ul>
+          <CatchupStatus userId={userId} accounts={status} filter={accounts} />
         </section>
       )}
       {review && (

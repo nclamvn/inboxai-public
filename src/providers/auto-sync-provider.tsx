@@ -38,10 +38,13 @@ export function AutoSyncProvider({
     queryClient.invalidateQueries({ queryKey: ['unread-count'] })
   }, [queryClient])
   const onSync = useCallback((result: { synced: number }) => {
+    void queryClient.invalidateQueries({ predicate: ({ queryKey }) =>
+      queryKey[0] === 'commitments' && (queryKey[2] === 'attention' || queryKey[2] === 'catchup'),
+    })
     if (process.env.NODE_ENV === 'development' && result.synced > 0) {
       console.log(`[AutoSync] Synced ${result.synced} emails`)
     }
-  }, [])
+  }, [queryClient])
   const onError = useCallback((error: Error) => {
     if (process.env.NODE_ENV === 'development') {
       console.error('[AutoSync] Error:', error.message)

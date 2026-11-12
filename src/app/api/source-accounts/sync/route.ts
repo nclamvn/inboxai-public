@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { syncAccount } from '@/lib/sync/account'
+import { processCommitmentCatchup } from '@/lib/commitments/catchup-worker'
 import { classifyEmail } from '@/lib/ai/classifier'
 import { notifySyncComplete } from '@/lib/notifications/create'
 
@@ -82,23 +83,26 @@ export async function POST(request: NextRequest) {
   // Parse options
   let limit = 30
   let fullSync = false
+  let refresh = false
   try {
     const body = await request.json()
     if (body.limit) limit = Math.min(body.limit, 50)
     if (body.fullSync) fullSync = true
+    refresh = body.refresh === true
   } catch {
     // No body
   }
 
   // The authenticated owner constrains this service-only fair due-work query.
   const service=createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.SUPABASE_SERVICE_ROLE_KEY!)
-  const {data:accounts,error}=await service.rpc('list_due_sync_accounts',{p_limit:50,p_user_id:user.id,p_force:fullSync})
+  const {data:accounts,error}=await service.rpc('list_due_sync_accounts',{p_limit:50,p_user_id:user.id,p_force:fullSync || refresh})
 
   if (error) {
     return NextResponse.json({ error: 'Failed to fetch accounts' }, { status: 500 })
   }
 
   if (!accounts || accounts.length === 0) {
+    await processCommitmentCatchup(user.id).catch(() => {})
     return NextResponse.json({
       success: true,
       synced: 0,
@@ -134,6 +138,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  if (Date.now() - startTime < 52_000) await processCommitmentCatchup(user.id).catch(() => {})
   const duration = Date.now() - startTime
 
   // Trigger classification for newly synced emails (fire-and-forget)

@@ -33,7 +33,8 @@ const dayTest = process.argv.includes('--day-test')
 const day = dayPreview || dayTest
 const interactivePreview = journeyPreview || dayPreview
 const dailyCommitments = process.argv.includes('--daily-commitments')
-const journeyE2E = process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
+const catchup = process.argv.includes('--catchup')
+const journeyE2E = catchup || process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
 const journey = interactivePreview || journeyE2E
 const commitmentBenchmark = process.argv.includes('--m6g')
 const isolatedCommitment = commitmentDetection && process.argv.includes('--isolated')
@@ -43,7 +44,7 @@ const isolatedPlatform = m6 && !m6Native && process.argv.includes('--isolated')
 const platformOutput = isolatedPlatform ? 'test-results/commitment-attention/platform' : undefined
 const isolated = journeyE2E || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedPlatform
 const productionMode = m6 || staging || journey || isolated
-const journeyOutput = day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
+const journeyOutput = catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
 const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.test'
 const evidenceFile = journey ? `${journeyOutput}/report.json`
   : commitmentOutput ? commitmentOutput + '/local-run.json'
@@ -186,7 +187,7 @@ try {
     mkdirSync(journeyOutput, { recursive: true })
     rmSync(evidenceFile, { force: true })
     rmSync(`${journeyOutput}/failure.png`, { force: true })
-    if (dailyCommitments) rmSync(`${journeyOutput}/workflow.json`, { force: true })
+    if (dailyCommitments || catchup) rmSync(`${journeyOutput}/workflow.json`, { force: true })
   }
   started = true
   docker(['up', '-d', '--pull', 'never', ...(staging ? ['--wait','--wait-timeout','60'] : [])])
@@ -215,9 +216,15 @@ try {
     if (commitments && file === '20261111060000_commitment_ledger.sql') {
       sql(`INSERT INTO public.action_items(user_id,title) VALUES('${previousId}','Legacy task before ledger');`)
     }
+    if (catchup && file === '20261112040000_commitment_catchup.sql') {
+      sql(`INSERT INTO public.emails(user_id,from_address,subject,body_text)
+        VALUES('${previousId}','legacy@example.test','[LEG-420] Nâng cấp','Tôi sẽ gửi hồ sơ trước ngày 15/11/2026.');`)
+    }
     sql(readFileSync(`supabase/migrations/${file}`, 'utf8'))
   }
   if (staging) rehearsal.checkUpgrade(migrations)
+  if (catchup) record('upgrade backfills existing inbound evidence as pending',
+    Number(sql(`SELECT count(*) FROM private.commitment_catchup WHERE user_id='${previousId}' AND reference='LEG-420' AND hashes IS NULL`)) === 1)
   record('upgrade preserves existing profile', Number(sql(`SELECT count(*) FROM public.profiles WHERE id='${previousId}'`)) === 1)
   const { error: blocked } = await createClient(base, anon).auth.signUp({ email: 'blocked@example.test', password: 'Synthetic-passphrase-123' })
   record('direct Auth API cannot bypass closed registration policy', Boolean(blocked))
@@ -264,14 +271,25 @@ try {
     const { startNativeFixture } = await import('../tests/local-auth/native-shell.mjs')
     nativeFixture = await startNativeFixture(cookies)
   }
-  next = spawn(process.execPath, [...nextCommand, productionMode ? 'start' : 'dev', '--hostname', '127.0.0.1', '--port', String(m6Native ? 55301 : ports.app)], {
-    env: nextEnv,
-    stdio: ['ignore','pipe','pipe'],
-  })
   let output = ''
-  next.stdout.on('data', chunk => { output = (output + chunk).slice(-10000) })
-  next.stderr.on('data', chunk => { output = (output + chunk).slice(-10000) })
-  await waitFor(`${app}/login`)
+  async function startNext() {
+    const processId = next?.pid
+    next = spawn(process.execPath, [...nextCommand, productionMode ? 'start' : 'dev', '--hostname', '127.0.0.1', '--port', String(m6Native ? 55301 : ports.app)], {
+      env: nextEnv,
+      stdio: ['ignore','pipe','pipe'],
+    })
+    next.stdout.on('data', chunk => { output = (output + chunk).slice(-10000) })
+    next.stderr.on('data', chunk => { output = (output + chunk).slice(-10000) })
+    await waitFor(`${app}/login`)
+    assert.notEqual(next.pid, processId)
+  }
+  await startNext()
+  const restartNext = async () => {
+    const exited = new Promise(resolve => next.once('exit', resolve))
+    next.kill('SIGTERM')
+    await exited
+    await startNext()
+  }
   const email = journey ? 'mai.nguyen@example.test' : 'verified@example.test', password = 'Synthetic-passphrase-123'
   const response = await appFetch('/api/signup-whitelist', { method: 'POST', headers: { 'content-type':'application/json' },
     body: JSON.stringify({ email, password, fullName: journey ? 'Nguyễn Hoàng Mai' : 'Synthetic Verified' }) })
@@ -324,7 +342,11 @@ try {
   record('admin revocation is enforced on the next request', (await appFetch('/api/admin/whitelist')).status === 403)
   sql("UPDATE public.registration_policy SET enabled=false;")
   record('closed policy rejects subsequent Next signups', (await appFetch('/api/signup-whitelist', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({email:'later@example.test',password,fullName:'Later'}) })).status === 503)
-  if (journey) {
+  if (catchup) {
+    const { rehearseInboxCatchup } = await import('../tests/design/inbox-catchup.mjs')
+    await rehearseInboxCatchup({ app, base, email, password, userId, admin, login, appFetch, sql, googleProvider,
+      previousEmail, previousId, anon, anonymousClient, restartNext, smtpWire, record, output: journeyOutput })
+  } else if (journey) {
     const { seedPurchasingJourney, rehearsePurchasingJourney } = await import('../tests/design/purchasing-journey.mjs')
     const fixture = await seedPurchasingJourney({ admin, sql, userId, foreignId: previousId, ownEmailId, otherEmailId })
     if (day) {
@@ -426,7 +448,8 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = day ? 'Interactive local guide and production-mode Next in Chromium, synthetic data and real local SMTP TLS to Mailpit'
+  const provenance = catchup ? 'Production-mode Next (restarted), Chromium, GoTrue, PostgREST and PostgreSQL; three-day synthetic Gmail history via two loopback accounts and injected transport failure'
+    : day ? 'Interactive local guide and production-mode Next in Chromium, synthetic data and real local SMTP TLS to Mailpit'
     : dailyCommitments ? 'Production-mode Next, GoTrue, PostgREST, PostgreSQL, Chromium and Mailpit over loopback with a synthetic daily commitment workflow'
     : journey ? 'Production-mode Next, GoTrue, PostgREST, PostgreSQL, Chromium, Mailpit and a simulated Google OAuth and Gmail API over loopback with synthetic data'
     : commitmentBenchmark ? 'Authenticated production-mode Next, PostgREST and PostgreSQL on the synthetic M6-G corpus'
