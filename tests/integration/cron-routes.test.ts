@@ -37,6 +37,18 @@ const routes = [
   ['reputation GET', reputation.GET], ['reputation POST', reputation.POST], ['costs POST', costs.POST],
 ] as const
 
+it('returns a safe cron failure and logs only a fixed diagnostic code', async () => {
+  const sensitive = 'synthetic-db-error-with-account-and-token'
+  mocks.client.mockReturnValue({ rpc: vi.fn().mockResolvedValue({ error: { message: sensitive } }) })
+  const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+  const response = await sync.GET(new NextRequest('http://localhost/api/cron/sync-emails', {
+    headers: { authorization: 'Bearer synthetic-secret' },
+  }))
+  expect(response.status).toBe(500)
+  expect(await response.json()).toEqual({ error: 'Failed to fetch accounts' })
+  expect(log.mock.calls).toEqual([[JSON.stringify({ level: 'error', component: 'cron.sync', code: 'account_lookup_failed' })]])
+})
+
 describe.each(routes)('%s', (_name, handler) => {
   it.each(['missing configuration', 'missing header', 'wrong token'])('rejects %s without DB or provider work', async kind => {
     if (kind === 'missing configuration') vi.stubEnv('CRON_SECRET', '')

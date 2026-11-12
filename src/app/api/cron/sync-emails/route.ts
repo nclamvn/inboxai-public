@@ -13,6 +13,11 @@ export const dynamic = 'force-dynamic'
 const CRON_EMAILS_PER_ACCOUNT = 100 // Increased from 30
 const CLASSIFY_BATCH_SIZE = 5 // Emails to classify per account
 
+function syncFailure(code: 'account_lookup_failed' | 'sync_failed', message: string) {
+  console.error(JSON.stringify({ level: 'error', component: 'cron.sync', code }))
+  return NextResponse.json({ error: message }, { status: 500 })
+}
+
 // Classify newly synced emails for a user
 async function classifyUserEmails(
   userId: string,
@@ -114,11 +119,7 @@ export async function GET(request: NextRequest) {
     const { data: accounts, error: accountsError } = await supabase.rpc('list_due_sync_accounts',{p_limit:10})
 
     if (accountsError) {
-      console.error('[CRON] Error fetching accounts:', accountsError)
-      return NextResponse.json({
-        error: 'Failed to fetch accounts',
-        details: accountsError.message
-      }, { status: 500 })
+      return syncFailure('account_lookup_failed', 'Failed to fetch accounts')
     }
 
     if (!accounts || accounts.length === 0) {
@@ -150,12 +151,9 @@ export async function GET(request: NextRequest) {
           const lastSync = new Date(account.last_sync_at)
           const oneMinuteAgo = new Date(Date.now() - 60 * 1000)
           if (lastSync > oneMinuteAgo) {
-            console.log(`[CRON] Skipping ${account.email_address} - synced recently`)
             continue
           }
         }
-
-        console.log(`[CRON] Syncing: ${account.email_address}`)
 
         // Perform OPTIMIZED IMAP sync
         const syncResult = await syncAccount(account, {
@@ -167,7 +165,7 @@ export async function GET(request: NextRequest) {
         if (syncResult.success) {
           accountResult.synced = syncResult.synced
           results.synced += syncResult.synced
-          console.log(`[CRON] Synced ${syncResult.synced} emails for ${account.email_address}`)
+          console.log(`[CRON] Synced ${syncResult.synced} emails`)
 
           // Classify newly synced emails for this user
           if (syncResult.synced > 0) {
@@ -177,7 +175,7 @@ export async function GET(request: NextRequest) {
             )
             accountResult.classified = classified
             results.classified += classified
-            console.log(`[CRON] Classified ${classified} emails for ${account.email_address}`)
+            console.log(`[CRON] Classified ${classified} emails`)
 
             // Send notifications
             if (syncResult.synced > 0) {
@@ -231,13 +229,8 @@ export async function GET(request: NextRequest) {
       duration: `${duration}ms`,
       timestamp: new Date().toISOString()
     })
-  } catch (error) {
-    console.error('[CRON] Sync error:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    return NextResponse.json({
-      error: 'Sync failed',
-      details: errorMessage
-    }, { status: 500 })
+  } catch {
+    return syncFailure('sync_failed', 'Sync failed')
   }
 }
 
