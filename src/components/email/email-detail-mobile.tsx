@@ -8,6 +8,7 @@ import {
   Tag, Flag, MailOpen, Ban, Check, ListTodo
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { EmailConversation } from './email-conversation'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import { AttachmentList } from './attachment-list'
 import { AISummary } from './ai-summary'
@@ -202,6 +203,8 @@ export function EmailDetailMobile({
             Ưu tiên và nguồn
           </button>
         )}
+
+        <EmailConversation key={email.id} email={email} className="mx-4 mt-3" />
 
         {/* AI Summary - Smart Allocation */}
         <div className="px-4 pt-3">

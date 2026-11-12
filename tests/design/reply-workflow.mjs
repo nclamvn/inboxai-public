@@ -24,7 +24,7 @@ const parent = '<supplier-po-8462@example.test>'
 const threadId = 'supplier-thread-8462'
 
 export async function rehearseReplyWorkflow({ app, base, email, password, userId, admin, login, appFetch, sql, googleProvider,
-  previousEmail, anon, anonymousClient, restartNext, smtpWire, record, output }) {
+  previousEmail, anon, anonymousClient, restartNext, smtpWire, record, output, conversation = false }) {
   const started = performance.now()
   const vault = new CredentialVault(admin, parseKeyring(vaultKeys, 'local1'))
   const accounts = []
@@ -68,7 +68,9 @@ export async function rehearseReplyWorkflow({ app, base, email, password, userId
     throw new Error('Could not sync synthetic source ' + uid)
   }
   const source = emailId(buying.id, initial.id)
-  assert.ok(source && emailId(finance.id, 'finance-po-8462'))
+  const financeSource = emailId(finance.id, 'finance-po-8462')
+  const earlier = emailId(buying.id, 'early-po-8462')
+  assert.ok(source && financeSource && earlier)
   const detection = (await get('/api/commitments/catchup')).proposals.find(proposal => proposal.emailId === source)
   assert.ok(detection?.review)
   const commitment = await post('/api/commitments/detections', detection.review.command, { 'Idempotency-Key': randomUUID() })
@@ -97,6 +99,14 @@ export async function rehearseReplyWorkflow({ app, base, email, password, userId
     page.on('pageerror', error => pageErrors.push(error.message))
     return context
   }
+  const thread = () => page.getByRole('region', { name: 'Hội thoại', exact: true })
+  const readThread = id => get('/api/emails/' + id + '/conversation')
+  const articleLink = (id, folder = 'inbox') => thread().locator(`a[href^="/${folder}?email=${id}&"]`)
+  const currentMessage = () => thread().locator('[aria-current="true"]')
+  async function openThread() {
+    await thread().locator('summary').click()
+    await thread().getByRole('list').waitFor()
+  }
   const compose = app + '/compose?reply=' + source
   const countOperations = () => Number(sql(`SELECT count(*) FROM private.mail_send_operations WHERE user_id='${userId}'`))
   try {
@@ -108,6 +118,22 @@ export async function rehearseReplyWorkflow({ app, base, email, password, userId
     await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click()
     await page.waitForURL('**/inbox')
     await page.goto(app + '/inbox?email=' + source)
+    if (conversation) {
+      await openThread()
+      assert.equal(await thread().getByRole('listitem').count(), 2)
+      await thread().getByText(buying.address, { exact: true }).waitFor()
+      await currentMessage().getByText('Đang xem', { exact: true }).waitFor()
+      assert.deepEqual((await readThread(source)).messages.map(message => message.id), [earlier, source])
+      assert.deepEqual((await readThread(financeSource)).messages.map(message => message.id), [financeSource])
+      await capture('inbox-conversation-desktop')
+      await articleLink(earlier).click()
+      await page.waitForURL(url => url.searchParams.get('email') === earlier)
+      await currentMessage().getByText('Đang xem', { exact: true }).waitFor()
+      await page.getByRole('region', { name: 'Nội dung thư' }).getByText(earlierBody, { exact: true }).last().waitFor()
+      await articleLink(source).click()
+      await page.waitForURL(url => url.searchParams.get('email') === source)
+      record('Inbox shows a chronological conversation without merging a matching subject and Gmail thread ID from the other account', true)
+    }
     await page.getByRole('button', { name: 'Trả lời', exact: true }).click()
     await page.waitForURL(compose)
     const history = page.getByRole('region', { name: 'Hội thoại' })
@@ -131,6 +157,17 @@ export async function rehearseReplyWorkflow({ app, base, email, password, userId
 
     stage('mở lại nháp trong phiên trình duyệt mobile mới')
     const mobile = await newContext({ width: 390, height: 844 }, state)
+    if (conversation) {
+      await page.goto(app + '/inbox?email=' + source)
+      await openThread()
+      await currentMessage().getByText('Đang xem', { exact: true }).waitFor()
+      await articleLink(earlier).click()
+      await page.waitForURL(url => url.searchParams.get('email') === earlier)
+      await articleLink(source).waitFor()
+      await page.getByText(earlierBody, { exact: true }).last().waitFor()
+      await capture('inbox-conversation-mobile')
+      record('The mobile reader opens the same conversation and keeps the selected message on navigation', true)
+    }
     await page.goto(app + '/inbox')
     await replyPane().getByRole('link', { name: 'Mở bản nháp' }).click()
     await page.getByText('Bản nháp đã lưu', { exact: true }).waitFor()
@@ -194,6 +231,22 @@ export async function rehearseReplyWorkflow({ app, base, email, password, userId
     await page.waitForURL('**/inbox?email=' + recovered.sentId)
     await page.getByText(ownReply, { exact: true }).last().waitFor()
     assert.equal(await page.getByRole('button', { name: 'Trả lời', exact: true }).count(), 0)
+    if (conversation) {
+      assert.deepEqual((await readThread(recovered.sentId)).messages.map(message => message.id), [earlier, source, recovered.sentId])
+      await page.goto(app + '/sent')
+      await page.getByRole('button', { name: sent.subject, exact: true }).click()
+      await page.waitForURL(url => url.pathname === '/sent' && url.searchParams.get('email') === recovered.sentId)
+      await openThread()
+      await thread().getByText('Thư đi', { exact: true }).waitFor()
+      await thread().getByRole('link', { name: 'Trả lời hội thoại', exact: true }).waitFor()
+      assert.equal(await thread().getByRole('link', { name: 'Trả lời hội thoại', exact: true }).getAttribute('href'), '/compose?reply=' + source)
+      await capture('sent-conversation-before-sync')
+      await articleLink(source, 'sent').click()
+      await page.waitForURL(url => url.pathname === '/sent' && url.searchParams.get('email') === source)
+      await currentMessage().getByText('Đang xem', { exact: true }).waitFor()
+      await page.getByText(sourceBody, { exact: true }).last().waitFor()
+      record('Sent opens the same inbound and outbound history before Gmail history sync and replies from the correct inbound account', true)
+    }
     await page.goto(compose)
     await page.getByRole('button', { name: 'Theo dõi hồi đáp', exact: true }).click()
     await page.getByText('Đang theo dõi hồi đáp', { exact: true }).waitFor()
@@ -236,6 +289,22 @@ export async function rehearseReplyWorkflow({ app, base, email, password, userId
     const update = (await get('/api/commitments/catchup?source=' + actual)).proposals[0]
     assert.ok(update?.review)
     await page.goto(app + '/commitments?view=catchup&source=' + actual)
+    if (conversation) {
+      const proposal = page.getByRole('heading', { name: 'Việc chờ xử lý' })
+      await proposal.waitFor()
+      await page.locator(`a[href="/inbox?email=${actual}"]`).getByText(/Mở email nguồn/).click()
+      await page.waitForURL('**/inbox?email=' + actual)
+      await page.getByText(actualReply, { exact: true }).last().waitFor()
+      await openThread()
+      assert.deepEqual((await readThread(actual)).messages.map(message => message.id), [earlier, source, recovered.sentId, actual])
+      await currentMessage().getByText('Đang xem', { exact: true }).waitFor()
+      assert.equal(await thread().getByText(decoyReply, { exact: true }).count(), 0)
+      assert.equal(await thread().getByText('Thư có mã tham chiếu nhưng người gửi không nằm trong lượt gửi.', { exact: true }).count(), 0)
+      assert.equal(googleProvider.calls.sendAttempts, 1)
+      await capture('commitment-exact-source-conversation')
+      await page.goto(app + '/commitments?view=catchup&source=' + actual)
+      record('Commitment opens the exact reply, and replayed Gmail sync keeps one outgoing message while excluding a conflicting thread reference', true)
+    }
     await page.getByRole('button', { name: 'Xem và xác nhận' }).click()
     const confirm = page.getByRole('dialog', { name: 'Xác nhận đề xuất' })
     await confirm.getByText(actualReply, { exact: true }).waitFor()
@@ -244,6 +313,16 @@ export async function rehearseReplyWorkflow({ app, base, email, password, userId
     const updated = await ledger()
     assert.equal(updated.version, 2)
     assert.equal(updated.state.dueOn, '2026-11-17')
+    if (conversation) {
+      await page.goto(app + '/commitments?group=waiting&id=' + commitment.id)
+      await page.locator(`a[href="/inbox?email=${source}"]`).first().click()
+      await page.waitForURL('**/inbox?email=' + source)
+      await page.getByText(sourceBody, { exact: true }).last().waitFor()
+      await openThread()
+      await currentMessage().getByText('Đang xem', { exact: true }).waitFor()
+      await articleLink(actual).waitFor()
+      record('The commitment ledger opens the older original source without switching to the newest reply', true)
+    }
     record('only the cited reply in the tracked account appears in Action Inbox and the commitment changes only after explicit confirmation', true)
 
     stage('kiểm tra phiên bản bản nháp và phân quyền')
@@ -252,6 +331,32 @@ export async function rehearseReplyWorkflow({ app, base, email, password, userId
     assert.ok((await foreign.rpc('read_reply_workbench', { p_source: source })).error)
     assert.ok((await foreign.rpc('change_reply_draft', { p_id: saved.id, p_action: 'stop' })).error)
     assert.ok((await anonymousClient.rpc('list_reply_work', { p_accounts: [] })).error)
+    if (conversation) {
+      assert.equal((await foreign.rpc('read_email_conversation', { p_email_id: source })).error?.code, 'PT404')
+      assert.ok((await anonymousClient.rpc('read_email_conversation', { p_email_id: source })).error)
+      assert.equal((await appFetch('/api/emails/' + source + '/conversation?beforeId=' + source)).status, 400)
+      const earlierBatch = Array.from({ length: 22 }, (_, index) => ({ ...initial, id: 'conversation-history-' + index,
+        at: new Date(Date.parse(initial.at) - (30 + index) * 86_400_000).toISOString(),
+        messageId: '<conversation-history-' + index + '@example.test>', body: 'Tài liệu trước đó số ' + index }))
+      buying.deliver(earlierBatch)
+      await syncUntil(buying.id, earlierBatch.at(-1).id)
+      const recent = await readThread(source)
+      assert.equal(recent.messages.length, 20)
+      assert.ok(recent.older)
+      await page.goto(app + '/inbox?email=' + source)
+      await openThread()
+      await thread().getByRole('button', { name: 'Xem thư cũ hơn' }).click()
+      await thread().getByRole('button', { name: 'Xem thư cũ hơn' }).waitFor({ state: 'hidden' })
+      assert.equal(await thread().getByRole('listitem').count(), 26)
+      const oldest = emailId(buying.id, earlierBatch.at(-1).id)
+      const pinned = await readThread(oldest)
+      assert.equal(pinned.messages.length, 21)
+      assert.equal(pinned.messages[0].id, oldest)
+      assert.deepEqual(pinned.older, recent.older)
+      assert.equal(googleProvider.calls.sendAttempts, 1)
+      record('Conversation pagination retains an older selected message, loads the remaining history once, and rejects foreign and anonymous readers', true)
+    }
+
     assert.ok((await login.rpc('read_reply_approval', { p_actor: userId, p_id: saved.id })).error)
     assert.ok((await login.rpc('begin_reply_send', { p_user_id: userId, p_account_id: buying.id, p_draft: saved.id,
       p_key: randomUUID(), p_hash: 'a'.repeat(64), p_payload: {} })).error)
@@ -293,7 +398,7 @@ export async function rehearseReplyWorkflow({ app, base, email, password, userId
     assert.deepEqual(await queue(), [])
     record('concurrent draft edits detect conflict and status checks or changed evidence cannot claim a new dispatch', true)
     record('foreign and anonymous access is blocked, and acknowledgement persists without a second outbound send', true)
-    record('five Chromium captures on desktop, tablet and mobile have no sampled axe violations, page errors or horizontal overflow', true)
+    record('Chrome captures on desktop, tablet and mobile have no sampled axe violations, page errors or horizontal overflow', true)
     writeFileSync(output + '/workflow.json', JSON.stringify({
       accounts: accounts.length, resumedDrafts: 1, browserNetworkDrops: 1, providerAcknowledgementDrops: 1,
       acceptedDispatches: googleProvider.calls.sent.length, sendAttempts: googleProvider.calls.sendAttempts,

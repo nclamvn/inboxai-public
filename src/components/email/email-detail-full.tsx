@@ -10,6 +10,7 @@ import {
 import { cn } from '@/lib/utils'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
 import { AIBottomBar } from './ai-bottom-bar'
+import { EmailConversation } from './email-conversation'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import { AttachmentList } from './attachment-list'
 import { offerReplyText } from '@/lib/replies/client'
@@ -574,6 +575,7 @@ export function EmailDetailFull({
 
       {/* Email Body */}
       <div role="region" aria-label="Nội dung thư" tabIndex={0} className="flex-1 overflow-y-auto px-6 py-6">
+        <EmailConversation key={email.id} email={email} />
         {email.body_html && email.body_html.replace(/<[^>]*>/g, '').trim().length > 10 ? (
           <div
             className="email-content prose prose-sm dark:prose-invert max-w-none text-[var(--foreground)] "

@@ -161,11 +161,11 @@ export function useEmailsQuery(params: FetchEmailsParams = {}) {
 }
 
 // Single email detail with longer cache
-export function useEmailDetailQuery(emailId: string | null) {
+export function useEmailDetailQuery(emailId: string | null, userId: string | null) {
   return useQuery({
-    queryKey: ['email-detail', emailId],
+    queryKey: ['email-detail', userId, emailId],
     queryFn: () => fetchEmailDetail(emailId!),
-    enabled: !!emailId,
+    enabled: Boolean(emailId && userId),
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes cache
   })

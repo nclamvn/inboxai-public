@@ -34,7 +34,8 @@ const day = dayPreview || dayTest
 const interactivePreview = journeyPreview || dayPreview
 const dailyCommitments = process.argv.includes('--daily-commitments')
 const catchup = process.argv.includes('--catchup')
-const replies = process.argv.includes('--reply-workflow')
+const conversation = process.argv.includes('--inbox-conversation')
+const replies = conversation || process.argv.includes('--reply-workflow')
 const followups = process.argv.includes('--reply-followup')
 const gmailReconnect = process.argv.includes('--gmail-reconnect')
 const scheduledSend = process.argv.includes('--scheduled-send')
@@ -54,7 +55,7 @@ const platformOutput = isolatedPlatform ? 'test-results/commitment-attention/pla
 const isolated = journeyE2E || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedPlatform
 const isolatedBuild = isolated || isolatedStaging
 const productionMode = m6 || staging || journey || isolated
-const journeyOutput = gmailReconnect ? 'test-results/gmail-reconnect' : scheduledSend ? 'test-results/scheduled-send' : emailSnoozes ? 'test-results/email-snoozes' : gmailTriage ? 'test-results/gmail-triage' : composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
+const journeyOutput = conversation ? 'test-results/inbox-conversation' : gmailReconnect ? 'test-results/gmail-reconnect' : scheduledSend ? 'test-results/scheduled-send' : emailSnoozes ? 'test-results/email-snoozes' : gmailTriage ? 'test-results/gmail-triage' : composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
 const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.test'
 const evidenceFile = journey ? `${journeyOutput}/report.json`
   : commitmentOutput ? commitmentOutput + '/local-run.json'
@@ -388,7 +389,7 @@ try {
   } else if (replies) {
     const { rehearseReplyWorkflow } = await import('../tests/design/reply-workflow.mjs')
     await rehearseReplyWorkflow({ app, base, email, password, userId, admin, login, appFetch, sql, googleProvider,
-      previousEmail, anon, anonymousClient, restartNext, smtpWire, record, output: journeyOutput })
+      previousEmail, anon, anonymousClient, restartNext, smtpWire, record, output: journeyOutput, conversation })
   } else if (catchup) {
     const { rehearseInboxCatchup } = await import('../tests/design/inbox-catchup.mjs')
     await rehearseInboxCatchup({ app, base, email, password, userId, admin, login, appFetch, sql, googleProvider,
@@ -495,7 +496,8 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = gmailReconnect ? 'Production-mode Next, Google Chrome, PostgreSQL, two loopback Gmail accounts, background worker, revoked grants and browser OAuth recovery'
+  const provenance = conversation ? 'Production-mode Next, Google Chrome, PostgreSQL and two loopback Gmail accounts; account-scoped conversation reader, dropped send acknowledgement and exact commitment source links'
+    : gmailReconnect ? 'Production-mode Next, Google Chrome, PostgreSQL, two loopback Gmail accounts, background worker, revoked grants and browser OAuth recovery'
     : scheduledSend ? 'Production-mode Next, Google Chrome, PostgreSQL and two loopback Gmail accounts, browser and database clocks, independent worker ticks and injected provider acknowledgement loss'
     : emailSnoozes ? 'Production-mode Next, Chrome, PostgreSQL, two loopback Gmail accounts, controlled browser and database clocks and interrupted acknowledgement'
     : gmailTriage ? 'Production-mode Next, Chromium, local PostgreSQL and two loopback Gmail accounts with label history and injected connection loss'

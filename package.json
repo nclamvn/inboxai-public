@@ -49,7 +49,8 @@
     "test:scheduled-send": "npm run test:local-auth -- --scheduled-send",
     "worker:scheduled-send": "node scripts/scheduled-send-worker.mjs",
     "test:gmail-reconnect": "npm run test:local-auth -- --gmail-reconnect",
-    "worker:gmail-sync": "node scripts/gmail-sync-worker.mjs"
+    "worker:gmail-sync": "node scripts/gmail-sync-worker.mjs",
+    "test:inbox-conversation": "npm run test:local-auth -- --inbox-conversation"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

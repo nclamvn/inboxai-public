@@ -1,5 +1,27 @@
 # Verification record
 
+## Inbox and Sent conversation reader
+
+On 2026-11-12, `npm run test:inbox-conversation` passed 29 local Chrome
+checks with two loopback Gmail accounts, PostgreSQL 16 and a production-mode
+Next.js 16.4.6 build on macOS arm64 and Node 24.14.1. Matching subjects and
+Gmail thread IDs stayed separate across accounts. An accepted outbound
+reply appeared in Sent and the same conversation before the next Gmail
+history sync. After provider and browser acknowledgements were dropped,
+a Next restart and replay recovered one receipt, one provider dispatch
+and one Sent row. The commitment links opened both the newer reply and
+the earlier source, retaining the selected message. A 26-message fixture
+verified paging, a pinned older source and denied access for foreign
+and anonymous readers. Chrome sampled nine screens across desktop, tablet and mobile with
+zero axe violations, page errors and horizontal overflow. The mobile
+reader retained the selected source while navigating the conversation.
+
+Lint, TypeScript, 241 unit tests, 200 integration tests, and 27 SQL checks
+passed. Lint reported 91 existing warnings. The design, platform, reply
+workflow and local staging suites passed 25, 19, 23 and 31 checks.
+[Local conversation handoff](INBOX_CONVERSATION_LOCAL_HANDOFF.md) ·
+[Chrome report](../../test-results/inbox-conversation/report.json)
+
 ## Workspace color and status cues
 
 On 2026-11-12, local Chrome with synthetic data verified the selected

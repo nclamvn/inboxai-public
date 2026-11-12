@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query'
 import { AttachmentList, type Attachment } from './attachment-list'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
 import { AIFeaturesPanel } from '@/components/ai'
+import { EmailConversation } from './email-conversation'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import { PhishingWarning } from '@/components/email/phishing-warning'
 import { offerReplyText } from '@/lib/replies/client'
@@ -21,6 +22,7 @@ interface EmailDetailProps {
   onStar: () => void
   onArchive: () => void
   archiveLabel?: string
+  conversationFolder?: 'sent'
   onDelete: () => void
   onReply?: () => void
   onRefresh?: () => void
@@ -43,7 +45,7 @@ const categoryLabels: Record<string, string> = {
   social: 'Mạng xã hội',
 }
 
-export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onReply, onRefresh, archiveLabel = 'Lưu trữ' }: EmailDetailProps) {
+export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onReply, onRefresh, archiveLabel = 'Lưu trữ', conversationFolder }: EmailDetailProps) {
   const router = useRouter()
   const [classifying, setClassifying] = useState(false)
   const [showReplyAssistant, setShowReplyAssistant] = useState(false)
@@ -376,6 +378,8 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
             </div>
           </div>
         )}
+
+        {conversationFolder && <EmailConversation key={email.id} email={email} folder={conversationFolder} className="mx-4 mt-4" />}
 
         {/* AI Features Panel - Unified with fallback */}
         <div className="p-4">

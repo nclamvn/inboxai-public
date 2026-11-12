@@ -13,12 +13,15 @@ DECLARE
   approval jsonb;
   receipt jsonb;
   sent_id text;
+  sent_email uuid;
   context jsonb;
   input jsonb;
   payload jsonb;
   reminder jsonb;
 BEGIN
-  IF has_table_privilege('authenticated','private.reply_drafts','SELECT')
+  IF has_function_privilege('anon','public.read_email_conversation(uuid,timestamptz,uuid)','EXECUTE')
+    OR has_function_privilege('authenticated','private.email_conversation_members(public.emails)','EXECUTE')
+    OR has_table_privilege('authenticated','private.reply_drafts','SELECT')
     OR has_function_privilege('anon','public.read_reply_workbench(uuid)','EXECUTE')
     OR has_function_privilege('authenticated','public.prepare_reply_send(uuid,uuid,integer,jsonb,text)','EXECUTE')
     OR has_function_privilege('service_role','private.commit_account_sync_page(uuid,uuid,uuid,bigint,integer,jsonb,text,jsonb,jsonb,uuid,boolean)','EXECUTE')
@@ -57,6 +60,13 @@ BEGIN
   THEN RAISE EXCEPTION 'current appointment did not become due'; END IF;
   INSERT INTO public.emails(id,user_id,source_account_id,message_id,subject,from_address,reply_references)
   VALUES(linked,actor,own_account,'<referenced@example.test>','Re: Đối chiếu','vendor@example.test',ARRAY['<origin@example.test>',sent_id]);
+  SELECT id INTO STRICT sent_email FROM public.emails
+    WHERE user_id=actor AND source_account_id=own_account AND message_id=sent_id AND direction='outbound';
+  context := public.read_email_conversation(source);
+  IF jsonb_array_length(context->'messages')<>3
+    OR NOT EXISTS (SELECT 1 FROM jsonb_array_elements(context->'messages') m WHERE m->>'id'=linked::text)
+    OR public.read_email_conversation(sent_email)->>'replyId' IS NULL
+  THEN RAISE EXCEPTION 'conversation lost a scoped RFC reference or the accepted sent mirror'; END IF;
   IF public.list_reply_work('{}')#>>'{0,replyId}' IS DISTINCT FROM linked::text
   THEN RAISE EXCEPTION 'References-only evidence failed to match'; END IF;
   BEGIN
@@ -71,4 +81,5 @@ END $$;
 
 SELECT 'PASS: Reply approval freezes recipients and References matches only in the sending account';
 SELECT 'PASS: Due reminder cannot be claimed once a matching reply is committed';
+SELECT 'PASS: Conversation honors account scope and links legacy references and confirmed outbound receipts';
 ROLLBACK;

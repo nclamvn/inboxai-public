@@ -21,6 +21,7 @@
 /test-results/day-preview/
 /test-results/inbox-catchup/
 /test-results/reply-workflow/
+/test-results/inbox-conversation/
 /test-results/reply-followup/
 /test-results/email-snoozes/
 /test-results/scheduled-send/
