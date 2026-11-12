@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  PanelLeft, Pencil, Inbox, Send, Star, Archive, Trash2,
+  PanelLeft, Pencil, Inbox, Send, Star, Archive, Trash2, Clock,
   BarChart3, Settings, Newspaper, ListTodo, Bell, Mail, ClipboardCheck, Search, ListChecks,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -14,6 +14,7 @@ import { FollowUpInlineBadge } from '@/components/follow-up/follow-up-badge'
 const groups = [
   { label: 'Thư mục', items: [
     { href: '/inbox', icon: Inbox, label: 'Hộp thư đến' },
+    { href: '/snoozed', icon: Clock, label: 'Đã hẹn' },
     { href: '/sent', icon: Send, label: 'Đã gửi' },
     { href: '/starred', icon: Star, label: 'Gắn sao' },
     { href: '/archive', icon: Archive, label: 'Lưu trữ' },

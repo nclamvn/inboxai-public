@@ -54,6 +54,8 @@ export interface Email {
   sync_namespace?: string
   provider_deleted?: boolean
   snoozed_until: string | null
+  snooze_version?: number
+  inbox_appearance_at?: string | null
   user_notes: string | null
   attachment_count: number | null
 

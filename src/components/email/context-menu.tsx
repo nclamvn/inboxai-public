@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import {
   Reply, ReplyAll, Forward, Archive, Trash2,
   Mail, MailOpen, Star, StarOff, Ban, AlertTriangle,
-  Sparkles, FileText, Tag
+  Sparkles, FileText, Tag, Clock,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -96,6 +96,8 @@ export function ContextMenu({
       { id: 'reply-all', label: 'Trả lời tất cả', icon: ReplyAll, onClick: () => onAction('reply-all') },
       { id: 'forward', label: 'Chuyển tiếp', icon: Forward, onClick: () => onAction('forward'), divider: true },
     ] : []),
+
+    ...(isSingleSelect ? [{ id: 'snooze', label: 'Hẹn xử lý', icon: Clock, onClick: () => onAction('snooze') }] : []),
 
     // Archive & Delete
     { id: 'archive', label: 'Lưu trữ', icon: Archive, onClick: () => onAction('archive') },

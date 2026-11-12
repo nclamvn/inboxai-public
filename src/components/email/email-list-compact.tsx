@@ -462,6 +462,7 @@ export function EmailListCompact({
           <span className="flex min-w-0 items-center gap-2 text-sm leading-5">
             {!email.is_read && <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-[var(--selection-line)]" />}
             <span className={cn('truncate', !email.is_read && 'font-semibold')}>{subject}</span>
+            {email.snoozed_until && <span className="shrink-0 text-xs text-[var(--accent-foreground)]">Đến hẹn</span>}
             {(email.attachment_count || 0) > 0 && <Paperclip size={14} className="shrink-0 text-[var(--foreground-muted)]" aria-label="Có tệp đính kèm" />}
           </span>
           {rank?.band === 'action' ? (

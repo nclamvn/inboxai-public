@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   ChevronLeft, Star, MoreVertical, Reply, Forward,
-  Archive, Trash2, Mail, AlertCircle, Loader2,
+  Archive, Clock, Trash2, Mail, AlertCircle, Loader2,
   Tag, Flag, MailOpen, Ban, Check, ListTodo
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -31,6 +31,7 @@ interface EmailDetailMobileProps {
   onRefresh?: () => void
   onStar?: (id: string) => void
   onArchive?: (id: string) => void
+  onSnooze?: () => void
   onDelete?: (id: string) => void
   onExplainPriority?: () => void
 }
@@ -41,6 +42,7 @@ export function EmailDetailMobile({
   onRefresh,
   onStar,
   onArchive,
+  onSnooze,
   onDelete,
   onExplainPriority
 }: EmailDetailMobileProps) {
@@ -291,6 +293,7 @@ export function EmailDetailMobile({
             <div className="w-10 h-1 bg-[var(--border)] rounded-full mx-auto mt-3 mb-2" />
 
             <div className="px-2 pb-4">
+              {onSnooze && <ActionItem icon={Clock} label="Hẹn xử lý" onClick={() => { setShowActions(false); onSnooze() }} />}
               <ActionItem
                 icon={Archive}
                 label="Lưu trữ"

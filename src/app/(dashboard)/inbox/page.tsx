@@ -3,6 +3,7 @@
 import { Suspense, useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import { Loader2, X, ListFilter } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -13,6 +14,7 @@ import { useIsMobile } from '@/hooks/use-media-query'
 import { EmailListSkeleton } from '@/components/email/email-list-skeleton'
 import { SelectionProvider } from '@/contexts/email-selection-context'
 import { gmailTriageRefresh, triageActions, useGmailTriage } from '@/components/email/gmail-triage'
+import { EmailSnoozeDialog } from '@/components/email/email-snooze-dialog'
 import { SelectionToolbar } from '@/components/email/selection-toolbar'
 import { UnifiedTopBar } from '@/components/layout/unified-top-bar'
 import { MobileInboxHeader } from '@/components/layout/mobile-inbox-header'
@@ -95,6 +97,8 @@ function InboxContent() {
   const [reclassifying, setReclassifying] = useState(false)
   const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [snoozeTarget, setSnoozeTarget] = useState<Email | null>(null)
+  const [snoozeNotice, setSnoozeNotice] = useState(false)
   const [priorityTarget, setPriorityTarget] = useState<Email | null>(null)
   const [now, setNow] = useState(Date.now)
 
@@ -432,6 +436,12 @@ function InboxContent() {
     console.log(`[BULK ACTION] ${action} on ${emailIds.length} emails`, data)
 
     try {
+      if (action === 'snooze') {
+        const email = emails.find(row => row.id === emailIds[0])
+        if (email && emailIds.length === 1) setSnoozeTarget(email)
+        return
+      }
+
       // Handle navigation actions locally
       if (action === 'reply' || action === 'reply-all' || action === 'forward') {
         const email = emails.find(e => e.id === emailIds[0])
@@ -484,6 +494,14 @@ function InboxContent() {
   }, [emails, fetchedEmail, router, refetch, triageEnabled, changeFlags])
 
   const selectedEmail = fetchedEmail
+  const snoozeSelected = selectedEmail?.direction === 'inbound' && !selectedEmail.is_archived &&
+    !selectedEmail.is_deleted && !selectedEmail.provider_deleted ? () => setSnoozeTarget(selectedEmail) : undefined
+  const snoozeDialog = snoozeTarget && <EmailSnoozeDialog email={snoozeTarget}
+    mode={snoozeTarget.snoozed_until ? 'move' : 'schedule'}
+    onClose={() => setSnoozeTarget(null)} onSaved={() => {
+      setSnoozeNotice(true)
+      if (selectedId === snoozeTarget.id) handleCloseEmail()
+    }} />
   const explainSelected = selectedEmail?.direction === 'inbound' &&
     !selectedEmail.is_deleted && !selectedEmail.is_archived && !selectedEmail.provider_deleted
     ? () => setPriorityTarget(selectedEmail)
@@ -550,9 +568,11 @@ function InboxContent() {
           onStar={id => void toggleStar(id, fetchedEmail?.id === id ? fetchedEmail : undefined)}
           onArchive={handleArchive}
           onDelete={handleDelete}
+          onSnooze={snoozeSelected}
           onExplainPriority={explainSelected}
         />
         {priorityDialog}
+        {snoozeDialog}
       </>
     )
   }
@@ -600,6 +620,11 @@ function InboxContent() {
           />
         </header>
       )}
+
+      {isMobile && <Link href="/snoozed" className="neo-target flex min-h-11 items-center border-b border-[var(--border)] px-4 text-sm text-[var(--accent-foreground)] underline">Đã hẹn</Link>}
+      {snoozeNotice && <p role="status" className="border-b border-[var(--border)] px-4 py-2 text-sm">
+        Đã lưu lịch xử lý. <Link href="/snoozed" className="inline-flex min-h-8 items-center text-[var(--accent-foreground)] underline">Xem thư đã hẹn</Link>
+      </p>}
 
       {/* Briefing Filter Banner - Show when filtering by AI Thư Ký */}
       {briefingFilter && effectiveViewMode !== 'full' && (
@@ -711,6 +736,7 @@ function InboxContent() {
               onStar={id => void toggleStar(id, fetchedEmail?.id === id ? fetchedEmail : undefined)}
               onArchive={handleArchive}
               onDelete={handleDelete}
+              onSnooze={snoozeSelected}
               fullWidth={effectiveViewMode === 'full'}
               onExplainPriority={explainSelected}
             />
@@ -744,6 +770,7 @@ function InboxContent() {
       </div>
 
       {priorityDialog}
+      {snoozeDialog}
 
       {/* Mobile: Category Filter Sheet */}
       {isMobile && (

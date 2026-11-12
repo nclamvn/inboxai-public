@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { gmailTriageRefresh, useGmailTriage } from '@/components/email/gmail-triage'
+import { emailSnoozeChanged } from '@/lib/snooze/client'
 import { triageBatchLimit, type TriageFlag } from '@/lib/gmail-triage/contracts'
 import type { Email, InboxPriority } from '@/types'
 
@@ -13,7 +14,7 @@ export interface InboxPriorityResult {
 }
 
 interface UseEmailsOptions {
-  folder?: 'inbox' | 'sent' | 'starred' | 'archive' | 'trash'
+  folder?: 'inbox' | 'snoozed' | 'sent' | 'starred' | 'archive' | 'trash'
   pageSize?: number
   accountIds?: string[] // Filter by specific account(s)
 }
@@ -22,8 +23,8 @@ const emailListFields = `
   id, from_name, from_address, to_addresses, subject,
   received_at, is_read, is_starred, is_archived, is_deleted,
   priority, category, needs_reply, detected_deadline, direction,
-  summary, ai_confidence, source_account_id, attachment_count, sync_namespace`
-const inboxListFields = `${emailListFields}, snippet:inbox_preview, inbox_priority, inbox_priority_version` as const
+  summary, ai_confidence, source_account_id, attachment_count, sync_namespace, snoozed_until, snooze_version`
+const inboxListFields = `${emailListFields}, snippet:inbox_preview, inbox_priority, inbox_priority_version, inbox_appearance_at` as const
 
 export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEmailsOptions = {}) {
   const [userId, setUserId] = useState<string | null>(null)
@@ -33,7 +34,11 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
   const [error, setError] = useState<string | null>(null)
   const [pageError, setPageError] = useState(false)
   const [hasMore, setHasMore] = useState(true)
-  const cursorRef = useRef<Pick<Email, 'received_at' | 'id'> | null>(null)
+  const cursorRef = useRef<Email | null>(null)
+  const wakeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const managesSnoozes = folder === 'inbox' || folder === 'snoozed'
+  const orderField = folder === 'inbox' ? 'inbox_appearance_at' : folder === 'snoozed' ? 'snoozed_until' : 'received_at'
+  const ascending = folder === 'snoozed'
   const requestGeneration = useRef(0)
   const paging = useRef(false)
 
@@ -54,11 +59,13 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
     // Apply folder-specific filters
     switch (folder) {
       case 'inbox':
+      case 'snoozed':
         query = query
           .eq('direction', 'inbound')
           .eq('is_archived', false)
           .eq('is_deleted', false)
           .eq('provider_deleted', false)
+          .eq('email_is_snoozed', folder === 'snoozed')
         break
       case 'sent':
         query = query
@@ -84,24 +91,39 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
   }, [folder, accountIds, supabase])
 
   // Fetch initial page - CURSOR-BASED O(1) vs O(n) offset
-  const fetchEmails = useCallback(async () => {
+  const fetchEmails = useCallback(async function refresh(quiet = false) {
     const generation = ++requestGeneration.current
-    setLoading(true)
+    if (wakeTimer.current !== null) clearTimeout(wakeTimer.current)
+    if (!quiet) setLoading(true)
     setLoadingMore(false)
     paging.current = false
     setError(null)
     setPageError(false)
-    cursorRef.current = null
+    if (!quiet) cursorRef.current = null
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      // Probe before reading the list so a deadline crossed between the two
+      // requests either appears in this page or still has a timer to refresh it.
+      const [session, clock] = await Promise.all([
+        supabase.auth.getUser(),
+        managesSnoozes ? supabase.rpc('email_snooze_clock', { p_accounts: accountIds ?? null })
+          .abortSignal(AbortSignal.timeout(5000)) : null,
+      ])
+      const { data: { user } } = session
       if (generation !== requestGeneration.current) return
       setUserId(user?.id ?? null)
       if (!user) throw new Error('Not authenticated')
 
+      if (clock && !clock.error && clock.data?.nextAt) {
+        const wait = Date.parse(clock.data.nextAt) - Date.parse(clock.data.now)
+        if (Number.isFinite(wait)) wakeTimer.current = setTimeout(() => { void refresh(true) }, Math.max(25, Math.min(wait, 2_147_483_647)))
+      } else if (clock?.error) {
+        wakeTimer.current = setTimeout(() => { void refresh(true) }, 30_000)
+      }
+
       // Fetch pageSize + 1 to check if there's more
       const { data, error: fetchError } = await buildQuery(user.id)
-        .order('received_at', { ascending: false, nullsFirst: false })
+        .order(orderField, { ascending, nullsFirst: false })
         .order('id', { ascending: false })
         .limit(pageSize + 1)
 
@@ -128,14 +150,16 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
       cursorRef.current = fetchedEmails.at(-1) ?? null
     } catch (err) {
       if (generation === requestGeneration.current) {
-        setEmails([])
-        setHasMore(false)
+        if (!quiet) {
+          setEmails([])
+          setHasMore(false)
+        }
         setError(err instanceof Error ? err.message : 'Failed to fetch emails')
       }
     } finally {
       if (generation === requestGeneration.current) setLoading(false)
     }
-  }, [buildQuery, folder, pageSize, supabase])
+  }, [accountIds, ascending, buildQuery, folder, managesSnoozes, orderField, pageSize, supabase])
 
   // Load more emails - CURSOR-BASED O(1) pagination
   const loadMore = useCallback(async () => {
@@ -151,11 +175,13 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
       if (!user) throw new Error('Not authenticated')
 
       const query = buildQuery(user.id)
-      const page = cursor.received_at === null
-        ? query.is('received_at', null).lt('id', cursor.id)
-        : query.or(`received_at.lt.${cursor.received_at},and(received_at.eq.${cursor.received_at},id.lt.${cursor.id}),received_at.is.null`)
+      const timestamp = orderField === 'inbox_appearance_at'
+        ? cursor.inbox_appearance_at ?? cursor.received_at : cursor[orderField]
+      const page = timestamp === null
+        ? query.is(orderField, null).lt('id', cursor.id)
+        : query.or(`${orderField}.${ascending ? 'gt' : 'lt'}.${timestamp},and(${orderField}.eq.${timestamp},id.lt.${cursor.id}),${orderField}.is.null`)
       const { data, error: fetchError } = await page
-        .order('received_at', { ascending: false, nullsFirst: false })
+        .order(orderField, { ascending, nullsFirst: false })
         .order('id', { ascending: false })
         .limit(pageSize + 1)
 
@@ -182,19 +208,33 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
         setLoadingMore(false)
       }
     }
-  }, [buildQuery, hasMore, pageSize, supabase])
+  }, [ascending, buildQuery, hasMore, orderField, pageSize, supabase])
 
   useEffect(() => {
-    fetchEmails()
-    return () => { requestGeneration.current++ }
+    void fetchEmails()
+    return () => {
+      requestGeneration.current++
+      if (wakeTimer.current !== null) clearTimeout(wakeTimer.current)
+    }
   }, [fetchEmails])
 
   useEffect(() => {
-    if (!triageEnabled) return
-    const refresh = () => { void fetchEmails() }
+    if (!triageEnabled && !managesSnoozes) return
+    const refresh = () => { void fetchEmails(true) }
+    const resume = () => { if (document.visibilityState === 'visible') refresh() }
     window.addEventListener(gmailTriageRefresh, refresh)
-    return () => window.removeEventListener(gmailTriageRefresh, refresh)
-  }, [triageEnabled, fetchEmails])
+    if (managesSnoozes) {
+      window.addEventListener(emailSnoozeChanged, refresh)
+      window.addEventListener('online', refresh)
+      document.addEventListener('visibilitychange', resume)
+    }
+    return () => {
+      window.removeEventListener(gmailTriageRefresh, refresh)
+      window.removeEventListener(emailSnoozeChanged, refresh)
+      window.removeEventListener('online', refresh)
+      document.removeEventListener('visibilitychange', resume)
+    }
+  }, [fetchEmails, managesSnoozes, triageEnabled])
 
   const changeFlags = async (targets: Email[], flag: TriageFlag, desired: boolean) => {
     if (targets.length === 0) return false
@@ -320,6 +360,8 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
     return !error
   }
 
+  const refetch = useCallback(() => fetchEmails(), [fetchEmails])
+
   return {
     userId,
     emails,
@@ -328,7 +370,7 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
     error,
     pageError,
     hasMore,
-    refetch: fetchEmails,
+    refetch,
     loadMore,
     changeFlags,
     markAsRead,

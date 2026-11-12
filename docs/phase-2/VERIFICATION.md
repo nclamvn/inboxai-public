@@ -1,5 +1,25 @@
 # Verification record
 
+## Email snooze and scheduled Inbox return
+
+On 2026-11-12, `npm run test:email-snoozes` exited 0 on macOS arm64 with
+Node 24.14.1, Next.js 16.4.6, Chrome 157 and PostgreSQL 16. The production-mode
+build and 20 browser/Auth checks used two loopback Gmail accounts with
+matching subject and provider message ID. Cancellation restored only the
+selected message. After a move lost its browser acknowledgement, a Next
+restart preserved the new deadline and version. At the database deadline,
+the open mobile Inbox returned the older message once on its first page.
+The Gmail-archived message stayed out. The run recorded zero provider
+writes or sends, and sampled desktop and mobile screens had zero axe
+violations. PostgreSQL verified replay, stale cancellation and exact
+deadline visibility.
+
+Lint exited 0 with 91 existing warnings. TypeScript, 241 unit tests, 199
+integration tests and 24 SQL checks passed. Design, platform, Gmail triage,
+E2E and staging exited 0 with 25, 19, 25, 41 and 31 checks. See the
+[email snooze handoff](EMAIL_SNOOZES_LOCAL_HANDOFF.md) for local commands and
+browser evidence.
+
 ## Bidirectional Gmail Inbox triage and undo
 
 On 2026-11-12, `npm run test:gmail-triage` exited 0 on macOS arm64 with

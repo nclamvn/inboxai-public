@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  Star, Archive, Trash2, Reply, Forward, MoreHorizontal,
+  Star, Archive, Clock, Trash2, Reply, Forward, MoreHorizontal,
   ListTodo, ChevronDown, ChevronUp, Loader2, X, Mail,
   Check, ShieldAlert, Ban, Printer, Download, AlertTriangle
 } from 'lucide-react'
@@ -30,6 +30,7 @@ interface Props {
   onRefresh: () => void
   onStar?: (id: string) => void
   onArchive?: (id: string) => void
+  onSnooze?: () => void
   onDelete?: (id: string) => void
   onExplainPriority?: () => void
   fullWidth?: boolean
@@ -41,6 +42,7 @@ export function EmailDetailFull({
   onRefresh,
   onStar,
   onArchive,
+  onSnooze,
   onDelete,
   onExplainPriority,
   fullWidth = false
@@ -386,7 +388,11 @@ export function EmailDetailFull({
             {showMoreMenu && (
               <div className="absolute right-0 top-full mt-1 w-48 bg-[var(--card)] rounded-lg border border-[var(--border)] z-50 py-1">
                 {/* Print */}
-                <button
+                {onSnooze && <button type="button" onClick={() => { setShowMoreMenu(false); onSnooze() }}
+                className="flex min-h-11 w-full items-center gap-2 px-3 text-left text-sm hover:bg-[var(--hover)]">
+                <Clock size={16} aria-hidden="true" /> Hẹn xử lý
+              </button>}
+              <button
                   type="button"
                   onClick={() => {
                     setShowMoreMenu(false)

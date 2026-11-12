@@ -40,6 +40,7 @@
     "preview:e2e": "node --import tsx --conditions=react-server scripts/test-local-auth.mjs --m6d-preview",
     "preview:day": "node --import tsx --conditions=react-server scripts/test-local-auth.mjs --day-preview",
     "test:reply-workflow": "npm run test:local-auth -- --reply-workflow",
+    "test:email-snoozes": "npm run test:local-auth -- --email-snoozes",
     "test:gmail-triage": "npm run test:local-auth -- --gmail-triage",
     "test:compose-attachments": "npm run test:local-auth -- --compose-attachments",
     "test:reply-followup": "npm run test:local-auth -- --reply-followup",
