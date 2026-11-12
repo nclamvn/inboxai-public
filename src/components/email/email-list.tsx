@@ -1,10 +1,10 @@
 'use client'
 
-import { Star, Paperclip, AlertCircle } from 'lucide-react'
+import { Star, AlertCircle } from 'lucide-react'
 import { cn, formatDate, truncate } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
 import { useOptionalSelection } from '@/contexts/email-selection-context'
 import type { Email } from '@/types'
+import { getMailCategoryLabel, MailCategoryLabel } from './mail-category-label'
 
 interface EmailListProps {
   emails: Email[]
@@ -12,23 +12,6 @@ interface EmailListProps {
   onSelect: (email: Email) => void
   onStar: (emailId: string) => void
   selectable?: boolean
-}
-
-const priorityColors: Record<number, string> = {
-  1: 'bg-red-600',
-  2: 'bg-amber-600',
-  3: 'bg-[var(--primary)]',
-  4: 'bg-[var(--muted-foreground)]',
-  5: 'bg-[var(--border)]',
-}
-
-const categoryLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'success' | 'warning' | 'urgent' | 'info' }> = {
-  work: { label: 'Công việc', variant: 'info' },
-  personal: { label: 'Cá nhân', variant: 'success' },
-  newsletter: { label: 'Bản tin', variant: 'default' },
-  promotion: { label: 'Khuyến mãi', variant: 'warning' },
-  transaction: { label: 'Giao dịch', variant: 'urgent' },
-  social: { label: 'Mạng XH', variant: 'secondary' },
 }
 
 export function EmailList({ emails, selectedId, onSelect, onStar, selectable }: EmailListProps) {
@@ -40,7 +23,8 @@ export function EmailList({ emails, selectedId, onSelect, onStar, selectable }: 
   return (
     <div className="divide-y divide-[var(--border)]">
       {emails.map((email) => {
-        const categoryInfo = email.category ? categoryLabels[email.category] : null
+        const subject = email.subject || '(Không có tiêu đề)'
+        const categoryLabel = getMailCategoryLabel(email.category)
         const isSelected = email.id === selectedId
 
         return (
@@ -61,9 +45,6 @@ export function EmailList({ emails, selectedId, onSelect, onStar, selectable }: 
                 aria-label={`Chọn thư: ${email.subject || '(Không có tiêu đề)'}`}
                 checked={selection.isSelected(email.id)} onChange={() => selection.toggleSelect(email.id)} />
             </label>}
-            {/* Priority Indicator */}
-            <div className={cn('w-1 h-14 rounded-full flex-shrink-0', priorityColors[email.priority || 3])} />
-
             {/* Star */}
             <button
               type="button"
@@ -85,7 +66,7 @@ export function EmailList({ emails, selectedId, onSelect, onStar, selectable }: 
             </button>
 
             {/* Content */}
-            <button type="button" aria-label={email.subject || '(Không có tiêu đề)'}
+            <button type="button" aria-label={subject} aria-description={categoryLabel}
               className="focus-ring min-h-11 min-w-0 flex-1 text-start">
               <span className="mb-1 flex items-center gap-2">
                 <span className={cn(
@@ -99,20 +80,18 @@ export function EmailList({ emails, selectedId, onSelect, onStar, selectable }: 
                     <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" strokeWidth={1.5} />
                   </span>
                 )}
-                {categoryInfo && (
-                  <Badge variant={categoryInfo.variant} size="sm">
-                    {categoryInfo.label}
-                  </Badge>
-                )}
               </span>
               <span className={cn(
                 'mb-1 block truncate text-[14px]',
                 email.is_read ? 'text-[var(--muted)]' : 'font-medium text-[var(--foreground)]'
               )}>
-                {email.subject || '(Không có tiêu đề)'}
+                {subject}
               </span>
-              <span className="block truncate text-[13px] text-[var(--muted-foreground)]">
-                {email.summary || truncate(email.snippet || '', 80)}
+              <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
+                <MailCategoryLabel category={email.category} />
+                <span className="min-w-0 basis-20 flex-1 truncate text-[13px] text-[var(--muted-foreground)]">
+                  {email.summary || truncate(email.snippet || '', 80)}
+                </span>
               </span>
             </button>
 

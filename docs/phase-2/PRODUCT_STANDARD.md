@@ -31,6 +31,13 @@ No purple, gradients, glassmorphism, glow, decorative AI glyphs, curved accents
 or large color blocks that fragment the canvas. Refinement comes from hierarchy,
 alignment, spacing, readable density, precise states and consistent interactions.
 
+Mail rows show category and priority as separate labels. Use navy for important
+mail, red for an actionable alert supported by email evidence, teal for
+transactions, terracotta for promotions, and slate for newsletters. Keep the
+labels readable in light and dark themes, including split and mobile layouts.
+Use text alongside color and reserve the 2px edge on the label for priority.
+A routine transaction retains its category without getting an urgency label.
+
 Today, Memory and Assistant are useful conceptual surfaces, not permission to
 replace routing or rebuild every component now. Source emails remain accessible.
 Cover desktop, tablet web/native and mobile web/native. Define keyboard/focus,

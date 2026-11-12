@@ -1,5 +1,24 @@
 # Verification record
 
+## Message category and priority colors
+
+On 2026-11-12, `npm run test:design -- --isolated` passed 29 checks in
+Chrome 157 with synthetic email and a production-mode Next.js 16.4.6
+build. Desktop, tablet, mobile and dark Inbox displayed five distinct
+label fills for important, urgent, transaction, promotion and newsletter
+mail. The 20 sampled label pairs measured 5.78:1 to 8.37:1 contrast.
+An abnormal transaction displayed both its category and urgency, while
+the routine receipt retained only its category. Split reading kept both
+labels visible. The sampled views had no axe violations or horizontal
+overflow. [Chrome design evidence](../../test-results/m6d/design/browser.json)
+
+Lint, TypeScript, 241 unit tests, 200 integration tests and the
+production build passed on macOS arm64 with Node 24.14.1. Lint reported
+91 existing warnings. The platform suite passed 19 checks. The
+conversation regression passed 29 checks after preserving toolbar
+label contrast during loading, with one dispatch and one Sent row
+after lost acknowledgement and a restart.
+
 ## Inbox and Sent conversation reader
 
 On 2026-11-12, `npm run test:inbox-conversation` passed 29 local Chrome

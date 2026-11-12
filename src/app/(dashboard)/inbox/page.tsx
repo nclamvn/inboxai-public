@@ -20,6 +20,7 @@ import { UnifiedTopBar } from '@/components/layout/unified-top-bar'
 import { MobileInboxHeader } from '@/components/layout/mobile-inbox-header'
 import { CategoryFilterSheet } from '@/components/layout/category-filter-sheet'
 import { AccountSwitcher } from '@/components/email/account-switcher'
+import { mailCategoryLabels } from '@/components/email/mail-category-label'
 import { InboxPriorityDialog } from '@/components/email/inbox-priority-dialog'
 import { ReplyInbox } from '@/components/replies/reply-inbox'
 import { CommitmentAttention } from '@/components/commitments/commitment-attention'
@@ -247,13 +248,7 @@ function InboxContent() {
 
   // Category labels
   const CATEGORY_LABELS: Record<string, string> = {
-    work: 'Công việc',
-    personal: 'Cá nhân',
-    transaction: 'Giao dịch',
-    newsletter: 'Newsletter',
-    promotion: 'Khuyến mãi',
-    social: 'Mạng XH',
-    spam: 'Spam',
+    ...mailCategoryLabels,
     needsAction: 'Cần xử lý',
     needs_action: 'Cần xử lý'
   }

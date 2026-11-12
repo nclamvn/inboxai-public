@@ -321,13 +321,14 @@ const FeatureButton = memo(function FeatureButton({
     <button
       type="button" onClick={handleClick}
       disabled={isLoading}
+      aria-busy={isLoading || undefined}
       aria-expanded={hasError ? undefined : isExpanded}
       aria-label={hasError ? `Thử lại: ${label}` : undefined}
       className={cn(
         'neo-nav-item neo-nav-inline neo-target min-h-8 gap-2 px-3 py-1 text-xs',
         isExpanded && 'bg-[var(--accent)] text-[var(--accent-foreground)]',
         hasError && 'text-[var(--error)]',
-        isLoading && 'opacity-50 cursor-wait'
+        isLoading && 'cursor-wait'
       )}
     >
       {isLoading ? (

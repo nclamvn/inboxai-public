@@ -33,6 +33,8 @@
   --workspace-tint: #E8F1F7;
   --category-transaction: #17635F;
   --category-transaction-bg: #E8F4F2;
+  --category-promotion: #85482F;
+  --category-promotion-bg: #F8EDE6;
   --selection-line: var(--navy);
   --card: var(--surface);
   --card-foreground: var(--ink);
@@ -78,6 +80,8 @@
   --workspace-tint: #243B4B;
   --category-transaction: #9CD8CE;
   --category-transaction-bg: #203936;
+  --category-promotion: #F2BA9E;
+  --category-promotion-bg: #402F29;
   --selection-line: #A5CCE7;
   --hover: #223440;
   --success: #9BD5BA;
@@ -97,8 +101,6 @@
   --category-personal-bg: var(--secondary);
   --category-newsletter: var(--foreground-muted);
   --category-newsletter-bg: var(--secondary);
-  --category-promotion: var(--foreground-muted);
-  --category-promotion-bg: var(--secondary);
   --category-social: var(--foreground-muted);
   --category-social-bg: var(--secondary);
   --category-spam: var(--error);
@@ -190,6 +192,44 @@
     pointer-events: none;
   }
   .neo-mail-row:focus-within { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
+
+  .neo-mail-label {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    white-space: nowrap;
+    border-radius: var(--radius-control);
+    padding-inline: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 16px;
+    color: var(--mail-label-ink, var(--foreground-muted));
+    background: var(--mail-label-fill, var(--secondary));
+  }
+  .neo-mail-label[data-category="work"],
+  .neo-mail-label[data-priority="important"] {
+    --mail-label-ink: var(--accent-foreground);
+    --mail-label-fill: var(--accent);
+  }
+  .neo-mail-label[data-priority="important"],
+  .neo-mail-label[data-priority="urgent"] {
+    border-inline-start: 2px solid currentColor;
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+  }
+  .neo-mail-label[data-category="transaction"] {
+    --mail-label-ink: var(--category-transaction);
+    --mail-label-fill: var(--category-transaction-bg);
+  }
+  .neo-mail-label[data-category="promotion"] {
+    --mail-label-ink: var(--category-promotion);
+    --mail-label-fill: var(--category-promotion-bg);
+  }
+  .neo-mail-label[data-priority="urgent"],
+  .neo-mail-label[data-category="spam"] {
+    --mail-label-ink: var(--error);
+    --mail-label-fill: var(--error-bg);
+  }
 
   .neo-dialog {
     margin: auto;

@@ -5,6 +5,7 @@
  * Bottom sheet for full category selection
  */
 
+import { mailCategoryLabels } from '@/components/email/mail-category-label';
 import { memo } from 'react';
 import {
   Inbox,
@@ -23,13 +24,13 @@ import { Modal } from '@/components/ui/modal';
 const CATEGORIES = [
   { id: 'all', label: 'Tất cả', icon: Inbox },
   { id: 'needs_action', label: 'Cần xử lý', icon: Zap },
-  { id: 'work', label: 'Công việc', icon: Briefcase },
-  { id: 'personal', label: 'Cá nhân', icon: User },
-  { id: 'transaction', label: 'Giao dịch', icon: CreditCard },
-  { id: 'newsletter', label: 'Newsletter', icon: Newspaper },
-  { id: 'promotion', label: 'Khuyến mãi', icon: Gift },
-  { id: 'social', label: 'Mạng XH', icon: Users },
-  { id: 'spam', label: 'Spam', icon: AlertOctagon },
+  { id: 'work', label: mailCategoryLabels.work, icon: Briefcase },
+  { id: 'personal', label: mailCategoryLabels.personal, icon: User },
+  { id: 'transaction', label: mailCategoryLabels.transaction, icon: CreditCard },
+  { id: 'newsletter', label: mailCategoryLabels.newsletter, icon: Newspaper },
+  { id: 'promotion', label: mailCategoryLabels.promotion, icon: Gift },
+  { id: 'social', label: mailCategoryLabels.social, icon: Users },
+  { id: 'spam', label: mailCategoryLabels.spam, icon: AlertOctagon },
 ];
 
 interface CategoryFilterSheetProps {

@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { useSelection } from '@/contexts/email-selection-context'
 import { ContextMenu } from './context-menu'
 import { CategoryPicker } from './category-picker'
+import { getMailCategoryLabel, MailCategoryLabel } from './mail-category-label'
 import type { Email } from '@/types'
 import { inboxBandLabels, type InboxRanking } from '@/lib/action-inbox/rank'
 
@@ -213,23 +214,6 @@ export function EmailListCompact({
     }
   }, [])
 
-  // Static category labels - memoized
-  const categoryLabels = useMemo(() => ({
-    work: 'Công việc',
-    personal: 'Cá nhân',
-    transaction: 'Giao dịch',
-    newsletter: 'Newsletter',
-    promotion: 'Khuyến mãi',
-    social: 'Mạng XH',
-    spam: 'Spam',
-    uncategorized: 'Chưa phân loại',
-  }), [])
-
-  const getCategoryLabel = useCallback((category: string | null) => {
-    if (!category) return ''
-    return categoryLabels[category as keyof typeof categoryLabels] || category
-  }, [categoryLabels])
-
   const sections = useMemo<EmailSection[]>(() => {
     if (!groupByPriority || !rankings) return []
     const grouped = {
@@ -398,8 +382,13 @@ export function EmailListCompact({
     const open = selectedId === email.id && !isSelecting
     const subject = email.subject || '(Không có tiêu đề)'
     const sender = email.from_name || email.from_address || 'Người gửi'
-    const label = getCategoryLabel(email.category)
+    const category = email.category
+    const categoryLabel = getMailCategoryLabel(category)
+    const hasCategoryFilter = !compact && !!onCategoryClick
     const rank = rankings?.get(email.id)
+    const reason = rank?.band === 'action' ? rank.reasons[0] : undefined
+    const priority = reason?.signal === 'alert' ? 'urgent' : reason ? 'important' : undefined
+    const priorityLabel = priority === 'urgent' ? 'Khẩn' : priority ? 'Quan trọng' : undefined
 
     return (
       <div
@@ -451,7 +440,7 @@ export function EmailListCompact({
           data-email-opener={email.id}
           onClick={event => handleTap(email, event)}
           aria-current={open ? 'true' : undefined}
-          aria-label={`${isSelecting ? 'Chọn' : 'Mở'} thư: ${subject}, ${sender}${email.is_read ? '' : ', chưa đọc'}${rank?.band === 'action' ? ', cần xử lý' : ''}`}
+          aria-label={[`${isSelecting ? 'Chọn' : 'Mở'} thư: ${subject}`, sender, !email.is_read && 'chưa đọc', priorityLabel, categoryLabel].filter(Boolean).join(', ')}
           className="flex min-h-11 min-w-0 flex-1 flex-col items-stretch gap-1 text-start focus-visible:outline-none"
         >
           <span className="flex items-center justify-between gap-2">
@@ -466,15 +455,18 @@ export function EmailListCompact({
             {email.snoozed_until && <Badge size="xs" variant="warning" className="shrink-0 px-1.5 py-0 leading-4">Đến hẹn</Badge>}
             {(email.attachment_count || 0) > 0 && <Paperclip size={14} className="shrink-0 text-[var(--foreground-muted)]" aria-label="Có tệp đính kèm" />}
           </span>
-          {rank?.band === 'action' ? (
-            <span className="truncate border-s-2 border-[var(--selection-line)] ps-2 text-xs font-medium leading-4 text-[var(--accent-foreground)]">
-              {rank.reasons[0].label}
+          <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
+            {priorityLabel && <span className="neo-mail-label" data-priority={priority}>{priorityLabel}</span>}
+            {categoryLabel && (
+              <span className={hasCategoryFilter ? 'lg:hidden' : undefined}>
+                <MailCategoryLabel category={category} />
+              </span>
+            )}
+            <span className={cn('min-w-0 basis-20 flex-1 truncate text-xs leading-4',
+              reason ? 'font-medium text-[var(--accent-foreground)]' : 'text-[var(--foreground-muted)]')}>
+              {reason?.label || (email.body_text || email.snippet || '').replace(/\s+/g, ' ').slice(0, 120)}
             </span>
-          ) : (
-            <span className="truncate text-xs leading-4 text-[var(--foreground-muted)]">
-              {(email.body_text || email.snippet || '').replace(/\s+/g, ' ').slice(0, 120)}
-            </span>
-          )}
+          </span>
         </button>
 
         {rank && onExplainPriority && !isSelecting && (
@@ -486,17 +478,13 @@ export function EmailListCompact({
           </button>
         )}
 
-        {!compact && email.category && onCategoryClick && (
+        {hasCategoryFilter && category && categoryLabel && onCategoryClick && (
           <button
-            type="button" onClick={() => onCategoryClick(email.category!)}
-            aria-label={`Lọc danh mục ${label}`}
-            className="hidden h-8 w-24 shrink-0 items-center justify-end rounded-[var(--radius-control)] px-2 text-xs text-[var(--foreground-muted)] hover:bg-[var(--secondary)] lg:inline-flex"
+            type="button" onClick={() => onCategoryClick(category)}
+            aria-label={`Lọc danh mục ${categoryLabel}`}
+            className="hidden h-8 shrink-0 items-center justify-end rounded-[var(--radius-control)] px-2 hover:bg-[var(--secondary)] lg:inline-flex"
           >
-            {email.category === 'work' ? (
-              <Badge variant="info" size="xs" className="px-1.5 py-0 leading-4">{label}</Badge>
-            ) : email.category === 'transaction' ? (
-              <span className="rounded-[var(--radius-control)] bg-[var(--category-transaction-bg)] px-2 py-px text-[11px] font-medium leading-4 text-[var(--category-transaction)]">{label}</span>
-            ) : label}
+            <MailCategoryLabel category={category} />
           </button>
         )}
       </div>

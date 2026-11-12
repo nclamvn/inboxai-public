@@ -20,6 +20,8 @@ const subjects = [
   ['Tổ vận hành', 'Lịch bảo trì hệ thống kho', 'Hệ thống sẽ tạm dừng vào tối thứ Bảy để bảo trì định kỳ.', 'work', 3],
   ['Mai Anh', 'Cập nhật danh sách khách mời', 'Đây là danh sách xác nhận tham dự tính đến sáng nay.', 'personal', 3],
   ['Bản tin Logistics', 'Tin vận tải tuần này', 'Bản tin tổng hợp tuyến và năng lực vận chuyển.', 'newsletter', 1],
+  ['Ngân hàng nội bộ', 'Giao dịch bất thường ở tài khoản nhận tiền', 'Cần xác minh một giao dịch bất thường.', 'transaction', 3],
+  ['Siêu thị linh kiện', 'Ưu đãi tháng 11', 'Giảm giá cho đơn hàng mới đến hết tuần.', 'promotion', 3],
 ]
 
 async function seed(admin, userId) {
@@ -46,6 +48,14 @@ export async function audit(page) {
     const result = await window.axe.run({ runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] } })
     return result.violations.map(({ id, impact, nodes }) => ({ id, impact, nodes: nodes.map(node => node.target) }))
   })
+}
+
+function contrastRatio(foreground, background) {
+  const luminance = color => color.match(/\d+/g).map(value => Number(value) / 255)
+    .map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4)
+    .reduce((total, value, index) => total + value * [0.2126, 0.7152, 0.0722][index], 0)
+  const [dark, light] = [luminance(foreground), luminance(background)].sort((a, b) => a - b)
+  return (light + 0.05) / (dark + 0.05)
 }
 
 export async function rehearseDesign({ app, cookies, admin, userId, record, actionInbox = false,
@@ -148,10 +158,43 @@ export async function rehearseDesign({ app, cookies, admin, userId, record, acti
       const dismissUrgent = page.getByRole('button', { name: `Đóng thông báo: ${subject}` })
       await dismissUrgent.waitFor()
       if (name !== 'mobile') await page.getByRole('button', { name: 'Tất cả tài khoản' }).waitFor()
+      const later = page.getByRole('button', { name: /^Đọc sau/ })
+      await later.evaluate(button => button.click())
+      const mailLabels = {}
+      for (const [key, message, label] of [
+        ['important', subject, 'Quan trọng'],
+        ['urgent', 'Giao dịch bất thường ở tài khoản nhận tiền', 'Khẩn'],
+        ['transaction', 'Giao dịch bất thường ở tài khoản nhận tiền', 'Giao dịch'],
+        ['promotion', 'Ưu đãi tháng 11', 'Quảng cáo'],
+        ['newsletter', 'Tin vận tải tuần này', 'Bản tin'],
+      ]) {
+        const email = page.getByRole('button', { name: new RegExp(`^Mở thư: ${message},.*${label}`) })
+        const badge = email.locator('..').locator('.neo-mail-label:visible').filter({ hasText: new RegExp(`^${label}$`) })
+        await badge.waitFor()
+        const colors = await badge.evaluate(element => {
+          const style = getComputedStyle(element)
+          return { foreground: style.color, background: style.backgroundColor }
+        })
+        const contrast = contrastRatio(colors.foreground, colors.background)
+        assert.ok(contrast >= 4.5, `${name} ${label} contrast: ${contrast}`)
+        mailLabels[key] = { ...colors, contrast: Number(contrast.toFixed(2)) }
+      }
+      assert.equal(new Set(Object.values(mailLabels).map(label => label.background)).size, 5)
+      const receipt = page.getByRole('button', { name: /^Mở thư: Xác nhận giao dịch tháng 11,/ })
+      assert.equal(await receipt.locator('..').locator('[data-priority]').count(), 0)
       const violations = await audit(page)
       await screenshot(page, name)
-      results.push({ name, viewport: options.viewport, styles, axe: violations, runtimeErrors })
+      if (name === 'mobile') {
+        await dismissUrgent.click()
+        await page.getByRole('button', { name: 'Đóng thông báo: Báo giá cập nhật cho đơn PO-1042' }).click()
+        await page.getByRole('button', { name: /^Mở thư: Ưu đãi tháng 11,/ })
+          .evaluate(button => button.scrollIntoView({ block: 'center' }))
+        await screenshot(page, 'mobile-categories')
+      }
+      await later.evaluate(button => button.click())
+      results.push({ name, viewport: options.viewport, styles, mailLabels, axe: violations, runtimeErrors })
       record(`${name} Inbox renders tokens, Inter and current navigation without horizontal overflow`, true)
+      record(`${name} Inbox distinguishes important, urgent, transaction, promotion and newsletter mail with readable labels`, true)
 
       if (name === 'desktop') {
         await page.keyboard.press('Tab')
@@ -173,6 +216,8 @@ export async function rehearseDesign({ app, cookies, admin, userId, record, acti
         await page.getByRole('heading', { name: subject, exact: true }).waitFor()
         const selected = page.locator('.neo-mail-row[data-active="true"]')
         await selected.waitFor()
+        assert.ok(await opener.locator('.neo-mail-label[data-category="work"]').isVisible(), 'category remains visible in split reading')
+        assert.ok(await opener.locator('.neo-mail-label[data-priority="important"]').isVisible(), 'priority remains visible in split reading')
         assert.deepEqual(await selected.evaluate(el => {
           const accent = getComputedStyle(el, '::before')
           return { width: accent.width, color: accent.backgroundColor }
