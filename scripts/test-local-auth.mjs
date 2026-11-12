@@ -1,7 +1,7 @@
 import { createHmac, randomUUID } from 'node:crypto'
 import { createServer, request as httpRequest } from 'node:http'
 import { execFileSync, spawn } from 'node:child_process'
-import { readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { setTimeout as delay } from 'node:timers/promises'
 import { createClient } from '@supabase/supabase-js'
 import assert from 'node:assert/strict'
@@ -24,7 +24,10 @@ const operatorOutcomes = process.argv.includes('--operator-outcomes')
 const m6Baseline = process.argv.includes('--m6a-baseline')
 const m6 = m6Baseline || process.argv.includes('--m6a')
 const m6Native = m6 && process.argv.includes('--native-shells')
-const evidenceFile = m6 ? `docs/phase-2/evidence/m6a-${m6Baseline ? 'baseline' : m6Native ? 'native-run' : 'browser-run'}.json`
+const staging = process.argv.includes('--m6b')
+const productionMode = m6 || staging
+const evidenceFile = staging ? 'docs/phase-2/evidence/m6b-run.json'
+  : m6 ? `docs/phase-2/evidence/m6a-${m6Baseline ? 'baseline' : m6Native ? 'native-run' : 'browser-run'}.json`
   : operatorOutcomes ? 'docs/phase-2/evidence/m5b-browser-run.json'
   : operator ? 'docs/phase-2/evidence/m5a-browser-run.json'
   : askAnswer ? 'docs/phase-2/evidence/m4b-browser-run.json'
@@ -34,26 +37,34 @@ const evidenceFile = m6 ? `docs/phase-2/evidence/m6a-${m6Baseline ? 'baseline' :
   : commitments ? 'docs/phase-2/evidence/m3a-local-auth.json'
   : actionInbox ? 'docs/phase-2/evidence/m2b-browser-run.json'
   : design ? 'docs/phase-2/evidence/m2a-browser-run.json' : 'docs/phase-2/evidence/m1c-local-auth.json'
-const compose = ['compose', '-p', 'inboxai-m0e-local', '-f', 'tests/local-auth/compose.yml']
-const docker = args => execFileSync('docker', [...compose, ...args], { encoding: 'utf8', maxBuffer: 2e6 })
-const sql = source => execFileSync('docker', [...compose, 'exec', '-T', 'db', 'psql', '-U', 'postgres', '-d', 'inboxai_security_test', '-X', '-v', 'ON_ERROR_STOP=1', '-At'], { input: source, encoding: 'utf8' })
-const secret = 'synthetic-local-jwt-secret-at-least-32-characters'
+const compose = ['compose', '-p', staging ? 'inboxai-m6b-local' : 'inboxai-m0e-local', '-f', 'tests/local-auth/compose.yml',
+  ...(staging ? ['-f', 'tests/local-auth/staging.compose.yml'] : [])]
+let dockerContext = []
+const dockerEnv = staging ? Object.fromEntries(['PATH','HOME','LANG','TMPDIR'].filter(key => process.env[key]).map(key => [key,process.env[key]])) : process.env
+const docker = (args, options) => execFileSync('docker', [...dockerContext, ...compose, ...args],
+  { env: dockerEnv, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024, timeout: 90_000, ...options })
+const sql = source => docker(['exec', '-T', 'db', 'psql', '-U', 'postgres', '-d', 'inboxai_security_test',
+  '-X', '-v', 'ON_ERROR_STOP=1', '-At'], { input: source })
+const secret = staging ? 'inboxai-m6b-synthetic-only-jwt-secret' : 'synthetic-local-jwt-secret-at-least-32-characters'
 const token = role => {
   const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url')
   const payload = Buffer.from(JSON.stringify({ role, iss: 'supabase', iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 3600 })).toString('base64url')
   return `${header}.${payload}.${createHmac('sha256', secret).update(`${header}.${payload}`).digest('base64url')}`
 }
 const anon = token('anon'), service = token('service_role')
-const base = 'http://127.0.0.1:55321', app = 'http://127.0.0.1:55300'
+const ports = staging ? { proxy: 56321, app: 56300, auth: 56999, rest: 56400, mail: 56825 }
+  : { proxy: 55321, app: 55300, auth: 55999, rest: 55400, mail: 55825 }
+const base = 'http://127.0.0.1:' + ports.proxy, app = 'http://127.0.0.1:' + ports.app
 const loopbackFetch = (input, init) => {
   const url = new URL(typeof input === 'string' ? input : input.url ?? input)
   assert.equal(url.hostname, '127.0.0.1', 'test attempted non-loopback fetch')
-  return fetch(input, { ...init, signal: init?.signal ?? AbortSignal.timeout(10_000) })
+  return fetch(input, { ...init, ...(staging && { redirect: 'manual' }), signal: init?.signal ?? AbortSignal.timeout(10_000) })
 }
 const admin = createClient(base, service, { auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: loopbackFetch } })
 const outcomes = []
 const record = (name, condition) => { assert.ok(condition, name); outcomes.push({ name, status: 'PASS' }); console.log(`PASS: ${name}`) }
-let started = false, next, proxy, nativeFixture, mailProvider, smtpWire
+let started = false, next, proxy, nativeFixture, mailProvider, smtpWire, rehearsal
+let useRecovery = false
 const briefingReads = []
 const cookies = new Map()
 const appFetch = async (path, init = {}) => {
@@ -80,13 +91,25 @@ try {
   if (commitments) rmSync('docs/phase-2/evidence/m3a-sample-ledger.json', { force: true })
   const freeKB = Number(execFileSync('df', ['-Pk', '/'], { encoding: 'utf8' }).trim().split('\n').at(-1).split(/\s+/)[3])
   assert.ok(freeKB >= 10 * 1024 * 1024, 'less than 10 GiB free')
-  assert.equal(docker(['ps', '-aq']).trim(), '', 'existing test project found; will not replace it')
+  if (staging) {
+    assert.ok(['.env', '.env.local', '.env.production', '.env.production.local'].every(path => !existsSync(path)),
+      'Staging requires a checkout without Next.js environment files')
+    const context = execFileSync('docker', ['context','show'], { env: dockerEnv, encoding: 'utf8' }).trim()
+    const endpoint = execFileSync('docker', ['context','inspect',context,'--format','{{.Endpoints.docker.Host}}'],
+      { env: dockerEnv, encoding: 'utf8' }).trim()
+    assert.match(endpoint, /^unix:\/\/\//, 'Staging requires a local Docker Unix socket')
+    dockerContext = ['--context', context]
+    const { createStagingRehearsal } = await import('../tests/local-auth/staging.mjs')
+    rehearsal = createStagingRehearsal({ docker, sql, record, loopbackFetch })
+  }
+  assert.equal(docker([...(staging ? ['--profile','recovery'] : []), 'ps', '-aq']).trim(), '', 'existing test project found; will not replace it')
   // Assert no unexpected external SMTP configuration can enter this fixture.
-  const config = docker(['config', '--format', 'json'])
-  assert.equal(JSON.parse(config).services.auth.environment.GOTRUE_SMTP_HOST, 'mail')
+  const config = JSON.parse(docker([...(staging ? ['--profile','recovery'] : []), 'config', '--format', 'json']))
+  assert.equal(config.services.auth.environment.GOTRUE_SMTP_HOST, 'mail')
+  if (staging) rehearsal.assertIsolation(config)
   started = true
-  docker(['up', '-d', '--pull', 'never'])
-  await waitFor('http://127.0.0.1:55999/health')
+  docker(['up', '-d', '--pull', 'never', ...(staging ? ['--wait','--wait-timeout','60'] : [])])
+  await waitFor(`http://127.0.0.1:${ports.auth}/health`)
   // Current Supabase helper contract; GoTrue's historical bootstrap migration
   // defines the legacy GUC-only uid helper. PostgREST 14 supplies JSON claims.
   sql(`CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS
@@ -100,7 +123,7 @@ try {
       'access-control-allow-headers': req.headers['access-control-request-headers'] ?? '',
       'access-control-expose-headers': 'content-range, location', vary: 'Origin' }
     if (localCors && req.method === 'OPTIONS') { res.writeHead(204, cors); res.end(); return }
-    const upstream = httpRequest({ hostname: '127.0.0.1', port: auth ? 55999 : 55400,
+    const upstream = httpRequest({ hostname: '127.0.0.1', port: useRecovery ? (auth ? 56998 : 56401) : (auth ? ports.auth : ports.rest),
       path: req.url.replace(auth ? '/auth/v1' : '/rest/v1', ''), method: req.method, headers: req.headers }, response => {
       if (m6 && rest && req.method === 'GET') {
         const url = new URL(req.url, base)
@@ -116,15 +139,21 @@ try {
     upstream.on('error', () => { res.writeHead(502); res.end() })
     req.pipe(upstream)
   })
-  await new Promise(resolve => proxy.listen(55321, '127.0.0.1', resolve))
+  await new Promise((resolve, reject) => proxy.once('error', reject).listen(ports.proxy, '127.0.0.1', resolve))
   const migrations = readdirSync('supabase/migrations').filter(f => f.endsWith('.sql')).sort()
   for (const file of migrations.filter(f => f < '20261111010000')) sql(readFileSync(`supabase/migrations/${file}`, 'utf8'))
   const { data: seed, error: seedError } = await admin.auth.admin.createUser({ email: 'preupgrade@example.test', password: 'Synthetic-passphrase-123', email_confirm: true })
   assert.equal(seedError, null)
   const previousId = seed.user.id
+  if (staging) {
+    seedLegacyVault(sql, previousId)
+    seedLegacySync(sql, previousId)
+    sql('UPDATE public.source_accounts SET is_active=false;')
+    rehearsal.beforeUpgrade()
+  }
   for (const file of migrations.filter(f => f >= '20261111010000')) {
-    if (file === '20261111020000_credential_vault.sql') seedLegacyVault(sql,previousId)
-    if (file === '20261111030000_sync_contracts.sql') seedLegacySync(sql,previousId)
+    if (!staging && file === '20261111020000_credential_vault.sql') seedLegacyVault(sql,previousId)
+    if (!staging && file === '20261111030000_sync_contracts.sql') seedLegacySync(sql,previousId)
     if (actionInbox && file === '20261111050000_action_inbox.sql') {
       sql(`INSERT INTO public.emails(user_id,from_address,subject,body_text) VALUES('${previousId}','legacy@example.test','Priority before upgrade','Legacy body');`)
     }
@@ -133,27 +162,31 @@ try {
     }
     sql(readFileSync(`supabase/migrations/${file}`, 'utf8'))
   }
+  if (staging) rehearsal.checkUpgrade(migrations)
   record('upgrade preserves existing profile', Number(sql("SELECT count(*) FROM public.profiles WHERE email='preupgrade@example.test'")) === 1)
   const { error: blocked } = await createClient(base, anon).auth.signUp({ email: 'blocked@example.test', password: 'Synthetic-passphrase-123' })
   record('direct Auth API cannot bypass closed registration policy', Boolean(blocked))
   sql("UPDATE public.registration_policy SET enabled=true, max_users=100; NOTIFY pgrst, 'reload schema';")
   await delay(1000)
-  mailProvider = await startMailProvider()
-  smtpWire = await startSmtpWire()
+  if (!staging) {
+    mailProvider = await startMailProvider()
+    smtpWire = await startSmtpWire()
+  }
   const nextEnv = { ...Object.fromEntries(['PATH','HOME','LANG','TMPDIR', ...(askInbox ? ['ASK_INBOX_MODEL_DIR'] : [])]
         .filter(key => process.env[key]).map(key => [key,process.env[key]])),
-      INBOXAI_TEST_GMAIL_URL: mailProvider.url, NODE_EXTRA_CA_CERTS: smtpWire.cert, NODE_ENV: m6 ? 'production' : 'development', NEXT_PUBLIC_SUPABASE_URL: base, NEXT_PUBLIC_SUPABASE_ANON_KEY: anon,
+      ...(staging ? { CRON_SECRET: rehearsal.cronSecret } : { INBOXAI_TEST_GMAIL_URL: mailProvider.url, NODE_EXTRA_CA_CERTS: smtpWire.cert }),
+      NODE_ENV: productionMode ? 'production' : 'development', NEXT_PUBLIC_SUPABASE_URL: base, NEXT_PUBLIC_SUPABASE_ANON_KEY: anon,
       SUPABASE_SERVICE_ROLE_KEY: service, NEXT_PUBLIC_APP_URL: app, SIGNUP_ENABLED: 'true',
       SIGNUP_RATE_LIMIT_KEY: 'synthetic-local-registration-key-at-least-32-characters',
       CREDENTIAL_VAULT_KEYS:vaultKeys,CREDENTIAL_VAULT_ACTIVE_KEY:'local1',
       OPENAI_API_KEY: 'sk-synthetic', RESEND_API_KEY: 're_synthetic', NEXT_TELEMETRY_DISABLED: '1' }
-  const nextCommand = ['--import', './tests/local-auth/mail-network.mjs', 'node_modules/next/dist/bin/next']
-  if (m6) execFileSync(process.execPath, [...nextCommand, 'build'], { env: nextEnv, stdio: 'inherit' })
+  const nextCommand = ['--import', staging ? './tests/local-auth/staging-network.mjs' : './tests/local-auth/mail-network.mjs', 'node_modules/next/dist/bin/next']
+  if (productionMode) execFileSync(process.execPath, [...nextCommand, 'build'], { env: nextEnv, stdio: 'inherit' })
   if (m6Native) {
     const { startNativeFixture } = await import('../tests/local-auth/native-shell.mjs')
     nativeFixture = await startNativeFixture(cookies)
   }
-  next = spawn(process.execPath, [...nextCommand, m6 ? 'start' : 'dev', '--hostname', '127.0.0.1', '--port', m6Native ? '55301' : '55300'], {
+  next = spawn(process.execPath, [...nextCommand, productionMode ? 'start' : 'dev', '--hostname', '127.0.0.1', '--port', String(m6Native ? 55301 : ports.app)], {
     env: nextEnv,
     stdio: ['ignore','pipe','pipe'],
   })
@@ -172,11 +205,11 @@ try {
   record('password login rejected before verification', Boolean((await login.auth.signInWithPassword({ email,password })).error))
   let link
   for (let attempt = 0; attempt < 30 && !link; attempt++) {
-    const listing = await (await loopbackFetch('http://127.0.0.1:55825/api/v1/messages')).json()
+    const listing = await (await loopbackFetch(`http://127.0.0.1:${ports.mail}/api/v1/messages`)).json()
     for (const message of listing.messages ?? []) {
-      const content = await (await loopbackFetch(`http://127.0.0.1:55825/api/v1/message/${message.ID}`)).json()
+      const content = await (await loopbackFetch(`http://127.0.0.1:${ports.mail}/api/v1/message/${message.ID}`)).json()
       if (!(content.To ?? []).some(to => to.Address === email)) continue
-      link = content.HTML?.match(/href="(http:\/\/127\.0\.0\.1:55321[^"<>]+)"/)?.[1]?.replaceAll('&amp;','&')
+      link = content.HTML?.match(new RegExp(`href="(${base.replaceAll('.', '\\.')}[^"<>]+)"`))?.[1]?.replaceAll('&amp;','&')
     }
     if (!link) await delay(200)
   }
@@ -203,7 +236,8 @@ try {
   sql(`INSERT INTO public.emails(id,user_id,from_address) VALUES('${ownEmailId}','${userId}','synthetic@example.test'),('${otherEmailId}','${previousId}','synthetic@example.test');`)
   const own = await login.from('emails').select('id')
   record('real PostgREST JWT/RLS returns only own email', !own.error && own.data.length === 1 && own.data[0].id === ownEmailId)
-  const anonymous = await createClient(base, anon).from('emails').select('id')
+  const anonymousClient = createClient(base, anon, { auth: { persistSession:false,autoRefreshToken:false }, global: { fetch: loopbackFetch } })
+  const anonymous = await anonymousClient.from('emails').select('id')
   record('anonymous PostgREST cannot read tenant email', !anonymous.error && anonymous.data.length === 0)
   assert.equal((await admin.auth.admin.updateUserById(userId, { app_metadata: { role:'admin' } })).error, null)
   record('server-provisioned admin role grants whitelist access', (await appFetch('/api/admin/whitelist')).status === 200)
@@ -211,7 +245,10 @@ try {
   record('admin revocation is enforced on the next request', (await appFetch('/api/admin/whitelist')).status === 403)
   sql("UPDATE public.registration_policy SET enabled=false;")
   record('closed policy rejects subsequent Next signups', (await appFetch('/api/signup-whitelist', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({email:'later@example.test',password,fullName:'Later'}) })).status === 503)
-  if (m6) {
+  if (staging) {
+    await rehearsal.verify({ app, appFetch, admin, login, anonymous: anonymousClient, userId, previousId, ownEmailId, otherEmailId, email, password,
+      selectRecovery: () => { useRecovery = true }, appLog: () => output })
+  } else if (m6) {
     sql(`DELETE FROM public.emails WHERE id='${ownEmailId}' AND user_id='${userId}';`)
     const { rehearsePlatform } = await import('../tests/design/platform.mjs')
     await rehearsePlatform({ app, appFetch, cookies, admin, userId, record, briefingReads, baseline: m6Baseline, nativeFixture })
@@ -269,7 +306,8 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = m6Native ? 'Native simulator WebViews against production-mode local Next, GoTrue and PostgREST on synthetic mail'
+  const provenance = staging ? 'Local staging and independent PostgreSQL recovery, GoTrue, PostgREST and production-mode Next on synthetic data'
+    : m6Native ? 'Native simulator WebViews against production-mode local Next, GoTrue and PostgREST on synthetic mail'
     : m6 ? 'Production-mode Next locally with Chromium, GoTrue, PostgREST and PostgreSQL on synthetic mail'
     : operatorOutcomes ? 'Local Chromium, authenticated Next/PostgREST/PostgreSQL, real local state verification and undo on synthetic mail'
     : operator ? 'Local Chromium and authenticated Next/PostgREST/PostgreSQL with actual in-database Operator actions on synthetic mail'
@@ -280,7 +318,7 @@ try {
     : commitments ? 'Local Next/GoTrue/PostgREST/PostgreSQL, synthetic mail and .test accounts'
     : design ? 'Authenticated local Chromium with synthetic mail, loopback only'
     : 'Real local GoTrue/PostgREST/Next; synthetic Gmail/IMAP readers and loopback Gmail HTTP/SMTP TLS send; internal verification SMTP sink; .test identities; not hosted/provider interoperability'
-  writeFileSync(evidenceFile, JSON.stringify({ date: new Date().toISOString(), provenance, images:{ auth:'supabase/gotrue:v2.197.0',rest:'postgrest/postgrest:v14.18',mail:'axllent/mailpit:v1.28.1',db:'postgres:16' }, outcomes },null,2)+'\n')
+  writeFileSync(evidenceFile, JSON.stringify({ date: new Date().toISOString(), provenance, images:{ auth:'supabase/gotrue:v2.197.0',rest:'postgrest/postgrest:v14.18',mail:'axllent/mailpit:v1.28.1',db:'postgres:16' }, ...rehearsal?.evidence, outcomes },null,2)+'\n')
 } finally {
   if (next && next.exitCode === null) {
     next.kill('SIGTERM')
@@ -289,6 +327,7 @@ try {
   if (mailProvider) await mailProvider.close()
   if (smtpWire) await smtpWire.close()
   if (nativeFixture) await nativeFixture.close()
-  if (proxy) await new Promise(resolve => proxy.close(resolve))
-  if (started) docker(['down'])
+  if (proxy) await new Promise(resolve => { proxy.close(resolve); proxy.closeAllConnections() })
+  rehearsal?.close()
+  if (started) docker([...(staging ? ['--profile','recovery'] : []), 'down'])
 }

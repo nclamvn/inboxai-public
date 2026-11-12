@@ -1,0 +1,50 @@
+services:
+  auth:
+    environment:
+      API_EXTERNAL_URL: http://127.0.0.1:56321
+      GOTRUE_SITE_URL: http://127.0.0.1:56300
+      GOTRUE_URI_ALLOW_LIST: http://127.0.0.1:56300/**
+      GOTRUE_JWT_SECRET: inboxai-m6b-synthetic-only-jwt-secret
+  rest:
+    environment:
+      PGRST_JWT_SECRET: inboxai-m6b-synthetic-only-jwt-secret
+  gateway:
+    ports: !override
+      - '127.0.0.1:56999:9999'
+      - '127.0.0.1:56400:3000'
+      - '127.0.0.1:56825:8025'
+      - '127.0.0.1:56998:19999'
+      - '127.0.0.1:56401:13000'
+    volumes: !override
+      - ./Staging.Caddyfile:/etc/caddy/Caddyfile:ro
+  recovery-db:
+    extends:
+      file: compose.yml
+      service: db
+    environment:
+      POSTGRES_DB: inboxai_recovery_bootstrap
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -h 127.0.0.1 -U postgres -d inboxai_recovery_bootstrap']
+  recovery-auth:
+    extends:
+      file: compose.yml
+      service: auth
+    profiles: [recovery]
+    depends_on: !override
+      recovery-db: { condition: service_healthy }
+    environment:
+      API_EXTERNAL_URL: http://127.0.0.1:56321
+      GOTRUE_SITE_URL: http://127.0.0.1:56300
+      GOTRUE_URI_ALLOW_LIST: http://127.0.0.1:56300/**
+      GOTRUE_JWT_SECRET: inboxai-m6b-synthetic-only-jwt-secret
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:synthetic-local-password@recovery-db:5432/inboxai_recovery_after
+  recovery-rest:
+    extends:
+      file: compose.yml
+      service: rest
+    profiles: [recovery]
+    depends_on: !override
+      recovery-db: { condition: service_healthy }
+    environment:
+      PGRST_DB_URI: postgres://authenticator:synthetic-local-password@recovery-db:5432/inboxai_recovery_after
+      PGRST_JWT_SECRET: inboxai-m6b-synthetic-only-jwt-secret
