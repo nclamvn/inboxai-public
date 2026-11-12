@@ -5,6 +5,8 @@ export type ScheduledMail = {
   sendAt: string
   version: number
   account: string
+  accountId: string
+  reconnectRequired: boolean
   subject: string
   to: string[]
   cc: string[]

@@ -2,6 +2,7 @@ import 'server-only'
 import nodemailer from 'nodemailer'
 import { z } from 'zod'
 import type { MailPayload, SendOutcome } from './contracts'
+import { isGmailScopeDenial } from '@/lib/gmail/provider-errors'
 import { gmailSendPermissionRequired } from '@/lib/gmail/scopes'
 
 const endpoint = 'https://gmail.googleapis.com/gmail/v1/users/me/messages'
@@ -13,18 +14,6 @@ const messageMetadata = z.object({
   payload: z.object({ headers: z.array(z.object({ name: z.string(), value: z.string() })) }).optional(),
 })
 const mime = nodemailer.createTransport({ streamTransport: true, buffer: true, newline: 'windows' })
-const scopeError = z.object({ error: z.object({
-  errors: z.array(z.object({ reason: z.string() })).optional(),
-  details: z.array(z.object({ reason: z.string().optional() }).passthrough()).optional(),
-}) })
-
-async function isScopeDenial(response: Response) {
-  if (/\berror\s*=\s*"insufficient_scope"/i.test(response.headers.get('www-authenticate') ?? '')) return true
-  const result = scopeError.safeParse(await response.json().catch(() => null))
-  return result.success && (result.data.error.errors?.some(error => error.reason === 'insufficientPermissions') ||
-    result.data.error.details?.some(detail => detail.reason === 'ACCESS_TOKEN_SCOPE_INSUFFICIENT'))
-}
-
 function request(token: string, path: string, signal: AbortSignal, raw?: { raw: string; threadId?: string }) {
   return fetch(endpoint + path, {
     method: raw ? 'POST' : 'GET',
@@ -75,8 +64,9 @@ export async function sendViaGmail(token: string, payload: MailPayload, messageI
   }
 
   const response = await request(token, '/send', signal, { raw, threadId })
-  if (response.status === 403 && await isScopeDenial(response)) return { state: 'rejected', reason: gmailSendPermissionRequired }
-  if ([400, 401, 403, 404].includes(response.status)) return { state: 'rejected' }
+  if (response.status === 403 && await isGmailScopeDenial(response)) return { state: 'rejected', reason: gmailSendPermissionRequired }
+  if (response.status === 401) return { state: 'rejected', reason: 'gmail_access_rejected' }
+  if ([400, 403, 404].includes(response.status)) return { state: 'rejected' }
   if (!response.ok) return { state: 'unknown' }
   const parsed = z.object({ id: providerId }).safeParse(await response.json())
   return parsed.success ? { state: 'accepted', providerId: parsed.data.id } : { state: 'unknown' }

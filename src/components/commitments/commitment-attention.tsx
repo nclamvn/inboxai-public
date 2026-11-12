@@ -7,6 +7,7 @@ import { RotateCw } from 'lucide-react'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
+import { GmailReconnectButton, GmailReconnectNotice } from '@/components/gmail/gmail-reconnect'
 import { catchupHref, type CatchupAccount } from '@/lib/commitments/catchup'
 import type { AttentionItem } from '@/lib/commitments/attention'
 import { approveCommitmentReminder, LedgerApiError, loadCommitmentAttention, loadCommitmentReminder } from '@/lib/commitments/client'
@@ -113,6 +114,7 @@ function ReminderReview({ item, userId, onClose, onChange }: {
 }
 
 function syncStatus(account: CatchupAccount) {
+  if (account.status === 'reconnect') return 'Cần kết nối lại Gmail'
   if (account.status === 'error') return 'Gián đoạn · chờ thử lại'
   if (account.status === 'syncing' || account.status === 'pending') return 'Đang bắt kịp'
   if (!account.lastSyncAt) return 'Chưa đồng bộ'
@@ -142,18 +144,21 @@ function CatchupStatus({ userId, accounts, filter }: { userId: string; accounts:
   })
   return (
     <div className="border-t border-[var(--border)] px-4 sm:px-5">
+      <GmailReconnectNotice />
       <div className="flex flex-wrap items-center gap-x-5">
         <Link className={link} href={catchupHref('waiting', filter)} prefetch={false}>Xem toàn bộ việc chờ xử lý</Link>
         {accounts.length > 0 && (
           <details className="min-w-0 text-sm">
             <summary className="neo-target min-h-11 cursor-pointer list-item py-3 text-[var(--foreground-secondary)]">
-              Trạng thái đồng bộ{accounts.some(account => account.status === 'error') ? ' · Có gián đoạn' : ''}
+              Trạng thái đồng bộ{accounts.some(account => account.status === 'reconnect') ? ' · Cần kết nối lại'
+                : accounts.some(account => account.status === 'error') ? ' · Có gián đoạn' : ''}
             </summary>
             <ul className="space-y-2 pb-2 text-xs">
               {accounts.map(account => (
                 <li key={account.id} className="min-w-0 break-words">
                   <span className="font-medium">{account.email}</span> · {syncStatus(account)}
                   {account.lastSyncAt && <span> · Lần hoàn tất gần nhất {formatCommitmentMoment(account.lastSyncAt)}</span>}
+                  {account.status === 'reconnect' && <GmailReconnectButton accountId={account.id} email={account.email} surface="inbox" />}
                   {account.waitingAnalysis > 0 && <span> · {account.waitingAnalysis} thư chờ kiểm tra</span>}
                 </li>
               ))}

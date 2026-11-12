@@ -24,6 +24,7 @@
 /test-results/reply-followup/
 /test-results/email-snoozes/
 /test-results/scheduled-send/
+/test-results/gmail-reconnect/
 /test-results/gmail-triage/
 /test-results/compose-attachments/
 /test-results/staging/

@@ -2,7 +2,7 @@
  * Google OAuth 2.0 Client
  */
 import { z } from 'zod';
-import { gmailReadScope, gmailSendScope, googleEmailScope } from '@/lib/gmail/scopes';
+import { gmailModifyScope, gmailReadScope, gmailSendScope, googleEmailScope } from '@/lib/gmail/scopes';
 
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -27,7 +27,7 @@ export type GoogleUserInfo = z.infer<typeof userInfoResponse>;
  * @param state - Optional state for CSRF protection
  * @param customRedirectUri - Optional custom redirect URI (for add account flow)
  */
-export function getGoogleAuthUrl(state: string, customRedirectUri?: string, codeChallenge?: string, sendFor?: string): string {
+export function getGoogleAuthUrl(state: string, customRedirectUri?: string, codeChallenge?: string, sendFor?: string, reconnect?: { email: string; includeSend: boolean; includeModify: boolean }): string {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const redirectUri = customRedirectUri || process.env.GOOGLE_REDIRECT_URI;
 
@@ -35,7 +35,8 @@ export function getGoogleAuthUrl(state: string, customRedirectUri?: string, code
     throw new Error('Missing Google OAuth configuration');
   }
 
-  const scopes = sendFor ? [gmailSendScope, googleEmailScope] : [gmailReadScope, googleEmailScope];
+  const scopes = sendFor ? [gmailSendScope, googleEmailScope] : [reconnect?.includeModify ? gmailModifyScope : gmailReadScope, googleEmailScope];
+  if (reconnect?.includeSend) scopes.push(gmailSendScope);
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -45,6 +46,7 @@ export function getGoogleAuthUrl(state: string, customRedirectUri?: string, code
     access_type: 'offline', // Get refresh token
     prompt: 'consent', // Force consent to get refresh token
     ...(sendFor && { include_granted_scopes: 'true', login_hint: sendFor }),
+    ...(reconnect && { login_hint: reconnect.email, ...(reconnect.includeSend && { include_granted_scopes: 'true' }) }),
     ...(state && { state }),
     ...(codeChallenge && { code_challenge: codeChallenge, code_challenge_method: 'S256' }),
   });
@@ -93,6 +95,8 @@ export async function exchangeCodeForTokens(code: string, customRedirectUri?: st
 /**
  * Refresh access token using refresh token
  */
+export class GoogleRefreshRevoked extends Error {}
+
 export async function refreshAccessToken(refreshToken: string, signal?: AbortSignal): Promise<GoogleTokens> {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -117,6 +121,8 @@ export async function refreshAccessToken(refreshToken: string, signal?: AbortSig
   });
 
   if (!response.ok) {
+    const failure = response.status === 400 ? await response.json().catch(() => null) : null;
+    if (failure?.error === 'invalid_grant') throw new GoogleRefreshRevoked();
     throw new Error('Failed to refresh access token');
   }
 

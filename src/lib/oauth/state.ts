@@ -1,10 +1,14 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 import { z } from 'zod'
 
-export type GoogleOAuthFlow = 'connect' | 'add-account' | 'enable-send'
-type ConnectFlow = Exclude<GoogleOAuthFlow, 'enable-send'>
+export type GoogleOAuthFlow = 'connect' | 'add-account' | 'enable-send' | 'reconnect'
+type ConnectFlow = Extract<GoogleOAuthFlow, 'connect' | 'add-account'>
 const sendBinding = z.object({ accountId: z.uuid(), revision: z.number().int().positive() })
 type SendBinding = z.infer<typeof sendBinding>
+const reconnectBinding = sendBinding.extend({
+  surface: z.enum(['inbox', 'outbox']), includeSend: z.boolean(), includeModify: z.boolean(),
+})
+type ReconnectBinding = z.infer<typeof reconnectBinding>
 export const OAUTH_TTL_SECONDS = 300
 
 function signingKey(): string {
@@ -90,5 +94,16 @@ export function validateGoogleSendState(state: string | null, cookie: string | u
   const validated = validateState(state, cookie, userId, 'enable-send', now)
   if (!validated) return null
   const binding = sendBinding.safeParse(validated.binding)
+  return binding.success ? { ...binding.data, verifier: validated.verifier } : null
+}
+
+export function createGoogleReconnectState(userId: string, binding: ReconnectBinding) {
+  return createState(userId, 'reconnect', Date.now(), reconnectBinding.parse(binding))
+}
+
+export function validateGoogleReconnectState(state: string | null, cookie: string, userId: string) {
+  const validated = validateState(state, cookie, userId, 'reconnect')
+  if (!validated) return null
+  const binding = reconnectBinding.safeParse(validated.binding)
   return binding.success ? { ...binding.data, verifier: validated.verifier } : null
 }

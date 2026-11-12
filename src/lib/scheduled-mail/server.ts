@@ -4,7 +4,7 @@ import { composeService, composeRpcError } from '@/lib/compose/server'
 import { SendError, sendInput, sendKey, type SendInput } from '@/lib/mail-send/contracts'
 import { sendFromAccount } from '@/lib/mail-send/server'
 import { canSendGmail, canReadGmail } from '@/lib/gmail/scopes'
-import { getGoogleCredential } from '@/lib/gmail/credentials'
+import { GmailReconnectRequired, getGoogleCredential } from '@/lib/gmail/credentials'
 
 const scopeSchema = z.object({
   accountId: z.uuid(), key: sendKey, hash: z.string().regex(/^[a-f0-9]{64}$/),
@@ -45,6 +45,10 @@ export async function runScheduledMail() {
     try {
       await sendFromAccount({ ...scope, userId: actor }, () => input, { scheduledId: id, lease })
     } catch (error) {
+      if (error instanceof GmailReconnectRequired || (error instanceof SendError && error.status === 423)) {
+        await rpc('defer_scheduled_gmail', { p_actor: actor, p_id: id, p_lease: lease })
+        return
+      }
       permanent = error instanceof SendError && [400, 403, 404, 409, 413].includes(error.status)
     }
     await rpc('finish_scheduled_attempt', { p_actor: actor, p_id: id, p_lease: lease, p_permanent: permanent })

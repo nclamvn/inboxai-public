@@ -8,6 +8,7 @@ import { oauthCookieName, oauthCookieOptions, validateOAuthState } from '@/lib/o
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { exchangeCodeForTokens, getGoogleUserInfo } from '@/lib/oauth/google'
+import { handleGoogleReconnect } from '@/lib/oauth/reconnect'
 import { handleGoogleSendConsent } from '@/lib/oauth/send-consent'
 
 export async function GET(request: NextRequest) {
@@ -18,6 +19,8 @@ export async function GET(request: NextRequest) {
 
   // Base URL for redirects
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const reconnect = await handleGoogleReconnect(request, baseUrl)
+  if (reconnect) return reconnect
   const sendConsent = await handleGoogleSendConsent(request, baseUrl)
   if (sendConsent) return sendConsent
 

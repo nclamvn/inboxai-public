@@ -191,6 +191,11 @@ export async function startGoogleOAuthFixture() {
       const grant = { mailbox: box, email, subject: email, scopes: [gmailReadScope, googleEmailScope, ...(canSend ? [gmailSendScope] : []), ...(canModify ? [gmailModifyScope] : [])] }
       return {
         tokens: issue(grant, true), box,
+        revoke() {
+          for (const tokens of [access, refresh]) {
+            for (const [token, owner] of tokens) if (owner.mailbox === box) tokens.delete(token)
+          }
+        },
         changeLabels: (id, add, remove) => changeLabels(box, id, add, remove),
         deliver(items) {
           for (const item of items) {
@@ -216,9 +221,11 @@ export async function startGoogleOAuthFixture() {
       assert.equal(params.has('code_verifier'), false)
       assert.equal(params.get('access_type'), 'offline')
       const send = intent === 'send'
-      assert.deepEqual(params.get('scope').split(/\s+/).sort(), [send ? gmailSendScope : gmailReadScope, googleEmailScope].sort())
-      assert.equal(params.get('include_granted_scopes'), send ? 'true' : null)
-      assert.equal(params.get('login_hint'), send ? gmailFixtureEmail : null)
+      const reconnect = intent === 'reconnect'
+      const expectedScopes = reconnect ? decision.requestedScopes : [send ? gmailSendScope : gmailReadScope, googleEmailScope]
+      assert.deepEqual(params.get('scope').split(/\s+/).sort(), [...expectedScopes].sort())
+      assert.equal(params.get('include_granted_scopes'), send || (reconnect && expectedScopes.includes(gmailSendScope)) ? 'true' : null)
+      assert.equal(params.get('login_hint'), reconnect ? decision.expectedEmail : send ? gmailFixtureEmail : null)
       const originalCallback = callback.toString()
       callback.searchParams.set('state', state)
       if (decision.denied) callback.searchParams.set('error', 'access_denied')

@@ -1,7 +1,7 @@
 import { beforeEach, expect, it, vi } from 'vitest';
-const mocks = vi.hoisted(() => ({ read: vi.fn(), write: vi.fn(), status: vi.fn(), maybeSingle: vi.fn(), eq: vi.fn(), refresh: vi.fn(), expired: vi.fn() }));
+const mocks = vi.hoisted(() => ({ read: vi.fn(), write: vi.fn(), reconnect: vi.fn(), status: vi.fn(), maybeSingle: vi.fn(), eq: vi.fn(), refresh: vi.fn(), expired: vi.fn() }));
 vi.mock('@/lib/supabase/server', () => ({ createClient: vi.fn(async () => ({ from: () => ({ select: () => ({ eq: mocks.eq }) }) })) }));
-vi.mock('@/lib/credential-vault/vault', () => ({ getCredentialVault: () => ({ read: mocks.read, write: mocks.write, status: mocks.status }) }));
+vi.mock('@/lib/credential-vault/vault', () => ({ getCredentialVault: () => ({ read: mocks.read, write: mocks.write, reconnectGoogle: mocks.reconnect, status: mocks.status }) }));
 vi.mock('@/lib/oauth/google', () => ({ refreshAccessToken: mocks.refresh, isTokenExpired: mocks.expired }));
 import { saveGoogleConnection, saveImapConnection } from '@/lib/credential-vault/accounts';
 import { getValidAccessToken } from '@/lib/gmail/sync';
@@ -24,6 +24,14 @@ it('preserves refresh token omitted by Google and binds metadata to owner', asyn
     await saveGoogleConnection(userId, profile, { access_token: 'new-access', expires_in: 3600, token_type: 'Bearer', scope: gmailReadScope });
     expect(mocks.eq).toHaveBeenCalledWith('user_id', userId);
     expect(mocks.write).toHaveBeenCalledWith({ userId, accountId }, expect.objectContaining({ refreshToken: 'retained-refresh', sendDisabled: true }), 3, expect.objectContaining({ email_address: profile.email }));
+});
+it('replaces an existing Google grant through the reconnect transaction when a fresh refresh token is issued', async () => {
+    await saveGoogleConnection(userId, profile, { access_token: 'new-access', refresh_token: 'new-refresh', expires_in: 3600,
+        scope: gmailReadScope });
+    expect(mocks.reconnect).toHaveBeenCalledWith({ userId, accountId },
+        expect.objectContaining({ refreshToken: 'new-refresh', sendDisabled: true }), 3,
+        expect.objectContaining({ email_address: profile.email }));
+    expect(mocks.write).not.toHaveBeenCalled();
 });
 it('propagates persistence failure instead of reporting a connected account', async () => {
     mocks.write.mockRejectedValue(new Error('synthetic-write-failure'));

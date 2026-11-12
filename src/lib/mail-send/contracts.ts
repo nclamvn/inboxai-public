@@ -45,7 +45,7 @@ export type SendReceipt = z.infer<typeof receiptSchema>
 export type SendOutcome =
   | { state: 'accepted' | 'partial'; providerId?: string }
   | { state: 'unknown' }
-  | { state: 'rejected'; reason?: typeof gmailSendPermissionRequired }
+  | { state: 'rejected'; reason?: typeof gmailSendPermissionRequired | 'gmail_access_rejected' }
 
 export class SendError extends Error {
   constructor(readonly status: number, message: string, readonly code?: typeof gmailSendPermissionRequired) { super(message) }

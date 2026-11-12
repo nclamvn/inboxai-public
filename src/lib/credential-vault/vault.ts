@@ -84,6 +84,19 @@ export class CredentialVault {
     async write(scope: CredentialScope, credentials: Credentials, revision: number, metadata?: AccountMetadata) {
         return this.commit(scope, credentials, sealCredentials(credentials, scope, this.ring), revision, 'write', metadata);
     }
+    async reconnectGoogle(scope: CredentialScope, credentials: Extract<Credentials, { kind: 'google' }>, revision: number, metadata?: AccountMetadata) {
+        const data = await this.rpc('store_gmail_reconnect', {
+            p_user_id: scope.userId, p_account_id: scope.accountId, p_expected_revision: revision,
+            p_envelope: sealCredentials(credentials, scope, this.ring), p_metadata: metadata ?? null,
+        });
+        if (data !== revision + 1)
+            throw new CredentialError('integrity');
+    }
+    async markGoogleReconnect(scope: CredentialScope, revision: number) {
+        return await this.rpc('mark_gmail_reconnect', {
+            p_user_id: scope.userId, p_account_id: scope.accountId, p_revision: revision,
+        }) === true;
+    }
     async migrate(scope: CredentialScope, legacyKey?: string) {
         const row = await this.raw(scope);
         if (!row)

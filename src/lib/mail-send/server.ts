@@ -2,7 +2,7 @@ import 'server-only'
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { getImapPassword } from '@/lib/credential-vault/vault'
-import { disableGoogleSending, getGoogleCredential } from '@/lib/gmail/credentials'
+import { disableGoogleSending, getGoogleCredential, requireGmailReconnect, resolveGoogleCredential } from '@/lib/gmail/credentials'
 import { canSendGmail, canReadGmail, gmailSendPermissionRequired } from '@/lib/gmail/scopes'
 import { sendEmailViaSMTP } from '@/lib/email/smtp-client'
 import { EMAIL_PROVIDERS } from '@/lib/email/imap-client'
@@ -93,16 +93,17 @@ export async function sendFromAccount(
     const preset = EMAIL_PROVIDERS[account.provider as keyof typeof EMAIL_PROVIDERS]
     const host = account.smtp_host || preset?.smtp_host
     if (provider === 'smtp' && !host) throw new SendError(400, 'Tài khoản chưa cấu hình SMTP.')
-    const gmailCredential = provider === 'gmail' ? await getGoogleCredential(scope.userId, account.id, AbortSignal.timeout(10_000)) : null
-    if (scheduled && !gmailCredential) {
-      throw new SendError(503, 'Chưa thể xác thực kết nối Gmail.')
+    const google = provider === 'gmail'
+      ? await resolveGoogleCredential(scope.userId, account.id, AbortSignal.timeout(10_000)).catch(error => {
+        if (scheduled) throw error
+        return null
+      }) : null
+    const gmailCredential = google?.credential
+    if (scheduled && google && google.credential.scope !== undefined && !canReadGmail(google.credential.scope)) {
+      await requireGmailReconnect(scope.userId, account.id, google.revision)
     }
     if (provider === 'gmail' && (!gmailCredential || !canSendGmail(gmailCredential))) {
       throw new SendError(403, gmailPermissionMessage, gmailSendPermissionRequired)
-    }
-
-    if (scheduled && gmailCredential?.scope !== undefined && !canReadGmail(gmailCredential.scope)) {
-      throw new SendError(403, 'Lịch gửi cần quyền đọc Gmail để xác minh thư đã gửi.')
     }
 
     return { payload, async dispatch(receipt) {
@@ -117,6 +118,10 @@ export async function sendFromAccount(
           } catch { /* The RFC reply headers still identify the original message. */ }
         }
         const outcome = await sendViaGmail(gmailCredential.accessToken, payload, receipt.messageId, signal, threadId, mimeAttachments)
+        if (outcome.state === 'rejected' && outcome.reason === 'gmail_access_rejected') {
+          // Check the grant without repeating the rejected send.
+          await resolveGoogleCredential(scope.userId, account.id, AbortSignal.timeout(10_000), true).catch(() => {})
+        }
         if (outcome.state === 'rejected' && outcome.reason === gmailSendPermissionRequired) {
           needsGmailPermission = true
           await disableGoogleSending(scope.userId, account.id, gmailCredential.accessToken)

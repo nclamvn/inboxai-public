@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { createClient } from '@/lib/supabase/server';
 import type { GoogleTokens, GoogleUserInfo } from '@/lib/oauth/google';
 import { refreshAccessToken } from '@/lib/oauth/google';
-import { canReadGmail, gmailSendScope } from '@/lib/gmail/scopes';
+import { canReadGmail, canModifyGmail, gmailSendScope, hasGmailSendScope } from '@/lib/gmail/scopes';
 import { getCredentialVault, type AccountMetadata } from './vault';
 import { CredentialError } from './crypto';
 /** Metadata lookup is user scoped; the service RPC atomically writes account + envelope. */
@@ -18,6 +18,7 @@ export async function saveGoogleConnection(userId: string, profile: GoogleUserIn
     const vault = getCredentialVault();
     const scope = { userId, accountId: account?.id || randomUUID() };
     let revision = 0, refreshToken = tokens.refresh_token;
+    let replaceGoogleGrant = false;
     if (account) {
         const status = await vault.status(scope);
         revision = status.revision;
@@ -27,15 +28,20 @@ export async function saveGoogleConnection(userId: string, profile: GoogleUserIn
                 if (previous.credentials.googleSubject && previous.credentials.googleSubject !== profile.id) {
                     throw new GoogleGrantError('account_mismatch');
                 }
+                replaceGoogleGrant = status.state === 'ready' && Boolean(tokens.refresh_token);
                 refreshToken ??= previous.credentials.refreshToken;
             }
         }
     }
     if (!refreshToken) throw new GoogleGrantError('offline_missing');
-    await vault.write(scope, { kind: 'google', accessToken: tokens.access_token, refreshToken,
+    const credentials = { kind: 'google' as const, accessToken: tokens.access_token, refreshToken,
         expiresAt: new Date(Date.now() + tokens.expires_in * 1000).toISOString(), scope: tokens.scope,
-        googleSubject: profile.id, sendDisabled: true }, revision,
-    { email_address: email, display_name: profile.name, provider: 'gmail', avatar_url: profile.picture });
+        googleSubject: profile.id, sendDisabled: true };
+    const metadata = { email_address: email, display_name: profile.name, provider: 'gmail', avatar_url: profile.picture };
+    if (replaceGoogleGrant)
+        await vault.reconnectGoogle(scope, credentials, revision, metadata);
+    else
+        await vault.write(scope, credentials, revision, metadata);
     return scope.accountId;
 }
 
@@ -66,13 +72,18 @@ function requireCombinedGrant(tokens: GoogleTokens) {
     }
 }
 
-export async function saveGoogleSendGrant(target: GoogleSendTarget, profile: GoogleUserInfo, tokens: GoogleTokens) {
-    requireCombinedGrant(tokens);
+function verifyGoogleTarget(target: GoogleSendTarget, profile: GoogleUserInfo) {
     const { credentials } = target;
     if (!profile.verified_email || profile.email.toLowerCase() !== target.email.toLowerCase() ||
         (credentials.googleSubject && credentials.googleSubject !== profile.id)) {
         throw new GoogleGrantError('account_mismatch');
     }
+}
+
+export async function saveGoogleSendGrant(target: GoogleSendTarget, profile: GoogleUserInfo, tokens: GoogleTokens) {
+    verifyGoogleTarget(target, profile);
+    requireCombinedGrant(tokens);
+    const { credentials } = target;
     let refreshToken = tokens.refresh_token;
     if (!refreshToken) {
         if (!credentials.refreshToken) throw new GoogleGrantError('offline_missing');
@@ -81,9 +92,20 @@ export async function saveGoogleSendGrant(target: GoogleSendTarget, profile: Goo
         requireCombinedGrant(tokens);
         refreshToken = tokens.refresh_token ?? credentials.refreshToken;
     }
-    await target.vault.write(target.scope, { ...credentials, accessToken: tokens.access_token, refreshToken,
+    await target.vault.reconnectGoogle(target.scope, { ...credentials, accessToken: tokens.access_token, refreshToken,
         expiresAt: new Date(Date.now() + tokens.expires_in * 1000).toISOString(), scope: tokens.scope,
         googleSubject: profile.id, sendDisabled: false }, target.revision);
+}
+export async function saveGoogleReconnectGrant(target: GoogleSendTarget, profile: GoogleUserInfo, tokens: GoogleTokens,
+    options: { includeSend: boolean; includeModify: boolean }) {
+    verifyGoogleTarget(target, profile);
+    if (!canReadGmail(tokens.scope) || (options.includeSend && !hasGmailSendScope(tokens.scope)) ||
+        (options.includeModify && !canModifyGmail(tokens.scope))) throw new GoogleGrantError('scope_missing');
+    // The previous refresh grant may be the one Google just revoked.
+    if (!tokens.refresh_token) throw new GoogleGrantError('offline_missing');
+    await target.vault.reconnectGoogle(target.scope, { ...target.credentials, accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token, expiresAt: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
+        scope: tokens.scope, googleSubject: profile.id, sendDisabled: !options.includeSend }, target.revision);
 }
 export async function saveImapConnection(userId: string, metadata: AccountMetadata, password: string) {
     const accountId = randomUUID();

@@ -15,6 +15,7 @@ export class MailSendStore {
       : this.approval && ('replyId' in this.approval || 'fileComposeId' in this.approval || 'scheduledId' in this.approval) ? 'Bản nháp hoặc thư nguồn đã thay đổi. Hãy kiểm tra lại.'
       : this.approval ? 'Cam kết hoặc email nguồn đã thay đổi. Hãy kiểm tra lại trước khi gửi lời nhắc.'
       : 'Mã gửi đã được dùng cho nội dung khác.')
+    if (result.error?.code === 'PT423') throw new SendError(423, 'Cần kết nối lại Gmail trước khi gửi.')
     if (result.error?.code === '42501') throw new SendError(404, 'Không tìm thấy tài khoản gửi.')
     if (result.error) throw new SendError(503, 'Chưa thể kiểm tra trạng thái gửi.')
     if (result.data === null) return null

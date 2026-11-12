@@ -1,5 +1,33 @@
 # Verification record
 
+## Gmail reconnection and catch-up
+
+On 2026-11-12, `npm run test:gmail-reconnect` passed 20 checks on macOS
+arm64 with Node 24.14.1, Chrome 157, PostgreSQL 16 and a local production-mode
+Next.js build. Independent workers ran on loopback with two synthetic Gmail
+accounts. Background sync ingested both accounts while Chrome was closed.
+A transient failure preserved the checkpoint and retried. A revoked refresh
+grant suspended only the affected account and blocked scheduled mail before
+dispatch. Selecting the other mailbox or a mismatched Google subject changed
+neither credential. Correct consent preserved the account ID and checkpoint,
+retrieved missing mail without a full resync or duplicate, and opened the
+exact cited commitment reply. Two Next restarts preserved progress. After
+Gmail accepted a resumed scheduled send and dropped the acknowledgement,
+the worker found the same Message-ID in Sent. The fixture observed one
+provider send and one durable receipt. Five sampled screens had no axe
+violations or horizontal overflow.
+
+Lint, TypeScript, 241 unit tests, 200 integration tests and 26 SQL checks
+passed. Lint reported 91 existing warnings. SQL verified that stale
+authorization could neither replace the grant nor let an old sync worker
+alter the retained checkpoint. Design, platform and local staging passed
+25, 19 and 31 checks. The general E2E, scheduled send and Inbox catch-up
+regressions passed 41, 21 and 24 checks. The general E2E confirmed that
+the existing Settings read consent also restores sync after revocation.
+The loopback worker rejected a non-local destination before connecting.
+See the [local Gmail reconnect handoff](GMAIL_RECONNECT_LOCAL_HANDOFF.md) and
+[Chrome results](../../test-results/gmail-reconnect/report.json).
+
 ## Scheduled Gmail send
 
 On 2026-11-12, `npm run test:scheduled-send` passed 21 local checks on macOS

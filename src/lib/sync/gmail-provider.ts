@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { parseHeaders, extractBody, type GmailMessage, type GmailMessagePart } from '@/lib/gmail/api';
 import { SyncError, type Cursor, type Page, type SyncProvider, type SyncMessage } from './contracts';
 export class GmailReadError extends SyncError {
-    constructor(public status: number) { super('provider'); }
+    constructor(public status: number, public readonly scopeDenied = false) { super('provider'); }
 }
 export type History = {
     historyId: string;

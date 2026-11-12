@@ -1,10 +1,9 @@
 import 'server-only';
-import { getGoogleCredential } from './credentials';
+import { getGoogleCredential, requireGmailReconnect, resolveGoogleCredential } from './credentials';
 import { runSync } from '@/lib/sync/engine';
 import { getSyncStore } from '@/lib/sync/store';
-import { gmailProvider } from '@/lib/sync/gmail-provider';
+import { GmailReadError, gmailProvider } from '@/lib/sync/gmail-provider';
 import { gmailReader } from '@/lib/sync/gmail-reader';
-import { SyncError } from '@/lib/sync/contracts';
 import { canReadGmail } from './scopes';
 export async function getValidAccessToken(userId: string, accountId: string, signal?: AbortSignal): Promise<string | null> {
     const credential = await getGoogleCredential(userId, accountId, signal);
@@ -17,10 +16,33 @@ export async function syncGmailEmails(userId: string, accountId: string, options
     timeoutMs?: number;
 } = {}) {
     const result = await runSync(getSyncStore(), { userId, accountId, provider: 'gmail' }, async signal => {
-        const token = await getValidAccessToken(userId, accountId, signal);
-        if (!token)
-            throw new SyncError('credentials');
-        return gmailProvider(gmailReader(token));
+        async function prepare(force = false) {
+            const { credential, revision } = await resolveGoogleCredential(userId, accountId, signal, force);
+            if (credential.scope !== undefined && !canReadGmail(credential.scope))
+                return requireGmailReconnect(userId, accountId, revision);
+            return { provider: gmailProvider(gmailReader(credential.accessToken)), revision };
+        }
+        let active = await prepare();
+        let refreshed = false;
+        async function page(...args: Parameters<typeof active.provider.page>) {
+            try {
+                return await active.provider.page(...args);
+            } catch (error) {
+                if (!(error instanceof GmailReadError)) throw error;
+                if (error.scopeDenied) return requireGmailReconnect(userId, accountId, active.revision);
+                if (error.status !== 401 || refreshed) throw error;
+                refreshed = true;
+                active = await prepare(true);
+                try {
+                    return await active.provider.page(...args);
+                } catch (retryError) {
+                    if (retryError instanceof GmailReadError && retryError.scopeDenied)
+                        return requireGmailReconnect(userId, accountId, active.revision);
+                    throw retryError;
+                }
+            }
+        }
+        return { page, close: () => active.provider.close() };
     }, { limit: options.maxResults, fullSync: options.fullSync, timeoutMs: options.timeoutMs });
     return { ...result, syncedCount: result.synced };
 }

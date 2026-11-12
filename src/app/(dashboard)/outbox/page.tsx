@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { Clock, RefreshCw } from 'lucide-react'
+import { GmailReconnectButton, GmailReconnectNotice } from '@/components/gmail/gmail-reconnect'
 import { ScheduleSendDialog } from '@/components/email/schedule-send-dialog'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -65,6 +66,7 @@ export default function OutboxPage() {
       <Button variant="outline" type="button" disabled={isFetching} onClick={() => void refetch()}
         leftIcon={<RefreshCw size={16} aria-hidden="true" />}>Làm mới</Button>
     </header>
+    <div className="px-4 sm:px-6"><GmailReconnectNotice /></div>
     {feedback && <div className="px-4 pt-4 sm:px-6">
       {feedback.error ? <Alert variant="error">{feedback.message}</Alert> : <p role="status">{feedback.message}</p>}
     </div>}
@@ -91,6 +93,13 @@ export default function OutboxPage() {
                 <Clock aria-hidden="true" size={15} /><dd><time dateTime={mail.sendAt}>{moment(mail.sendAt)}</time></dd>
               </div>
             </dl>
+            {mail.reconnectRequired && <>
+              <p className="text-sm text-[var(--foreground-secondary)]">{['failed', 'rejected'].includes(mail.state)
+                ? 'Thư chưa được gửi. Hãy kết nối lại Gmail rồi hủy lịch để mở bản nháp.'
+                : mail.state === 'unknown' ? 'Cần kết nối lại Gmail để xác minh trạng thái gửi.'
+                  : 'Đang chờ kết nối lại Gmail. Lịch đã duyệt sẽ tiếp tục khi có quyền.'}</p>
+              <GmailReconnectButton accountId={mail.accountId} email={mail.account} surface="outbox" />
+            </>}
             <div className="flex flex-wrap items-center gap-2">
               {mail.state === 'scheduled' && <Button type="button" variant="outline" onClick={() => {
                 setFeedback(null); setDialog({ mode: 'move', mail })

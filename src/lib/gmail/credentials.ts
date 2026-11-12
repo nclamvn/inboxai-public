@@ -1,34 +1,47 @@
 import 'server-only'
 import { getCredentialVault } from '@/lib/credential-vault/vault'
-import { refreshAccessToken, isTokenExpired } from '@/lib/oauth/google'
+import { GoogleRefreshRevoked, refreshAccessToken, isTokenExpired } from '@/lib/oauth/google'
 import { hasGmailSendScope } from './scopes'
 
-/** Read and refresh only the credentials bound to this tenant/account. */
+export class GmailReconnectRequired extends Error {}
+
+export async function requireGmailReconnect(userId: string, accountId: string, revision: number): Promise<never> {
+    if (await getCredentialVault().markGoogleReconnect({ userId, accountId }, revision))
+        throw new GmailReconnectRequired();
+    // An interactive grant or another refresh won the credential revision race.
+    throw new Error('Gmail credential changed');
+}
+
+/** Keep transient failures distinct from a rejected refresh grant. */
+export async function resolveGoogleCredential(userId: string, accountId: string, signal?: AbortSignal, force = false) {
+    const vault = getCredentialVault();
+    const scope = { userId, accountId };
+    const { credentials, revision } = await vault.read(scope);
+    if (credentials.kind !== 'google')
+        throw new Error('Gmail account unavailable');
+    if (!force && !isTokenExpired(new Date(credentials.expiresAt)))
+        return { credential: credentials, revision };
+    if (!credentials.refreshToken)
+        return requireGmailReconnect(userId, accountId, revision);
+    const refreshed = await refreshAccessToken(credentials.refreshToken, signal).catch(error => {
+        if (error instanceof GoogleRefreshRevoked) return requireGmailReconnect(userId, accountId, revision);
+        throw error;
+    });
+    const grantedScope = refreshed.scope ?? credentials.scope;
+    const credential = {
+        ...credentials, accessToken: refreshed.access_token,
+        refreshToken: refreshed.refresh_token || credentials.refreshToken,
+        expiresAt: new Date(Date.now() + refreshed.expires_in * 1000).toISOString(),
+        scope: grantedScope,
+        sendDisabled: credentials.sendDisabled || !hasGmailSendScope(grantedScope),
+    };
+    return { credential, revision: await vault.write(scope, credential, revision) };
+}
+
 export async function getGoogleCredential(userId: string, accountId: string, signal?: AbortSignal) {
     try {
-        const vault = getCredentialVault();
-        const scope = { userId, accountId };
-        const { credentials, revision } = await vault.read(scope);
-        if (credentials.kind !== 'google')
-            return null;
-        if (!isTokenExpired(new Date(credentials.expiresAt)))
-            return credentials;
-        if (!credentials.refreshToken)
-            return null;
-        const refreshed = await refreshAccessToken(credentials.refreshToken, signal);
-        const grantedScope = refreshed.scope ?? credentials.scope;
-        const next = {
-            ...credentials, accessToken: refreshed.access_token,
-            refreshToken: refreshed.refresh_token || credentials.refreshToken,
-            expiresAt: new Date(Date.now() + refreshed.expires_in * 1000).toISOString(),
-            scope: grantedScope,
-            sendDisabled: credentials.sendDisabled || !hasGmailSendScope(grantedScope),
-        };
-        await vault.write(scope, next, revision);
-        return next;
-    }
-    catch {
-        // Failed refresh/persistence/CAS never returns a transient or foreign token.
+        return (await resolveGoogleCredential(userId, accountId, signal)).credential;
+    } catch {
         return null;
     }
 }
