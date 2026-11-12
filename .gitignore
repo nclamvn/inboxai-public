@@ -17,6 +17,7 @@
 /test-results/m6g/
 /test-results/commitment-lifecycle/
 /test-results/commitment-regression/
+/test-results/commitment-attention/
 /.codex-db-test-*/
 
 # next.js

@@ -10,7 +10,7 @@ const events = z.array(event).max(16)
 const directSchema = z.strictObject({ events })
 const actionSchema = z.strictObject({ action: z.enum(['read', 'finish']), ids: z.array(z.string()).max(8), events })
 
-async function chat(messages, schema, metrics, maxTokens = 800) {
+export async function chat(messages, schema, metrics, maxTokens = 800) {
   const response = await fetch(`${host}/v1/chat/completions`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, redirect: 'error',
     signal: AbortSignal.timeout(45_000), body: JSON.stringify({

@@ -15,6 +15,8 @@ export type DetectionCommand = {
 export type CommitmentProposal = {
   proposalId: string
   emailId: string
+  accountId: string | null
+  commitmentId: string | null
   subject: string | null
   sender: string
   at: string | null
@@ -23,7 +25,7 @@ export type CommitmentProposal = {
   reference: string | null
   previous: LedgerState | null
   review: { command: DetectionCommand; title: string } | null
-  blocked: 'unmatched' | 'chronology' | 'ambiguous' | 'conflicting' | null
+  blocked: 'unmatched' | 'chronology' | 'ambiguous' | 'conflicting' | 'uncertain' | null
 }
 
 export type DetectionPage = { proposals: CommitmentProposal[]; nextBeforeId: string | null }

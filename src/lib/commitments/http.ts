@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createClientForRequest } from '@/lib/supabase/server'
 import { commitmentReceipt } from './contracts'
 
-type Session = Awaited<ReturnType<typeof createClientForRequest>>
+export type LedgerSession = Awaited<ReturnType<typeof createClientForRequest>>
 
 export class CommitmentRequestError extends Error {
   constructor(readonly status: number, message: string) { super(message) }
@@ -13,12 +13,12 @@ export function ledgerJson(data: unknown, status = 200) {
   return NextResponse.json(data, { status, headers: { 'Cache-Control': 'private, no-store' } })
 }
 
-export async function withLedgerSession(request: NextRequest, handle: (client: Session) => Promise<Response>) {
+export async function withLedgerSession(request: NextRequest, handle: (client: LedgerSession, userId: string) => Promise<Response>) {
   try {
     const client = await createClientForRequest(request)
     const { data: { user } } = await client.auth.getUser()
     if (!user) return ledgerJson({ error: 'Yêu cầu đăng nhập.' }, 401)
-    return await handle(client)
+    return await handle(client, user.id)
   } catch (error) {
     if (error instanceof CommitmentRequestError) return ledgerJson({ error: error.message }, error.status)
     return ledgerJson({ error: 'Chưa thể truy cập sổ cam kết. Hãy thử lại.' }, 503)
@@ -54,8 +54,9 @@ export async function readCommitmentJson(request: NextRequest): Promise<unknown>
   }
 }
 
-export async function ledgerRpc(client: Session, name: 'save_commitment' | 'list_commitments' | 'list_commitment_board' | 'read_commitment'
-  | 'scan_commitment_mail' | 'read_commitment_lifecycle_targets' | 'confirm_commitment_detection', args: Record<string, unknown>) {
+export async function ledgerRpc(client: LedgerSession, name: 'save_commitment' | 'list_commitments' | 'list_commitment_board' | 'read_commitment'
+  | 'scan_commitment_mail' | 'read_commitment_lifecycle_targets' | 'confirm_commitment_detection'
+  | 'list_commitment_attention' | 'read_commitment_reminder', args: Record<string, unknown>) {
   const { data, error } = await client.rpc(name, args).abortSignal(AbortSignal.timeout(10_000))
   if (!error && data != null) return data
   switch (error?.code) {
@@ -79,7 +80,7 @@ export async function ledgerRpc(client: Session, name: 'save_commitment' | 'list
   }
 }
 
-export async function saveCommitment(client: Session, args: Record<string, unknown>, creating = false) {
+export async function saveCommitment(client: LedgerSession, args: Record<string, unknown>, creating = false) {
   const data = await ledgerRpc(client, 'save_commitment', args)
   const receipt = commitmentReceipt.parse(data)
   return ledgerJson(receipt, creating && !receipt.replayed ? 201 : 200)

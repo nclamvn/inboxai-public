@@ -18,6 +18,7 @@ import { MobileInboxHeader } from '@/components/layout/mobile-inbox-header'
 import { CategoryFilterSheet } from '@/components/layout/category-filter-sheet'
 import { AccountSwitcher } from '@/components/email/account-switcher'
 import { InboxPriorityDialog } from '@/components/email/inbox-priority-dialog'
+import { CommitmentAttention } from '@/components/commitments/commitment-attention'
 import { compareInboxPriority, rankActionInbox } from '@/lib/action-inbox/rank'
 import type { Email } from '@/types'
 
@@ -68,7 +69,7 @@ function InboxContent() {
   // Account filter state
   const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([])
 
-  const { emails, error, loading, loadingMore, hasMore, pageError, toggleStar, archiveEmail, deleteEmail, markAsRead, refetch, loadMore, setInboxPriority } = useEmails({
+  const { userId, emails, error, loading, loadingMore, hasMore, pageError, toggleStar, archiveEmail, deleteEmail, markAsRead, refetch, loadMore, setInboxPriority } = useEmails({
     folder: 'inbox',
     accountIds: selectedAccountIds.length > 0 ? selectedAccountIds : undefined
   })
@@ -608,6 +609,9 @@ function InboxContent() {
 
             {/* Email List */}
             <div className="flex-1 overflow-y-auto">
+              {userId && !selectedId && !activeFilter && !briefingFilter && !searchQuery && (!isMobile || mobileSegment === 'all') && (
+                <CommitmentAttention key={userId} userId={userId} accounts={selectedAccountIds} />
+              )}
               {error && emails.length === 0 ? (
                 <EmptyState type="error" title="Chưa tải được hộp thư"
                   description="Kiểm tra kết nối rồi thử tải lại."

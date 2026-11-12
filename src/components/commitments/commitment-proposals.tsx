@@ -14,6 +14,7 @@ import type { CommitmentProposal } from '@/lib/commitments/detection'
 const labels: Record<CommitmentProposal['kind'], string> = {
   create: 'Cam kết mới', deadline: 'Đổi hạn chót', owner: 'Đổi người phụ trách',
   completed: 'Hoàn tất', cancelled: 'Hủy cam kết',
+  review: 'Phản hồi cần kiểm tra',
 }
 
 const blockedReasons: Record<NonNullable<CommitmentProposal['blocked']>, string> = {
@@ -21,6 +22,7 @@ const blockedReasons: Record<NonNullable<CommitmentProposal['blocked']>, string>
   chronology: 'Chưa xác minh được thư này mới hơn bằng chứng đang có trong sổ.',
   ambiguous: 'Có nhiều đầu việc có thể liên quan. Hãy kiểm tra email và sổ cam kết.',
   conflicting: 'Hạn cũ trong thư khác với hạn đã xác nhận trong sổ.',
+  uncertain: 'Người phụ trách chưa xác nhận lịch. Cam kết giữ nguyên hạn đã duyệt.',
 }
 
 function Source({ proposal }: { proposal: CommitmentProposal }) {
@@ -116,9 +118,10 @@ function ProposalReview({ proposal, close, refresh, saved }: {
   )
 }
 
-export function CommitmentProposals({ group, proposals, hasMore, loading, fetching, failed, load, refresh }: {
+export function CommitmentProposals({ group, proposals, sourceId, hasMore, loading, fetching, failed, load, refresh }: {
   group: CommitmentGroup
   proposals: CommitmentProposal[]
+  sourceId: string | null
   hasMore: boolean
   loading: boolean
   fetching: boolean
@@ -129,7 +132,7 @@ export function CommitmentProposals({ group, proposals, hasMore, loading, fetchi
   const [reviewing, setReviewing] = useState<CommitmentProposal | null>(null)
   const [accepted, setAccepted] = useState<Set<string>>(new Set())
   const receipt = useRef<HTMLParagraphElement>(null)
-  const visible = proposals.filter(proposal => !accepted.has(proposal.proposalId))
+  const visible = proposals.filter(proposal => (!sourceId || proposal.emailId === sourceId) && !accepted.has(proposal.proposalId))
     .sort((a, b) => Number(Boolean(b.review)) - Number(Boolean(a.review)))
 
   useEffect(() => { receipt.current?.focus() }, [accepted.size])
@@ -141,6 +144,12 @@ export function CommitmentProposals({ group, proposals, hasMore, loading, fetchi
           <ArrowLeft size={16} aria-hidden="true" /> Về sổ cam kết
         </Link>
         <h2 id="commitment-proposal-heading" className="neo-title mt-3">Đề xuất từ email</h2>
+        {sourceId && (
+          <Link href={commitmentsHref(group) + '&view=proposals'} prefetch={false}
+            className="neo-target inline-flex items-center py-2 text-sm text-[var(--accent-foreground)] underline">
+            Xem tất cả đề xuất
+          </Link>
+        )}
         {accepted.size > 0 && <p role="status" ref={receipt} tabIndex={-1} className="mt-2 text-sm">Đã ghi vào sổ {accepted.size} đề xuất.</p>}
         {loading && <p role="status" className="py-5 text-sm text-[var(--foreground-muted)]">Đang kiểm tra email…</p>}
         {failed && <div className="my-4"><Alert variant="error" title="Chưa kiểm tra được email">Hãy thử tải lại.</Alert></div>}

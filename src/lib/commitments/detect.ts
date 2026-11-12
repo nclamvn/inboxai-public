@@ -3,7 +3,7 @@ import { isQuotedMailBoundary } from '@/lib/email/plain-text'
 import type { CommitmentState } from './contracts'
 
 export type DetectionSignal = {
-  kind: 'create' | 'deadline' | 'owner' | 'completed' | 'cancelled'
+  kind: 'create' | 'deadline' | 'owner' | 'completed' | 'cancelled' | 'review'
   quote: string
   title: string | null
   dueOn: string | null
@@ -26,6 +26,7 @@ const cancellation = new RegExp('^' + speaker + ' (?:(?:đã )?hủy cam kết|h
 const reassignment = new RegExp('^' + speaker + ' (?:chuyển trách nhiệm cho|are assigning the commitment to) (\\S+)$', 'iu')
 const dueSuffix = new RegExp(' (?:(?:trước ngày|chậm nhất ngày|vào ngày|ngày|trước|by|on) (' + dateToken + ')|(?:vào |trước |chậm nhất |by |on )?(' + relativeToken + '))$', 'iu')
 const uncertain = /(?:^|[\s,(])(?:nếu|trừ khi|có thể|có lẽ|dự kiến|cố gắng|if|unless|might|may|try to|subject to)(?=[\s,)]|$)/iu
+const uncertainUpdate = new RegExp('^' + speaker + ' (?:(?:có thể|dự kiến) (?:dời|đổi|lùi|chuyển) (?:hạn|lịch giao)\\b|(?:chưa thể|chưa) xác nhận (?:hạn|lịch giao)\\b|(?:may|might) (?:move|change) the deadline\\b|(?:cannot|can.t) confirm the (?:delivery date|deadline)\\b)', 'iu')
 
 function calendarDate(raw: string, receivedAt: string | null) {
   if (relativeDate.test(raw)) {
@@ -58,7 +59,12 @@ export function detectCommitments(body: string | null, receivedAt: string | null
     if (isQuotedMailBoundary(quote)) break
     if (!quote || quote.length > 480) continue
     const line = quote.normalize('NFC').replace(/\s+/gu, ' ').replace(/[.!]$/u, '')
-    if (uncertain.test(line) || /[?;"“”]/u.test(line)) continue
+    if (/[?;"“”]/u.test(line)) continue
+    if (uncertainUpdate.test(line)) {
+      signals.push({ kind: 'review', quote, title: null, dueOn: null })
+      continue
+    }
+    if (uncertain.test(line)) continue
     const replacement = confirmedReplacement.exec(line)
     if (replacement) {
       const dueOn = calendarDate(replacement[1], receivedAt)
@@ -111,6 +117,7 @@ export function senderIdentity(sender: string) {
 }
 
 export function proposedState(signal: DetectionSignal, sender: string, name: string | null, prior: CommitmentState | null): CommitmentState | null {
+  if (signal.kind === 'review') return null
   if (signal.kind === 'create') {
     if (prior || !signal.title) return null
     return {

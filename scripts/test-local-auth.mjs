@@ -28,21 +28,25 @@ const m6Native = m6 && process.argv.includes('--native-shells')
 const staging = process.argv.includes('--m6b')
 const m6c = process.argv.includes('--m6c')
 const journeyPreview = process.argv.includes('--m6d-preview')
-const journeyE2E = process.argv.includes('--m6d-e2e')
+const dailyCommitments = process.argv.includes('--daily-commitments')
+const journeyE2E = process.argv.includes('--m6d-e2e') || dailyCommitments
 const journey = journeyPreview || journeyE2E
 const commitmentBenchmark = process.argv.includes('--m6g')
 const isolatedCommitment = commitmentDetection && process.argv.includes('--isolated')
 const commitmentOutput = commitmentBenchmark ? (await import('../tests/eval/commitments/benchmark.mjs')).output : null
 const isolatedDesign = design && process.argv.includes('--isolated')
-const isolated = journeyE2E || isolatedDesign || commitmentBenchmark || isolatedCommitment
+const isolatedPlatform = m6 && !m6Native && process.argv.includes('--isolated')
+const platformOutput = isolatedPlatform ? 'test-results/commitment-attention/platform' : undefined
+const isolated = journeyE2E || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedPlatform
 const productionMode = m6 || staging || journey || isolated
-const journeyOutput = 'test-results/m6d'
+const journeyOutput = dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
 const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.test'
 const evidenceFile = journey ? `${journeyOutput}/report.json`
   : commitmentOutput ? commitmentOutput + '/local-run.json'
   : isolatedDesign ? `${journeyOutput}/design-run.json`
   : m6c ? `docs/phase-2/evidence/m6c-${staging ? 'staging' : 'auth'}-run.json`
   : staging ? 'docs/phase-2/evidence/m6b-run.json'
+  : platformOutput ? platformOutput + '/run.json'
   : m6 ? `docs/phase-2/evidence/m6a-${m6Baseline ? 'baseline' : m6Native ? 'native-run' : 'browser-run'}.json`
   : operatorOutcomes ? 'docs/phase-2/evidence/m5b-browser-run.json'
   : operator ? 'docs/phase-2/evidence/m5a-browser-run.json'
@@ -118,6 +122,7 @@ try {
     rmSync(commitmentOutput + '/product.json', { force: true })
   }
   if (isolatedCommitment) mkdirSync('test-results/commitment-lifecycle', { recursive: true })
+  if (platformOutput) mkdirSync(platformOutput, { recursive: true })
   // A failed future run must never leave a stale success report behind.
   if (!journey) rmSync(evidenceFile, { force:true })
   if (commitments) rmSync('docs/phase-2/evidence/m3a-sample-ledger.json', { force: true })
@@ -174,6 +179,7 @@ try {
     mkdirSync(journeyOutput, { recursive: true })
     rmSync(evidenceFile, { force: true })
     rmSync(`${journeyOutput}/failure.png`, { force: true })
+    if (dailyCommitments) rmSync(`${journeyOutput}/workflow.json`, { force: true })
   }
   started = true
   docker(['up', '-d', '--pull', 'never', ...(staging ? ['--wait','--wait-timeout','60'] : [])])
@@ -210,7 +216,7 @@ try {
   record('direct Auth API cannot bypass closed registration policy', Boolean(blocked))
   sql("UPDATE public.registration_policy SET enabled=true, max_users=100; NOTIFY pgrst, 'reload schema';")
   await delay(1000)
-  if (journeyE2E) googleProvider = await startGoogleOAuthFixture()
+  if (journeyE2E && !dailyCommitments) googleProvider = await startGoogleOAuthFixture()
   if (!staging) {
     if (!journey) mailProvider = await startMailProvider()
     smtpWire = await startSmtpWire(journey ? {
@@ -325,6 +331,10 @@ try {
           next.once('exit', () => shutdown.signal.aborted ? resolve() : reject(new Error('Local Next preview stopped')))
         })
       }
+    } else if (dailyCommitments) {
+      const { rehearseDailyCommitments } = await import('../tests/design/daily-commitments.mjs')
+      await rehearseDailyCommitments({ app, base, email, previousEmail, password, userId, admin, appFetch, fixture,
+        loopbackFetch, smtpWire, mailpit: `http://127.0.0.1:${ports.mail}`, record, output: journeyOutput })
     } else {
       await rehearsePurchasingJourney({ app, base, email, previousEmail, password, fixture, record, admin, login, loopbackFetch,
         smtpWire, mailpit: `http://127.0.0.1:${ports.mail}`, output: journeyOutput })
@@ -343,7 +353,7 @@ try {
   } else if (m6) {
     sql(`DELETE FROM public.emails WHERE id='${ownEmailId}' AND user_id='${userId}';`)
     const { rehearsePlatform } = await import('../tests/design/platform.mjs')
-    await rehearsePlatform({ app, appFetch, cookies, admin, userId, record, briefingReads, baseline: m6Baseline, nativeFixture })
+    await rehearsePlatform({ app, base, appFetch, cookies, admin, userId, record, briefingReads, baseline: m6Baseline, nativeFixture, output: platformOutput })
   } else if (operatorOutcomes || operator) {
     const foreignLogin = createClient(base, anon, { auth: { persistSession: false, autoRefreshToken: false } })
     const foreignSession = await foreignLogin.auth.signInWithPassword({ email: 'preupgrade@example.test', password })
@@ -399,7 +409,8 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = journey ? 'Production-mode Next, GoTrue, PostgREST, PostgreSQL, Chromium, Mailpit and a simulated Google OAuth and Gmail API over loopback with synthetic data'
+  const provenance = dailyCommitments ? 'Production-mode Next, GoTrue, PostgREST, PostgreSQL, Chromium and Mailpit over loopback with a synthetic daily commitment workflow'
+    : journey ? 'Production-mode Next, GoTrue, PostgREST, PostgreSQL, Chromium, Mailpit and a simulated Google OAuth and Gmail API over loopback with synthetic data'
     : commitmentBenchmark ? 'Authenticated production-mode Next, PostgREST and PostgreSQL on the synthetic M6-G corpus'
     : staging ? 'Local staging and independent PostgreSQL recovery, GoTrue, PostgREST and production-mode Next on synthetic data'
     : m6Native ? 'Native simulator WebViews against production-mode local Next, GoTrue and PostgREST on synthetic mail'

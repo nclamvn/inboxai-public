@@ -1,6 +1,7 @@
 import type { DetectionCommand, DetectionPage } from './detection'
 import type { BoardPage, CommitmentGroup, LedgerDetail } from './view'
 import type { CommitmentEvidence, CommitmentState } from './contracts'
+import type { AttentionItem, ReminderCommand, ReminderPreview, ReminderResult } from './attention'
 
 export class LedgerApiError extends Error {
   constructor(readonly status: number, message: string) { super(message) }
@@ -52,5 +53,22 @@ export function confirmCommitmentDetection(key: string, command: DetectionComman
     headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key },
     body: JSON.stringify(command),
     signal: AbortSignal.timeout(20_000),
+  })
+}
+
+export function loadCommitmentAttention(accounts: string[], signal: AbortSignal) {
+  const params = new URLSearchParams()
+  for (const id of accounts) params.append('account', id)
+  return ledgerRequest<{ items: AttentionItem[] }>('/attention?' + params, { signal })
+}
+
+export function loadCommitmentReminder(id: string, signal: AbortSignal) {
+  return ledgerRequest<ReminderPreview>('/' + id + '/reminder', { signal })
+}
+
+export function approveCommitmentReminder(id: string, command: ReminderCommand) {
+  return ledgerRequest<ReminderResult>('/' + id + '/reminder', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(command),
+    signal: AbortSignal.timeout(45_000),
   })
 }

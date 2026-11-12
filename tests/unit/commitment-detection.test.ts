@@ -62,6 +62,15 @@ describe('commitment detection from the current message', () => {
     expect(detectCommitment('Chốt lịch: bên tôi sẽ gửi tài liệu nếu kho đồng ý.')).toBeNull()
   })
 
+  it('surfaces an uncertain reply as evidence without proposing a ledger revision', () => {
+    const quote = 'Tôi chưa thể xác nhận lịch giao, còn chờ xe.'
+    const signal = detectCommitment(quote)!
+    expect(signal).toEqual({ kind: 'review', quote, title: null, dueOn: null })
+    expect(proposedState(signal, 'vendor@example.test', null, null)).toBeNull()
+    expect(detectCommitment('> ' + quote)).toBeNull()
+    expect(detectCommitment('Tôi sẽ giao hàng nếu có xe.')).toBeNull()
+  })
+
   it('retains a real pledge above a quoted prior message and identifies only one explicit reference', () => {
     expect(detectCommitment('We will send the inspection report.\n> We will send the old report.')).toMatchObject({ title: 'send the inspection report' })
     expect(subjectReference('Re: [po-1042] Lịch giao PO-1042')).toBe('PO-1042')

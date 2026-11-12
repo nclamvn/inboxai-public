@@ -59,6 +59,8 @@ export function CommitmentLedger({ userId }: { userId: string }) {
   const groupParam = params.get('group')
   const group = isCommitmentGroup(groupParam) ? groupParam : 'mine'
   const showProposals = params.get('view') === 'proposals'
+  const source = params.get('source')
+  const sourceId = validCommitmentId(source) ? source.toLowerCase() : null
   const idParam = params.get('id')
   const id = !showProposals && validCommitmentId(idParam) ? idParam.toLowerCase() : null
   const cache = useQueryClient()
@@ -137,7 +139,7 @@ export function CommitmentLedger({ userId }: { userId: string }) {
         </div>
       </header>
       {showProposals ? (
-        <CommitmentProposals group={group} proposals={proposals}
+        <CommitmentProposals key={sourceId ?? 'all'} group={group} proposals={proposals} sourceId={sourceId}
           hasMore={detections.hasNextPage} loading={detections.isPending} fetching={detections.isFetching}
           failed={detections.isError} refresh={refresh}
           load={() => { if (detections.isFetchNextPageError || !detections.isError) void detections.fetchNextPage(); else void detections.refetch() }} />

@@ -5,6 +5,7 @@ import { createCommitment, reviseCommitment } from './contracts'
 import { commitmentTitleKey, detectCommitments, proposedState, senderIdentity, subjectReference, type DetectionSignal } from './detect'
 import type { LedgerState } from './view'
 import type { CommitmentProposal, DetectionCommand, DetectionPage } from './detection'
+import { ledgerRpc, type LedgerSession } from './http'
 
 type Source = {
   id: string; accountId: string | null; sender: string; senderName: string | null
@@ -67,7 +68,8 @@ export function buildProposals(page: ScanPage, signals: Signal[], targets: Targe
     const at = source.at && Number.isFinite(Date.parse(source.at)) ? source.at : null
     const common = {
       proposalId: source.id + ':' + quoteHash,
-      emailId: source.id, subject: source.subject, sender, at, quote: signal.quote,
+      emailId: source.id, accountId: source.accountId, commitmentId: current?.id ?? null,
+      subject: source.subject, sender, at, quote: signal.quote,
       kind: signal.kind, reference, previous: current?.state ?? null,
     }
     if (related.length > 8 || (signal.kind !== 'create' && (open.length > 1 || current?.multiOrigin))) {
@@ -79,14 +81,15 @@ export function buildProposals(page: ScanPage, signals: Signal[], targets: Targe
       if (matching.some(target => target.originId !== source.id)) return [{ ...common, review: null, blocked: 'ambiguous' }]
     }
     if (signal.kind !== 'create' && !current) return [{ ...common, review: null, blocked: 'unmatched' }]
+    if (current && !(source.receivedAt && current.lastSourceAt && Date.parse(source.receivedAt) > Date.parse(current.lastSourceAt))) {
+      return [{ ...common, review: null, blocked: 'chronology' }]
+    }
+    if (signal.kind === 'review') return [{ ...common, review: null, blocked: 'uncertain' }]
     if (signal.priorDueOn && current?.state.dueOn !== signal.priorDueOn) {
       return [{ ...common, review: null, blocked: 'conflicting' }]
     }
     const state = proposedState(signal, sender, source.senderName, common.previous)
     if (!state) return []
-    if (current && !(source.receivedAt && current.lastSourceAt && Date.parse(source.receivedAt) > Date.parse(current.lastSourceAt))) {
-      return [{ ...common, review: null, blocked: 'chronology' }]
-    }
 
     const command: DetectionCommand = {
       sourceFingerprint: source.fingerprint, referenceKey: current?.referenceKey ?? key, state,
@@ -98,4 +101,12 @@ export function buildProposals(page: ScanPage, signals: Signal[], targets: Targe
     return [{ ...common, review: { command, title: state.title }, blocked: null }]
   })
   return { proposals, nextBeforeId: page.nextBeforeId }
+}
+
+export async function scanCommitmentProposals(client: LedgerSession, before: string | null) {
+  const page = await ledgerRpc(client, 'scan_commitment_mail', { p_before_id: before }) as ScanPage
+  const signals = interpretScan(page)
+  const references = [...new Set(signals.flatMap(signal => signal.reference ? [signal.reference] : []))]
+  const targets = references.length ? await ledgerRpc(client, 'read_commitment_lifecycle_targets', { p_references: references }) : []
+  return buildProposals(page, signals, targets)
 }

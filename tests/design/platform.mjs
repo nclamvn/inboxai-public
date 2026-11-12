@@ -4,7 +4,6 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { chromium } from 'playwright-core'
 import { audit } from './browser.mjs'
 
-const output = 'docs/phase-2/evidence/m6a'
 const scenarios = [
   { name: 'desktop', viewport: { width: 1440, height: 900 } },
   { name: 'tablet', viewport: { width: 834, height: 1112 }, hasTouch: true },
@@ -30,7 +29,9 @@ async function seed(admin, userId) {
   return rows[0]
 }
 
-export async function rehearsePlatform({ app, appFetch, cookies, admin, userId, record, briefingReads, baseline, nativeFixture }) {
+export async function rehearsePlatform({
+  app, base, appFetch, cookies, admin, userId, record, briefingReads, baseline, nativeFixture, output = 'docs/phase-2/evidence/m6a',
+}) {
   const sample = await seed(admin, userId)
   if (nativeFixture) {
     assert.equal((await admin.from('emails').update({ summary: 'Bàn giao tại kho số 2.' }).eq('id', sample.id).eq('user_id', userId)).error, null)
@@ -58,7 +59,7 @@ export async function rehearsePlatform({ app, appFetch, cookies, admin, userId, 
         await context.addInitScript(() => localStorage.setItem('inboxai_onboarding_seen', 'true'))
         await context.route('**/*', async route => {
           const url = new URL(route.request().url())
-          if (!['127.0.0.1:55300', '127.0.0.1:55321'].includes(url.host)
+          if (![app, base].includes(url.origin)
             || url.pathname === '/api/source-accounts/sync' || url.pathname === '/api/emails/send') return route.abort()
           // The pre-change build's production CSP cannot reach the local DB fixture.
           // Apply the same explicit origin used by the repaired build for this comparison.
@@ -67,7 +68,7 @@ export async function rehearsePlatform({ app, appFetch, cookies, admin, userId, 
             const headers = response.headers()
             const csp = headers['content-security-policy']
             assert.ok(csp?.includes('connect-src '))
-            headers['content-security-policy'] = csp.replace('connect-src ', 'connect-src http://127.0.0.1:55321 ')
+            headers['content-security-policy'] = csp.replace('connect-src ', `connect-src ${base} `)
               .replace(/; upgrade-insecure-requests\b/, '')
             return route.fulfill({ response, headers })
           }
@@ -91,11 +92,12 @@ export async function rehearsePlatform({ app, appFetch, cookies, admin, userId, 
         page.on('response', response => {
           if (response.status() >= 400) failedRequests.push([new URL(response.url()).pathname, response.status()])
         })
-        const requests = { briefing: 0, profiles: 0 }
+        const requests = { briefing: 0, profiles: 0, attention: 0 }
         page.on('request', request => {
           const { pathname } = new URL(request.url())
           if (pathname === '/api/ai/briefing') requests.briefing++
           if (pathname === '/rest/v1/profiles') requests.profiles++
+          if (pathname === '/api/commitments/attention') requests.attention++
         })
         await page.goto(app + '/inbox')
         const opener = page.getByRole('button', { name: /Mở thư: Lịch kho M6 000/ })
@@ -114,7 +116,7 @@ export async function rehearsePlatform({ app, appFetch, cookies, admin, userId, 
         const result = { name, viewport: device.viewport, firstRowMs, jsBytes, requests: { ...requests } }
         measurements.push(result)
         if (baseline) continue
-        assert.deepEqual(requests, { briefing: name === 'mobile' ? 0 : 1, profiles: 0 })
+        assert.deepEqual(requests, { briefing: name === 'mobile' ? 0 : 1, profiles: 0, attention: 1 })
         assert.ok(jsBytes > 0 && jsBytes <= 550 * 1024, `${name} JS bytes ${jsBytes}`)
         assert.ok(firstRowMs <= 5000, `${name} local first row at ${firstRowMs} ms`)
         await checkPage(page, result, 'inbox')

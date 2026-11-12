@@ -1,17 +1,13 @@
 import type { NextRequest } from 'next/server'
 import { commitmentId, commitmentReceipt, requestKey } from '@/lib/commitments/contracts'
-import { buildProposals, confirmDetection, interpretScan, type ScanPage } from '@/lib/commitments/detection-server'
+import { confirmDetection, scanCommitmentProposals } from '@/lib/commitments/detection-server'
 import { ledgerJson, ledgerRpc, readCommitmentJson, withLedgerSession } from '@/lib/commitments/http'
 
 export async function GET(request: NextRequest) {
   return withLedgerSession(request, async client => {
     const before = commitmentId.nullable().safeParse(request.nextUrl.searchParams.get('beforeId'))
     if (!before.success) return ledgerJson({ error: 'Trang thư không hợp lệ.' }, 400)
-    const page = await ledgerRpc(client, 'scan_commitment_mail', { p_before_id: before.data }) as ScanPage
-    const signals = interpretScan(page)
-    const references = [...new Set(signals.flatMap(signal => signal.reference ? [signal.reference] : []))]
-    const targets = references.length ? await ledgerRpc(client, 'read_commitment_lifecycle_targets', { p_references: references }) : []
-    return ledgerJson(buildProposals(page, signals, targets))
+    return ledgerJson(await scanCommitmentProposals(client, before.data))
   })
 }
 

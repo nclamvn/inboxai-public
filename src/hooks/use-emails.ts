@@ -24,6 +24,7 @@ const emailListFields = `
 const inboxListFields = `${emailListFields}, snippet:inbox_preview, inbox_priority, inbox_priority_version` as const
 
 export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEmailsOptions = {}) {
+  const [userId, setUserId] = useState<string | null>(null)
   const [emails, setEmails] = useState<Email[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -91,6 +92,8 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
+      if (generation !== requestGeneration.current) return
+      setUserId(user?.id ?? null)
       if (!user) throw new Error('Not authenticated')
 
       // Fetch pageSize + 1 to check if there's more
@@ -283,6 +286,7 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
   }
 
   return {
+    userId,
     emails,
     loading,
     loadingMore,
