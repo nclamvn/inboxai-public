@@ -45,7 +45,9 @@
     "test:compose-attachments": "npm run test:local-auth -- --compose-attachments",
     "test:reply-followup": "npm run test:local-auth -- --reply-followup",
     "test:inbox-catchup": "npm run test:local-auth -- --catchup",
-    "test:day": "npm run test:local-auth -- --day-test"
+    "test:day": "npm run test:local-auth -- --day-test",
+    "test:scheduled-send": "npm run test:local-auth -- --scheduled-send",
+    "worker:scheduled-send": "node scripts/scheduled-send-worker.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

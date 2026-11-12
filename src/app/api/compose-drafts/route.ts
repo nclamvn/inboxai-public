@@ -7,6 +7,8 @@ import { composeRpcError, composeService } from '@/lib/compose/server'
 import { SendError, sendInput, sendKey } from '@/lib/mail-send/contracts'
 import { sendFromAccount } from '@/lib/mail-send/server'
 
+import { approveSchedule } from '@/lib/scheduled-mail/server'
+
 export const maxDuration = 60
 const id = z.uuid()
 const revision = z.number().int().positive().max(2_147_483_647)
@@ -14,6 +16,7 @@ const actions = z.discriminatedUnion('action', [
   z.strictObject({ action: z.literal('save'), id: id.nullable(), sourceId: id.nullable(), revision: revision.nullable(),
     accountId: id, fields: composeFields, fileIds: composeFileIds }),
   z.strictObject({ action: z.literal('prepare'), id, revision }),
+  z.strictObject({ action: z.literal('schedule'), id, revision, at: z.iso.datetime(), requestId: z.uuidv4() }),
   z.strictObject({ action: z.enum(['send', 'check', 'edit', 'discard']), id }),
 ])
 const approval = z.object({ key: sendKey, hash: z.string().regex(/^[a-f0-9]{64}$/), input: sendInput })
@@ -89,7 +92,7 @@ export async function POST(request: NextRequest) {
       return json(await rpc(client, 'save_file_compose', { p_id: action.id, p_revision: action.revision,
         p_account: action.accountId, p_source: action.sourceId, p_fields: fields, p_files: action.fileIds }))
     }
-    if (action.action === 'prepare') {
+    if (action.action === 'prepare' || action.action === 'schedule') {
       const draft = await readDraft(client, action.id)
       if (draft.revision !== action.revision) throw composeRpcError('PT409')
       const input = sendInput.safeParse({ sourceAccountId: draft.accountId, subject: draft.fields.subject,
@@ -97,6 +100,7 @@ export async function POST(request: NextRequest) {
         ...(draft.files.length > 0 && { attachmentIds: draft.files.map(file => file.id) }) })
       if (!input.success) throw new SendError(400, 'Kiểm tra người nhận và tiêu đề trước khi gửi.')
       const hash = createHash('sha256').update(JSON.stringify(input.data)).digest('hex')
+      if (action.action === 'schedule') return json(await approveSchedule(actor, 'compose', action, input.data, hash))
       return json(await rpc(composeService(), 'prepare_file_compose', { p_actor: actor, p_id: action.id,
         p_revision: action.revision, p_input: input.data, p_hash: hash }))
     }

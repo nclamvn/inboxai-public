@@ -1,6 +1,7 @@
 import type { ComposeFile } from '@/lib/compose/contracts'
 
 export type ReplyDraft = {
+  scheduledId?: string
   id: string
   sourceId: string
   revision: number

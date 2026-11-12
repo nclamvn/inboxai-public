@@ -1,5 +1,28 @@
 # Verification record
 
+## Scheduled Gmail send
+
+On 2026-11-12, `npm run test:scheduled-send` passed 21 local checks on macOS
+arm64, Node 24.14.1, Next.js 16.4.6, Chrome 157 and PostgreSQL 16. The test used
+production-mode Next, two loopback Gmail accounts and controlled browser and
+database clocks. Of three approved schedules, two dispatched with Chrome
+closed and one was cancelled and reopened as an editable draft. No send
+started before its due time. A lost browser acknowledgement replayed the
+same approval. Two worker processes competed for a single job. After Gmail
+accepted it and dropped the response, the next worker found the same
+Message-ID in Sent after a Next restart. The provider recorded exactly two
+send calls, with the expected Gmail reply thread and attachment bytes.
+Three sampled screens had no axe violations or horizontal overflow. SQL
+covered the expired-worker lease and cross-tenant and premature-send fences.
+
+Lint, TypeScript, 241 unit tests, 199 integration tests, 25 SQL checks and
+the local production-mode build exited 0. Lint reported 91 existing warnings.
+Design, platform and local staging passed 25, 19 and 31 checks.
+The attachment, reply and Inbox snooze regressions passed 21, 23 and 20 checks.
+The loopback worker rejected a non-local destination before connecting. See the
+[local scheduled-send handoff](SCHEDULED_SEND_LOCAL_HANDOFF.md) and
+[Chrome results](../../test-results/scheduled-send/report.json).
+
 ## Email snooze and scheduled Inbox return
 
 On 2026-11-12, `npm run test:email-snoozes` exited 0 on macOS arm64 with

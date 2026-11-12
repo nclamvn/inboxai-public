@@ -16,6 +16,7 @@ export const composeFields = z.strictObject({
 })
 export type ComposeFields = z.infer<typeof composeFields>
 export type FileComposeDraft = {
+  scheduledId?: string
   id: string
   sourceId: string | null
   accountId: string

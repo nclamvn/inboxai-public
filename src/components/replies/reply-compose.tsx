@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { ScheduleSendDialog } from '@/components/email/schedule-send-dialog'
 import { ArrowLeft, Check, FileText, Send } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ComposeFiles, ComposeFileList } from '@/components/email/compose-files'
@@ -22,6 +24,7 @@ const fieldsFor = (context: ReplyWorkbench): ReplyFields => ({
 const equal = (a: ReplyFields, b: ReplyFields) => a.to === b.to && a.cc === b.cc && a.body === b.body
 
 export function ReplyCompose({ source }: { source: string }) {
+  const router = useRouter()
   const cache = useQueryClient()
   const [context, setContext] = useState<ReplyWorkbench | null>(null)
   const [draft, setDraft] = useState<ReplyDraft | null>(null)
@@ -35,7 +38,7 @@ export function ReplyCompose({ source }: { source: string }) {
   const [permission, setPermission] = useState(false)
   const [saving, setSaving] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [preview, setPreview] = useState(false)
+  const [preview, setPreview] = useState<'send' | 'schedule' | null>(null)
   const [conflict, setConflict] = useState(false)
   const [readVersion, setReadVersion] = useState(0)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
@@ -149,13 +152,13 @@ export function ReplyCompose({ source }: { source: string }) {
     await run(async () => {
       const prepared = await replyRequest<ReplyDraft>({ action: 'prepare', id: draft.id, source, revision: draft.revision }).catch(reason => {
         if (reason instanceof ReplyError && reason.status === 409) {
-          setPreview(false)
+          setPreview(null)
           setConflict(true)
         }
         throw reason
       })
       setDraft(prepared)
-      setPreview(false)
+      setPreview(null)
       await send('send', prepared)
     })
   }
@@ -182,16 +185,26 @@ export function ReplyCompose({ source }: { source: string }) {
     if (!editable || fileBusy || !fields.body.trim()) return
     void run(async () => {
       await save()
-      setPreview(true)
+      setPreview('send')
     })
   }
 
   const back = '/inbox?email=' + encodeURIComponent(source)
   const state = draft?.state ?? 'draft'
-  const status = state === 'accepted' ? 'Đã gửi' : state === 'partial' ? 'Chấp nhận một phần'
+  const status = draft?.scheduledId ? 'Thư đã lên lịch' : state === 'accepted' ? 'Đã gửi' : state === 'partial' ? 'Chấp nhận một phần'
     : state === 'rejected' ? 'Yêu cầu bị từ chối' : state === 'unknown' || state === 'dispatching' ? 'Đang chờ xác minh'
     : state === 'prepared' ? 'Đã lưu yêu cầu gửi' : saving ? 'Đang lưu bản nháp…'
     : dirty ? 'Có thay đổi chưa lưu' : draft ? 'Bản nháp đã lưu' : null
+  const scopePreview = context && draft && <>
+    <dl className="space-y-2 break-words text-sm">
+      <div><dt className="font-semibold">Gửi từ</dt><dd>{context.account}</dd></div>
+      <div><dt className="font-semibold">Người nhận</dt><dd>{draft.to}</dd></div>
+      {draft.cc && <div><dt className="font-semibold">Cc</dt><dd>{draft.cc}</dd></div>}
+    </dl>
+    <div className="mt-4"><ComposeFileList files={draft.files ?? []} /></div>
+    <p className="mt-4 whitespace-pre-wrap break-words border-t border-[var(--border)] pt-4 text-sm">{draft.body}</p>
+  </>
+
   return (
     <div className="mx-auto min-h-full max-w-6xl bg-[var(--surface)]">
       <header className="border-b border-[var(--border)] px-4 py-4 sm:px-6">
@@ -262,12 +275,13 @@ export function ReplyCompose({ source }: { source: string }) {
                   </Button>
                   {draft && <Button type="button" variant="ghost" disabled={busy || saving || fileBusy} onClick={() => setConfirmDiscard(true)}>Xóa bản nháp</Button>}
                 </>}
-                {draft && (state === 'prepared' || state === 'unknown' || state === 'dispatching') && <>
+                {draft?.scheduledId && <Link href="/outbox" className={messageLink}>Mở mục Chờ gửi</Link>}
+                {draft && !draft.scheduledId && (state === 'prepared' || state === 'unknown' || state === 'dispatching') && <>
                   <Button type="button" loading={busy} onClick={() => void run(() => send('check', draft))}>Kiểm tra trạng thái gửi</Button>
                   {state === 'prepared' && <Button type="button" variant="outline" disabled={busy}
                     onClick={() => void run(() => send('send', draft))}>Tiếp tục gửi thư đã duyệt</Button>}
                 </>}
-                {draft && (state === 'rejected' || state === 'prepared') && <Button type="button" variant="ghost" disabled={busy}
+                {draft && !draft.scheduledId && (state === 'rejected' || state === 'prepared') && <Button type="button" variant="ghost" disabled={busy}
                   onClick={() => change('edit')}>Mở lại bản nháp để chỉnh sửa</Button>}
                 {permission && <Link href="/settings" className={messageLink}>Cài đặt quyền gửi</Link>}
                 {draft && state === 'accepted' && !draft.tracking && <Button type="button" loading={busy}
@@ -295,17 +309,19 @@ export function ReplyCompose({ source }: { source: string }) {
           </ol>
         </section>}
       </div>
-      {preview && context && draft && <Modal open title="Xem trước thư gửi" description={draft.subject}
-        onClose={() => { if (!busy) setPreview(false) }} showCloseButton={!busy} closeOnEscape={!busy}
-        footer={<><Button type="button" variant="outline" disabled={busy} onClick={() => setPreview(false)}>Quay lại</Button>
+      {preview === 'schedule' && context && draft && <ScheduleSendDialog mode="schedule" subject={draft.subject}
+        onClose={() => setPreview('send')} onSave={async (at, requestId) => {
+          await replyRequest({ action: 'schedule', source, id: draft.id, revision: draft.revision, at, requestId })
+          invalidate()
+          setPreview(null)
+          router.push('/outbox')
+        }}>{scopePreview}</ScheduleSendDialog>}
+      {preview === 'send' && context && draft && <Modal open title="Xem trước thư gửi" description={draft.subject}
+        onClose={() => { if (!busy) setPreview(null) }} showCloseButton={!busy} closeOnEscape={!busy}
+        footer={<><Button type="button" variant="outline" disabled={busy} onClick={() => setPreview(null)}>Quay lại</Button>
+          <Button type="button" variant="outline" disabled={busy} onClick={() => setPreview('schedule')}>Lên lịch gửi</Button>
           <Button type="button" loading={busy} onClick={() => void approve()}>Xác nhận gửi</Button></>}>
-        <dl className="space-y-2 break-words text-sm">
-          <div><dt className="font-semibold">Gửi từ</dt><dd>{context.account}</dd></div>
-          <div><dt className="font-semibold">Người nhận</dt><dd>{draft.to}</dd></div>
-          {draft.cc && <div><dt className="font-semibold">Cc</dt><dd>{draft.cc}</dd></div>}
-        </dl>
-        <div className="mt-4"><ComposeFileList files={draft.files ?? []} /></div>
-        <p className="mt-4 whitespace-pre-wrap break-words border-t border-[var(--border)] pt-4 text-sm">{draft.body}</p>
+        {scopePreview}
         {error && <div className="mt-4"><Alert variant="error" title="Chưa xác nhận được thao tác">{error}</Alert></div>}
       </Modal>}
       {confirmDiscard && <Modal open title="Xóa bản nháp?" description="Bản nháp đã lưu và thay đổi đang soạn sẽ bị xóa."

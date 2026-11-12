@@ -3,7 +3,7 @@ import { receiptSchema, SendError, type MailPayload, type SendScope, type SendOu
 
 type Client = { rpc(name: string, args: Record<string, unknown>): PromiseLike<{ data: unknown; error: { code?: string } | null }> }
 
-export type SendApproval = { commitmentId: string; version: number } | { replyId: string } | { followupId: string } | { fileComposeId: string }
+export type SendApproval = { commitmentId: string; version: number } | { replyId: string } | { followupId: string } | { fileComposeId: string } | { scheduledId: string; lease: string }
 
 export class MailSendStore {
   constructor(private readonly client: Client, private readonly approval?: SendApproval) {}
@@ -12,7 +12,7 @@ export class MailSendStore {
     const result = await this.client.rpc(name, args)
     if (result.error?.code === 'PT409') throw new SendError(409, this.approval && 'followupId' in this.approval
       ? 'Lịch hẹn hoặc hồi đáp đã thay đổi. Hãy xem lại hội thoại.'
-      : this.approval && ('replyId' in this.approval || 'fileComposeId' in this.approval) ? 'Bản nháp hoặc thư nguồn đã thay đổi. Hãy kiểm tra lại.'
+      : this.approval && ('replyId' in this.approval || 'fileComposeId' in this.approval || 'scheduledId' in this.approval) ? 'Bản nháp hoặc thư nguồn đã thay đổi. Hãy kiểm tra lại.'
       : this.approval ? 'Cam kết hoặc email nguồn đã thay đổi. Hãy kiểm tra lại trước khi gửi lời nhắc.'
       : 'Mã gửi đã được dùng cho nội dung khác.')
     if (result.error?.code === '42501') throw new SendError(404, 'Không tìm thấy tài khoản gửi.')
@@ -22,6 +22,12 @@ export class MailSendStore {
   }
 
   begin(scope: SendScope, payload?: MailPayload) {
+    if (payload && this.approval && 'scheduledId' in this.approval) {
+      return this.rpc('begin_scheduled_mail_send', {
+        p_user_id: scope.userId, p_account_id: scope.accountId, p_id: this.approval.scheduledId,
+        p_lease: this.approval.lease, p_key: scope.key, p_hash: scope.hash, p_payload: payload,
+      })
+    }
     if (payload && this.approval && 'fileComposeId' in this.approval) {
       return this.rpc('begin_file_compose', {
         p_user_id: scope.userId, p_account_id: scope.accountId, p_draft: this.approval.fileComposeId,

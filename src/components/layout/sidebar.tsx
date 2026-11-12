@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  PanelLeft, Pencil, Inbox, Send, Star, Archive, Trash2, Clock,
+  PanelLeft, Pencil, Inbox, Send, CalendarClock, Star, Archive, Trash2, Clock,
   BarChart3, Settings, Newspaper, ListTodo, Bell, Mail, ClipboardCheck, Search, ListChecks,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -15,6 +15,7 @@ const groups = [
   { label: 'Thư mục', items: [
     { href: '/inbox', icon: Inbox, label: 'Hộp thư đến' },
     { href: '/snoozed', icon: Clock, label: 'Đã hẹn' },
+    { href: '/outbox', icon: CalendarClock, label: 'Chờ gửi' },
     { href: '/sent', icon: Send, label: 'Đã gửi' },
     { href: '/starred', icon: Star, label: 'Gắn sao' },
     { href: '/archive', icon: Archive, label: 'Lưu trữ' },

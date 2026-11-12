@@ -2,20 +2,16 @@
 
 import { useId, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { localDateTimeInput } from '@/lib/email-local-time'
 import { Modal } from '@/components/ui/modal'
 import { changeEmailSnooze, emailSnoozeChanged, EmailSnoozeError, type SnoozeTarget } from '@/lib/snooze/client'
 
-function localInput(date: Date) {
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
-}
-
 function startingValue(target: SnoozeTarget) {
-  if (target.snoozed_until && Date.parse(target.snoozed_until) > Date.now()) return localInput(new Date(target.snoozed_until))
+  if (target.snoozed_until && Date.parse(target.snoozed_until) > Date.now()) return localDateTimeInput(new Date(target.snoozed_until))
   const next = new Date()
   next.setDate(next.getDate() + 1)
   next.setHours(9, 0, 0, 0)
-  return localInput(next)
+  return localDateTimeInput(next)
 }
 
 export function EmailSnoozeDialog({ email, mode, onClose, onSaved }: {
@@ -36,7 +32,7 @@ export function EmailSnoozeDialog({ email, mode, onClose, onSaved }: {
   async function save() {
     if (pending.current) return
     const local = new Date(value)
-    if (!cancel && (Number.isNaN(local.getTime()) || localInput(local) !== value)) {
+    if (!cancel && (Number.isNaN(local.getTime()) || localDateTimeInput(local) !== value)) {
       setError('Giờ này không hợp lệ trong múi giờ đang dùng. Hãy chọn giờ khác.')
       return
     }

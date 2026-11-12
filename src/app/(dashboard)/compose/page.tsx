@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Send, X, Loader2, ListChecks, ChevronDown, FilePenLine, FileText, Minus, Plus, Briefcase, Smile } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -8,7 +9,8 @@ import { Button } from '@/components/ui/button'
 import { ReplyCompose } from '@/components/replies/reply-compose'
 import { ComposeFiles, ComposeFileList } from '@/components/email/compose-files'
 import { Modal } from '@/components/ui/modal'
-import { fileDraftHref } from '@/lib/compose/client'
+import { ScheduleSendDialog } from '@/components/email/schedule-send-dialog'
+import { composeDraftAction, fileDraftHref } from '@/lib/compose/client'
 import { useFileCompose } from '@/lib/compose/use-file-compose'
 import { Alert } from '@/components/ui/alert'
 import { composeFingerprint, readComposeKey, saveComposeKey } from '@/lib/mail-send/compose-key'
@@ -50,6 +52,7 @@ function NewCompose() {
   const [accounts, setAccounts] = useState<SourceAccount[]>([])
   const [selectedAccountId, setSelectedAccountId] = useState<string>('')
   const [loadingAccounts, setLoadingAccounts] = useState(true)
+  const [scheduleMode, setScheduleMode] = useState(false)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
   const fileCompose = useFileCompose(draftId, forwardId, (fields, account) => {
     setTo(fields.to)
@@ -245,17 +248,30 @@ function NewCompose() {
     }
   }
 
+  const scopePreview = preview && <>
+    <dl className="space-y-2 break-words text-sm">
+      <div><dt className="font-semibold">Gửi từ</dt><dd>{accounts.find(account => account.id === preview.accountId)?.email_address}</dd></div>
+      <div><dt className="font-semibold">Người nhận</dt><dd>{preview.fields.to}</dd></div>
+      {preview.fields.cc && <div><dt className="font-semibold">Cc</dt><dd>{preview.fields.cc}</dd></div>}
+    </dl>
+    <div className="mt-4"><ComposeFileList files={preview.files} sourceFiles={fileCompose.sourceFiles} /></div>
+    <p className="mt-4 whitespace-pre-wrap break-words border-t border-[var(--border)] pt-4 text-sm">{preview.fields.body}</p>
+  </>
+
   return (
     <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col border-x border-[var(--border)] bg-[var(--surface)]">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--card)]">
+      <div className="flex items-center justify-between gap-3 p-4 border-b border-[var(--border)] bg-[var(--card)]">
         <h1 className="neo-title">{forward ? 'Chuyển tiếp thư' : 'Soạn thư mới'}</h1>
-        <button
-          type="button" onClick={handleDiscard} aria-label="Đóng soạn thư"
-          className="neo-icon-button"
-        >
-          <X className="w-5 h-5" strokeWidth={1.5} />
-        </button>
+        <div className="flex shrink-0 items-center gap-3">
+          <Link href="/outbox" className="neo-target inline-flex items-center text-sm underline md:hidden">Chờ gửi</Link>
+          <button
+            type="button" onClick={handleDiscard} aria-label="Đóng soạn thư"
+            className="neo-icon-button"
+          >
+            <X className="w-5 h-5" strokeWidth={1.5} />
+          </button>
+        </div>
       </div>
 
       {!draftId && !forward && fileCompose.entries.length > 0 && <nav aria-label="Bản nháp đã lưu"
@@ -279,12 +295,13 @@ function NewCompose() {
 
         {fileCompose.loading && <p role="status" className="px-4 py-2">Đang mở bản nháp…</p>}
         {status && <div className="flex flex-wrap items-center gap-2 px-4 py-2">
-          <p role="status" className="text-sm text-[var(--foreground-secondary)]">{status}</p>
-          {(state === 'prepared' || state === 'unknown' || state === 'dispatching') &&
+          <p role="status" className="text-sm text-[var(--foreground-secondary)]">{draft?.scheduledId ? 'Thư đã lên lịch' : status}</p>
+          {draft?.scheduledId && <Link href="/outbox" className="neo-target inline-flex items-center underline">Mở mục Chờ gửi</Link>}
+          {!draft?.scheduledId && (state === 'prepared' || state === 'unknown' || state === 'dispatching') &&
             <Button type="button" loading={fileCompose.busy} onClick={() => void fileCompose.send('check')}>Kiểm tra trạng thái gửi</Button>}
-          {state === 'prepared' && <Button type="button" variant="outline" disabled={fileCompose.busy}
+          {!draft?.scheduledId && state === 'prepared' && <Button type="button" variant="outline" disabled={fileCompose.busy}
             onClick={() => void fileCompose.send('send')}>Tiếp tục gửi thư đã duyệt</Button>}
-          {(state === 'prepared' || state === 'rejected') && <Button type="button" variant="ghost" disabled={fileCompose.busy}
+          {!draft?.scheduledId && (state === 'prepared' || state === 'rejected') && <Button type="button" variant="ghost" disabled={fileCompose.busy}
             onClick={() => void fileCompose.change('edit')}>Mở lại bản nháp để chỉnh sửa</Button>}
           {(state === 'accepted' || state === 'partial') && <a href="/sent" className="neo-target inline-flex items-center underline">Mở thư đã gửi</a>}
         </div>}
@@ -529,25 +546,28 @@ function NewCompose() {
               onClick={() => setConfirmDiscard(true)}>Xóa bản nháp</Button>}
             <Button type="button" variant="outline" loading={fileCompose.busy && !preview} disabled={!canSave}
               onClick={() => void fileCompose.save(fields, selectedAccountId)}>Lưu bản nháp</Button>
-            <Button type="submit" loading={loading} disabled={!to || locked || fileCompose.fileBusy || (durable && !canSave)}
+            <Button type="button" variant="outline" disabled={!canSave || !to.trim() || !subject.trim()}
+              onClick={() => { setScheduleMode(true); void fileCompose.save(fields, selectedAccountId, true) }}>Lên lịch gửi</Button>
+            <Button type="submit" onClick={() => setScheduleMode(false)} loading={loading} disabled={!to || locked || fileCompose.fileBusy || (durable && !canSave)}
               leftIcon={<Send size={18} aria-hidden="true" />}>
               {durable ? 'Xem trước thư gửi' : sendAction === 'check' ? 'Kiểm tra trạng thái' : sendAction === 'retry' ? 'Thử lại yêu cầu' : 'Gửi'}
             </Button>
         </div>}
       </form>
-      {preview && <Modal open title="Xem trước thư gửi" description={preview.fields.subject}
+      {preview && scheduleMode && <ScheduleSendDialog mode="schedule" subject={preview.fields.subject}
+        onClose={() => { fileCompose.setPreview(null); setScheduleMode(false) }}
+        onSave={async (at, requestId) => {
+          await composeDraftAction({ action: 'schedule', id: preview.id, revision: preview.revision, at, requestId })
+          fileCompose.setPreview(null)
+          router.push('/outbox')
+        }}>{scopePreview}</ScheduleSendDialog>}
+      {preview && !scheduleMode && <Modal open title="Xem trước thư gửi" description={preview.fields.subject}
         onClose={() => { if (!fileCompose.busy) fileCompose.setPreview(null) }} showCloseButton={!fileCompose.busy}
         closeOnEscape={!fileCompose.busy} footer={<>
           <Button type="button" variant="outline" disabled={fileCompose.busy} onClick={() => fileCompose.setPreview(null)}>Quay lại</Button>
           <Button type="button" loading={fileCompose.busy} onClick={() => void fileCompose.approve()}>Xác nhận gửi</Button>
         </>}>
-        <dl className="space-y-2 break-words text-sm">
-          <div><dt className="font-semibold">Gửi từ</dt><dd>{accounts.find(account => account.id === preview.accountId)?.email_address}</dd></div>
-          <div><dt className="font-semibold">Người nhận</dt><dd>{preview.fields.to}</dd></div>
-          {preview.fields.cc && <div><dt className="font-semibold">Cc</dt><dd>{preview.fields.cc}</dd></div>}
-        </dl>
-        <div className="mt-4"><ComposeFileList files={preview.files} sourceFiles={fileCompose.sourceFiles} /></div>
-        <p className="mt-4 whitespace-pre-wrap break-words border-t border-[var(--border)] pt-4 text-sm">{preview.fields.body}</p>
+        {scopePreview}
       </Modal>}
       {confirmDiscard && <Modal open title="Xóa bản nháp?" onClose={() => setConfirmDiscard(false)}
         footer={<><Button type="button" variant="outline" onClick={() => setConfirmDiscard(false)}>Giữ bản nháp</Button>

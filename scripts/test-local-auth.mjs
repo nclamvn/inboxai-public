@@ -36,10 +36,12 @@ const dailyCommitments = process.argv.includes('--daily-commitments')
 const catchup = process.argv.includes('--catchup')
 const replies = process.argv.includes('--reply-workflow')
 const followups = process.argv.includes('--reply-followup')
+const scheduledSend = process.argv.includes('--scheduled-send')
+const scheduledCronSecret = 'inboxai-synthetic-scheduled-send-secret'
 const emailSnoozes = process.argv.includes('--email-snoozes')
 const gmailTriage = process.argv.includes('--gmail-triage')
 const composeAttachments = process.argv.includes('--compose-attachments')
-const journeyE2E = emailSnoozes || gmailTriage || composeAttachments || followups || replies || catchup || process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
+const journeyE2E = scheduledSend || emailSnoozes || gmailTriage || composeAttachments || followups || replies || catchup || process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
 const journey = interactivePreview || journeyE2E
 const commitmentBenchmark = process.argv.includes('--m6g')
 const isolatedCommitment = commitmentDetection && process.argv.includes('--isolated')
@@ -51,7 +53,7 @@ const platformOutput = isolatedPlatform ? 'test-results/commitment-attention/pla
 const isolated = journeyE2E || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedPlatform
 const isolatedBuild = isolated || isolatedStaging
 const productionMode = m6 || staging || journey || isolated
-const journeyOutput = emailSnoozes ? 'test-results/email-snoozes' : gmailTriage ? 'test-results/gmail-triage' : composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
+const journeyOutput = scheduledSend ? 'test-results/scheduled-send' : emailSnoozes ? 'test-results/email-snoozes' : gmailTriage ? 'test-results/gmail-triage' : composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
 const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.test'
 const evidenceFile = journey ? `${journeyOutput}/report.json`
   : commitmentOutput ? commitmentOutput + '/local-run.json'
@@ -195,7 +197,7 @@ try {
     mkdirSync(journeyOutput, { recursive: true })
     rmSync(evidenceFile, { force: true })
     rmSync(`${journeyOutput}/failure.png`, { force: true })
-    if (dailyCommitments || catchup || replies || followups || composeAttachments || gmailTriage || emailSnoozes) rmSync(`${journeyOutput}/workflow.json`, { force: true })
+    if (dailyCommitments || catchup || replies || followups || composeAttachments || gmailTriage || emailSnoozes || scheduledSend) rmSync(`${journeyOutput}/workflow.json`, { force: true })
   }
   started = true
   docker(['up', '-d', '--pull', 'never', ...(staging ? ['--wait','--wait-timeout','60'] : [])])
@@ -260,6 +262,7 @@ try {
       ...(gmailTriage ? { INBOXAI_GMAIL_TRIAGE_ENABLED: '1' } : {}),
       ...(googleProvider ? { INBOXAI_TEST_GOOGLE_OAUTH_URL: googleProvider.url, GOOGLE_CLIENT_ID: googleClientId,
         GOOGLE_CLIENT_SECRET: googleClientSecret, GOOGLE_REDIRECT_URI: app + '/api/auth/google/callback' } : {}),
+      ...(scheduledSend ? { CRON_SECRET: scheduledCronSecret } : {}),
       ...(staging ? { CRON_SECRET: rehearsal.cronSecret } : {
         ...(journey ? { INBOXAI_TEST_JOURNEY: '1' } : { INBOXAI_TEST_GMAIL_URL: mailProvider.url }),
         INBOXAI_TEST_SMTP_PORT: String(smtpWire.port), NODE_EXTRA_CA_CERTS: smtpWire.cert }),
@@ -357,7 +360,11 @@ try {
   record('admin revocation is enforced on the next request', (await appFetch('/api/admin/whitelist')).status === 403)
   sql("UPDATE public.registration_policy SET enabled=false;")
   record('closed policy rejects subsequent Next signups', (await appFetch('/api/signup-whitelist', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({email:'later@example.test',password,fullName:'Later'}) })).status === 503)
-  if (emailSnoozes) {
+  if (scheduledSend) {
+    const { rehearseScheduledSend } = await import('../tests/design/scheduled-send.mjs')
+    await rehearseScheduledSend({ app, base, email, password, userId, admin, appFetch, sql, googleProvider,
+      previousEmail, restartNext, cronSecret: scheduledCronSecret, record, output: journeyOutput })
+  } else if (emailSnoozes) {
     const { rehearseEmailSnoozes } = await import('../tests/design/email-snoozes.mjs')
     await rehearseEmailSnoozes({ app, base, email, password, userId, admin, appFetch, sql, googleProvider,
       previousEmail, anon, restartNext, record, output: journeyOutput })
@@ -483,7 +490,8 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = emailSnoozes ? 'Production-mode Next, Chrome, PostgreSQL, two loopback Gmail accounts, controlled browser and database clocks and interrupted acknowledgement'
+  const provenance = scheduledSend ? 'Production-mode Next, Google Chrome, PostgreSQL and two loopback Gmail accounts, browser and database clocks, independent worker ticks and injected provider acknowledgement loss'
+    : emailSnoozes ? 'Production-mode Next, Chrome, PostgreSQL, two loopback Gmail accounts, controlled browser and database clocks and interrupted acknowledgement'
     : gmailTriage ? 'Production-mode Next, Chromium, local PostgreSQL and two loopback Gmail accounts with label history and injected connection loss'
     : composeAttachments ? 'Production-mode Next (restarted), Chromium, PostgreSQL and two loopback Gmail accounts, actual MIME and binary downloads, synthetic dropped acknowledgements'
     : followups ? 'Production-mode Next (restarted), Chromium and PostgreSQL clocks advanced together in the isolated fixture, two loopback Gmail accounts and three conversations'

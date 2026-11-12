@@ -10,6 +10,8 @@ import { composeFileIds } from '@/lib/compose/contracts'
 import { composeRpcError } from '@/lib/compose/server'
 import { syncAccount } from '@/lib/sync/account'
 
+import { approveSchedule } from '@/lib/scheduled-mail/server'
+
 export const maxDuration = 60
 const id = z.uuid()
 const fingerprint = z.string().regex(/^[a-f0-9]{64}$/)
@@ -20,6 +22,7 @@ const actions = z.discriminatedUnion('action', [
     fileIds: composeFileIds.optional(), to: z.string().max(4000), cc: z.string().max(4000), body: z.string().max(100_000).regex(/^[^\x00]*$/),
   }),
   z.strictObject({ action: z.literal('prepare'), source: id, id, revision }),
+  z.strictObject({ action: z.literal('schedule'), source: id, id, revision, at: z.iso.datetime(), requestId: z.uuidv4() }),
   z.strictObject({ action: z.enum(['send', 'check', 'track', 'stop', 'finish', 'discard']), id }),
   z.strictObject({ action: z.literal('edit'), id, fingerprint }),
   z.strictObject({ action: z.literal('schedule-followup'), id, on: z.iso.date(), expected: id.nullable() }),
@@ -162,7 +165,7 @@ export async function POST(request: NextRequest) {
     const service = () => createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
       auth: { persistSession: false, autoRefreshToken: false },
     })
-    if (input.action === 'prepare') {
+    if (input.action === 'prepare' || input.action === 'schedule') {
       const { draft, accountId, stale } = await workbench(client, input.source)
       if (stale || !draft || draft.id !== input.id || draft.revision !== input.revision) {
         throw new SendError(409, 'Bản nháp hoặc thư nguồn đã thay đổi. Hãy kiểm tra lại.')
@@ -173,6 +176,7 @@ export async function POST(request: NextRequest) {
         ...(draft.files?.length && { attachmentIds: draft.files.map(file => file.id) }) })
       if (!envelope.success || !draft.body.trim()) throw new SendError(400, 'Kiểm tra địa chỉ người nhận và nội dung trước khi gửi.')
       const hash = createHash('sha256').update(JSON.stringify(envelope.data)).digest('hex')
+      if (input.action === 'schedule') return json(await approveSchedule(actor, 'reply', input, envelope.data, hash))
       return json(await rpc(service(), 'prepare_reply_send', { p_actor: actor, p_id: draft.id,
         p_revision: draft.revision, p_input: envelope.data, p_hash: hash }))
     }

@@ -46,10 +46,17 @@ export async function sendFromAccount(
   const result = await executeMailSend(new MailSendStore(admin, approval), scope, async () => {
     const input = await resolveInput()
     recipients = input.to
-    const { data: account } = await admin.from('source_accounts')
+    const { data: account, error: accountError } = await admin.from('source_accounts')
       .select('id, email_address, display_name, provider, auth_type, username, smtp_host, smtp_port, smtp_secure, is_active')
       .eq('id', scope.accountId).eq('user_id', scope.userId).single()
+    const scheduled = approval && 'scheduledId' in approval
+    if (scheduled && accountError && accountError.code !== 'PGRST116') {
+      throw new SendError(503, 'Chưa thể kiểm tra tài khoản gửi.')
+    }
     if (!account || !account.is_active) throw new SendError(404, 'Không tìm thấy tài khoản gửi đang hoạt động.')
+    if (scheduled && account.auth_type !== 'oauth_google') {
+      throw new SendError(403, 'Lịch gửi yêu cầu tài khoản Gmail đang hoạt động.')
+    }
 
     const files = input.attachmentIds?.length ? await loadComposeFiles(scope.userId, input.attachmentIds) : []
     const mimeAttachments = files.length ? files.map(({ metadata, content }) => ({
@@ -62,9 +69,12 @@ export async function sendFromAccount(
     if (files.length) payload.attachments = files.map(file => file.metadata)
     let replyUid: string | undefined
     if (input.replyToEmailId) {
-      const { data: original } = await admin.from('emails')
+      const { data: original, error: sourceError } = await admin.from('emails')
         .select('subject, message_id, source_account_id, original_uid, sync_namespace')
         .eq('id', input.replyToEmailId).eq('user_id', scope.userId).single()
+      if (scheduled && sourceError && sourceError.code !== 'PGRST116') {
+        throw new SendError(503, 'Chưa thể kiểm tra thư gốc.')
+      }
       if (!original) throw new SendError(404, 'Không tìm thấy thư gốc.')
       if (original.source_account_id !== scope.accountId) {
         throw new SendError(409, 'Tài khoản gửi phải là tài khoản của thư gốc.')
@@ -84,8 +94,15 @@ export async function sendFromAccount(
     const host = account.smtp_host || preset?.smtp_host
     if (provider === 'smtp' && !host) throw new SendError(400, 'Tài khoản chưa cấu hình SMTP.')
     const gmailCredential = provider === 'gmail' ? await getGoogleCredential(scope.userId, account.id, AbortSignal.timeout(10_000)) : null
+    if (scheduled && !gmailCredential) {
+      throw new SendError(503, 'Chưa thể xác thực kết nối Gmail.')
+    }
     if (provider === 'gmail' && (!gmailCredential || !canSendGmail(gmailCredential))) {
       throw new SendError(403, gmailPermissionMessage, gmailSendPermissionRequired)
+    }
+
+    if (scheduled && gmailCredential?.scope !== undefined && !canReadGmail(gmailCredential.scope)) {
+      throw new SendError(403, 'Lịch gửi cần quyền đọc Gmail để xác minh thư đã gửi.')
     }
 
     return { payload, async dispatch(receipt) {
