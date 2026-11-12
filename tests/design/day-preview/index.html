@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Một ngày trong InboxAI</title>
+  <link rel="stylesheet" href="/day.css">
+  <script src="/day.js" defer></script>
+</head>
+<body>
+  <header class="top"><div class="frame">
+    <span class="brand">InboxAI</span>
+    <span class="environment">Môi trường giả lập local</span>
+  </div></header>
+  <main class="frame">
+    <div class="hero">
+      <div>
+        <h1>Một ngày trong InboxAI</h1>
+        <p>Nguyễn Hoàng Mai, phụ trách mua hàng. Theo dõi lô ống dẫn cho dây chuyền số 4 từ lúc quá hạn đến khi kho ký nhận.</p>
+      </div>
+      <span id="case-ref" class="reference"></span>
+    </div>
+    <div class="context">
+      <p>Thao tác trong tab InboxAI. Quay lại đây để nạp phản hồi ở từng mốc.</p>
+      <p id="notice" class="notice" role="status"></p>
+    </div>
+
+    <section class="moment" aria-labelledby="morning">
+      <span class="time">08:30</span>
+      <div class="moment-body">
+        <h2 id="morning">Việc nào cần xử lý trước?</h2>
+        <p>Trong <strong>Cam kết cần chú ý</strong>, mở email nguồn của lô ống dẫn. Chọn <strong>Xem trước lời nhắc</strong>, kiểm tra người nhận và xác nhận gửi.</p>
+        <div class="actions">
+          <a id="open-inbox" class="primary" target="inboxai-day-product" hidden>Mở InboxAI</a>
+          <a id="open-mailpit" target="inboxai-day-mailpit" hidden>Xem Mailpit</a>
+          <span id="send-status" class="outcome" hidden>Mailpit đã nhận lời nhắc</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="moment" aria-labelledby="reply">
+      <span class="time">10:15</span>
+      <div class="moment-body">
+        <h2 id="reply">Nhà cung cấp chưa chốt lịch</h2>
+        <p>Nạp thư phản hồi rồi mở <strong>Kiểm tra phản hồi</strong>. Đọc nguyên văn và đối chiếu hạn đã duyệt trong sổ.</p>
+        <div class="actions">
+          <button type="button" id="stage-1" data-stage="1" disabled>Nạp phản hồi chưa chốt</button>
+          <a id="reply-link" target="inboxai-day-product" hidden>Mở phản hồi cần kiểm tra</a>
+          <span id="wait-reminder" class="hint">Gửi lời nhắc thử ở mốc 08:30 để mở mốc này.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="moment" aria-labelledby="afternoon">
+      <span class="time">13:30</span>
+      <div class="moment-body">
+        <h2 id="afternoon">Đối chiếu hai hộp thư, chốt hạn mới</h2>
+        <p>Ask Inbox đặt ngày giao cũ cạnh ngày mới và dẫn về thư Mua hàng, Kế toán. Sau khi đối chiếu, mở đề xuất đổi hạn của nhà cung cấp và xác nhận.</p>
+        <div class="actions">
+          <button type="button" id="stage-2" data-stage="2" disabled>Nạp lịch đã chốt</button>
+          <a id="ask-link" target="inboxai-day-product" hidden>Đối chiếu trong Ask Inbox</a>
+          <a id="change-link" target="inboxai-day-product" hidden>Duyệt đề xuất đổi hạn</a>
+          <span id="changed-status" class="outcome" hidden>Hạn mới đã ghi vào sổ</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="moment" aria-labelledby="close-day">
+      <span class="time">16:45</span>
+      <div class="moment-body">
+        <h2 id="close-day">Khép cam kết và dọn thư đã xử lý</h2>
+        <p>Duyệt thư kho đã ký nhận, rồi mở lại lịch sử. Trong AI Operator, thử lưu trữ thư của đơn vị đặt xe, kiểm tra phạm vi đã chọn, xác minh kết quả và hoàn tác.</p>
+        <p class="command"><code>Lưu trữ thư từ dispatch@broker.example.test</code></p>
+        <div class="actions">
+          <button type="button" id="stage-3" data-stage="3" disabled>Nạp thư kho ký nhận</button>
+          <a id="complete-link" target="inboxai-day-product" hidden>Duyệt hoàn tất</a>
+          <a id="ledger-link" target="inboxai-day-product" hidden>Mở lịch sử đã khép</a>
+          <a id="operator-link" target="inboxai-day-product" hidden>Mở AI Operator</a>
+          <span id="wait-change" class="hint" hidden>Duyệt hạn mới để nạp thư ký nhận.</span>
+        </div>
+      </div>
+    </section>
+    <footer>
+      <details>
+        <summary>Tài khoản thử nếu cần đăng nhập lại</summary>
+        <dl><dt>Email</dt><dd id="fixture-email"></dd><dt>Mật khẩu</dt><dd id="fixture-password"></dd></dl>
+      </details>
+      <p>Giờ trên trang là giờ của kịch bản. Lời nhắc được gửi tới Mailpit trên máy này.</p>
+    </footer>
+  </main>
+</body>
+</html>

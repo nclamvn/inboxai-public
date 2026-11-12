@@ -18,6 +18,7 @@
 /test-results/commitment-lifecycle/
 /test-results/commitment-regression/
 /test-results/commitment-attention/
+/test-results/day-preview/
 /.codex-db-test-*/
 
 # next.js

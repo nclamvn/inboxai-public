@@ -1,60 +1,18 @@
 import assert from 'node:assert/strict'
-import { randomUUID } from 'node:crypto'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { chromium } from 'playwright-core'
 import { audit } from './browser.mjs'
-import { dailyCommitmentFixture } from './daily-commitment-fixture.mjs'
+import { seedDailyCommitments } from './daily-commitment-fixture.mjs'
 
 const attentionPath = '/api/commitments/attention'
-const detectionPath = '/api/commitments/detections'
 const json = { 'Content-Type': 'application/json' }
 
 export async function rehearseDailyCommitments({
   app, base, email, previousEmail, password, userId, admin, appFetch, fixture, loopbackFetch, smtpWire, mailpit, record, output,
 }) {
-  const corpus = dailyCommitmentFixture(email)
-  const accounts = { work: fixture.work, finance: fixture.accounting.source_account_id }
-  const messages = new Map()
-  await admin.from('emails').delete().eq('user_id', userId)
-    .in('id', [fixture.original.id, fixture.moved.id, fixture.accounting.id])
-    .throwOnError()
-  await admin.from('emails').delete().eq('user_id', userId).eq('from_address', 'newsletter@example.test').throwOnError()
-
-  async function add(sample) {
-    const id = randomUUID()
-    const row = {
-      id, user_id: userId, source_account_id: accounts[sample.account], from_address: sample.sender,
-      message_id: '<' + id + '@fixture.example.test>', subject: sample.subject, body_text: sample.body, snippet: sample.body,
-      received_at: sample.at, created_at: sample.at, direction: 'inbound', body_fetched: true,
-      category: sample.category, is_read: sample.id === 'a1', is_archived: false,
-    }
-    await admin.from('emails').insert(row).throwOnError()
-    messages.set(sample.id, row)
-    return row
-  }
-
-  async function appJson(path, init, expected = 200) {
-    const response = await appFetch(path, init)
-    const body = await response.json()
-    assert.equal(response.status, expected, JSON.stringify(body))
-    return body
-  }
-  async function confirmSetup(sourceId) {
-    const scan = await appJson(detectionPath)
-    const proposal = scan.proposals.find(item => item.emailId === messages.get(sourceId).id && item.review)
-    assert.ok(proposal, sourceId)
-    const command = proposal.review.command
-    return appJson(detectionPath, {
-      method: 'POST', headers: { ...json, 'Idempotency-Key': randomUUID() }, body: JSON.stringify(command),
-    }, command.operation === 'create' ? 201 : 200)
-  }
-
-  for (const sample of corpus.initial) await add(sample)
-  const main = await confirmSetup('a1')
-  const own = await confirmSetup('b1')
-  await confirmSetup('c1')
-  await confirmSetup('d1')
-  await confirmSetup('d2')
+  const { corpus, accounts, messages, add, appJson, main, own } = await seedDailyCommitments({
+    email, userId, admin, appFetch, fixture,
+  })
 
   const source = messages.get('a1')
   const readPath = '/api/commitments/' + main.id

@@ -28,18 +28,22 @@ const m6Native = m6 && process.argv.includes('--native-shells')
 const staging = process.argv.includes('--m6b')
 const m6c = process.argv.includes('--m6c')
 const journeyPreview = process.argv.includes('--m6d-preview')
+const dayPreview = process.argv.includes('--day-preview')
+const dayTest = process.argv.includes('--day-test')
+const day = dayPreview || dayTest
+const interactivePreview = journeyPreview || dayPreview
 const dailyCommitments = process.argv.includes('--daily-commitments')
-const journeyE2E = process.argv.includes('--m6d-e2e') || dailyCommitments
-const journey = journeyPreview || journeyE2E
+const journeyE2E = process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
+const journey = interactivePreview || journeyE2E
 const commitmentBenchmark = process.argv.includes('--m6g')
 const isolatedCommitment = commitmentDetection && process.argv.includes('--isolated')
 const commitmentOutput = commitmentBenchmark ? (await import('../tests/eval/commitments/benchmark.mjs')).output : null
 const isolatedDesign = design && process.argv.includes('--isolated')
 const isolatedPlatform = m6 && !m6Native && process.argv.includes('--isolated')
 const platformOutput = isolatedPlatform ? 'test-results/commitment-attention/platform' : undefined
-const isolated = journeyE2E || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedPlatform
+const isolated = journeyE2E || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedPlatform
 const productionMode = m6 || staging || journey || isolated
-const journeyOutput = dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
+const journeyOutput = day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
 const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.test'
 const evidenceFile = journey ? `${journeyOutput}/report.json`
   : commitmentOutput ? commitmentOutput + '/local-run.json'
@@ -78,6 +82,8 @@ const ports = isolated ? { proxy: 57321, app: 57300, auth: 57999, rest: 57400, m
   : staging ? { proxy: 56321, app: 56300, auth: 56999, rest: 56400, mail: 56825 }
   : { proxy: 55321, app: 55300, auth: 55999, rest: 55400, mail: 55825 }
 const base = 'http://127.0.0.1:' + ports.proxy, app = 'http://127.0.0.1:' + ports.app
+// The live guide opens the app on localhost so its cookies are separate from the earlier 127.0.0.1 preview.
+const dayApp = 'http://localhost:' + ports.app
 const loopbackFetch = (input, init) => {
   const url = new URL(typeof input === 'string' ? input : input.url ?? input)
   assert.equal(url.hostname, '127.0.0.1', 'test attempted non-loopback fetch')
@@ -86,7 +92,7 @@ const loopbackFetch = (input, init) => {
 const admin = createClient(base, service, { auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: loopbackFetch } })
 const outcomes = []
 const record = (name, condition) => { assert.ok(condition, name); outcomes.push({ name, status: 'PASS' }); console.log(`PASS: ${name}`) }
-let started = false, next, proxy, nativeFixture, mailProvider, smtpWire, rehearsal, googleProvider
+let started = false, next, proxy, nativeFixture, mailProvider, smtpWire, rehearsal, googleProvider, dayGuide
 let useRecovery = false
 const briefingReads = []
 const cookies = new Map()
@@ -152,8 +158,9 @@ try {
     const auth = req.url.startsWith('/auth/v1/')
     const rest = req.url.startsWith('/rest/v1/')
     if (!auth && !rest) { res.writeHead(404); res.end(); return }
-    const localCors = (m6 || journey || isolatedDesign) && req.headers.origin === app
-    const cors = { 'access-control-allow-origin': app, 'access-control-allow-methods': 'GET,POST,PATCH,DELETE,OPTIONS',
+    const origin = req.headers.origin
+    const localCors = (m6 || journey || isolatedDesign) && (origin === app || (day && origin === dayApp))
+    const cors = { 'access-control-allow-origin': origin, 'access-control-allow-methods': 'GET,POST,PATCH,DELETE,OPTIONS',
       'access-control-allow-headers': req.headers['access-control-request-headers'] ?? '',
       'access-control-expose-headers': 'content-range, location', vary: 'Origin' }
     if (localCors && req.method === 'OPTIONS') { res.writeHead(204, cors); res.end(); return }
@@ -175,7 +182,7 @@ try {
   })
   // Reserve the fixture gateway before touching Docker so simultaneous actions cannot share it.
   await new Promise((resolve, reject) => proxy.once('error', reject).listen(ports.proxy, '127.0.0.1', resolve))
-  if (journey && !journeyPreview) {
+  if (journey && !interactivePreview) {
     mkdirSync(journeyOutput, { recursive: true })
     rmSync(evidenceFile, { force: true })
     rmSync(`${journeyOutput}/failure.png`, { force: true })
@@ -216,7 +223,7 @@ try {
   record('direct Auth API cannot bypass closed registration policy', Boolean(blocked))
   sql("UPDATE public.registration_policy SET enabled=true, max_users=100; NOTIFY pgrst, 'reload schema';")
   await delay(1000)
-  if (journeyE2E && !dailyCommitments) googleProvider = await startGoogleOAuthFixture()
+  if (journeyE2E && !dailyCommitments && !day) googleProvider = await startGoogleOAuthFixture()
   if (!staging) {
     if (!journey) mailProvider = await startMailProvider()
     smtpWire = await startSmtpWire(journey ? {
@@ -320,9 +327,16 @@ try {
   if (journey) {
     const { seedPurchasingJourney, rehearsePurchasingJourney } = await import('../tests/design/purchasing-journey.mjs')
     const fixture = await seedPurchasingJourney({ admin, sql, userId, foreignId: previousId, ownEmailId, otherEmailId })
-    if (journeyPreview) {
+    if (day) {
+      const { startDayPreview } = await import('../tests/design/day-preview/server.mjs')
+      dayGuide = await startDayPreview({
+        app: dayApp, mailpit: 'http://127.0.0.1:' + ports.mail, email, password, userId, admin, appFetch, fixture,
+      })
+    }
+    if (interactivePreview) {
       assert.ok(next.exitCode === null && !next.signalCode, 'Local Next preview stopped before it was ready')
-      console.log(`\nInboxAI: ${app}/login\nMailpit: http://127.0.0.1:${ports.mail}\n` +
+      if (dayGuide) console.log('\nMột ngày trong InboxAI: ' + dayGuide.origin)
+      console.log(`\nInboxAI: ${day ? dayApp : app}/login\nMailpit: http://127.0.0.1:${ports.mail}\n` +
         `Người mua: ${email}\nTổ chức khác: ${previousEmail}\nMật khẩu giả lập: ${password}\n` +
         'Dừng bằng Ctrl+C. Khởi động lại để đặt lại dữ liệu.\n')
       if (!shutdown.signal.aborted) {
@@ -331,6 +345,9 @@ try {
           next.once('exit', () => shutdown.signal.aborted ? resolve() : reject(new Error('Local Next preview stopped')))
         })
       }
+    } else if (dayTest) {
+      const { rehearseDayPreview } = await import('../tests/design/day-preview/browser.mjs')
+      await rehearseDayPreview({ guide: dayGuide, app: dayApp, base, email, password, output: journeyOutput, record, smtpWire })
     } else if (dailyCommitments) {
       const { rehearseDailyCommitments } = await import('../tests/design/daily-commitments.mjs')
       await rehearseDailyCommitments({ app, base, email, previousEmail, password, userId, admin, appFetch, fixture,
@@ -409,7 +426,8 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = dailyCommitments ? 'Production-mode Next, GoTrue, PostgREST, PostgreSQL, Chromium and Mailpit over loopback with a synthetic daily commitment workflow'
+  const provenance = day ? 'Interactive local guide and production-mode Next in Chromium, synthetic data and real local SMTP TLS to Mailpit'
+    : dailyCommitments ? 'Production-mode Next, GoTrue, PostgREST, PostgreSQL, Chromium and Mailpit over loopback with a synthetic daily commitment workflow'
     : journey ? 'Production-mode Next, GoTrue, PostgREST, PostgreSQL, Chromium, Mailpit and a simulated Google OAuth and Gmail API over loopback with synthetic data'
     : commitmentBenchmark ? 'Authenticated production-mode Next, PostgREST and PostgreSQL on the synthetic M6-G corpus'
     : staging ? 'Local staging and independent PostgreSQL recovery, GoTrue, PostgREST and production-mode Next on synthetic data'
@@ -424,15 +442,16 @@ try {
     : commitments ? 'Local Next/GoTrue/PostgREST/PostgreSQL, synthetic mail and .test accounts'
     : design ? 'Authenticated local Chromium with synthetic mail, loopback only'
     : 'Real local GoTrue/PostgREST/Next; synthetic Gmail/IMAP readers, loopback Gmail HTTP and SMTP TLS with fixture DNS/socket mapping; internal verification SMTP sink; .test identities; not hosted/provider interoperability'
-  if (!journeyPreview) writeFileSync(evidenceFile, JSON.stringify({ date: new Date().toISOString(),
+  if (!interactivePreview) writeFileSync(evidenceFile, JSON.stringify({ date: new Date().toISOString(),
     ...((journey || commitmentBenchmark) && { status: 'PASS' }), provenance, images:{ auth:'supabase/gotrue:v2.197.0',rest:'postgrest/postgrest:v14.18',mail:'axllent/mailpit:v1.28.1',db:'postgres:16' }, ...rehearsal?.evidence, outcomes },null,2)+'\n')
 } catch (error) {
   if ((journeyE2E || commitmentBenchmark) && started) {
     writeFileSync(evidenceFile, JSON.stringify({ date: new Date().toISOString(), status: 'FAIL',
       error: error.message, outcomes }, null, 2) + '\n')
   }
-  if (!journeyPreview || !shutdown.signal.aborted) throw error
+  if (!interactivePreview || !shutdown.signal.aborted) throw error
 } finally {
+  if (dayGuide) await dayGuide.close()
   if (next && next.exitCode === null && !next.signalCode) {
     next.kill('SIGTERM')
     await Promise.race([new Promise(resolve => next.once('exit', resolve)), delay(5000).then(() => next.kill('SIGKILL'))])
