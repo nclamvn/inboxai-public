@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+/test-results/local-auth/
 /test-results/m6d/
 /test-results/m6f/
 /test-results/m6g/

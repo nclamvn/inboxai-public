@@ -197,8 +197,9 @@ export async function rehearseMailSend({ sql, admin, login, anonymous, userId, o
     (await attachment.json()).error === 'Attachment fetch failed')
   sql(`UPDATE public.emails SET source_account_id='${foreign}' WHERE id='${blockedBodyId}'`)
   const foreignAttachment = await appFetch(`/api/attachments/${blockedAttachmentId}`)
-  record('attachment cannot use a source account owned by another tenant',
-    foreignAttachment.status === 400 && (await foreignAttachment.json()).error === 'Source account not found')
+  assert.equal(foreignAttachment.status, 400)
+  assert.deepEqual(await foreignAttachment.json(), { error: 'Không tìm thấy tài khoản nguồn.' })
+  record('attachment cannot use a source account owned by another tenant', true)
 
   const smtpId = randomUUID()
   await vault.write({ userId, accountId: smtpId }, { kind: 'imap', password: 'synthetic' }, 0, { email_address: 'smtp@example.test', provider: 'custom' })

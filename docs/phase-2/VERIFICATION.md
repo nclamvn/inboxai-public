@@ -1,5 +1,21 @@
 # Verification record
 
+## GitHub Actions attachment authorization regression
+
+The GitHub Actions run for `82c7a46` passed seven of eight jobs. The
+local Auth rehearsal expected an English error for a cross-tenant source
+account after the attachment endpoint began returning the Vietnamese
+message. The rehearsal now asserts both the HTTP 400 and the current
+message. [Original CI run](https://github.com/nclamvn/inboxai-public/actions/runs/43218515860)
+
+On 2026-11-12, `npm run test:local-auth -- --isolated-auth` exited 0
+with 88 checks and a production-mode Next.js build on macOS arm64 with
+Node 24.14.1 and PostgreSQL 16. The isolated option reuses the alternate
+loopback ports so the rehearsal can run alongside an existing local
+session. Lint and TypeScript exited 0, with 91 existing lint warnings.
+All 245 unit tests, 200 integration tests and 29 SQL checks passed.
+[Local Auth report](../../test-results/local-auth/report.json)
+
 ## Offline reading and reply recovery
 
 On 2026-11-12, `npm run test:offline-reply` exited 0 with 20 checks

@@ -54,13 +54,15 @@ const commitmentOutput = commitmentBenchmark ? (await import('../tests/eval/comm
 const isolatedDesign = design && process.argv.includes('--isolated')
 const isolatedPlatform = m6 && !m6Native && process.argv.includes('--isolated')
 const isolatedStaging = staging && process.argv.includes('--isolated')
+const isolatedAuth = process.argv.includes('--isolated-auth')
 const platformOutput = isolatedPlatform ? 'test-results/commitment-attention/platform' : undefined
-const isolated = journeyE2E || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedPlatform
+const isolated = journeyE2E || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedPlatform || isolatedAuth
 const isolatedBuild = isolated || isolatedStaging
 const productionMode = m6 || staging || journey || isolated
 const journeyOutput = offlineReply ? 'test-results/offline-reply' : mailLookup ? 'test-results/mail-lookup' : personalMailRules ? 'test-results/personal-mail-rules' : conversation ? 'test-results/inbox-conversation' : gmailReconnect ? 'test-results/gmail-reconnect' : scheduledSend ? 'test-results/scheduled-send' : emailSnoozes ? 'test-results/email-snoozes' : gmailTriage ? 'test-results/gmail-triage' : composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
 const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.test'
 const evidenceFile = journey ? `${journeyOutput}/report.json`
+  : isolatedAuth ? 'test-results/local-auth/report.json'
   : commitmentOutput ? commitmentOutput + '/local-run.json'
   : isolatedDesign ? `${journeyOutput}/design-run.json`
   : m6c ? `docs/phase-2/evidence/m6c-${staging ? 'staging' : 'auth'}-run.json`
@@ -143,6 +145,7 @@ try {
     rmSync(commitmentOutput + '/product.json', { force: true })
   }
   if (isolatedCommitment) mkdirSync('test-results/commitment-lifecycle', { recursive: true })
+  if (isolatedAuth) mkdirSync('test-results/local-auth', { recursive: true })
   if (platformOutput) mkdirSync(platformOutput, { recursive: true })
   if (isolatedStaging) mkdirSync('test-results/staging', { recursive: true })
   // A failed future run must never leave a stale success report behind.
