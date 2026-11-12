@@ -157,9 +157,8 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
 
   const handleSearchClear = useCallback(() => {
     setSearchQuery('');
-    onSearch('');
     searchInputRef.current?.focus();
-  }, [onSearch]);
+  }, []);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -197,7 +196,9 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
           'focus-within:outline-2 focus-within:outline-[var(--focus-ring)]'
         )}
       >
-        <Search className="w-4 h-4 text-[var(--foreground-muted)] flex-shrink-0" />
+        <button type="submit" aria-label="Tìm trong hộp thư" className="neo-target shrink-0 py-2 text-[var(--accent-foreground)]">
+          <Search size={16} aria-hidden="true" />
+        </button>
         <input
           ref={searchInputRef}
           type="search"
@@ -206,7 +207,8 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
           onChange={handleSearchChange}
           onFocus={() => setIsSearchFocused(true)}
           onBlur={() => setIsSearchFocused(false)}
-          placeholder="Tìm theo người gửi hoặc tiêu đề"
+          placeholder="Tìm thư hoặc tên tệp"
+          maxLength={200}
           className="min-w-0 flex-1 bg-transparent text-sm text-[var(--foreground)] placeholder-[var(--foreground-muted)] outline-none"
         />
         {searchQuery && (

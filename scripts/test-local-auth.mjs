@@ -43,8 +43,9 @@ const scheduledCronSecret = 'inboxai-synthetic-scheduled-send-secret'
 const emailSnoozes = process.argv.includes('--email-snoozes')
 const gmailTriage = process.argv.includes('--gmail-triage')
 const personalMailRules = process.argv.includes('--personal-mail-rules')
+const mailLookup = process.argv.includes('--mail-lookup')
 const composeAttachments = process.argv.includes('--compose-attachments')
-const journeyE2E = personalMailRules || gmailReconnect || scheduledSend || emailSnoozes || gmailTriage || composeAttachments || followups || replies || catchup || process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
+const journeyE2E = mailLookup || personalMailRules || gmailReconnect || scheduledSend || emailSnoozes || gmailTriage || composeAttachments || followups || replies || catchup || process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
 const journey = interactivePreview || journeyE2E
 const commitmentBenchmark = process.argv.includes('--m6g')
 const isolatedCommitment = commitmentDetection && process.argv.includes('--isolated')
@@ -56,7 +57,7 @@ const platformOutput = isolatedPlatform ? 'test-results/commitment-attention/pla
 const isolated = journeyE2E || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedPlatform
 const isolatedBuild = isolated || isolatedStaging
 const productionMode = m6 || staging || journey || isolated
-const journeyOutput = personalMailRules ? 'test-results/personal-mail-rules' : conversation ? 'test-results/inbox-conversation' : gmailReconnect ? 'test-results/gmail-reconnect' : scheduledSend ? 'test-results/scheduled-send' : emailSnoozes ? 'test-results/email-snoozes' : gmailTriage ? 'test-results/gmail-triage' : composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
+const journeyOutput = mailLookup ? 'test-results/mail-lookup' : personalMailRules ? 'test-results/personal-mail-rules' : conversation ? 'test-results/inbox-conversation' : gmailReconnect ? 'test-results/gmail-reconnect' : scheduledSend ? 'test-results/scheduled-send' : emailSnoozes ? 'test-results/email-snoozes' : gmailTriage ? 'test-results/gmail-triage' : composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
 const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.test'
 const evidenceFile = journey ? `${journeyOutput}/report.json`
   : commitmentOutput ? commitmentOutput + '/local-run.json'
@@ -200,7 +201,7 @@ try {
     mkdirSync(journeyOutput, { recursive: true })
     rmSync(evidenceFile, { force: true })
     rmSync(`${journeyOutput}/failure.png`, { force: true })
-    if (personalMailRules || dailyCommitments || catchup || replies || followups || composeAttachments || gmailTriage || emailSnoozes || scheduledSend || gmailReconnect) rmSync(`${journeyOutput}/workflow.json`, { force: true })
+    if (mailLookup || personalMailRules || dailyCommitments || catchup || replies || followups || composeAttachments || gmailTriage || emailSnoozes || scheduledSend || gmailReconnect) rmSync(`${journeyOutput}/workflow.json`, { force: true })
   }
   started = true
   docker(['up', '-d', '--pull', 'never', ...(staging ? ['--wait','--wait-timeout','60'] : [])])
@@ -375,6 +376,10 @@ try {
     const { rehearseEmailSnoozes } = await import('../tests/design/email-snoozes.mjs')
     await rehearseEmailSnoozes({ app, base, email, password, userId, admin, appFetch, sql, googleProvider,
       previousEmail, anon, restartNext, record, output: journeyOutput })
+  } else if (mailLookup) {
+    const { rehearseMailLookup } = await import('../tests/design/mail-lookup.mjs')
+    await rehearseMailLookup({ app, base, email, password, userId, admin, appFetch, sql, googleProvider,
+      previousId, record, output: journeyOutput })
   } else if (personalMailRules) {
     const { rehearsePersonalMailRules } = await import('../tests/design/personal-mail-rules.mjs')
     await rehearsePersonalMailRules({ app, base, email, password, userId, admin, appFetch, sql, googleProvider,
@@ -501,7 +506,8 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = personalMailRules ? 'Production-mode Next, Google Chrome, local PostgreSQL and two loopback Gmail accounts with sender rules and undo'
+  const provenance = mailLookup ? 'Production-mode Next, Google Chrome, local PostgreSQL and two loopback Gmail accounts with paginated search and attachment downloads'
+    : personalMailRules ? 'Production-mode Next, Google Chrome, local PostgreSQL and two loopback Gmail accounts with sender rules and undo'
     : conversation ? 'Production-mode Next, Google Chrome, PostgreSQL and two loopback Gmail accounts; account-scoped conversation reader, dropped send acknowledgement and exact commitment source links'
     : gmailReconnect ? 'Production-mode Next, Google Chrome, PostgreSQL, two loopback Gmail accounts, background worker, revoked grants and browser OAuth recovery'
     : scheduledSend ? 'Production-mode Next, Google Chrome, PostgreSQL and two loopback Gmail accounts, browser and database clocks, independent worker ticks and injected provider acknowledgement loss'

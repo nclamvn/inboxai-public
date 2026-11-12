@@ -26,6 +26,7 @@ import { ReplyInbox } from '@/components/replies/reply-inbox'
 import { CommitmentAttention } from '@/components/commitments/commitment-attention'
 import { compareInboxPriority, rankActionInbox } from '@/lib/action-inbox/rank'
 import type { Email } from '@/types'
+import { lookupCategory, mailLookupHref, returnToMailLookup } from '@/lib/search/mail-lookup'
 
 // Dynamic imports for code splitting - heavy components loaded on demand
 const EmailListCompact = dynamic(
@@ -88,6 +89,8 @@ function InboxContent() {
 
   // URL-based state - selectedId from URL
   const selectedId = searchParams.get('email')
+  const lookupReturn = returnToMailLookup(searchParams.get('lookup'))
+  const closeLabel = lookupReturn ? 'Về kết quả tìm kiếm' : undefined
   const lastOpenedEmail = useRef<string | null>(selectedId)
   const readOnOpen = useRef<string | null>(null)
   const briefingType = searchParams.get('briefing')
@@ -100,7 +103,6 @@ function InboxContent() {
   const [classifying, setClassifying] = useState(false)
   const [reclassifying, setReclassifying] = useState(false)
   const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
   const [snoozeTarget, setSnoozeTarget] = useState<Email | null>(null)
   const [snoozeNotice, setSnoozeNotice] = useState(false)
   const [priorityTarget, setPriorityTarget] = useState<Email | null>(null)
@@ -157,7 +159,9 @@ function InboxContent() {
   }, [triageEnabled, selectedId, fetchedEmail, markAsRead])
 
   // Update viewMode when URL changes
-  const effectiveViewMode = selectedId ? (viewMode === 'list' ? 'split' : viewMode) : 'list'
+  const effectiveViewMode = selectedId
+    ? lookupReturn ? 'full' : viewMode === 'list' ? 'split' : viewMode
+    : 'list'
 
   const handleClassify = async () => {
     setClassifying(true)
@@ -332,19 +336,8 @@ function InboxContent() {
       result = result.filter(email => email.category === activeFilter)
     }
 
-    // Priority 3: Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      result = result.filter(email =>
-        email.subject?.toLowerCase().includes(query) ||
-        email.from_name?.toLowerCase().includes(query) ||
-        email.from_address?.toLowerCase().includes(query) ||
-        email.snippet?.toLowerCase().includes(query)
-      )
-    }
-
     return result.sort((a, b) => compareInboxPriority(rankings.get(a.id)!, rankings.get(b.id)!))
-  }, [emails, rankings, activeFilter, briefingFilter, isMobile, mobileSegment, searchQuery])
+  }, [emails, rankings, activeFilter, briefingFilter, isMobile, mobileSegment])
 
   // URL-based navigation
   const handleSelectEmail = useCallback((id: string) => {
@@ -357,9 +350,9 @@ function InboxContent() {
   }, [router, emails, markAsRead, triageEnabled])
 
   const handleCloseEmail = useCallback(() => {
-    router.push('/inbox', { scroll: false })
+    router.push(lookupReturn ?? '/inbox', { scroll: false })
     setViewMode('list')
-  }, [router])
+  }, [router, lookupReturn])
 
   useEffect(() => {
     if (!selectedId) return
@@ -422,8 +415,10 @@ function InboxContent() {
 
   // Handle search
   const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query)
-  }, [])
+    router.push(mailLookupHref({
+      query, accounts: selectedAccountIds, category: lookupCategory(activeFilter), hasFile: false,
+    }))
+  }, [router, selectedAccountIds, activeFilter])
 
   // Clear briefing filter
   const handleClearBriefingFilter = useCallback(() => {
@@ -588,6 +583,7 @@ function InboxContent() {
         <EmailDetailMobile
           email={selectedEmail}
           onBack={handleCloseEmail}
+          closeLabel={closeLabel}
           onRefresh={refetch}
           onStar={id => void toggleStar(id, fetchedEmail?.id === id ? fetchedEmail : undefined)}
           onArchive={handleArchive}
@@ -699,7 +695,7 @@ function InboxContent() {
 
             {/* Email List */}
             <div className="flex-1 overflow-y-auto">
-              {userId && !selectedId && !activeFilter && !briefingFilter && !searchQuery && (!isMobile || mobileSegment === 'all') && (
+              {userId && !selectedId && !activeFilter && !briefingFilter && (!isMobile || mobileSegment === 'all') && (
                 <>
                   <ReplyInbox key={'replies:' + userId} userId={userId} accounts={selectedAccountIds} />
                   <CommitmentAttention key={userId} userId={userId} accounts={selectedAccountIds} onSynced={refresh} />
@@ -713,16 +709,14 @@ function InboxContent() {
               ) : filteredEmails.length === 0 ? (
                 <>
                   <EmptyState
-                    type={searchQuery ? 'no-results' : emails.length === 0 ? 'no-emails' : 'empty-folder'}
-                    description={emails.length === 0 && !searchQuery ? 'Thư mới sẽ xuất hiện sau khi đồng bộ.' : undefined}
+                    type={emails.length === 0 ? 'no-emails' : 'empty-folder'}
+                    description={emails.length === 0 ? 'Thư mới sẽ xuất hiện sau khi đồng bộ.' : undefined}
                     className="py-8"
-                    action={(activeFilter || briefingFilter || searchQuery) ? {
+                    action={(activeFilter || briefingFilter) ? {
                       label: 'Xóa bộ lọc',
                       onClick: () => {
                         if (briefingFilter) {
                           handleClearBriefingFilter()
-                        } else if (searchQuery) {
-                          setSearchQuery('')
                         } else {
                           setActiveFilter(null)
                         }
@@ -750,7 +744,7 @@ function InboxContent() {
                   onCategoryClick={handleCategoryClick}
                   onEditCategory={setCategoryTarget}
                   compact={effectiveViewMode === 'split'}
-                  groupByPriority={!activeFilter && !briefingFilter && !searchQuery && (!isMobile || mobileSegment === 'all')}
+                  groupByPriority={!activeFilter && !briefingFilter && (!isMobile || mobileSegment === 'all')}
                   rankings={rankings}
                   onExplainPriority={setPriorityTarget}
                   hasMore={hasMore}
@@ -770,6 +764,7 @@ function InboxContent() {
             <EmailDetailFull
               email={selectedEmail}
               onBack={handleCloseEmail}
+              closeLabel={closeLabel}
               onRefresh={refreshCategories}
               onStar={id => void toggleStar(id, fetchedEmail?.id === id ? fetchedEmail : undefined)}
               onArchive={handleArchive}
@@ -796,7 +791,7 @@ function InboxContent() {
               description="Thư có thể không còn khả dụng. Bạn có thể thử lại."
               action={<button type="button" onClick={() => void refetchEmail()} className="neo-target px-3 py-2 text-sm text-[var(--accent-foreground)] underline">Thử mở lại</button>}
             />
-            <button type="button" onClick={handleCloseEmail} className="neo-target mx-auto block px-3 py-2 text-sm text-[var(--accent-foreground)] underline">Về hộp thư</button>
+            <button type="button" onClick={handleCloseEmail} className="neo-target mx-auto block px-3 py-2 text-sm text-[var(--accent-foreground)] underline">{closeLabel ?? 'Về hộp thư'}</button>
           </div>
         )}
 

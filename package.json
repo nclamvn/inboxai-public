@@ -51,7 +51,8 @@
     "test:gmail-reconnect": "npm run test:local-auth -- --gmail-reconnect",
     "worker:gmail-sync": "node scripts/gmail-sync-worker.mjs",
     "test:inbox-conversation": "npm run test:local-auth -- --inbox-conversation",
-    "test:personal-mail-rules": "npm run test:local-auth -- --personal-mail-rules"
+    "test:personal-mail-rules": "npm run test:local-auth -- --personal-mail-rules",
+    "test:mail-lookup": "npm run test:local-auth -- --mail-lookup"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

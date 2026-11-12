@@ -29,6 +29,7 @@ interface Attachment {
 interface EmailDetailMobileProps {
   email: Email
   onBack: () => void
+  closeLabel?: string
   onRefresh?: () => void
   onStar?: (id: string) => void
   onArchive?: (id: string) => void
@@ -42,6 +43,7 @@ interface EmailDetailMobileProps {
 export function EmailDetailMobile({
   email,
   onBack,
+  closeLabel = 'Về hộp thư',
   onRefresh,
   onStar,
   onArchive,
@@ -137,7 +139,7 @@ export function EmailDetailMobile({
         {/* Back */}
         <button
           onClick={onBack}
-          aria-label="Về hộp thư"
+          aria-label={closeLabel}
           className="neo-icon-button"
         >
           <ChevronLeft className="w-6 h-6 text-[var(--foreground)]" />

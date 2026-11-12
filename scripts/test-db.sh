@@ -78,3 +78,4 @@ psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/ask-inbox-answer.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/operator-plans.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/operator-outcomes.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/personal-mail-rules.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/mail-lookup.sql

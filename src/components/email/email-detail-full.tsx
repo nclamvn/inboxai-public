@@ -29,6 +29,7 @@ interface Attachment {
 interface Props {
   email: Email
   onBack: () => void
+  closeLabel?: string
   onRefresh: () => void
   onStar?: (id: string) => void
   onArchive?: (id: string) => void
@@ -42,6 +43,7 @@ interface Props {
 export function EmailDetailFull({
   email,
   onBack,
+  closeLabel = 'Đóng',
   onRefresh,
   onStar,
   onArchive,
@@ -472,7 +474,8 @@ export function EmailDetailFull({
             type="button"
             onClick={handleClose}
             className="neo-icon-button"
-            title="Đóng"
+            title={closeLabel}
+            aria-label={closeLabel}
           >
             <X className="w-5 h-5" strokeWidth={1.5} />
           </button>

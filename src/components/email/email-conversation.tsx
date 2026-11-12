@@ -88,7 +88,10 @@ export function EmailConversation({ email, folder = 'inbox', className }: {
             {messages.map(message => {
               const current = message.id === email.id
               const direction = message.direction === 'outbound' ? 'Thư đi' : 'Thư đến'
-              const href = '/' + folder + '?email=' + encodeURIComponent(message.id) + '&conversation=1'
+              const search = new URLSearchParams({ email: message.id, conversation: '1' })
+              const lookup = params.get('lookup')
+              if (lookup) search.set('lookup', lookup)
+              const href = '/' + folder + '?' + search.toString()
               const item = <>
                 <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs text-[var(--foreground-muted)]">
                   <span className={cn('font-medium', message.direction === 'outbound' && 'text-[var(--success)]')}>{direction}</span>

@@ -140,7 +140,7 @@ function DashboardHeader({ pathname }: { pathname: string }) {
     <header className="h-14 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4 ">
       {/* Search */}
       <div className="flex-1 max-w-xl">
-        {pathname !== '/search' && <SearchBox />}
+        {pathname !== '/search' && pathname !== '/search/mail' && <SearchBox />}
       </div>
 
       {/* Right Actions */}

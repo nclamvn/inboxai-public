@@ -36,7 +36,6 @@ export const MobileInboxHeader = memo(function MobileInboxHeader({
   function closeSearch() {
     setSearchOpen(false)
     setQuery('')
-    onSearch('')
     searchButton.current?.focus()
   }
 
@@ -73,21 +72,22 @@ export const MobileInboxHeader = memo(function MobileInboxHeader({
       </div>
 
       {searchOpen && (<>
-        <div className="mb-2 flex min-h-11 items-center gap-2 px-4" role="search">
+        <form className="mb-2 flex min-h-11 items-center gap-2 px-4" role="search"
+          onSubmit={event => { event.preventDefault(); onSearch(query) }}>
           <input
-            ref={input} type="search" aria-label="Tìm kiếm email" placeholder="Tìm theo người gửi hoặc tiêu đề"
+            ref={input} type="search" aria-label="Tìm kiếm email" placeholder="Tìm thư hoặc tên tệp" maxLength={200}
             className="h-11 min-w-0 flex-1 rounded-[var(--radius-control)] border border-[var(--input-border)] px-3 text-base"
             value={query}
-            onChange={event => {
-              setQuery(event.target.value)
-              onSearch(event.target.value)
-            }}
+            onChange={event => setQuery(event.target.value)}
             onKeyDown={event => { if (event.key === 'Escape') closeSearch() }}
           />
+          <button type="submit" aria-label="Tìm trong hộp thư" className="neo-icon-button">
+            <Search size={20} aria-hidden="true" />
+          </button>
           <button type="button" aria-label="Đóng tìm kiếm" onClick={closeSearch} className="neo-icon-button">
             <X size={20} aria-hidden="true" />
           </button>
-        </div>
+        </form>
         <Link href={query.trim() ? "/search?q=" + encodeURIComponent(query.trim()) : "/search"}
           className="neo-target mx-4 mb-2 inline-flex min-h-11 items-center text-sm font-medium text-[var(--accent-foreground)] underline">
           Mở Ask Inbox

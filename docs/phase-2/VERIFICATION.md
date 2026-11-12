@@ -1,5 +1,36 @@
 # Verification record
 
+## Search across synced mail and attachments
+
+On 2026-11-12, `npm run test:mail-lookup` passed 22 checks with Chrome
+157, Node 24.14.1, PostgreSQL 16 and a production-mode Next.js 16.4.6
+build on macOS arm64. Two Gmail accounts on loopback delivered 220
+messages. Both target emails had 218 newer messages ahead of them.
+The primary search found the older subject without accents. A filename shared by the two
+accounts yielded two downloads with different verified bytes. Opening
+the exact source, downloading and returning preserved the query,
+mailbox, attachment filter and manual category. Chrome went offline
+during a new search and restored the same results on retry. Pagination
+returned all 24 tied timestamps exactly once. Foreign account filters,
+foreign attachment downloads and deleted search matches were rejected.
+The mobile reader returned to the same query. Three sampled screens had
+zero axe violations or horizontal overflow. The fixture made no
+provider label changes or sends.
+
+The search covers synchronized, non-deleted mail and matches attachment
+names, subject, sender and indexed body text. The filename index uses
+PostgreSQL `pg_trgm`. Ask Inbox continues to provide its own search and
+answer workflow. SQL covered the stored Sent file ID, mirrored
+attachment deduplication, literal percent signs, effective category and
+ownership boundaries.
+
+Lint, TypeScript, 241 unit tests, 200 integration tests, 29 SQL checks
+and the local production build passed. Lint reported 91 existing warnings.
+Design, platform, local staging and Action Inbox passed 29, 19, 31
+and 42 checks respectively.
+[Chrome report](../../test-results/mail-lookup/report.json) ·
+[Workflow and download hashes](../../test-results/mail-lookup/workflow.json)
+
 ## Personal sender rules
 
 On 2026-11-12, `npm run test:personal-mail-rules` passed 22 checks on
