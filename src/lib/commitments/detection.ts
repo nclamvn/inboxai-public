@@ -13,6 +13,7 @@ export type DetectionCommand = {
 )
 
 export type CommitmentProposal = {
+  proposalId: string
   emailId: string
   subject: string | null
   sender: string
@@ -22,7 +23,7 @@ export type CommitmentProposal = {
   reference: string | null
   previous: LedgerState | null
   review: { command: DetectionCommand; title: string } | null
-  blocked: 'unmatched' | 'chronology' | null
+  blocked: 'unmatched' | 'chronology' | 'ambiguous' | 'conflicting' | null
 }
 
 export type DetectionPage = { proposals: CommitmentProposal[]; nextBeforeId: string | null }

@@ -28,6 +28,7 @@ export async function runProduct({ admin, appFetch, userId, ownEmailId, record }
   let arrivals = 0
   for (const row of cases) {
     const result = { id: row.id, events: [], scanMs: 0, confirmMs: 0, requests: 0, blocked: [], committed: 0 }
+    const approvedLabels = new Set()
     for (const mail of row.emails) {
       const id = randomUUID()
       assert.equal((await admin.from('emails').insert({
@@ -36,42 +37,46 @@ export async function runProduct({ admin, appFetch, userId, ownEmailId, record }
         created_at: new Date(Date.UTC(2026, 10, 1, 0, arrivals++)).toISOString(),
         body_fetched: true, direction: 'inbound',
       })).error, null)
-      let cursor = null, proposal
+      let cursor = null, proposals = []
       const start = performance.now()
       for (let page = 0; page < 4; page++) {
         const response = await request(cursor ? `${detection}?beforeId=${cursor}` : detection)
         result.requests++
-        proposal = response.proposals.find(item => item.emailId === id)
+        proposals = response.proposals.filter(item => item.emailId === id)
         cursor = response.nextBeforeId
-        if (proposal || !cursor) break
+        if (proposals.length || !cursor) break
       }
       result.scanMs += performance.now() - start
       const ledger = await request(collection)
       assert.deepEqual(Object.fromEntries(ledger.items.map(item => [item.id, item.version])), Object.fromEntries(expectedLedger))
-      if (proposal?.blocked) result.blocked.push({ source: mail.id, reason: proposal.blocked, kind: proposal.kind })
-      if (!proposal?.review) continue
-      const command = proposal.review.command
-      const { state } = command
-      const candidate = event.parse({
-        source: mail.id, target: command.operation === 'create' ? mail.id : targets.get(command.id),
-        kind: proposal.kind, owner: ['create', 'owner'].includes(proposal.kind) ? state.ownerEmail : null,
-        due: ['create', 'deadline'].includes(proposal.kind) ? state.dueOn : null, quote: command.evidence.quote,
-      })
-      result.events.push(candidate)
-      // An evaluation-only reviewer accepts a correct, fully sourced candidate without repairing it.
-      if (!labels[row.id].some(label => matchesEvent(candidate, label, row.emails))) continue
-      const startWrite = performance.now()
-      const receipt = await request(detection, { method: 'POST', body: JSON.stringify(command),
-        headers: { 'content-type': 'application/json', 'idempotency-key': randomUUID() } }, command.operation === 'create' ? 201 : 200)
-      result.confirmMs += performance.now() - startWrite
-      result.committed++
-      assert.equal(receipt.version, (expectedLedger.get(receipt.id) ?? 0) + 1)
-      expectedLedger.set(receipt.id, receipt.version)
-      targets.set(receipt.id, candidate.target)
-      const saved = await request(`${collection}/${receipt.id}`)
-      assert.equal(saved.version, receipt.version)
-      for (const key of ['title', 'ownerEmail', 'dueOn', 'status']) assert.equal(saved.state[key], state[key])
-      assert.deepEqual(saved.history[0].sources.map(source => [source.emailId, source.quote]), [[id, candidate.quote]])
+      for (const proposal of proposals) {
+        if (proposal.blocked) result.blocked.push({ source: mail.id, reason: proposal.blocked, kind: proposal.kind })
+        if (!proposal.review) continue
+        const command = proposal.review.command
+        const { state } = command
+        const candidate = event.parse({
+          source: mail.id, target: command.operation === 'create' ? mail.id : targets.get(command.id),
+          kind: proposal.kind, owner: ['create', 'owner'].includes(proposal.kind) ? state.ownerEmail : null,
+          due: ['create', 'deadline'].includes(proposal.kind) ? state.dueOn : null, quote: command.evidence.quote,
+        })
+        result.events.push(candidate)
+        // Accept a correctly sourced event once and leave mistakes unrepaired.
+        const label = labels[row.id].find(item => !approvedLabels.has(item) && matchesEvent(candidate, item, row.emails))
+        if (!label) continue
+        approvedLabels.add(label)
+        const startWrite = performance.now()
+        const receipt = await request(detection, { method: 'POST', body: JSON.stringify(command),
+          headers: { 'content-type': 'application/json', 'idempotency-key': randomUUID() } }, command.operation === 'create' ? 201 : 200)
+        result.confirmMs += performance.now() - startWrite
+        result.committed++
+        assert.equal(receipt.version, (expectedLedger.get(receipt.id) ?? 0) + 1)
+        expectedLedger.set(receipt.id, receipt.version)
+        targets.set(receipt.id, candidate.target)
+        const saved = await request(`${collection}/${receipt.id}`)
+        assert.equal(saved.version, receipt.version)
+        for (const key of ['title', 'ownerEmail', 'dueOn', 'status']) assert.equal(saved.state[key], state[key])
+        assert.deepEqual(saved.history[0].sources.map(source => [source.emailId, source.quote]), [[id, candidate.quote]])
+      }
     }
     outcome.push({ ...result, elapsedMs: result.scanMs + result.confirmMs })
   }

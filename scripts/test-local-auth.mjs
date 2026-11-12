@@ -31,13 +31,15 @@ const journeyPreview = process.argv.includes('--m6d-preview')
 const journeyE2E = process.argv.includes('--m6d-e2e')
 const journey = journeyPreview || journeyE2E
 const commitmentBenchmark = process.argv.includes('--m6g')
+const isolatedCommitment = commitmentDetection && process.argv.includes('--isolated')
+const commitmentOutput = commitmentBenchmark ? (await import('../tests/eval/commitments/benchmark.mjs')).output : null
 const isolatedDesign = design && process.argv.includes('--isolated')
-const isolated = journeyE2E || isolatedDesign || commitmentBenchmark
+const isolated = journeyE2E || isolatedDesign || commitmentBenchmark || isolatedCommitment
 const productionMode = m6 || staging || journey || isolated
 const journeyOutput = 'test-results/m6d'
 const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.test'
 const evidenceFile = journey ? `${journeyOutput}/report.json`
-  : commitmentBenchmark ? 'test-results/m6g/local-run.json'
+  : commitmentOutput ? commitmentOutput + '/local-run.json'
   : isolatedDesign ? `${journeyOutput}/design-run.json`
   : m6c ? `docs/phase-2/evidence/m6c-${staging ? 'staging' : 'auth'}-run.json`
   : staging ? 'docs/phase-2/evidence/m6b-run.json'
@@ -46,7 +48,7 @@ const evidenceFile = journey ? `${journeyOutput}/report.json`
   : operator ? 'docs/phase-2/evidence/m5a-browser-run.json'
   : askAnswer ? 'docs/phase-2/evidence/m4b-browser-run.json'
   : askInbox ? 'docs/phase-2/evidence/m4a-browser-run.json'
-  : commitmentDetection ? 'docs/phase-2/evidence/m3c-browser-run.json'
+  : commitmentDetection ? (isolatedCommitment ? 'test-results/commitment-lifecycle/browser-run.json' : 'docs/phase-2/evidence/m3c-browser-run.json')
   : commitmentUi ? 'docs/phase-2/evidence/m3b-browser-run.json'
   : commitments ? 'docs/phase-2/evidence/m3a-local-auth.json'
   : actionInbox ? 'docs/phase-2/evidence/m2b-browser-run.json'
@@ -111,10 +113,11 @@ async function waitFor(url, predicate = r => r.ok) {
   throw new Error(`Local service did not become ready: ${new URL(url).port}`)
 }
 try {
-  if (commitmentBenchmark) {
-    mkdirSync('test-results/m6g', { recursive: true })
-    rmSync('test-results/m6g/product.json', { force: true })
+  if (commitmentOutput) {
+    mkdirSync(commitmentOutput, { recursive: true })
+    rmSync(commitmentOutput + '/product.json', { force: true })
   }
+  if (isolatedCommitment) mkdirSync('test-results/commitment-lifecycle', { recursive: true })
   // A failed future run must never leave a stale success report behind.
   if (!journey) rmSync(evidenceFile, { force:true })
   if (commitments) rmSync('docs/phase-2/evidence/m3a-sample-ledger.json', { force: true })
@@ -367,7 +370,7 @@ try {
     const foreignSession = await legacyLogin.auth.signInWithPassword({ email: 'preupgrade@example.test', password })
     assert.equal(foreignSession.error, null)
     const { rehearseCommitmentDetection } = await import('../tests/design/detections.mjs')
-    await rehearseCommitmentDetection({ app, appFetch, cookies, admin, userId, foreignId: previousId,
+    await rehearseCommitmentDetection({ app, appFetch, cookies, admin, userId, foreignId: previousId, isolated: isolatedCommitment,
       foreignToken: foreignSession.data.session.access_token, loopbackFetch, record })
   } else if (commitmentUi) {
     const { rehearseCommitmentUi } = await import('../tests/design/commitments.mjs')

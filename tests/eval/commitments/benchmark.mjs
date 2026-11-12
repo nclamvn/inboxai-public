@@ -3,9 +3,12 @@ import { createHash } from 'node:crypto'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { z } from 'zod'
 
-export const output = 'test-results/m6g'
-export const casesFile = new URL('./cases.json', import.meta.url)
-const labelsFile = new URL('./labels.json', import.meta.url)
+const corpus = process.env.INBOXAI_COMMITMENT_CORPUS ?? 'm6g'
+assert.ok(['m6g', 'lifecycle', 'regression'].includes(corpus), 'Unknown commitment corpus')
+const dataDirectory = corpus === 'lifecycle' ? './lifecycle/' : './'
+export const output = `test-results/${corpus === 'm6g' ? corpus : 'commitment-' + corpus}`
+export const casesFile = new URL(dataDirectory + 'cases.json', import.meta.url)
+const labelsFile = new URL(dataDirectory + 'labels.json', import.meta.url)
 export const cases = JSON.parse(readFileSync(casesFile, 'utf8'))
 const digest = file => createHash('sha256').update(readFileSync(file)).digest('hex')
 export const corpusDigest = digest(casesFile)
@@ -122,7 +125,7 @@ export function compare(manualPath) {
   const matchingSubset = manual ? reports.map(report => summarize({ ...report, cases: report.cases.filter(row =>
     manual.byCase.some(manualCase => manualCase.id === row.id)) }, labels)) : []
   writeReport('comparison', { labelDigest: digest(labelsFile), methods, manual, matchingSubset,
-    notes: 'Synthetic labels authored for M6-G; source + creation target + kind + owner/date and full decisive literal quote must match. Correction counts model explicit review actions, not human time.' })
+    notes: 'Synthetic labels; source + creation target + kind + owner/date and full decisive literal quote must match. Correction counts model explicit review actions, not human time.' })
   console.table(methods.map(({ method, exact, candidates, expected, importantMisses, medianMs, failures, corrections }) =>
     ({ method, exact, candidates, expected, importantMisses, medianMs: Math.round(medianMs), failures, ...corrections })))
   console.log(manual ? `Manual participant results: ${manual.cases} cases.` : 'Manual participant results: pending.')

@@ -106,7 +106,7 @@ export function CommitmentLedger({ userId }: { userId: string }) {
   const items = board.data?.pages.flatMap(page => page.items) ?? []
   const totals = board.data?.pages.at(-1)?.totals
   const proposals = [...new Map(detections.data?.pages.flatMap(page => page.proposals)
-    .map(proposal => [proposal.emailId, proposal])).values()]
+    .map(proposal => [proposal.proposalId, proposal])).values()]
   const refresh = () => void cache.invalidateQueries({ queryKey: ['commitments', userId] })
   const reloadDetail = () => {
     setEditingId(null)

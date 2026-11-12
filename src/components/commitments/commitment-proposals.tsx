@@ -16,6 +16,13 @@ const labels: Record<CommitmentProposal['kind'], string> = {
   completed: 'Hoàn tất', cancelled: 'Hủy cam kết',
 }
 
+const blockedReasons: Record<NonNullable<CommitmentProposal['blocked']>, string> = {
+  unmatched: 'Chưa xác định được cam kết tương ứng do người gửi phụ trách.',
+  chronology: 'Chưa xác minh được thư này mới hơn bằng chứng đang có trong sổ.',
+  ambiguous: 'Có nhiều đầu việc có thể liên quan. Hãy kiểm tra email và sổ cam kết.',
+  conflicting: 'Hạn cũ trong thư khác với hạn đã xác nhận trong sổ.',
+}
+
 function Source({ proposal }: { proposal: CommitmentProposal }) {
   return (
     <div className="min-w-0 space-y-2">
@@ -122,7 +129,7 @@ export function CommitmentProposals({ group, proposals, hasMore, loading, fetchi
   const [reviewing, setReviewing] = useState<CommitmentProposal | null>(null)
   const [accepted, setAccepted] = useState<Set<string>>(new Set())
   const receipt = useRef<HTMLParagraphElement>(null)
-  const visible = proposals.filter(proposal => !accepted.has(proposal.emailId))
+  const visible = proposals.filter(proposal => !accepted.has(proposal.proposalId))
     .sort((a, b) => Number(Boolean(b.review)) - Number(Boolean(a.review)))
 
   useEffect(() => { receipt.current?.focus() }, [accepted.size])
@@ -144,7 +151,7 @@ export function CommitmentProposals({ group, proposals, hasMore, loading, fetchi
         {visible.length > 0 && (
           <ul className="mt-4 divide-y divide-[var(--border)] border-y border-[var(--border)] bg-[var(--surface)]">
             {visible.map(proposal => (
-              <li key={proposal.emailId} className="min-w-0 px-4 py-4 sm:px-5">
+              <li key={proposal.proposalId} className="min-w-0 px-4 py-4 sm:px-5">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0 space-y-1">
                     <p className="text-xs font-medium text-[var(--foreground-secondary)]">
@@ -161,9 +168,7 @@ export function CommitmentProposals({ group, proposals, hasMore, loading, fetchi
                 <div className="mt-3"><Source proposal={proposal} /></div>
                 {proposal.blocked && (
                   <p className="mt-2 text-sm text-[var(--foreground-secondary)]">
-                    {proposal.blocked === 'unmatched'
-                      ? 'Chưa xác định được cam kết tương ứng trong sổ.'
-                      : 'Chưa xác minh được thư này mới hơn bằng chứng đang có trong sổ.'}
+                    {blockedReasons[proposal.blocked]}
                   </p>
                 )}
               </li>
@@ -181,7 +186,7 @@ export function CommitmentProposals({ group, proposals, hasMore, loading, fetchi
       {reviewing && (
         <ProposalReview proposal={reviewing} close={() => setReviewing(null)} refresh={refresh}
           saved={() => {
-            setAccepted(previous => new Set(previous).add(reviewing.emailId))
+            setAccepted(previous => new Set(previous).add(reviewing.proposalId))
             setReviewing(null)
             refresh()
           }} />

@@ -6,7 +6,6 @@ import { audit } from './browser.mjs'
 
 const endpoint = '/api/commitments/detections'
 const collection = '/api/commitments'
-const output = 'docs/phase-2/evidence/m3c'
 const now = new Date()
 const moment = hours => new Date(now.getTime() + hours * 3_600_000).toISOString()
 const due = days => new Date(now.getTime() + (days * 24 + 7) * 3_600_000).toISOString().slice(0, 10)
@@ -14,7 +13,8 @@ const command = (body, key = randomUUID()) => ({
   method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key }, body: JSON.stringify(body),
 })
 
-export async function rehearseCommitmentDetection({ app, appFetch, cookies, admin, userId, foreignId, foreignToken, loopbackFetch, record }) {
+export async function rehearseCommitmentDetection({ app, appFetch, cookies, admin, userId, foreignId, foreignToken, loopbackFetch, record, isolated }) {
+  const output = isolated ? 'test-results/commitment-lifecycle/browser' : 'docs/phase-2/evidence/m3c'
   const primary = 'gửi biên bản kiểm tra lô linh kiện'
   const original = 'Chúng tôi cam kết sẽ ' + primary + ' trước ngày ' + due(2) + '.'
   const reschedule = 'Chúng tôi dời hạn sang ngày ' + due(4) + '.'
@@ -202,11 +202,60 @@ export async function rehearseCommitmentDetection({ app, appFetch, cookies, admi
     await read(endpoint, command(staleCompletion.review.command), 409)
     record('confirmation from an older ledger version cannot overwrite the approved assignee',
       (await read(collection + '/' + listed.id)).version === 3)
-    const finish = (await read(endpoint)).proposals.find(p => p.emailId === complete.id)
-    await read(endpoint, command(finish.review.command))
+    const newOwnerCompletion = mail('Hoàn tất ở hộp thư kỹ thuật [PO-731]', 'Tôi đã nộp biên bản và đã hoàn tất cam kết.', 0, {
+      from_address: 'verified@example.test', source_account_id: otherMailbox,
+    })
+    await insert(newOwnerCompletion)
+    const afterHandoff = (await read(endpoint)).proposals
+    const finish = afterHandoff.find(p => p.emailId === newOwnerCompletion.id)
+    assert.equal(afterHandoff.find(p => p.emailId === complete.id).blocked, 'unmatched')
+    await read(endpoint, command({ ...finish.review.command, evidence: {
+      ...finish.review.command.evidence, emailId: complete.id, quote: complete.body_text,
+    }, sourceFingerprint: staleCompletion.review.command.sourceFingerprint }), 409)
+
+    const two = mail('Hai đầu việc [QA-412]', 'Tôi sẽ gửi chứng thư.\nTôi sẽ nộp bảng đo.', 1)
+    const ambiguous = mail('Đổi hạn [QA-412]', 'Chúng tôi dời hạn sang ngày ' + due(8) + '.', 2)
+    await insert(two, ambiguous)
+    const multi = await browser.newContext({ locale: 'vi-VN', viewport: { width: 390, height: 844 } })
+    await multi.addCookies([...cookies].filter(([, value]) => value).map(([name, value]) => ({ name, value, url: app })))
+    await multi.addInitScript(() => localStorage.setItem('inboxai_onboarding_seen', 'true'))
+    await multi.route('**/*', route => {
+      const url = new URL(route.request().url())
+      if (url.hostname !== '127.0.0.1' || url.pathname === '/api/source-accounts/sync') return route.abort()
+      return route.continue()
+    })
+    const page = await multi.newPage()
+    page.on('pageerror', error => runtimeErrors.push(error.message))
+    await page.goto(app + '/commitments')
+    await page.getByRole('link', { name: /Đề xuất từ email Có đề xuất cần duyệt/ }).click()
+    const row = title => page.getByRole('listitem').filter({ has: page.getByRole('heading', { name: title, exact: true }) })
+    const dialog = page.getByRole('dialog', { name: 'Xác nhận đề xuất' })
+    const approve = async (title, quote, count) => {
+      await row(title).getByRole('button', { name: 'Xem và xác nhận' }).click()
+      await dialog.getByText(quote, { exact: true }).waitFor()
+      await dialog.getByRole('button', { name: 'Xác nhận và ghi vào sổ' }).click()
+      await page.getByText('Đã ghi vào sổ ' + count + ' đề xuất.').waitFor()
+    }
+    await approve(primary, newOwnerCompletion.body_text, 1)
+    assert.equal(finish.review.command.id, listed.id)
     const closed = await read(collection + '?group=closed')
-    record('completion enters the closed group only after confirmation',
-      closed.items.some(item => item.id === listed.id && item.version === 4 && item.state.status === 'completed'))
+    const completed = await read(collection + '/' + listed.id)
+    record('new owner can complete across mailboxes, former owner is blocked and the ledger retains all four sources',
+      closed.items.some(item => item.id === listed.id && item.version === 4 && item.state.status === 'completed') &&
+      completed.history.map(revision => revision.sources[0].emailId).join() === [newOwnerCompletion.id, reassign.id, moved.id, old.id].join())
+    await approve('nộp bảng đo', 'Tôi sẽ nộp bảng đo.', 2)
+    const partialPage = await read(endpoint)
+    assert.equal(partialPage.proposals.find(p => p.emailId === ambiguous.id).blocked, 'ambiguous')
+    await approve('gửi chứng thư', 'Tôi sẽ gửi chứng thư.', 3)
+    const held = page.getByRole('listitem').filter({ hasText: ambiguous.body_text })
+    await held.getByText('Có nhiều đầu việc có thể liên quan.', { exact: false }).waitFor()
+    const finalPage = await read(endpoint)
+    record('two quotes in the same message can be approved independently and a generic change stays blocked',
+      !finalPage.proposals.some(p => p.emailId === two.id) &&
+      finalPage.proposals.find(p => p.emailId === ambiguous.id).blocked === 'ambiguous' &&
+      (await read(collection)).items.filter(item => ['gửi chứng thư', 'nộp bảng đo'].includes(item.state.title)).length === 2)
+    await capture(page, 'mobile-lifecycle')
+    await multi.close()
 
     const violationCount = captures.flatMap(entry => entry.axe).length
     assert.deepEqual(runtimeErrors, [])

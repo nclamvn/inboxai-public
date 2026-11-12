@@ -9,8 +9,8 @@ export async function GET(request: NextRequest) {
     if (!before.success) return ledgerJson({ error: 'Trang thư không hợp lệ.' }, 400)
     const page = await ledgerRpc(client, 'scan_commitment_mail', { p_before_id: before.data }) as ScanPage
     const signals = interpretScan(page)
-    const keys = [...new Set(signals.map(signal => signal.key))]
-    const targets = keys.length ? await ledgerRpc(client, 'read_commitment_detection_targets', { p_references: keys }) : []
+    const references = [...new Set(signals.flatMap(signal => signal.reference ? [signal.reference] : []))]
+    const targets = references.length ? await ledgerRpc(client, 'read_commitment_lifecycle_targets', { p_references: references }) : []
     return ledgerJson(buildProposals(page, signals, targets))
   })
 }

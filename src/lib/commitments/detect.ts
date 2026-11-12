@@ -8,20 +8,33 @@ export type DetectionSignal = {
   title: string | null
   dueOn: string | null
   ownerEmail?: string
+  priorDueOn?: string
 }
 
 const speaker = '(?:tôi|chúng tôi|bên tôi|i|we)'
 const promise = new RegExp('^' + speaker + ' (?:cam kết sẽ|sẽ|will|commit to) (.+)$', 'iu')
-const delivery = /^(?:gửi|bàn giao|giao|nộp|hoàn thành|hoàn tất|cung cấp|thanh toán|cập nhật|xác nhận|trả lời|send|submit|deliver|provide|pay|finish|complete|update|confirm|reply)\s+\S/iu
+const deliveryVerb = '(?:gửi|bàn giao|giao|nộp|hoàn thành|hoàn tất|cung cấp|thanh toán|cập nhật|xác nhận|trả lời|send|submit|deliver|provide|pay|finish|complete|update|confirm|reply)'
+const delivery = new RegExp('^' + deliveryVerb + '\\s+\\S', 'iu')
 const dateToken = String.raw`(?:\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{4})`
-const deadline = new RegExp('^' + speaker + ' (?:(?:dời|đổi|lùi|chuyển) (?:hạn|hạn chót) (?:sang|đến)(?: ngày)?|(?:are moving|are changing|have moved|have changed) the deadline to) (' + dateToken + ')$', 'iu')
-const completion = new RegExp('^' + speaker + ' (?:đã (?:hoàn tất|hoàn thành) cam kết|have completed the commitment)$', 'iu')
+const relativeToken = '(?:ngày mai|hôm nay|tomorrow|today)'
+const relativeDate = new RegExp('^' + relativeToken + '$', 'iu')
+const deadline = new RegExp('^' + speaker + ' (?:(?:dời|đổi|lùi|chuyển) (?:hạn|hạn chót) (?:sang|đến)(?: ngày)?|(?:are moving|are changing|have moved|have changed) the deadline to) (' + dateToken + '|' + relativeToken + ')$', 'iu')
+const confirmedReplacement = new RegExp('^đã (?:chốt|xác nhận) với [^:]+: [^:]+ sẽ (?:chuyển|gửi|giao|nộp|bàn giao|thanh toán) ngày (' + dateToken + '), thay lịch (' + dateToken + ')$', 'iu')
+const confirmedDelivery = new RegExp('^(?:chốt chắc lịch rồi|đã (?:chốt|xác nhận) lịch): (.+) sẽ được bên (?:em|tôi) (' + deliveryVerb + ')( .+)$', 'iu')
+const completion = new RegExp('^' + speaker + ' (?:đã (?:hoàn tất|hoàn thành) cam kết|have completed the commitment|đã (?:gửi|giao|bàn giao|nộp|đính kèm) .+ (?:và đã (?:hoàn tất|hoàn thành) cam kết|coi như xong phần việc .+))$', 'iu')
 const cancellation = new RegExp('^' + speaker + ' (?:(?:đã )?hủy cam kết|have cancel(?:l)?ed the commitment)$', 'iu')
 const reassignment = new RegExp('^' + speaker + ' (?:chuyển trách nhiệm cho|are assigning the commitment to) (\\S+)$', 'iu')
-const dueSuffix = new RegExp(' (?:trước ngày|chậm nhất ngày|vào ngày|trước|by|on) (' + dateToken + ')$', 'iu')
-const uncertain = /(?:^|\s)(?:nếu|trừ khi|có thể|có lẽ|dự kiến|cố gắng|if|unless|might|may|try to|subject to)(?:\s|$)/iu
+const dueSuffix = new RegExp(' (?:(?:trước ngày|chậm nhất ngày|vào ngày|ngày|trước|by|on) (' + dateToken + ')|(?:vào |trước |chậm nhất |by |on )?(' + relativeToken + '))$', 'iu')
+const uncertain = /(?:^|[\s,(])(?:nếu|trừ khi|có thể|có lẽ|dự kiến|cố gắng|if|unless|might|may|try to|subject to)(?=[\s,)]|$)/iu
 
-function calendarDate(raw: string) {
+function calendarDate(raw: string, receivedAt: string | null) {
+  if (relativeDate.test(raw)) {
+    const received = receivedAt ? Date.parse(receivedAt) : NaN
+    const tomorrow = /^(?:ngày mai|tomorrow)$/iu.test(raw)
+    const local = new Date(received + (tomorrow ? 31 : 7) * 3_600_000)
+    const iso = Number.isFinite(local.valueOf()) ? local.toISOString().split('T')[0] : ''
+    return z.iso.date().safeParse(iso).success ? iso : null
+  }
   const [day, month, year] = raw.split('/')
   const iso = year ? year + '-' + month.padStart(2, '0') + '-' + day.padStart(2, '0') : raw
   return z.iso.date().safeParse(iso).success ? iso : null
@@ -33,18 +46,29 @@ export function subjectReference(subject: string | null) {
   return tokens.size === 1 ? [...tokens][0] : null
 }
 
-export function detectCommitment(body: string | null): DetectionSignal | null {
-  if (!body || body.length > 8000 || body.includes('\0')) return null
+export function commitmentTitleKey(title: string) {
+  return title.normalize('NFC').toLowerCase().replace(/\s+/gu, ' ').trim()
+}
+
+export function detectCommitments(body: string | null, receivedAt: string | null = null): DetectionSignal[] {
+  if (!body || body.length > 8000 || body.includes('\0')) return []
   const signals: DetectionSignal[] = []
   for (const raw of body.split(/\r?\n/u)) {
     const quote = raw.trim()
     if (isQuotedMailBoundary(quote)) break
     if (!quote || quote.length > 480) continue
-    const line = quote.replace(/\s+/gu, ' ').replace(/[.!]$/u, '')
-    if (uncertain.test(line) || /[?;:"“”]/u.test(line)) continue
+    const line = quote.normalize('NFC').replace(/\s+/gu, ' ').replace(/[.!]$/u, '')
+    if (uncertain.test(line) || /[?;"“”]/u.test(line)) continue
+    const replacement = confirmedReplacement.exec(line)
+    if (replacement) {
+      const dueOn = calendarDate(replacement[1], receivedAt)
+      const priorDueOn = calendarDate(replacement[2], receivedAt)
+      if (dueOn && priorDueOn) signals.push({ kind: 'deadline', quote, title: null, dueOn, priorDueOn })
+      continue
+    }
     const move = deadline.exec(line)
     if (move) {
-      const dueOn = calendarDate(move[1])
+      const dueOn = calendarDate(move[1], receivedAt)
       if (dueOn) signals.push({ kind: 'deadline', quote, title: null, dueOn })
       continue
     }
@@ -59,14 +83,26 @@ export function detectCommitment(body: string | null): DetectionSignal | null {
       continue
     }
     const pledge = promise.exec(line)
-    if (!pledge || !delivery.test(pledge[1])) continue
-    const suffix = dueSuffix.exec(pledge[1])
-    const dueOn = suffix ? calendarDate(suffix[1]) : null
+    const confirmed = confirmedDelivery.exec(line)
+    const action = confirmed ? confirmed[2] + ' ' + confirmed[1] + confirmed[3] : pledge?.[1]
+    if (!action || !delivery.test(action) || action.includes(':')) continue
+    const suffix = dueSuffix.exec(action)
+    const dueOn = suffix ? calendarDate(suffix[1] ?? suffix[2], receivedAt) : null
     if (suffix && !dueOn) continue
-    const title = pledge[1].slice(0, suffix?.index ?? pledge[1].length).trim()
+    if (confirmed && !dueOn) continue
+    const title = action.slice(0, suffix?.index ?? action.length).trim()
     if (title.length <= 200) signals.push({ kind: 'create', quote, title, dueOn })
   }
-  return signals.length === 1 ? signals[0] : null
+  if (signals.length <= 1) return signals
+  if (signals.some(signal => signal.kind !== 'create')) return []
+  const distinct = new Map<string, DetectionSignal>()
+  for (const signal of signals) {
+    const key = commitmentTitleKey(signal.title!)
+    const existing = distinct.get(key)
+    if (existing && existing.dueOn !== signal.dueOn) return []
+    if (!existing) distinct.set(key, signal)
+  }
+  return distinct.size <= 4 ? [...distinct.values()] : []
 }
 
 export function senderIdentity(sender: string) {
