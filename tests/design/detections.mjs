@@ -255,6 +255,12 @@ export async function rehearseCommitmentDetection({ app, appFetch, cookies, admi
       finalPage.proposals.find(p => p.emailId === ambiguous.id).blocked === 'ambiguous' &&
       (await read(collection)).items.filter(item => ['gửi chứng thư', 'nộp bảng đo'].includes(item.state.title)).length === 2)
     await capture(page, 'mobile-lifecycle')
+    await page.goto(app + '/commitments?group=closed&id=' + listed.id)
+    await page.getByRole('heading', { name: 'Lịch sử', exact: true }).waitFor()
+    await page.getByRole('link', { name: newOwnerCompletion.subject }).click()
+    await page.waitForURL('**/inbox?email=' + newOwnerCompletion.id)
+    await page.getByText(newOwnerCompletion.subject, { exact: true }).first().waitFor()
+    record('the completed commitment opens its final evidence from the closed history', true)
     await multi.close()
 
     const violationCount = captures.flatMap(entry => entry.axe).length

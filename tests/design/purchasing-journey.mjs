@@ -104,7 +104,7 @@ export async function rehearsePurchasingJourney({ app, base, email, previousEmai
     const proposal = (mail) => page.getByRole('listitem').filter({ has: page.getByRole('link', { name: mail.subject }) })
     const confirmation = page.getByRole('dialog', { name: 'Xác nhận đề xuất' })
     step = 'Cam kết chưa có bản gốc'
-    await proposal(moved).getByText('Chưa xác định được cam kết tương ứng trong sổ.').waitFor()
+    await proposal(moved).getByText('Chưa xác định được cam kết tương ứng do người gửi phụ trách.').waitFor()
     record('a schedule change cannot be confirmed before the original commitment exists',
       await proposal(moved).getByRole('button', { name: 'Xem và xác nhận' }).count() === 0 &&
       (await read('/api/commitments')).items.length === 0)
