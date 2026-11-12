@@ -8,8 +8,8 @@ Required evidence before proposing a supervised real-mailbox test:
 - [x] Fresh and synthetic local upgrade migrations, two-tenant/anonymous SQL boundaries verified; hosted deployed-schema rehearsal remains pending.
 - [x] Local synthetic server credential vault, AEAD rotation/restore and no browser credential visibility verified (M1A_LOCAL_HANDOFF.md).
 - [ ] Hosted key management, deployed-schema/backup cutover and credential migration/retirement reviewed and rehearsed.
-- [ ] No unresolved applicable critical/high dependency or application vulnerabilities.
-- [ ] Gmail scope minimization and OAuth verification/security-assessment applicability checked.
+- [ ] No unresolved applicable critical/high dependency or application vulnerabilities. [M6-F local npm scan and application cases](VERIFICATION.md#m6-f-adversarial-security-rehearsal)
+- [ ] Gmail scope minimization and OAuth verification/security-assessment applicability checked. [M6-E local simulated scope evidence](VERIFICATION.md#m6-e-gmail-consent)
 - [x] Synthetic local sync checkpoints, duplicate/retry/concurrency/fencing behavior verified (M1B_LOCAL_HANDOFF.md).
 - [x] Local Gmail HTTP and SMTP TLS send, duplicate protection, partial acceptance and Gmail Sent reconciliation tested (M1C_LOCAL_HANDOFF.md).
 - [ ] Real-provider sync and send interoperability, SMTP destination controls and large-message/folder support verified.

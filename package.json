@@ -32,7 +32,9 @@
     "test:operator": "npm run test:local-auth -- --operator",
     "test:operator-outcomes": "npm run test:local-auth -- --operator-outcomes",
     "test:platform": "npm run test:local-auth -- --m6a",
-    "test:staging": "npm run test:local-auth -- --m6b"
+    "test:staging": "npm run test:local-auth -- --m6b",
+    "test:e2e": "npm run test:local-auth -- --m6d-e2e",
+    "preview:e2e": "node --import tsx --conditions=react-server scripts/test-local-auth.mjs --m6d-preview"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

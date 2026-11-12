@@ -101,10 +101,10 @@ export async function POST(request: NextRequest) {
 
   const config = {
     imap_host: imap_host || providerConfig.imap_host,
-    imap_port: imap_port || providerConfig.imap_port,
+    imap_port: imap_port ?? providerConfig.imap_port,
     imap_secure: imap_secure ?? providerConfig.imap_secure,
     smtp_host: smtp_host || providerConfig.smtp_host,
-    smtp_port: smtp_port || providerConfig.smtp_port,
+    smtp_port: smtp_port ?? providerConfig.smtp_port,
     smtp_secure: smtp_secure ?? providerConfig.smtp_secure
   }
 

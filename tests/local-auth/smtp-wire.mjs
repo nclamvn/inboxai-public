@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 
 /** A disposable implicit-TLS SMTP server. It only accepts synthetic recipients. */
-export async function startSmtpWire() {
+export async function startSmtpWire({ acceptMessage } = {}) {
   const directory = mkdtempSync(join(process.cwd(), '.codex-smtp-test-'))
   const cert = join(directory, 'cert.pem')
   const key = join(directory, 'key.pem')
@@ -13,7 +13,7 @@ export async function startSmtpWire() {
   let server
   try {
     execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-sha256', '-nodes', '-days', '1',
-      '-subj', '/CN=127.0.0.1', '-addext', 'subjectAltName=IP:127.0.0.1', '-keyout', key, '-out', cert], { stdio: 'ignore' })
+      '-subj', '/CN=smtp-wire.example.test', '-addext', 'subjectAltName=DNS:smtp-wire.example.test', '-keyout', key, '-out', cert], { stdio: 'ignore' })
     server = createServer({ key: readFileSync(key), cert: readFileSync(cert) }, socket => {
       sockets.add(socket)
       socket.setEncoding('utf8')
@@ -33,8 +33,13 @@ export async function startSmtpWire() {
               content.push(line.startsWith('..') ? line.slice(1) : line)
               continue
             }
-            state.messages.push({ raw: content.join('\r\n'), recipients })
+            const message = { raw: content.join('\r\n'), recipients }
             content = null
+            try { acceptMessage?.(message) } catch {
+              respond('451 Synthetic sink unavailable')
+              continue
+            }
+            state.messages.push(message)
             if (state.mode === 'lost') return socket.destroy()
             respond('250 2.0.0 Synthetic accepted')
           } else if (line.startsWith('EHLO ')) {

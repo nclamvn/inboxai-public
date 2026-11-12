@@ -4,77 +4,45 @@ interface SanitizeOptions {
   allowImages?: boolean
 }
 
-export function sanitizeEmailHtml(
-  html: string,
-  options: SanitizeOptions = {}
-): string {
-  const { allowImages = true } = options
+const embeddedRaster = /^data:image\/(?:png|jpeg|gif|webp);base64,[a-z0-9+/]+=*$/i
 
-  // Configure DOMPurify
-  const config = {
+function isEmailLink(href: string) {
+  try {
+    return ['https:', 'http:', 'mailto:'].includes(new URL(href).protocol)
+  } catch {
+    return false
+  }
+}
+
+export function sanitizeEmailHtml(html: string, { allowImages = true }: SanitizeOptions = {}): string {
+  const fragment = DOMPurify.sanitize(html, {
+    RETURN_DOM_FRAGMENT: true,
     ALLOWED_TAGS: [
       'p', 'br', 'div', 'span', 'a', 'b', 'i', 'u', 'strong', 'em',
       'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
       'ul', 'ol', 'li', 'blockquote', 'pre', 'code',
       'table', 'thead', 'tbody', 'tr', 'th', 'td',
-      'img', 'hr', 'sub', 'sup', 'font', 'center'
+      'img', 'hr', 'sub', 'sup', 'font', 'center',
     ],
-    ALLOWED_ATTR: [
-      'href', 'src', 'alt', 'title', 'width', 'height', 'style',
-      'class', 'id', 'target', 'rel', 'border', 'cellpadding',
-      'cellspacing', 'align', 'valign', 'bgcolor', 'color', 'size', 'face'
-    ],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'width', 'height', 'align', 'valign', 'color', 'size', 'face', 'colspan', 'rowspan'],
     ALLOW_DATA_ATTR: false,
+    ALLOW_ARIA_ATTR: false,
+  })
+
+  // A mail body cannot load tracking pixels or make requests to the app origin.
+  for (const image of fragment.querySelectorAll('img')) {
+    if (!allowImages || !embeddedRaster.test(image.getAttribute('src') ?? '')) image.remove()
+    else image.setAttribute('loading', 'lazy')
   }
-
-  // Sanitize
-  let sanitized = DOMPurify.sanitize(html, config)
-
-  // Remove ugly table borders
-  sanitized = sanitized.replace(/\s+border\s*=\s*["'][^"']*["']/gi, '')
-  sanitized = sanitized.replace(/\s+bordercolor\s*=\s*["'][^"']*["']/gi, '')
-  sanitized = sanitized.replace(/\s+frame\s*=\s*["'][^"']*["']/gi, '')
-  sanitized = sanitized.replace(/\s+rules\s*=\s*["'][^"']*["']/gi, '')
-  sanitized = sanitized.replace(/\s+cellspacing\s*=\s*["'][^"']*["']/gi, '')
-  sanitized = sanitized.replace(/\s+cellpadding\s*=\s*["'][^"']*["']/gi, '')
-  sanitized = sanitized.replace(/\s+bgcolor\s*=\s*["'][^"']*["']/gi, '')
-
-  // Remove border CSS from inline styles
-  sanitized = sanitized.replace(/border(-width|-style|-color|-top|-right|-bottom|-left|-collapse|-spacing)?\s*:\s*[^;}"']+[;]?/gi, '')
-
-  // Remove empty tables/divs that create blank boxes
-  sanitized = sanitized.replace(/<table[^>]*>\s*(<tbody[^>]*>)?\s*<tr[^>]*>\s*<td[^>]*>\s*(&nbsp;|\s)*\s*<\/td>\s*<\/tr>\s*(<\/tbody>)?\s*<\/table>/gi, '')
-  sanitized = sanitized.replace(/<div[^>]*>\s*(&nbsp;|\s)*\s*<\/div>/gi, '')
-
-  // Fix image issues
-  if (allowImages) {
-    // Remove cid: image references (inline attachments we can't display)
-    // These create ugly placeholders, better to hide them
-    sanitized = sanitized.replace(
-      /<img[^>]*src=["']cid:[^"']+["'][^>]*\/?>/gi,
-      ''
-    )
-
-    // Add loading="lazy" and error handling to all images
-    // Hide failed images completely instead of showing ugly placeholders
-    sanitized = sanitized.replace(
-      /<img\s+([^>]*?)(?:\s*\/)?>/gi,
-      (match, attrs) => {
-        // Skip if already has onerror
-        if (attrs.includes('onerror')) return match
-        return `<img ${attrs} loading="lazy" onerror="this.style.display='none';" />`
-      }
-    )
-
-    // Ensure external links open in new tab
-    sanitized = sanitized.replace(
-      /<a\s+([^>]*?)>/gi,
-      (match, attrs) => {
-        if (attrs.includes('target=')) return match
-        return `<a ${attrs} target="_blank" rel="noopener noreferrer">`
-      }
-    )
+  for (const link of fragment.querySelectorAll('a[href]')) {
+    if (!isEmailLink(link.getAttribute('href') ?? '')) {
+      link.removeAttribute('href')
+      continue
+    }
+    link.setAttribute('target', '_blank')
+    link.setAttribute('rel', 'noopener noreferrer')
   }
-
-  return sanitized
+  const container = fragment.ownerDocument.createElement('div')
+  container.append(fragment)
+  return container.innerHTML
 }

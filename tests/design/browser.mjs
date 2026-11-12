@@ -48,8 +48,8 @@ export async function audit(page) {
   })
 }
 
-export async function rehearseDesign({ app, cookies, admin, userId, record, actionInbox = false }) {
-  const output = `docs/phase-2/evidence/${actionInbox ? 'm2b' : 'm2a'}`
+export async function rehearseDesign({ app, cookies, admin, userId, record, actionInbox = false,
+  output = `docs/phase-2/evidence/${actionInbox ? 'm2b' : 'm2a'}` }) {
   const screenshot = (page, name) => page.screenshot({
     path: `${output}/${name}.png`, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }',
   })

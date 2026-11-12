@@ -7,6 +7,10 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
+  ...(process.env.INBOXAI_E2E_BUILD === '1' ? {
+    distDir: '.next-build',
+    typescript: { tsconfigPath: 'tsconfig.e2e.json' },
+  } : {}),
   // Externalize packages that don't work with bundling
   serverExternalPackages: ['imapflow', 'nodemailer', 'mailparser', 'pino', 'thread-stream', 'onnxruntime-node'],
   outputFileTracingExcludes: { '/api/ask-inbox': ['node_modules/.cache/inboxai-ask-e5/**'] },

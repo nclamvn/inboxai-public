@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
 import { composeFingerprint, readComposeKey, saveComposeKey } from '@/lib/mail-send/compose-key'
+import { gmailSendPermissionRequired } from '@/lib/gmail/scopes'
 
 interface SourceAccount {
   id: string
@@ -29,6 +30,7 @@ export default function ComposePage() {
   const sendBusy = useRef(false)
   const attempt = useRef<{ fingerprint: string; key: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [needsGmailPermission, setNeedsGmailPermission] = useState(false)
   const [isFromAI, setIsFromAI] = useState(false)
 
   // Account selection
@@ -127,6 +129,7 @@ export default function ComposePage() {
     e.preventDefault()
     if (sendBusy.current) return
     setError(null)
+    setNeedsGmailPermission(false)
 
     if (!to.trim() || !subject.trim()) {
       setError('Vui lòng điền đầy đủ thông tin người nhận và tiêu đề.')
@@ -167,7 +170,9 @@ export default function ComposePage() {
       })
       const result = await response.json()
 
-      if (result.state === 'rejected' || [400, 404, 413].includes(response.status)) {
+      const permissionRequired = result.code === gmailSendPermissionRequired
+      if (permissionRequired) setNeedsGmailPermission(true)
+      if (permissionRequired || result.state === 'rejected' || [400, 404, 413].includes(response.status)) {
         attempt.current = null
         saveComposeKey(fingerprint, null)
         setSendAction('send')
@@ -214,7 +219,11 @@ export default function ComposePage() {
       {/* Form */}
       <form onSubmit={handleSend} className="flex-1 flex flex-col">
         {error && (
-          <Alert variant="error" className="mx-4 mt-4">{error}</Alert>
+          <Alert variant="error" className="mx-4 mt-4">
+            {error}
+            {needsGmailPermission && <a href="/settings#email-accounts" target="_blank" rel="noopener noreferrer"
+              className="ml-2 inline-flex min-h-11 items-center underline">Mở Cài đặt tài khoản</a>}
+          </Alert>
         )}
 
         <div className="p-4 space-y-3 border-b border-[var(--border)] bg-[var(--card)]">

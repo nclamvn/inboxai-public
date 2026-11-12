@@ -1,7 +1,10 @@
 # Verification record
 
-Latest: [M6-B local staging, recovery and alert evidence](M6B_LOCAL_HANDOFF.md).
-Previous: [M6-A local performance and platform evidence](M6A_LOCAL_HANDOFF.md),
+Latest: [M6-F adversarial security rehearsal](#m6-f-adversarial-security-rehearsal).
+Previous: [M6-E Gmail consent](#m6-e-gmail-consent),
+[M6-D Codex preview and purchasing journey](M6D_LOCAL_HANDOFF.md),
+[M6-B local staging, recovery and alert evidence](M6B_LOCAL_HANDOFF.md),
+[M6-A local performance and platform evidence](M6A_LOCAL_HANDOFF.md),
 [M5-B local AI Operator verification and undo evidence](M5B_LOCAL_HANDOFF.md),
 [M5-A local AI Operator evidence](M5A_LOCAL_HANDOFF.md),
 [M4-B local Ask Inbox answer evidence](M4B_LOCAL_HANDOFF.md),
@@ -149,3 +152,173 @@ Technical references checked during implementation:
 [Resend verification](https://resend.com/docs/webhooks/verify-webhooks-requests),
 [Nodemailer 10 requirements](https://nodemailer.com/),
 [Sharp changelog](https://sharp.pixelplumbing.com/changelog/).
+
+## M6-C SMTP and IMAP destination controls
+
+The server checks SMTP and IMAP destinations during account setup and on every
+connection from stored settings, including sync, lazy bodies, attachments and
+SMTP send. SMTP allows implicit TLS on 465 and requires STARTTLS on 587 and
+2525. IMAP allows implicit TLS on 993 and requires STARTTLS on 143. TLS 1.2 or
+later and a valid certificate for the configured DNS name or IP are required.
+
+Both DNS address families are checked before the application opens a socket. A
+disallowed address in either answer blocks the connection. The application
+passes one vetted numeric address to the mail driver, preferring IPv4 when
+present, and preserves the configured DNS name for SNI and certificate checks.
+Attachment downloads query the source account by ID and authenticated owner
+because the existing email schema has no PostgREST relationship to that table.
+
+Local runs on macOS, Node 24.14.1, npm 11.11.0 and Next.js 16.4.6 used synthetic
+credentials, DNS answers and mail. Wire tests made actual TCP and TLS
+connections to loopback fixtures. They tested mixed DNS answers, zero socket
+attempts on denied targets, a simulated rebinding answer on re-resolution,
+mandatory STARTTLS, wrong certificate names, untrusted certificates and
+credential use only after TLS. Local Auth checked that a denied SMTP send
+keeps a replayable terminal receipt and a denied IMAP sync preserves its
+cursor and message rows. It also covered source-account setup and stored-account
+body and attachment reads, including an attachment linked to a foreign account.
+
+| Command | Observed result |
+| --- | --- |
+| `npm run lint` | Exit 0, zero errors and 91 existing warnings |
+| `npm run typecheck` | Exit 0 |
+| `npm run test:unit` | Exit 0, 236/236 |
+| `npm run test:integration` | Exit 0, 190/190, including 15 mail wire cases |
+| `npm run test:db` | Exit 0, 16 groups |
+| `npm run test:local-auth -- --m6c` | Exit 0, [88 checks](evidence/m6c-auth-run.json) |
+| `npm run test:staging -- --m6c` | Exit 0, [31 checks](evidence/m6c-staging-run.json), including the production-mode Next build and local recovery |
+| `npm run build` | Exit 0 with synthetic configuration and 89/89 static pages generated. Existing Sentry import deprecation remains. |
+
+M6-C required no database migration. If the application change is reverted,
+keep outbound mail connections disabled until the destination checks are restored.
+The security gate remains closed. Hosted network routing, real-provider
+interoperability and large-message or folder support still require separate evidence.
+
+The harnesses removed their temporary certificates, archives, database files,
+containers and networks. The existing `.next` output was reused. `docker image
+prune -f` reclaimed 0 B.
+
+## M6-D purchasing journey
+
+Verified locally on macOS 27.2, Node 24.14.1, Next.js 16.4.6 and Chrome
+157.0.8103.52. Both modes use the same synthetic seed in separate environments.
+The E2E run used `inboxai-m6d-e2e` and `.next-build` while the manual preview
+continued on port `55300` with the same build ID and containers before and after the run.
+
+| Command or observation | Observed result |
+| --- | --- |
+| `npm run test:e2e` | Exit 0, 24 checks including 14 Auth checks and 10 browser scenarios. The harness completed a production-mode Next build. [Run report](../../test-results/m6d/report.json) |
+| `npm run preview:e2e` | Logged in with the synthetic buyer in the Codex desktop browser and saw the schedule-change email under **Cần xử lý**. Restart seeded a new unread, unarchived source row. Ctrl+C removed the fixture containers, networks and temporary certificate directory. |
+| `npm run test:local-auth -- --m6c` | Exit 0, 88 regression checks |
+| `npm run test:unit` and `npm run test:integration` | Exit 0, 236 and 190 tests respectively |
+| `npm run lint` and `npm run typecheck` | Exit 0. Lint reported 91 existing warnings and zero errors. |
+
+The browser run used the production routes, real local GoTrue and PostgreSQL,
+and a TLS SMTP fixture that handed mail to Mailpit. The app received synthetic
+inbound rows through the fixture seed. The automatic journey used a desktop
+viewport and the second tenant check used a mobile viewport. The real-mailbox
+and production security gate remains closed.
+
+## M6-E Gmail consent
+
+Both connection entry points request `gmail.readonly` and `userinfo.email`.
+Settings requests `gmail.send` separately with Google's incremental authorization
+option. The signed PKCE transaction binds the logged-in user, account and
+credential revision. Updating the encrypted credential requires a verified
+matching Google identity and explicit read and send scopes. If Google omits a
+new refresh token, the existing refresh token must return both scopes before
+the app saves the grant. An explicit read reconnect returns the app to read-only.
+Existing credentials with recorded legacy scopes remain readable.
+
+When a Gmail response explicitly denies sending scope, the app records the
+rejected send and disables sending on the matching credential. A complete
+provider revocation also interrupts reading. Gmail `gmail.readonly` remains a
+restricted scope. The applicability of Google verification and security
+assessment stays open. [Google incremental authorization and revocation](https://developers.google.com/identity/protocols/oauth2/web-server#incrementalAuth),
+[Gmail scope classifications](https://developers.google.com/workspace/gmail/api/auth/scopes)
+
+`npm run test:e2e` runs the purchasing journey and the Gmail consent scenarios
+on production-mode Next.js, local GoTrue, PostgREST and PostgreSQL, Mailpit and
+Chrome. The Gmail provider fixture checks PKCE, treats authorization codes as
+single-use and returns synthetic scopes and mail. Its HTTP requests stay on
+loopback. The test exercises the production application routes and the real local
+encrypted vault. There is no database migration in M6-E.
+
+Run on 2026-11-12 with macOS 27.2, Node 24.14.1, Next.js 16.4.6 and Chrome
+157.0.8103.52. The dedicated E2E run used port `57300`. The earlier purchasing
+preview on `55300` retained the same `.next` build ID and returned HTTP 200.
+
+| Command | Observed result |
+| --- | --- |
+| `npm run test:e2e` | Exit 0. 35 checks: 14 Auth/database, 10 purchasing journey and 11 Gmail consent. The same command completed the optimized Next.js build. [Local report](../../test-results/m6d/report.json) |
+| `npm run lint` | Exit 0, 0 errors and 91 existing warnings. |
+| `npm run typecheck` | Exit 0. |
+| `npm run test:unit` | Exit 0, 236 tests across 19 files. |
+| `npm run test:integration` | Exit 0, 191 tests across 15 files. |
+| `npm run test:design -- --isolated` | Exit 0, 25 checks including desktop, tablet, mobile, dark mode and axe on sampled Inbox states. [Local report](../../test-results/m6d/design-run.json) |
+
+An early test followed Google's authorization redirect with the synthetic OAuth
+client ID and Google rejected it as `invalid_client`. The final run intercepts
+the first navigation before redirecting, blocks browser egress with an explicit
+loopback-only proxy bypass and routes server requests to the local fixture.
+The full revocation test waits through the existing sync retry backoff before
+checking reconnect and deduplication. Real Google interoperability and hosted
+verification remain open.
+
+Both harness runs removed their isolated containers and networks. The generated
+`.next-build` output was removed after the last check. `docker image prune -f`
+reclaimed 0 B.
+
+## M6-F adversarial security rehearsal
+
+Reproduced three findings against synthetic data before repairing them.
+
+| Finding | Repair and regression evidence |
+| --- | --- |
+| Mail HTML retained remote and app-relative image sources, CSS and application class names. The sanitizer also appended an inline error handler after sanitizing. | Sanitize the DOM, remove email-supplied styles and active markup, retain embedded raster images and safe links. Chrome observes no request to local or remote tracking probes. Two sanitizer unit tests cover the markup and image policy. |
+| The attachment endpoint returned arbitrary MIME bytes inline under the app origin. | Download with `application/octet-stream`, sandbox, `nosniff` and `private, no-store`. Explicit inline previews require a supported raster MIME type and matching bytes. HTML, SVG and PDF remain available as downloads. Integration runs the actual handler with synthetic MIME and a stubbed IMAP transport. |
+| The behavior tracker used a service-role email lookup by ID alone. The second tenant received HTTP 200 for a foreign email ID. | Bind the lookup to the authenticated owner before writing behavior or reputation. Reuse the owned sender result for domain tracking. The browser run tests foreign and anonymous denial and the owner's domain log in PostgreSQL. |
+
+The browser fixture uses local GoTrue, PostgREST, PostgreSQL, Chrome and Mailpit.
+It checks private email detail, attachment list and download access, copied
+citation URLs and Operator plan access with two synthetic tenants and an anonymous
+session. The owner sees the invoice amount recorded in the fixture, while Ask Inbox ignores an
+instruction to invent a different amount. The fixture attempts an unapproved
+execution, foreign target selection and an expanded execution request. It checks
+the final database flags and journal and compares send requests, send receipts
+and SMTP captures before and after the scenario. The tests cover the current
+deterministic Ask Inbox and Operator paths. No model provider call is exercised.
+
+OSV-Scanner 2.7.1 matched `package-lock.json` offline against the public npm
+snapshot dated `2026-11-11 21:48:35 UTC` (generation `1794433714913331`, SHA-256
+`d94f621c3ef2c1a786197a0a157c61520c926f3277f103910f10f8e21764e11b`). The
+scan extracted 908 packages and exited 1 with two Moderate advisories and zero
+High or Critical findings in that snapshot. The lockfile remained unchanged.
+`glob@13.0.7` is pulled by Sentry's bundler plugins. `minimatch@10.2.6` is
+pulled by that `glob` version and TypeScript ESLint. The listed fixes require
+major upgrades. Both findings remain open for compatible parent upgrades.
+[Offline scanner mode](https://google.github.io/osv-scanner/usage/offline-mode/),
+[glob advisory](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4),
+[minimatch advisory](https://github.com/advisories/GHSA-g3hv-75wg-m249),
+[Local scan](../../test-results/m6f/osv.json)
+
+Native dependencies, container images, hosted configuration and real-provider
+behavior are outside this run. This evidence leaves the real-mailbox and
+production gate closed.
+
+Local run on 2026-11-12 with macOS 27.2, Node 24.14.1, Next.js 16.4.6 and Chrome
+157.0.8103.52. The existing preview on `55300` was served by the earlier build.
+
+| Command | Observed result |
+| --- | --- |
+| `npm run lint` | Exit 0. Zero errors and 91 existing warnings. |
+| `npm run typecheck` | Exit 0. |
+| `npm run test:unit` | Exit 0. 238 tests across 20 files. |
+| `npm run test:integration` | Exit 0. 197 tests across 16 files. |
+| `npm run test:e2e` | Exit 0. 41 checks, including six adversarial security checks. The harness completed a production-mode Next build. [Local report](../../test-results/m6f/e2e-report.json) |
+| `npm run test:design -- --isolated` | Exit 0. 25 checks across desktop, tablet, mobile and dark mode. [Local report](../../test-results/m6f/design-report.json) |
+| OSV-Scanner `scan source --offline --lockfile package-lock.json` | Exit 1. Two Moderate npm advisories. [Local report](../../test-results/m6f/osv.json) |
+
+The isolated containers and networks, `.next-build`, OSV snapshot and scanner
+binary were removed. Local logs and JSON evidence were retained. Docker image
+prune reclaimed 0 B. The M6-D preview returned HTTP 200 with its original build ID.

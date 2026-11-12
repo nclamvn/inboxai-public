@@ -144,8 +144,8 @@ export async function rehearseMailSend({ sql, admin, login, anonymous, userId, o
 
   const wireId = randomUUID()
   await vault.write({ userId, accountId: wireId }, { kind: 'imap', password: 'synthetic-smtp-wire' }, 0, {
-    email_address: 'smtp-wire@example.test', provider: 'custom', smtp_host: '127.0.0.1',
-    smtp_port: smtpWire.port, smtp_secure: true, username: 'smtp-wire@example.test',
+    email_address: 'smtp-wire@example.test', provider: 'custom', smtp_host: 'smtp-wire.example.test',
+    smtp_port: 465, smtp_secure: true, username: 'smtp-wire@example.test',
   })
   const wireDraft = { sourceAccountId: wireId, to: ['recipient@example.test', 'reject@example.test'] }
   const wireKey = randomUUID()
@@ -165,6 +165,40 @@ export async function rehearseMailSend({ sql, admin, login, anonymous, userId, o
   const lostSmtpReplay = await submit(smtpLost, lostSmtpDraft)
   record('SMTP socket loss after DATA remains unknown without another SMTP transaction',
     lostSmtpResult.status === 202 && lostSmtpReplay.data.state === 'unknown' && smtpWire.state.messages.length === 2)
+
+  sql(`UPDATE public.source_accounts SET smtp_host='127.0.0.1', imap_host='127.0.0.1', imap_port=993, imap_secure=true WHERE id='${wireId}'`)
+  const blockedKey = randomUUID()
+  const blockedSend = await submit(blockedKey, lostSmtpDraft)
+  const blockedReplay = await submit(blockedKey, lostSmtpDraft)
+  record('stored loopback SMTP target has one terminal rejection and sends no mail',
+    blockedSend.status === 422 && blockedSend.data.state === 'rejected' &&
+    blockedReplay.data.operationId === blockedSend.data.operationId && blockedReplay.data.state === 'rejected' &&
+    smtpWire.state.messages.length === 2 && smtpWire.state.authenticated === 2)
+
+  const blockedAccount = await appFetch('/api/source-accounts', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email_address: 'blocked-mail@example.test', provider: 'custom', username: 'synthetic', password: 'synthetic',
+      imap_host: '169.254.169.254', imap_port: 993, imap_secure: true, smtp_host: 'smtp-wire.example.test' }) })
+  record('account setup rejects IMAP metadata destination before saving credentials or starting SMTP',
+    blockedAccount.status === 400 && (await blockedAccount.json()).error === 'IMAP connection failed' &&
+    Number(sql("SELECT count(*) FROM public.source_accounts WHERE email_address='blocked-mail@example.test'")) === 0 &&
+    smtpWire.state.authenticated === 2)
+
+  const blockedBodyId = randomUUID(), blockedAttachmentId = randomUUID()
+  sql(`INSERT INTO public.emails(id,user_id,source_account_id,sync_namespace,original_uid,message_id,subject,from_address,body_fetched)
+       VALUES('${blockedBodyId}','${userId}','${wireId}','INBOX:123','42','<blocked@example.test>','Synthetic blocked body','sender@example.test',false);
+       INSERT INTO public.attachments(id,email_id,filename,sync_part_key) VALUES('${blockedAttachmentId}','${blockedBodyId}','synthetic.txt','0');`)
+  const body = await appFetch(`/api/emails/${blockedBodyId}`)
+  const attachment = await appFetch(`/api/attachments/${blockedAttachmentId}`)
+  record('lazy body read returns no content from a stored private IMAP target',
+    body.status === 200 && (await body.json()).email.body_text === null &&
+    Number(sql(`SELECT count(*) FROM public.emails WHERE id='${blockedBodyId}' AND body_text IS NULL`)) === 1)
+  assert.equal(attachment.status, 500)
+  record('attachment read reaches the IMAP policy for an owned source account',
+    (await attachment.json()).error === 'Attachment fetch failed')
+  sql(`UPDATE public.emails SET source_account_id='${foreign}' WHERE id='${blockedBodyId}'`)
+  const foreignAttachment = await appFetch(`/api/attachments/${blockedAttachmentId}`)
+  record('attachment cannot use a source account owned by another tenant',
+    foreignAttachment.status === 400 && (await foreignAttachment.json()).error === 'Source account not found')
 
   const smtpId = randomUUID()
   await vault.write({ userId, accountId: smtpId }, { kind: 'imap', password: 'synthetic' }, 0, { email_address: 'smtp@example.test', provider: 'custom' })

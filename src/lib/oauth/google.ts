@@ -1,32 +1,33 @@
 /**
  * Google OAuth 2.0 Client
  */
+import { z } from 'zod';
+import { gmailReadScope, gmailSendScope, googleEmailScope } from '@/lib/gmail/scopes';
 
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo';
 
-export interface GoogleTokens {
-  access_token: string;
-  refresh_token?: string;
-  expires_in: number;
-  token_type: string;
-  scope: string;
-}
-
-export interface GoogleUserInfo {
-  id: string;
-  email: string;
-  name: string;
-  picture?: string;
-}
+const tokenResponse = z.object({
+  access_token: z.string().min(1).max(16384),
+  refresh_token: z.string().min(1).max(16384).optional(),
+  expires_in: z.number().int().positive().max(86400),
+  token_type: z.string().regex(/^Bearer$/i).optional(),
+  scope: z.string().max(4096).optional(),
+});
+const userInfoResponse = z.object({
+  id: z.string().min(1).max(128), email: z.email().max(254), verified_email: z.literal(true),
+  name: z.string().max(254).optional(), picture: z.string().max(2048).optional(),
+});
+export type GoogleTokens = z.infer<typeof tokenResponse>;
+export type GoogleUserInfo = z.infer<typeof userInfoResponse>;
 
 /**
  * Generate OAuth authorization URL
  * @param state - Optional state for CSRF protection
  * @param customRedirectUri - Optional custom redirect URI (for add account flow)
  */
-export function getGoogleAuthUrl(state: string, customRedirectUri?: string, codeChallenge?: string): string {
+export function getGoogleAuthUrl(state: string, customRedirectUri?: string, codeChallenge?: string, sendFor?: string): string {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const redirectUri = customRedirectUri || process.env.GOOGLE_REDIRECT_URI;
 
@@ -34,12 +35,7 @@ export function getGoogleAuthUrl(state: string, customRedirectUri?: string, code
     throw new Error('Missing Google OAuth configuration');
   }
 
-  const scopes = [
-    'https://www.googleapis.com/auth/gmail.readonly',
-    'https://www.googleapis.com/auth/gmail.send',
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile',
-  ];
+  const scopes = sendFor ? [gmailSendScope, googleEmailScope] : [gmailReadScope, googleEmailScope];
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -48,6 +44,7 @@ export function getGoogleAuthUrl(state: string, customRedirectUri?: string, code
     scope: scopes.join(' '),
     access_type: 'offline', // Get refresh token
     prompt: 'consent', // Force consent to get refresh token
+    ...(sendFor && { include_granted_scopes: 'true', login_hint: sendFor }),
     ...(state && { state }),
     ...(codeChallenge && { code_challenge: codeChallenge, code_challenge_method: 'S256' }),
   });
@@ -70,6 +67,8 @@ export async function exchangeCodeForTokens(code: string, customRedirectUri?: st
   }
 
   const response = await fetch(GOOGLE_TOKEN_URL, {
+    signal: AbortSignal.timeout(10_000),
+    redirect: 'error',
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -88,7 +87,7 @@ export async function exchangeCodeForTokens(code: string, customRedirectUri?: st
     throw new Error('Failed to exchange code for tokens');
   }
 
-  return response.json();
+  return tokenResponse.parse(await response.json());
 }
 
 /**
@@ -121,7 +120,7 @@ export async function refreshAccessToken(refreshToken: string, signal?: AbortSig
     throw new Error('Failed to refresh access token');
   }
 
-  return response.json();
+  return tokenResponse.parse(await response.json());
 }
 
 /**
@@ -129,6 +128,8 @@ export async function refreshAccessToken(refreshToken: string, signal?: AbortSig
  */
 export async function getGoogleUserInfo(accessToken: string): Promise<GoogleUserInfo> {
   const response = await fetch(GOOGLE_USERINFO_URL, {
+    signal: AbortSignal.timeout(10_000),
+    redirect: 'error',
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
@@ -138,7 +139,7 @@ export async function getGoogleUserInfo(accessToken: string): Promise<GoogleUser
     throw new Error('Failed to get user info');
   }
 
-  return response.json();
+  return userInfoResponse.parse(await response.json());
 }
 
 /**

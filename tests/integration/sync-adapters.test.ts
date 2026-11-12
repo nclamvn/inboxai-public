@@ -1,4 +1,5 @@
 import { beforeEach, expect, it, vi } from 'vitest';
+import { Resolver } from 'node:dns/promises';
 const mocked = vi.hoisted(() => ({ options: undefined as unknown, close: vi.fn(), release: vi.fn(), fetch: vi.fn(), search: vi.fn(), status: vi.fn(), lock: vi.fn() }));
 vi.mock('imapflow', () => ({ ImapFlow: class {
         constructor(options: unknown) { mocked.options = options; }
@@ -16,6 +17,8 @@ import { normalizeGmail } from '@/lib/sync/gmail-provider';
 import { FakeGmail } from '../sync-fixtures';
 const account = { id: 'synthetic', user_id: 'synthetic-user', imap_host: 'imap.example.test', imap_port: 993, imap_secure: true, username: 'synthetic@example.test' };
 beforeEach(() => {
+    vi.spyOn(Resolver.prototype, 'resolve4').mockResolvedValue(['93.184.216.34']);
+    vi.spyOn(Resolver.prototype, 'resolve6').mockResolvedValue([]);
     for (const key of ['close', 'release', 'fetch', 'search', 'status', 'lock'] as const)
         mocked[key].mockReset();
     mocked.lock.mockResolvedValue({ release: mocked.release });
@@ -35,7 +38,8 @@ it('uses UID searches, read-only mailbox and real MIME parsing with duplicate fi
     await reader.close();
     expect(mocked.release).toHaveBeenCalledOnce();
     expect(mocked.close).toHaveBeenCalledOnce();
-    expect(mocked.options).toMatchObject({ logger: false, disableAutoIdle: true, socketTimeout: 10000 });
+    expect(mocked.options).toMatchObject({ host: '93.184.216.34', servername: account.imap_host,
+        logger: false, disableAutoIdle: true, socketTimeout: 10000 });
 });
 it('rejects a missing/truncated source instead of returning a partial successful batch', async () => {
     mocked.fetch.mockImplementation(async function* () { yield { uid: 1, envelope: {}, source: Buffer.from('short'), size: 20 * 1024 * 1024 }; });

@@ -4,6 +4,7 @@ import { DatabaseSyncStore } from '../../src/lib/sync/store.ts'
 import { runSync } from '../../src/lib/sync/engine.ts'
 import { gmailProvider } from '../../src/lib/sync/gmail-provider.ts'
 import { imapProvider } from '../../src/lib/sync/imap-provider.ts'
+import { openImapReader } from '../../src/lib/sync/imap-reader.ts'
 import { SyncError } from '../../src/lib/sync/contracts.ts'
 import { FakeGmail,FakeImap,syntheticMessage } from '../sync-fixtures.ts'
 
@@ -92,6 +93,14 @@ export async function rehearseSync({sql,admin,login,anonymous,userId,otherUserId
  await runSync(store,imap,async()=>imapProvider(imapApi))
  const resetRows=await rows(imap)
  record('UIDVALIDITY reset creates a new UID identity and tombstones the old epoch',resetRows.length===122&&resetRows.filter(r=>!r.provider_deleted).length===1&&resetRows.find(r=>!r.provider_deleted).sync_namespace==='INBOX:456')
+ const beforeDenied = state(imap)
+ const deniedDestination = await runSync(store, imap, async signal => imapProvider(await openImapReader({
+  id: imap.accountId, user_id: userId, imap_host: '127.0.0.1', imap_port: 993, imap_secure: true, username: 'synthetic',
+ }, 'synthetic', signal)), { fullSync: true })
+ const afterDenied = state(imap)
+ record('blocked IMAP destination preserves the persisted cursor and message rows',
+  deniedDestination.error === 'Sync provider' && afterDenied.revision === beforeDenied.revision &&
+  JSON.stringify(afterDenied.cursor) === JSON.stringify(beforeDenied.cursor) && (await rows(imap)).length === resetRows.length)
  const leases=await create('gmail')
  const claims=await Promise.all([store.claim(leases),store.claim(leases)])
  record('concurrent real HTTP claims admit exactly one active worker',claims.filter(Boolean).length===1)

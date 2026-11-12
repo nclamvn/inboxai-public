@@ -5,8 +5,11 @@ import { getSyncStore } from '@/lib/sync/store';
 import { gmailProvider } from '@/lib/sync/gmail-provider';
 import { gmailReader } from '@/lib/sync/gmail-reader';
 import { SyncError } from '@/lib/sync/contracts';
+import { canReadGmail } from './scopes';
 export async function getValidAccessToken(userId: string, accountId: string, signal?: AbortSignal): Promise<string | null> {
-    return (await getGoogleCredential(userId, accountId, signal))?.accessToken ?? null;
+    const credential = await getGoogleCredential(userId, accountId, signal);
+    // A legacy grant without recorded scopes still has to pass Google's read authorization.
+    return credential && (credential.scope === undefined || canReadGmail(credential.scope)) ? credential.accessToken : null;
 }
 export async function syncGmailEmails(userId: string, accountId: string, options: {
     maxResults?: number;

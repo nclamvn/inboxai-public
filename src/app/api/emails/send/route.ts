@@ -3,7 +3,8 @@ import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getImapPassword } from '@/lib/credential-vault/vault'
-import { getGoogleCredential } from '@/lib/gmail/credentials'
+import { disableGoogleSending, getGoogleCredential } from '@/lib/gmail/credentials'
+import { canSendGmail, canReadGmail, gmailSendPermissionRequired } from '@/lib/gmail/scopes'
 import { sendEmailViaSMTP } from '@/lib/email/smtp-client'
 import { EMAIL_PROVIDERS } from '@/lib/email/imap-client'
 import { markSenderAsTrusted } from '@/lib/ai/sender-trust'
@@ -14,7 +15,9 @@ import { findGmailSent, gmailReplyThread, sendViaGmail } from '@/lib/mail-send/g
 
 export const maxDuration = 60
 
-function response(receipt: SendReceipt) {
+const gmailPermissionMessage = 'Gmail chưa cho phép gửi từ tài khoản này. Hãy cấp quyền gửi trong Cài đặt.'
+
+function response(receipt: SendReceipt, needsGmailPermission: boolean) {
   const info = { state: receipt.state, operationId: receipt.id, messageId: receipt.messageId }
   switch (receipt.state) {
     case 'accepted':
@@ -22,6 +25,8 @@ function response(receipt: SendReceipt) {
     case 'partial':
       return NextResponse.json({ ...info, success: false, error: 'Máy chủ chỉ chấp nhận một phần người nhận. Hãy kiểm tra trước khi gửi thư mới.' }, { status: 409 })
     case 'rejected':
+      if (needsGmailPermission) return NextResponse.json({ ...info, success: false, error: gmailPermissionMessage,
+        code: gmailSendPermissionRequired }, { status: 422 })
       return NextResponse.json({ ...info, success: false, error: 'Thư chưa được gửi. Hãy kiểm tra cấu hình tài khoản và người nhận.' }, { status: 422 })
     case 'dispatching':
       return NextResponse.json({ ...info, success: false, error: 'Yêu cầu đang được xử lý. Hãy kiểm tra lại trạng thái.' }, { status: 202 })
@@ -74,6 +79,7 @@ export async function POST(request: NextRequest) {
       global: { fetch: (url, init) => fetch(url, { ...init, signal: AbortSignal.timeout(8_000) }) },
     })
 
+    let needsGmailPermission = false
     const result = await executeMailSend(new MailSendStore(admin), scope, async () => {
       const { data: account } = await admin.from('source_accounts')
         .select('id, email_address, display_name, provider, auth_type, username, smtp_host, smtp_port, smtp_secure, is_active')
@@ -104,27 +110,28 @@ export async function POST(request: NextRequest) {
       const preset = EMAIL_PROVIDERS[account.provider as keyof typeof EMAIL_PROVIDERS]
       const host = account.smtp_host || preset?.smtp_host
       if (provider === 'smtp' && !host) throw new SendError(400, 'Tài khoản chưa cấu hình SMTP.')
+      const gmailCredential = provider === 'gmail' ? await getGoogleCredential(user.id, account.id, AbortSignal.timeout(10_000)) : null
+      if (provider === 'gmail' && (!gmailCredential || !canSendGmail(gmailCredential))) {
+        throw new SendError(403, gmailPermissionMessage, gmailSendPermissionRequired)
+      }
 
       return { payload, async dispatch(receipt) {
         if (receipt.provider !== provider) return { state: 'rejected' }
-        if (provider === 'gmail') {
+        if (gmailCredential) {
           const signal = AbortSignal.timeout(25_000)
-          const credential = await getGoogleCredential(user.id, account.id, signal)
-          if (!credential || signal.aborted) return { state: 'rejected' }
-          const scopes = credential.scope?.split(/\s+/)
-          if (scopes?.length && !scopes.some(scope => [
-            'https://mail.google.com/', 'https://www.googleapis.com/auth/gmail.modify',
-            'https://www.googleapis.com/auth/gmail.compose', 'https://www.googleapis.com/auth/gmail.send',
-          ].includes(scope))) return { state: 'rejected' }
-
           let threadId: string | undefined
-          if (replyUid && payload.inReplyTo) {
+          if (replyUid && payload.inReplyTo && canReadGmail(gmailCredential.scope)) {
             try {
-              threadId = await gmailReplyThread(credential.accessToken, replyUid, payload.inReplyTo, payload.subject,
+              threadId = await gmailReplyThread(gmailCredential.accessToken, replyUid, payload.inReplyTo, payload.subject,
                 AbortSignal.any([signal, AbortSignal.timeout(5_000)]))
             } catch { /* The RFC reply headers still identify the original message. */ }
           }
-          return sendViaGmail(credential.accessToken, payload, receipt.messageId, signal, threadId)
+          const outcome = await sendViaGmail(gmailCredential.accessToken, payload, receipt.messageId, signal, threadId)
+          if (outcome.state === 'rejected' && outcome.reason === gmailSendPermissionRequired) {
+            needsGmailPermission = true
+            await disableGoogleSending(user.id, account.id, gmailCredential.accessToken)
+          }
+          return outcome
         }
 
         let password: string
@@ -134,7 +141,7 @@ export async function POST(request: NextRequest) {
           return { state: 'rejected' }
         }
         const result = await sendEmailViaSMTP({
-          host, port: (account.smtp_host ? account.smtp_port : preset?.smtp_port) || 587,
+          host, port: (account.smtp_host ? account.smtp_port : preset?.smtp_port) ?? 587,
           secure: (account.smtp_host ? account.smtp_secure : preset?.smtp_secure) ?? false,
           username: account.username || account.email_address, password,
         }, { ...payload, messageId: receipt.messageId })
@@ -143,16 +150,18 @@ export async function POST(request: NextRequest) {
     }, async receipt => {
       const signal = AbortSignal.timeout(20_000)
       const credential = await getGoogleCredential(user.id, scope.accountId, signal)
-      return credential ? findGmailSent(credential.accessToken, receipt.messageId, signal) : null
+      return credential && (credential.scope === undefined || canReadGmail(credential.scope))
+        ? findGmailSent(credential.accessToken, receipt.messageId, signal) : null
     }, async () => {
       // The send receipt is durable before this optional reputation update.
       await Promise.allSettled([...new Set(input.to)].map(email => markSenderAsTrusted(user.id, email, 'replied')))
     })
 
-    return response(result)
+    return response(result, needsGmailPermission)
   } catch (error) {
     return NextResponse.json({
       error: error instanceof SendError ? error.message : 'Chưa thể xác nhận yêu cầu. Hãy kiểm tra lại với cùng nội dung.',
+      ...(error instanceof SendError && error.code && { code: error.code }),
     }, { status: error instanceof SendError ? error.status : 503 })
   }
 }

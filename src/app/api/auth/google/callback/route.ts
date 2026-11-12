@@ -1,4 +1,4 @@
-import { saveGoogleConnection } from '@/lib/credential-vault/accounts';
+import { GoogleGrantError, saveGoogleConnection } from '@/lib/credential-vault/accounts';
 import { oauthCookieName, oauthCookieOptions, validateOAuthState } from '@/lib/oauth/state';
 /**
  * GET /api/auth/google/callback
@@ -34,7 +34,6 @@ export async function GET(request: NextRequest) {
 
   // Handle OAuth errors
   if (error) {
-    console.error('OAuth error:', error);
     return redirect(
       new URL('/settings?error=oauth_denied', baseUrl)
     );
@@ -68,13 +67,13 @@ export async function GET(request: NextRequest) {
 
     // Redirect to settings with success
     return redirect(
-      new URL('/settings?success=gmail_connected', baseUrl)
+      new URL('/settings?success=gmail_connected#email-accounts', baseUrl)
     );
 
-  } catch {
+  } catch (failure) {
     console.error('OAuth callback failed');
     return redirect(
-      new URL('/settings?error=callback_failed', getBaseUrl())
+      new URL(`/settings?error=${failure instanceof GoogleGrantError ? failure.reason : 'callback_failed'}#email-accounts`, baseUrl)
     );
   }
 }

@@ -1,4 +1,4 @@
-import { saveGoogleConnection } from '@/lib/credential-vault/accounts'
+import { GoogleGrantError, saveGoogleConnection } from '@/lib/credential-vault/accounts'
 import { oauthCookieName, oauthCookieOptions, validateOAuthState } from '@/lib/oauth/state'
 /**
  * GET /api/source-accounts/google/callback
@@ -8,6 +8,7 @@ import { oauthCookieName, oauthCookieOptions, validateOAuthState } from '@/lib/o
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { exchangeCodeForTokens, getGoogleUserInfo } from '@/lib/oauth/google'
+import { handleGoogleSendConsent } from '@/lib/oauth/send-consent'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -17,6 +18,8 @@ export async function GET(request: NextRequest) {
 
   // Base URL for redirects
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const sendConsent = await handleGoogleSendConsent(request, baseUrl)
+  if (sendConsent) return sendConsent
 
   const redirect = (url: string) => {
     const response = NextResponse.redirect(url)
@@ -28,7 +31,6 @@ export async function GET(request: NextRequest) {
 
   // Handle OAuth errors
   if (error) {
-    console.error('[Google OAuth Callback] Error:', error)
     return redirect(
       `${baseUrl}/settings?error=oauth_denied`
     )
@@ -36,7 +38,7 @@ export async function GET(request: NextRequest) {
 
   if (!code) {
     return redirect(
-      `${baseUrl}/settings/accounts?error=${encodeURIComponent('No authorization code received')}`
+      `${baseUrl}/settings?error=no_code#email-accounts`
     )
   }
 
@@ -66,12 +68,12 @@ export async function GET(request: NextRequest) {
     await saveGoogleConnection(user.id, googleUser, tokens)
 
     return redirect(
-      `${baseUrl}/settings/accounts?success=${encodeURIComponent('Account added successfully')}`
+      `${baseUrl}/settings?success=gmail_connected#email-accounts`
     )
-  } catch {
+  } catch (failure) {
     console.error('[Google OAuth Callback] Failed')
     return redirect(
-      `${baseUrl}/settings/accounts?error=${encodeURIComponent('Failed to add account')}`
+      `${baseUrl}/settings?error=${failure instanceof GoogleGrantError ? failure.reason : 'callback_failed'}#email-accounts`
     )
   }
 }

@@ -56,7 +56,7 @@ export function ConnectGoogleButton({ className }: ConnectGoogleProps) {
           />
         </svg>
       )}
-      <span>{isLoading ? 'Đang kết nối...' : 'Kết nối với Google'}</span>
+      <span>{isLoading ? 'Đang kết nối...' : 'Kết nối Gmail để đọc'}</span>
     </button>
   );
 }

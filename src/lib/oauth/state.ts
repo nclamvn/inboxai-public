@@ -1,6 +1,10 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
+import { z } from 'zod'
 
-export type GoogleOAuthFlow = 'connect' | 'add-account'
+export type GoogleOAuthFlow = 'connect' | 'add-account' | 'enable-send'
+type ConnectFlow = Exclude<GoogleOAuthFlow, 'enable-send'>
+const sendBinding = z.object({ accountId: z.uuid(), revision: z.number().int().positive() })
+type SendBinding = z.infer<typeof sendBinding>
 export const OAUTH_TTL_SECONDS = 300
 
 function signingKey(): string {
@@ -34,10 +38,10 @@ export function oauthCookieOptions() {
 }
 
 /** The verifier stays in a signed, HTTP-only browser cookie, never in the URL. */
-export function createOAuthState(userId: string, flow: GoogleOAuthFlow, now = Date.now()) {
+function createState(userId: string, flow: GoogleOAuthFlow, now: number, binding?: SendBinding) {
   const state = randomBytes(32).toString('base64url')
   const verifier = randomBytes(32).toString('base64url')
-  const payload = Buffer.from(JSON.stringify({ userId, flow, state, verifier, issuedAt: now })).toString('base64url')
+  const payload = Buffer.from(JSON.stringify({ userId, flow, state, verifier, issuedAt: now, binding })).toString('base64url')
   return {
     state,
     cookie: `${payload}.${sign(payload)}`,
@@ -45,14 +49,22 @@ export function createOAuthState(userId: string, flow: GoogleOAuthFlow, now = Da
   }
 }
 
+export function createOAuthState(userId: string, flow: ConnectFlow, now = Date.now()) {
+  return createState(userId, flow, now)
+}
+
+export function createGoogleSendState(userId: string, binding: SendBinding, now = Date.now()) {
+  return createState(userId, 'enable-send', now, sendBinding.parse(binding))
+}
+
 /** Fail closed before exchanging any authorization code. */
-export function validateOAuthState(
+function validateState(
   state: string | null,
   cookie: string | undefined,
   userId: string,
   flow: GoogleOAuthFlow,
   now = Date.now(),
-): string | null {
+) {
   if (!state || !cookie || cookie.length > 2048 || state.length > 128) return null
   try {
     const parts = cookie.split('.')
@@ -63,8 +75,20 @@ export function validateOAuthState(
         !Number.isFinite(data.issuedAt) || data.issuedAt > now ||
         now - data.issuedAt >= OAUTH_TTL_SECONDS * 1000 ||
         typeof data.verifier !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(data.verifier)) return null
-    return data.verifier as string
+    return { verifier: data.verifier as string, binding: data.binding as unknown }
   } catch {
     return null
   }
+}
+
+export function validateOAuthState(state: string | null, cookie: string | undefined, userId: string,
+  flow: ConnectFlow, now = Date.now()) {
+  return validateState(state, cookie, userId, flow, now)?.verifier ?? null
+}
+
+export function validateGoogleSendState(state: string | null, cookie: string | undefined, userId: string, now = Date.now()) {
+  const validated = validateState(state, cookie, userId, 'enable-send', now)
+  if (!validated) return null
+  const binding = sendBinding.safeParse(validated.binding)
+  return binding.success ? { ...binding.data, verifier: validated.verifier } : null
 }

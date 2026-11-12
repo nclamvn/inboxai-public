@@ -14,7 +14,7 @@ const payload: MailPayload = {
 }
 const signal = () => AbortSignal.timeout(1_000)
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status })
-const smtp = { host: 'smtp.example.test', port: 587, secure: false, username: 'synthetic', password: 'synthetic' }
+const smtp = { host: '93.184.216.34', port: 587, secure: false, username: 'synthetic', password: 'synthetic' }
 
 it('builds actual MIME with Unicode, Bcc and RFC reply headers for Gmail', async () => {
   const fetcher = vi.fn().mockResolvedValue(json({ id: 'fake-gmail-id' }))

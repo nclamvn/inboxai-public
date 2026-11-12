@@ -10,7 +10,8 @@ const boundedSecret = z.string().min(1).max(16384);
 export const credentialSchema = z.discriminatedUnion('kind', [
     z.object({ kind: z.literal('imap'), password: z.string().min(1).max(4096) }).strict(),
     z.object({ kind: z.literal('google'), accessToken: boundedSecret, refreshToken: boundedSecret.optional(),
-        expiresAt: z.string().datetime({ offset: true }), scope: z.string().max(4096).optional() }).strict(),
+        expiresAt: z.string().datetime({ offset: true }), scope: z.string().max(4096).optional(),
+        googleSubject: z.string().min(1).max(128).optional(), sendDisabled: z.boolean().optional() }).strict(),
 ]);
 export type Credentials = z.infer<typeof credentialSchema>;
 const idPattern = /^[A-Za-z0-9_-]{1,48}$/;

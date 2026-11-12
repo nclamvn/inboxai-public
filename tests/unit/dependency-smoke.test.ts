@@ -8,7 +8,7 @@ it('upgraded Nodemailer composes with the actual adapter without network deliver
   const transport = nodemailer.createTransport({ streamTransport: true, buffer: true })
   const sendMail = vi.spyOn(transport, 'sendMail')
   vi.spyOn(nodemailer, 'createTransport').mockReturnValue(transport)
-  const result = await sendEmailViaSMTP({ host: 'smtp.example.test', port: 587, secure: false, username: 'synthetic', password: 'synthetic' }, {
+  const result = await sendEmailViaSMTP({ host: '93.184.216.34', port: 587, secure: false, username: 'synthetic', password: 'synthetic' }, {
     from: { name: 'Nhóm thử nghiệm', address: 'sender@example.test' },
     to: ['recipient@example.test'], subject: 'Cam kết giao hàng', text: 'Nội dung giả lập',
   })

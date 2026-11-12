@@ -7,32 +7,14 @@ import { imapProvider } from '@/lib/sync/imap-provider'
 import { openImapReader,type ImapAccount } from '@/lib/sync/imap-reader'
 import { matchesImapNamespace } from '@/lib/sync/imap-identity'
 import { SyncError } from '@/lib/sync/contracts'
+import { connectImap } from './imap-connection'
+import type { MailCredentials } from './mail-destination'
 export type SourceAccount=ImapAccount & {email_address:string;provider:string;auth_type?:string}
 
-export async function testImapConnection(config: {
-  host: string
-  port: number
-  secure: boolean
-  username: string
-  password: string
-}): Promise<{ success: boolean; error?: string }> {
+export async function testImapConnection(config: MailCredentials): Promise<{ success: boolean; error?: string }> {
   try {
-    const { ImapFlow } = await import('imapflow')
-
-    const client = new ImapFlow({
-      host: config.host,
-      port: config.port,
-      secure: config.secure,
-      auth: {
-        user: config.username,
-        pass: config.password
-      },
-      logger: false,
-      connectionTimeout:10000,greetingTimeout:10000,socketTimeout:10000
-    })
-
-    await client.connect()
-    await client.logout()
+    const client = await connectImap(config)
+    try { await client.logout() } finally { client.close() }
     return { success: true }
   } catch {
     const errorMsg = 'IMAP connection failed'
@@ -65,24 +47,17 @@ export async function fetchEmailBody(
   }
 
   try {
-    const { ImapFlow } = await import('imapflow')
-
-    const client = new ImapFlow({
+    const client = await connectImap({
       host: account.imap_host,
       port: account.imap_port,
       secure: account.imap_secure,
-      auth: {
-        user: account.username,
-        pass: password
-      },
-      logger: false,
-      connectionTimeout:10000,greetingTimeout:10000,socketTimeout:10000
+      username: account.username,
+      password,
     })
 
-    await client.connect()
-    const lock = await client.getMailboxLock('INBOX',{readOnly:true})
-
+    let lock: Awaited<ReturnType<typeof client.getMailboxLock>> | undefined
     try {
+      lock = await client.getMailboxLock('INBOX',{readOnly:true})
       const status=await client.status('INBOX',{uidValidity:true})
       if(!matchesImapNamespace(namespace,status.uidValidity))return null
       // Fetch single email by UID
@@ -109,8 +84,8 @@ export async function fetchEmailBody(
       }
 
     } finally {
-      lock.release()
-      await client.logout()
+      lock?.release()
+      client.close()
     }
 
   } catch {

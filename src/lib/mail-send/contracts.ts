@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { gmailSendPermissionRequired } from '@/lib/gmail/scopes'
 
 export const sendKey = z.uuidv4().transform(value => value.toLowerCase())
 const mailbox = z.string().trim().max(254).pipe(z.email())
@@ -40,8 +41,9 @@ export const receiptSchema = z.object({
 export type SendReceipt = z.infer<typeof receiptSchema>
 export type SendOutcome =
   | { state: 'accepted' | 'partial'; providerId?: string }
-  | { state: 'unknown' | 'rejected' }
+  | { state: 'unknown' }
+  | { state: 'rejected'; reason?: typeof gmailSendPermissionRequired }
 
 export class SendError extends Error {
-  constructor(readonly status: number, message: string) { super(message) }
+  constructor(readonly status: number, message: string, readonly code?: typeof gmailSendPermissionRequired) { super(message) }
 }

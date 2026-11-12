@@ -3,14 +3,15 @@
 import { useState } from 'react'
 import {
   Paperclip, FileText, Image, FileSpreadsheet,
-  File, Download, Eye, X, Loader2
+  File, Download, Eye, X
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { isRasterPreviewType } from '@/lib/email/attachment-preview'
 
 interface Attachment {
   id: string
   filename: string
-  content_type: string
+  content_type: string | null
   size: number
   is_inline: boolean
 }
@@ -47,30 +48,15 @@ function formatSize(bytes: number) {
 export function AttachmentList({ attachments }: AttachmentListProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewName, setPreviewName] = useState<string>('')
-  const [previewType, setPreviewType] = useState<string>('')
-  const [loading, setLoading] = useState<string | null>(null)
 
   // Filter out inline attachments (shown in email body)
   const visibleAttachments = attachments.filter(a => !a.is_inline)
 
   if (visibleAttachments.length === 0) return null
 
-  const handlePreview = async (attachment: Attachment) => {
-    if (!attachment.content_type.startsWith('image/') && !attachment.content_type.includes('pdf')) {
-      // Direct download for non-previewable files
-      handleDownload(attachment)
-      return
-    }
-
-    setLoading(attachment.id)
-    try {
-      const url = `/api/attachments/${attachment.id}`
-      setPreviewUrl(url)
-      setPreviewName(attachment.filename)
-      setPreviewType(attachment.content_type)
-    } finally {
-      setLoading(null)
-    }
+  const handlePreview = (attachment: Attachment) => {
+    setPreviewUrl(`/api/attachments/${attachment.id}`)
+    setPreviewName(attachment.filename)
   }
 
   const handleDownload = (attachment: Attachment) => {
@@ -83,7 +69,6 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
   const closePreview = () => {
     setPreviewUrl(null)
     setPreviewName('')
-    setPreviewType('')
   }
 
   return (
@@ -99,9 +84,10 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
 
         <div className="flex flex-wrap gap-2">
           {visibleAttachments.map((att) => {
-            const Icon = getFileIcon(att.content_type)
-            const colorClass = getFileColor(att.content_type)
-            const isPreviewable = att.content_type.startsWith('image/') || att.content_type.includes('pdf')
+            const type = att.content_type?.toLowerCase() ?? ''
+            const Icon = getFileIcon(type)
+            const colorClass = getFileColor(type)
+            const isPreviewable = isRasterPreviewType(type)
 
             return (
               <div
@@ -128,15 +114,10 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
                   {isPreviewable && (
                     <button
                       onClick={() => handlePreview(att)}
-                      disabled={loading === att.id}
                       className="p-1.5 rounded-lg hover:bg-[var(--card)] text-[var(--muted-foreground)]"
                       title="Xem trước"
                     >
-                      {loading === att.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
-                      )}
+                      <Eye className="w-4 h-4" />
                     </button>
                   )}
                   <button
@@ -180,19 +161,11 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
 
           {/* Preview content */}
           <div className="max-w-full max-h-full overflow-auto">
-            {previewType.includes('pdf') ? (
-              <iframe
-                src={previewUrl}
-                className="w-[90vw] h-[85vh] bg-white rounded-lg"
-                title={previewName}
-              />
-            ) : (
-              <img
-                src={previewUrl}
-                alt={previewName}
-                className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg"
-              />
-            )}
+            <img
+              src={`${previewUrl}?preview=1`}
+              alt={previewName}
+              className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg"
+            />
           </div>
         </div>
       )}

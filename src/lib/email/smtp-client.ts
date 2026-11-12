@@ -1,13 +1,6 @@
 import nodemailer from 'nodemailer'
 import 'server-only'
-
-interface SmtpConfig {
-  host: string
-  port: number
-  secure: boolean
-  username: string
-  password: string
-}
+import { resolveMailDestination, MailDestinationError, type MailCredentials } from './mail-destination'
 
 interface SendEmailParams {
   from: {
@@ -37,18 +30,21 @@ interface SendResult {
   state?: 'accepted' | 'partial' | 'unknown' | 'rejected'
 }
 
-export async function testSmtpConnection(config: SmtpConfig): Promise<{ success: boolean; error?: string }> {
-  const transporter = nodemailer.createTransport({
-    host: config.host,
-    port: config.port,
-    secure: config.secure,
-    auth: {
-      user: config.username,
-      pass: config.password
-    }
+async function smtpTransport(config: MailCredentials, signal?: AbortSignal) {
+  const destination = await resolveMailDestination('smtp', config, signal)
+  return nodemailer.createTransport({
+    ...destination,
+    requireTLS: !destination.secure,
+    connectionTimeout: 8_000,
+    greetingTimeout: 8_000,
+    socketTimeout: 15_000,
+    auth: { user: config.username, pass: config.password },
   })
+}
 
+export async function testSmtpConnection(config: MailCredentials): Promise<{ success: boolean; error?: string }> {
   try {
+    const transporter = await smtpTransport(config)
     await transporter.verify()
     return { success: true }
   } catch {
@@ -58,25 +54,13 @@ export async function testSmtpConnection(config: SmtpConfig): Promise<{ success:
 }
 
 export async function sendEmailViaSMTP(
-  config: SmtpConfig,
+  config: MailCredentials,
   params: SendEmailParams,
   signal = AbortSignal.timeout(25_000),
 ): Promise<SendResult> {
-  const transporter = nodemailer.createTransport({
-    host: config.host,
-    port: config.port,
-    secure: config.secure,
-    requireTLS: !config.secure,
-    connectionTimeout: 8_000,
-    greetingTimeout: 8_000,
-    socketTimeout: 15_000,
-    auth: {
-      user: config.username,
-      pass: config.password
-    }
-  })
-
   try {
+    const transporter = await smtpTransport(config, signal)
+    if (signal.aborted) throw new MailDestinationError()
     const info = await transporter.sendMail({
       signal,
       from: params.from,
@@ -106,7 +90,7 @@ export async function sendEmailViaSMTP(
     }
   } catch (error) {
     const smtpError = error as { code?: string; command?: string; responseCode?: number } | null
-    const explicitRejection = smtpError?.code === 'EAUTH' ||
+    const explicitRejection = error instanceof MailDestinationError || smtpError?.code === 'EAUTH' ||
       (typeof smtpError?.responseCode === 'number' && smtpError.responseCode >= 400 &&
         smtpError.responseCode < 600 && ['MAIL FROM', 'RCPT TO', 'DATA'].includes(smtpError.command ?? ''))
     const errorMsg = 'SMTP send failed'

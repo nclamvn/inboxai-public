@@ -13,7 +13,9 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/supabase/server', () => ({ createClient: vi.fn(async () => ({
   auth: { getUser: async () => ({ data: { user: mocks.user } }) }, from: mocks.from,
 })) }))
-vi.mock('@/lib/credential-vault/accounts', () => ({ saveGoogleConnection: mocks.save }))
+vi.mock('@/lib/credential-vault/accounts', async importOriginal => ({
+  ...await importOriginal<typeof import('@/lib/credential-vault/accounts')>(), saveGoogleConnection: mocks.save,
+}))
 vi.mock('@/lib/oauth/google', async importOriginal => ({
   ...await importOriginal<typeof import('@/lib/oauth/google')>(),
   exchangeCodeForTokens: mocks.exchange,
@@ -111,7 +113,12 @@ it('both initiation routes issue HTTP-only cookies and PKCE URLs', async () => {
   const b = await add()
   const urls = [a.headers.get('location')!, (await b.json()).auth_url]
   for (const url of urls) {
-    expect(new URL(url).searchParams.get('code_challenge_method')).toBe('S256')
+    const params = new URL(url).searchParams
+    expect(params.get('code_challenge_method')).toBe('S256')
+    expect(params.get('scope')?.split(' ')).toEqual([
+      'https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/userinfo.email',
+    ])
+    expect(params.get('include_granted_scopes')).toBeNull()
   }
   expect(a.cookies.get(oauthCookieName('connect'))?.httpOnly).toBe(true)
   expect(b.cookies.get(oauthCookieName('add-account'))?.httpOnly).toBe(true)

@@ -12,10 +12,13 @@
 
 # testing
 /coverage
+/test-results/m6d/
+/test-results/m6f/
 /.codex-db-test-*/
 
 # next.js
 /.next/
+/.next-build/
 /out/
 
 # production

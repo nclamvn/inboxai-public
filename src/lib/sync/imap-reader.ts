@@ -1,6 +1,6 @@
 import { boundedText } from '@/lib/sync/text'
 import 'server-only';
-import { ImapFlow } from 'imapflow';
+import { connectImap } from '@/lib/email/imap-connection';
 import { simpleParser } from 'mailparser';
 import { SyncError, type SyncMessage } from './contracts';
 import type { ImapReader } from './imap-provider';
@@ -13,16 +13,18 @@ export type ImapAccount = {
     username: string;
 };
 export async function openImapReader(account: ImapAccount, password: string, signal: AbortSignal): Promise<ImapReader> {
-    const client = new ImapFlow({ host: account.imap_host, port: account.imap_port, secure: account.imap_secure,
-        auth: { user: account.username, pass: password }, logger: false, emitLogs: false, disableAutoIdle: true,
-        connectionTimeout: 10000, greetingTimeout: 10000, socketTimeout: 10000 });
+    let client: Awaited<ReturnType<typeof connectImap>>;
+    try {
+        client = await connectImap({ host: account.imap_host, port: account.imap_port, secure: account.imap_secure,
+            username: account.username, password }, signal);
+    } catch {
+        throw new SyncError('provider');
+    }
     const abort = () => client.close();
     signal.addEventListener('abort', abort, { once: true });
-    client.on('error', () => { }); // The awaited command rejects; never leak raw server exceptions.
-    let lock: Awaited<ReturnType<ImapFlow['getMailboxLock']>> | undefined;
+    let lock: Awaited<ReturnType<typeof client.getMailboxLock>>;
     try {
         signal.throwIfAborted();
-        await client.connect();
         lock = await client.getMailboxLock('INBOX', { readOnly: true });
     }
     catch {
@@ -55,6 +57,6 @@ export async function openImapReader(account: ImapAccount, password: string, sig
             }
             return output;
         },
-        async close() { signal.removeEventListener('abort', abort); lock?.release(); client.close(); },
+        async close() { signal.removeEventListener('abort', abort); lock.release(); client.close(); },
     };
 }
