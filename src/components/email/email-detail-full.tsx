@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
 import { AIBottomBar } from './ai-bottom-bar'
 import { EmailConversation } from './email-conversation'
+import { SaveOfflineEmail } from '@/components/offline/save-offline-email'
 import { MailCategoryLabel } from './mail-category-label'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import { AttachmentList } from './attachment-list'
@@ -527,6 +528,8 @@ export function EmailDetailFull({
             Ưu tiên và nguồn
           </button>
         )}
+
+        <SaveOfflineEmail key={email.id} email={email} />
 
         {/* AI Analysis - Compact inline */}
         {(email.category || email.priority || email.summary) && (

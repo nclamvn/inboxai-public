@@ -25,6 +25,7 @@ import { InboxPriorityDialog } from '@/components/email/inbox-priority-dialog'
 import { ReplyInbox } from '@/components/replies/reply-inbox'
 import { CommitmentAttention } from '@/components/commitments/commitment-attention'
 import { compareInboxPriority, rankActionInbox } from '@/lib/action-inbox/rank'
+import { offlineHome, useOfflineWorkspace } from '@/components/offline/offline-provider'
 import type { Email } from '@/types'
 import { lookupCategory, mailLookupHref, returnToMailLookup } from '@/lib/search/mail-lookup'
 
@@ -74,6 +75,7 @@ interface BriefingFilter {
 function InboxContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const offline = useOfflineWorkspace()
 
   // Account filter state
   const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([])
@@ -511,6 +513,11 @@ function InboxContent() {
       Quy tắc
     </button>
   )
+  const offlineLink = offline?.scope?.enrolled && (
+    <a href={offlineHome} className="neo-target inline-flex min-h-11 shrink-0 items-center px-2 text-sm text-[var(--accent-foreground)] underline">
+      Ngoại tuyến
+    </a>
+  )
   const ruleStatus = mailRuleNotice && <p role="status" className="border-b border-[var(--border)] px-4 py-2 text-sm">{mailRuleNotice}</p>
   const selectedEmail = fetchedEmail
   const snoozeSelected = selectedEmail?.direction === 'inbound' && !selectedEmail.is_archived &&
@@ -635,6 +642,7 @@ function InboxContent() {
               <span className="truncate text-xs tabular-nums text-[var(--foreground-muted)]">{filterCounts.unread || 0} chưa đọc</span>
             </div>
             <div className="flex shrink-0 items-center gap-2">
+              {offlineLink}
               {ruleButton}
               <AccountSwitcher selectedAccountIds={selectedAccountIds} onAccountChange={setSelectedAccountIds} />
             </div>
@@ -653,6 +661,7 @@ function InboxContent() {
       {isMobile && <div className="flex items-center gap-3 border-b border-[var(--border)] px-4">
         <Link href="/snoozed" className="neo-target flex min-h-11 items-center text-sm text-[var(--accent-foreground)] underline">Đã hẹn</Link>
         {ruleButton}
+        {offlineLink}
       </div>}
       {ruleStatus}
       {snoozeNotice && <p role="status" className="border-b border-[var(--border)] px-4 py-2 text-sm">

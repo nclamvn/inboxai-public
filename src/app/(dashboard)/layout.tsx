@@ -8,6 +8,7 @@ import { AutoSyncProvider } from '@/providers/auto-sync-provider'
 import { gmailTriageEnabled } from '@/lib/gmail-triage/server'
 import { GmailTriageProvider, GmailTriageStatus } from '@/components/email/gmail-triage'
 import { AIIntroTooltip } from '@/components/onboarding/ai-intro-tooltip'
+import { OfflineWorkspaceProvider } from '@/components/offline/offline-provider'
 
 export default async function DashboardLayout({
   children,
@@ -22,6 +23,7 @@ export default async function DashboardLayout({
   }
 
   return (
+    <OfflineWorkspaceProvider key={user.id} owner={user.id}>
     <AutoSyncProvider enabled={true} interval={30000}>
       <GmailTriageProvider enabled={gmailTriageEnabled()}>
       <div className="h-dvh flex bg-[var(--background)] safe-area-top">
@@ -46,5 +48,6 @@ export default async function DashboardLayout({
       </div>
       </GmailTriageProvider>
     </AutoSyncProvider>
+    </OfflineWorkspaceProvider>
   )
 }

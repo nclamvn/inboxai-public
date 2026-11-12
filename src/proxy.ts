@@ -90,10 +90,21 @@ const PUBLIC_ASSETS = [
   '/icons/',
   '/images/',
   '/manifest.json',
+  '/inbox-offline-sw.js',
+  '/offline-workspace/',
 ]
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // The cached offline document includes no user data and carries its own CSP.
+  // Keep the anti-framing and browser security headers on the cached response.
+  if (pathname === '/offline-workspace/index.html') {
+    const response = NextResponse.next()
+    Object.entries(securityHeaders).forEach(([key, value]) => response.headers.set(key, value))
+    response.headers.set('Content-Security-Policy', "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'")
+    return response
+  }
 
   // Skip for static assets
   if (PUBLIC_ASSETS.some(asset => pathname.startsWith(asset))) {

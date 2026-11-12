@@ -29,6 +29,8 @@
 /test-results/gmail-triage/
 /test-results/personal-mail-rules/
 /test-results/mail-lookup/
+/test-results/offline-reply/
+/.codex-offline-browser-*/
 /test-results/compose-attachments/
 /test-results/staging/
 /.codex-db-test-*/

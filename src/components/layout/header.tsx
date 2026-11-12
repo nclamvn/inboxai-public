@@ -1,5 +1,6 @@
 'use client'
 
+import { clearOfflineVault } from '../../../public/offline-workspace/storage.mjs'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import {
@@ -105,6 +106,7 @@ function DashboardHeader({ pathname }: { pathname: string }) {
   }, [])
 
   const handleSignOut = async () => {
+    await clearOfflineVault().catch(() => {})
     await supabase.auth.signOut()
     router.push('/login')
   }

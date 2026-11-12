@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EmailConversation } from './email-conversation'
+import { SaveOfflineEmail } from '@/components/offline/save-offline-email'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import { AttachmentList } from './attachment-list'
 import { AISummary } from './ai-summary'
@@ -211,6 +212,7 @@ export function EmailDetailMobile({
           </button>
         )}
 
+        <div className="px-4"><SaveOfflineEmail key={email.id} email={email} /></div>
         <EmailConversation key={email.id} email={email} className="mx-4 mt-3" />
 
         {/* AI Summary - Smart Allocation */}

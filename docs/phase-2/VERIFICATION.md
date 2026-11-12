@@ -1,5 +1,47 @@
 # Verification record
 
+## Offline reading and reply recovery
+
+On 2026-11-12, `npm run test:offline-reply` exited 0 with 20 checks
+using Chrome 157 and PostgreSQL 16. The scenario used two loopback Gmail
+accounts with the same message ID and subject. It saved one email explicitly,
+edited its reply with the network disabled, closed Chrome and reopened the same browser
+profile while still offline. The correct passphrase recovered the selected
+email and reply. The other account's email stayed outside the offline store.
+The browser cached only the static shell. The device stored mail and draft
+content in an authenticated, encrypted IndexedDB vault scoped to one user.
+
+On reconnect, Chrome displayed the divergent device and server drafts side
+by side. Selecting the device version left the server unchanged until the
+user opened the send preview. Gmail received zero sends before approval.
+The Gmail fixture accepted one reply from the selected account. After the
+provider acknowledgement and browser response were both dropped, verification
+recovered the same receipt and replay issued no second dispatch. Signing out
+locked the open offline tab and cleared the stored copies. A second admitted
+InboxAI user could not reopen the previous user's draft or read its API data.
+Three sampled screens had zero axe violations or horizontal overflow. The
+final Chrome run recorded no uncaught page errors.
+
+Offline coverage includes saved email text and reply text with To and Cc.
+Attachments are available online. Each browser restart requires the separate
+offline passphrase. The server reply workflow owns preview, approval and
+dispatch. This milestone adds no database migration.
+
+`npm run lint` exited 0 with 91 existing warnings. `npm run typecheck`,
+`npm run test:unit` (245 tests), `npm run test:integration` (200 tests),
+`npm run test:db` (29 SQL checks), and the local Next.js 16.4.6
+production-mode build passed on macOS arm64 with Node 24.14.1.
+`npm run test:design -- --isolated` and
+`npm run test:platform -- --isolated` passed 29 and 19 checks.
+`npm run test:staging -- --isolated` and `npm run test:reply-workflow`
+passed 31 and 23 checks.
+
+[Chrome checks](../../test-results/offline-reply/report.json) ·
+[Workflow evidence](../../test-results/offline-reply/workflow.json) ·
+[Recovered email and draft](../../test-results/offline-reply/01-offline-after-restart.png) ·
+[Draft comparison](../../test-results/offline-reply/02-conflict.png) ·
+[Send receipt](../../test-results/offline-reply/03-sent-once.png)
+
 ## Search across synced mail and attachments
 
 On 2026-11-12, `npm run test:mail-lookup` passed 22 checks with Chrome
