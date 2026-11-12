@@ -54,12 +54,15 @@ export async function gmailReplyThread(token: string, id: string, messageId: str
   return metadata?.threadId
 }
 
-export async function sendViaGmail(token: string, payload: MailPayload, messageId: string, signal: AbortSignal, threadId?: string): Promise<SendOutcome> {
+export async function sendViaGmail(token: string, payload: MailPayload, messageId: string, signal: AbortSignal,
+  threadId?: string, attachments?: { filename: string; contentType: string; content: Buffer }[],
+): Promise<SendOutcome> {
   let raw: string
   try {
     // Stream transport builds MIME in memory. Gmail uses the Bcc header for envelope recipients.
     const result = await mime.sendMail({
       ...payload,
+      attachments,
       messageId,
       references: payload.inReplyTo,
       disableFileAccess: true,

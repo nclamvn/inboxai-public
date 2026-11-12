@@ -6,7 +6,7 @@ import { sendEmailViaSMTP } from '@/lib/email/smtp-client'
 import type { MailPayload } from '@/lib/mail-send/contracts'
 
 const messageId = '<synthetic@inboxai.invalid>'
-const payload: MailPayload = {
+const payload: Omit<MailPayload, 'attachments'> = {
   from: { name: 'Nhóm giao nhận', address: 'sender@example.test' },
   to: ['to@example.test'], cc: ['cc@example.test'], bcc: ['bcc@example.test'],
   subject: 'Xác nhận giao hàng', text: 'Nội dung tiếng Việt', html: '<p>Nội dung tiếng Việt</p>',
@@ -102,4 +102,19 @@ it.each([
   vi.spyOn(transport, 'sendMail').mockRejectedValue(error)
   vi.spyOn(nodemailer, 'createTransport').mockReturnValue(transport)
   expect(await sendEmailViaSMTP(smtp, { ...payload, messageId })).toMatchObject({ success: false, state })
+})
+
+it('builds exact attachment bytes through the SMTP transport', async () => {
+  const transport = nodemailer.createTransport({ streamTransport: true, buffer: true })
+  const send = vi.spyOn(transport, 'sendMail')
+  vi.spyOn(nodemailer, 'createTransport').mockReturnValue(transport)
+  const content = Buffer.from([0, 255, 5, 127, 23, 0])
+  const filename = 'Bản nghiệm thu.dat'
+  expect(await sendEmailViaSMTP(smtp, { ...payload, messageId,
+    attachments: [{ filename, contentType: 'application/octet-stream', content }],
+  })).toMatchObject({ state: 'accepted', messageId })
+  const info = await send.mock.results[0].value
+  const mail = await simpleParser(info.message)
+  expect(mail.attachments).toHaveLength(1)
+  expect(mail.attachments[0]).toMatchObject({ filename, contentType: 'application/octet-stream', content })
 })

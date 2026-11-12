@@ -6,6 +6,8 @@ import { createClientForRequest } from '@/lib/supabase/server'
 import { sendFromAccount } from '@/lib/mail-send/server'
 import { sendInput, sendKey, SendError } from '@/lib/mail-send/contracts'
 import type { ReplyWorkbench } from '@/lib/replies/contracts'
+import { composeFileIds } from '@/lib/compose/contracts'
+import { composeRpcError } from '@/lib/compose/server'
 import { syncAccount } from '@/lib/sync/account'
 
 export const maxDuration = 60
@@ -15,7 +17,7 @@ const revision = z.number().int().positive().max(2_147_483_647)
 const actions = z.discriminatedUnion('action', [
   z.strictObject({
     action: z.literal('save'), source: id, id: id.nullable(), revision: revision.nullable(), fingerprint,
-    to: z.string().max(4000), cc: z.string().max(4000), body: z.string().max(100_000).regex(/^[^\x00]*$/),
+    fileIds: composeFileIds.optional(), to: z.string().max(4000), cc: z.string().max(4000), body: z.string().max(100_000).regex(/^[^\x00]*$/),
   }),
   z.strictObject({ action: z.literal('prepare'), source: id, id, revision }),
   z.strictObject({ action: z.enum(['send', 'check', 'track', 'stop', 'finish', 'discard']), id }),
@@ -39,6 +41,7 @@ function json(data: unknown, status = 200) {
 async function rpc(client: Client, name: string, args: Record<string, unknown>) {
   const { data, error } = await client.rpc(name, args).abortSignal(AbortSignal.timeout(8000))
   if (!error) return data
+  if (error.code === 'PT413') throw composeRpcError(error.code)
   if (error.code === 'PT404') throw new SendError(404, 'Không tìm thấy thư nguồn hoặc bản nháp.')
   if (error.code === 'PT409') throw new SendError(409, name === 'read_reply_followup_preview' || name === 'schedule_reply_followup'
     ? followupChanged : 'Bản nháp hoặc thư nguồn đã thay đổi. Hãy kiểm tra lại.')
@@ -151,9 +154,9 @@ export async function POST(request: NextRequest) {
       return result
     }
     if (input.action === 'save') {
-      return json(await rpc(client, 'save_reply_draft', {
+      return json(await rpc(client, input.fileIds ? 'save_reply_files' : 'save_reply_draft', {
         p_source: input.source, p_id: input.id, p_revision: input.revision, p_fingerprint: input.fingerprint,
-        p_to: input.to, p_cc: input.cc, p_body: input.body,
+        p_to: input.to, p_cc: input.cc, p_body: input.body, ...(input.fileIds && { p_files: input.fileIds }),
       }))
     }
     const service = () => createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
@@ -166,7 +169,8 @@ export async function POST(request: NextRequest) {
       }
       const addresses = (value: string) => value.trim() ? value.split(',').map(address => address.trim()) : []
       const envelope = sendInput.safeParse({ sourceAccountId: accountId, replyToEmailId: draft.sourceId,
-        to: addresses(draft.to), cc: addresses(draft.cc), subject: draft.subject, text: draft.body })
+        to: addresses(draft.to), cc: addresses(draft.cc), subject: draft.subject, text: draft.body,
+        ...(draft.files?.length && { attachmentIds: draft.files.map(file => file.id) }) })
       if (!envelope.success || !draft.body.trim()) throw new SendError(400, 'Kiểm tra địa chỉ người nhận và nội dung trước khi gửi.')
       const hash = createHash('sha256').update(JSON.stringify(envelope.data)).digest('hex')
       return json(await rpc(service(), 'prepare_reply_send', { p_actor: actor, p_id: draft.id,

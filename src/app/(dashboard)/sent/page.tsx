@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Send } from 'lucide-react'
+import { useEmailDetailQuery } from '@/hooks/use-emails-query'
 import { useEmails } from '@/hooks/use-emails'
 import { EmailList } from '@/components/email/email-list'
 import { EmailDetail } from '@/components/email/email-detail'
@@ -10,6 +11,7 @@ import type { Email } from '@/types'
 export default function SentPage() {
   const { emails, loading, toggleStar, archiveEmail, deleteEmail } = useEmails({ folder: 'sent' })
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null)
+  const { data: detail } = useEmailDetailQuery(selectedEmail?.id ?? null)
 
   const handleArchive = () => {
     if (selectedEmail) {
@@ -69,7 +71,7 @@ export default function SentPage() {
       {selectedEmail && (
         <div className="flex-1 lg:w-3/5 xl:w-2/3">
           <EmailDetail
-            email={selectedEmail}
+            email={detail ?? selectedEmail}
             onClose={() => setSelectedEmail(null)}
             onStar={() => toggleStar(selectedEmail.id)}
             onArchive={handleArchive}

@@ -20,7 +20,7 @@ const emailListFields = `
   id, from_name, from_address, to_addresses, subject,
   received_at, is_read, is_starred, is_archived, is_deleted,
   priority, category, needs_reply, detected_deadline, direction,
-  summary, ai_confidence, source_account_id`
+  summary, ai_confidence, source_account_id, attachment_count`
 const inboxListFields = `${emailListFields}, snippet:inbox_preview, inbox_priority, inbox_priority_version` as const
 
 export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEmailsOptions = {}) {

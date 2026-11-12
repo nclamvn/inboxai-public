@@ -62,12 +62,14 @@ export async function startGoogleOAuthFixture() {
         assert.equal(mail.from.value[0].address, grant.email)
         assert.ok(mail.to.value.every(recipient => recipient.address.endsWith('@example.test')))
         const id = `synthetic-sent-${calls.sent.length + 1}`
+        const attachments = mail.attachments.map(file => ({ filename: file.filename,
+          contentType: file.contentType, data: file.content.toString('base64') }))
         calls.sent.push({ subject: mail.subject, messageId: mail.messageId, from: mail.from.value[0].address,
           to: mail.to.value.map(address => address.address), cc: mail.cc?.value.map(address => address.address) ?? [],
-          inReplyTo: mail.inReplyTo, threadId, body: mail.text.trim() })
+          inReplyTo: mail.inReplyTo, threadId, body: mail.text.trim(), attachments })
         if (grant.mailbox) {
           grant.mailbox.messages.set(id, { id, at: new Date().toISOString(), from: grant.email, subject: mail.subject,
-            body: mail.text, messageId: mail.messageId, inReplyTo: mail.inReplyTo, threadId, sent: true,
+            body: mail.text, messageId: mail.messageId, inReplyTo: mail.inReplyTo, threadId, sent: true, attachments,
             to: mail.to.text, cc: mail.cc?.text, references: [].concat(mail.references ?? []).join(' ') })
           grant.mailbox.history.push(id)
           if (grant.mailbox.dropSendAcknowledgement) {
@@ -109,13 +111,26 @@ export async function startGoogleOAuthFixture() {
           const { page, nextPageToken } = paginate(box.history.slice(Math.max(0, start - 100)))
           return json({ historyId, nextPageToken, history: page.map(id => ({ messagesAdded: [{ message: { id } }] })) })
         }
-        const id = pathname.startsWith(gmail + '/messages/') ? pathname.slice((gmail + '/messages/').length) : null
+        const [id, section, attachmentId] = pathname.startsWith(gmail + '/messages/')
+          ? pathname.slice((gmail + '/messages/').length).split('/') : []
         const item = box.messages.get(id)
         if (!item) return json({}, 404)
+        const parts = (item.attachments ?? []).map((file, index) => ({
+          filename: file.filename, mimeType: file.contentType, partId: String(index + 1),
+          body: { attachmentId: 'part-' + (index + 1), size: Buffer.from(file.data, 'base64').length },
+          headers: [{ name: 'Content-Disposition', value: 'attachment' }],
+        }))
+        if (section === 'attachments') {
+          const index = parts.findIndex(part => part.body.attachmentId === attachmentId)
+          return index < 0 ? json({}, 404) : json({
+            size: parts[index].body.size, data: Buffer.from(item.attachments[index].data, 'base64').toString('base64url'),
+          })
+        }
         const headers = { Subject: item.subject, From: item.from, To: item.to ?? grant.email, Cc: item.cc, 'Message-ID': item.messageId,
           'In-Reply-To': item.inReplyTo, 'Reply-To': item.replyTo, References: item.references }
+        const text = { mimeType: 'text/plain', body: { data: Buffer.from(item.body).toString('base64url') } }
         return json({ id, threadId: item.threadId, internalDate: String(Date.parse(item.at)), labelIds: item.sent ? ['SENT'] : ['INBOX', 'UNREAD'],
-          payload: { mimeType: 'text/plain', body: { data: Buffer.from(item.body).toString('base64url') },
+          payload: { ...(parts.length ? { mimeType: 'multipart/mixed', parts: [{ ...text, partId: '0' }, ...parts] } : text),
             headers: Object.entries(headers).filter(([, value]) => value).map(([name, value]) => ({ name, value })) },
         })
       }

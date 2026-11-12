@@ -10,6 +10,7 @@ import { markSenderAsTrusted } from '@/lib/ai/sender-trust'
 import { SendError, type MailPayload, type SendInput, type SendReceipt, type SendScope } from './contracts'
 import { MailSendStore, type SendApproval } from './store'
 import { executeMailSend } from './execute'
+import { loadComposeFiles } from '@/lib/compose/server'
 import { findGmailSent, gmailReplyThread, sendViaGmail } from './gmail'
 
 const gmailPermissionMessage = 'Gmail chưa cho phép gửi từ tài khoản này. Hãy cấp quyền gửi trong Cài đặt.'
@@ -50,10 +51,15 @@ export async function sendFromAccount(
       .eq('id', scope.accountId).eq('user_id', scope.userId).single()
     if (!account || !account.is_active) throw new SendError(404, 'Không tìm thấy tài khoản gửi đang hoạt động.')
 
+    const files = input.attachmentIds?.length ? await loadComposeFiles(scope.userId, input.attachmentIds) : []
+    const mimeAttachments = files.length ? files.map(({ metadata, content }) => ({
+      filename: metadata.filename, contentType: metadata.contentType, content,
+    })) : undefined
     const payload: MailPayload = {
       from: { address: account.email_address, name: account.display_name || account.email_address.split('@')[0] },
       to: input.to, cc: input.cc, bcc: input.bcc, subject: input.subject, text: input.text, html: input.html,
     }
+    if (files.length) payload.attachments = files.map(file => file.metadata)
     let replyUid: string | undefined
     if (input.replyToEmailId) {
       const { data: original } = await admin.from('emails')
@@ -93,7 +99,7 @@ export async function sendFromAccount(
               AbortSignal.any([signal, AbortSignal.timeout(5_000)]))
           } catch { /* The RFC reply headers still identify the original message. */ }
         }
-        const outcome = await sendViaGmail(gmailCredential.accessToken, payload, receipt.messageId, signal, threadId)
+        const outcome = await sendViaGmail(gmailCredential.accessToken, payload, receipt.messageId, signal, threadId, mimeAttachments)
         if (outcome.state === 'rejected' && outcome.reason === gmailSendPermissionRequired) {
           needsGmailPermission = true
           await disableGoogleSending(scope.userId, account.id, gmailCredential.accessToken)
@@ -111,7 +117,7 @@ export async function sendFromAccount(
         host, port: (account.smtp_host ? account.smtp_port : preset?.smtp_port) ?? 587,
         secure: (account.smtp_host ? account.smtp_secure : preset?.smtp_secure) ?? false,
         username: account.username || account.email_address, password,
-      }, { ...payload, messageId: receipt.messageId })
+      }, { ...payload, attachments: mimeAttachments, messageId: receipt.messageId })
       return { state: result.state ?? (result.success ? 'accepted' : 'unknown') }
     } }
   }, async receipt => {

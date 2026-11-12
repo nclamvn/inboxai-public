@@ -1,5 +1,24 @@
 # Verification record
 
+## Compose, reply and forward attachments
+
+On 2026-11-12 on macOS 27.2 arm64, Node 24.14.1, Chrome 157 and Next.js
+16.4.6, `npm run test:compose-attachments` exited 0 with a production-mode
+build and 21 browser/Auth checks. Two loopback Gmail accounts sent three
+messages. Browser downloads from Sent matched all three original byte
+sequences after sync. Forwarding selected only the second of two equal-name
+and equal-size attachments, and approval of an edited selection was denied.
+Losing both acknowledgements and restarting Next preserved one dispatch
+for the forwarded message. Anonymous and foreign tenant download probes
+were denied. The audited screens had zero axe violations.
+
+Lint exited 0 with 91 existing warnings. TypeScript, 241 unit tests, 199
+integration tests and 22 SQL checks passed. Local reply and scheduled follow-up
+regressions passed 23 and 20 checks. Design, platform, E2E and staging passed
+25, 19, 41 and 31 checks. Each command exited 0. See the
+[attachment workflow handoff](COMPOSE_ATTACHMENTS_LOCAL_HANDOFF.md) for the
+commands, local artifacts and validation limits.
+
 ## Scheduled reply follow-up
 
 On 2026-11-12, 20 browser and Auth checks passed with two loopback Gmail

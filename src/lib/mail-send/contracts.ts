@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { composeFileIds, type ComposeFile } from '@/lib/compose/contracts'
 import type { gmailSendPermissionRequired } from '@/lib/gmail/scopes'
 
 export const sendKey = z.uuidv4().transform(value => value.toLowerCase())
@@ -15,6 +16,7 @@ export const sendInput = z.object({
   text: z.string().max(100_000).regex(/^[^\x00]*$/).default(''),
   html: z.string().max(200_000).regex(/^[^\x00]*$/).optional(),
   replyToEmailId: z.uuid().optional(),
+  attachmentIds: composeFileIds.optional(),
 }).strict().refine(input => input.to.length + input.cc.length + input.bcc.length <= 50)
 
 export type SendInput = z.infer<typeof sendInput>
@@ -28,6 +30,7 @@ export type MailPayload = {
   text: string
   html?: string
   inReplyTo?: string
+  attachments?: ComposeFile[]
 }
 export const receiptSchema = z.object({
   id: z.uuid(),

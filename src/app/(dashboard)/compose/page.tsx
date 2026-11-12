@@ -2,10 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Send, Paperclip, X, Loader2, ListChecks, ChevronDown, FilePenLine, FileText, Minus, Plus, Briefcase, Smile } from 'lucide-react'
+import { Send, X, Loader2, ListChecks, ChevronDown, FilePenLine, FileText, Minus, Plus, Briefcase, Smile } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { ReplyCompose } from '@/components/replies/reply-compose'
+import { ComposeFiles, ComposeFileList } from '@/components/email/compose-files'
+import { Modal } from '@/components/ui/modal'
+import { fileDraftHref } from '@/lib/compose/client'
+import { useFileCompose } from '@/lib/compose/use-file-compose'
 import { Alert } from '@/components/ui/alert'
 import { composeFingerprint, readComposeKey, saveComposeKey } from '@/lib/mail-send/compose-key'
 import { gmailSendPermissionRequired } from '@/lib/gmail/scopes'
@@ -31,6 +35,8 @@ function NewCompose() {
   const [cc, setCc] = useState('')
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
+  const draftId = searchParams.get('draft')
+  const forwardId = searchParams.get('forward')
   const [showCc, setShowCc] = useState(false)
   const [loading, setLoading] = useState(false)
   const [sendAction, setSendAction] = useState<'send' | 'retry' | 'check'>('send')
@@ -44,6 +50,29 @@ function NewCompose() {
   const [accounts, setAccounts] = useState<SourceAccount[]>([])
   const [selectedAccountId, setSelectedAccountId] = useState<string>('')
   const [loadingAccounts, setLoadingAccounts] = useState(true)
+  const [confirmDiscard, setConfirmDiscard] = useState(false)
+  const fileCompose = useFileCompose(draftId, forwardId, (fields, account) => {
+    setTo(fields.to)
+    setCc(fields.cc)
+    setShowCc(!!fields.cc)
+    setSubject(fields.subject)
+    setBody(fields.body)
+    if (account) setSelectedAccountId(account)
+  })
+  const { draft, files, preview } = fileCompose
+  const sourceId = draft ? draft.sourceId : forwardId
+  const forward = !!sourceId
+  const state = draft?.state ?? 'draft'
+  const durable = !!(draftId || forward || draft || files.length)
+  const locked = fileCompose.loading || fileCompose.blocked || fileCompose.busy || state !== 'draft'
+  const fields = { to, cc, subject, body }
+  const canSave = !!selectedAccountId && accounts.some(account => account.id === selectedAccountId)
+    && !locked && !fileCompose.fileBusy && !loading && !attempt.current
+  const changed = draft && (selectedAccountId !== draft.accountId ||
+    (Object.keys(fields) as (keyof typeof fields)[]).some(key => fields[key] !== draft.fields[key]) ||
+    files.length !== draft.files.length || files.some((file, index) => file.id !== draft.files[index]?.id))
+  const status = { draft: changed ? 'Có thay đổi chưa lưu' : draft ? 'Bản nháp đã lưu' : '', prepared: 'Đã lưu yêu cầu gửi', unknown: 'Đang chờ xác minh',
+    dispatching: 'Đang chờ xác minh', accepted: 'Đã gửi', partial: 'Chấp nhận một phần', rejected: 'Yêu cầu bị từ chối' }[state]
 
   // AI Compose
   const [showAIPrompt, setShowAIPrompt] = useState(false)
@@ -106,7 +135,7 @@ function NewCompose() {
           const activeAccounts = (data.accounts || []).filter((a: SourceAccount) => a.is_active)
           setAccounts(activeAccounts)
           setSelectedAccountId(current =>
-            activeAccounts.some((account: SourceAccount) => account.id === current) ? current : activeAccounts[0]?.id || '',
+            current || activeAccounts[0]?.id || '',
           )
         }
       } catch (error) {
@@ -120,6 +149,7 @@ function NewCompose() {
 
   // Pre-fill form from query params (used by AI Reply Assistant)
   useEffect(() => {
+    if (draftId || forwardId) return
     const replyTo = searchParams.get('replyTo')
     const subjectParam = searchParams.get('subject')
     const bodyParam = searchParams.get('body')
@@ -130,11 +160,11 @@ function NewCompose() {
       setBody(bodyParam)
       setIsFromAI(true)
     }
-  }, [searchParams])
+  }, [searchParams, draftId, forwardId])
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (sendBusy.current) return
+    if (sendBusy.current || locked || fileCompose.fileBusy) return
     setError(null)
     setNeedsGmailPermission(false)
 
@@ -145,6 +175,11 @@ function NewCompose() {
 
     if (!selectedAccountId) {
       setError('Vui lòng chọn tài khoản gửi.')
+      return
+    }
+
+    if (durable) {
+      if (canSave) await fileCompose.save(fields, selectedAccountId, true)
       return
     }
 
@@ -201,7 +236,7 @@ function NewCompose() {
   }
 
   const handleDiscard = () => {
-    if (to || subject || body) {
+    if ((!draft && (to || subject || body || files.length)) || changed) {
       if (confirm('Bạn có chắc muốn hủy email này?')) {
         router.back()
       }
@@ -214,7 +249,7 @@ function NewCompose() {
     <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col border-x border-[var(--border)] bg-[var(--surface)]">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--card)]">
-        <h1 className="neo-title">Soạn thư mới</h1>
+        <h1 className="neo-title">{forward ? 'Chuyển tiếp thư' : 'Soạn thư mới'}</h1>
         <button
           type="button" onClick={handleDiscard} aria-label="Đóng soạn thư"
           className="neo-icon-button"
@@ -223,16 +258,37 @@ function NewCompose() {
         </button>
       </div>
 
+      {!draftId && !forward && fileCompose.entries.length > 0 && <nav aria-label="Bản nháp đã lưu"
+        className="space-y-2 border-b border-[var(--border)] px-4 py-3">
+        <h2 className="text-sm font-semibold">Bản nháp đã lưu</h2>
+        <ul className="flex flex-wrap gap-x-4">
+          {fileCompose.entries.map(entry => <li key={entry.id}><a href={fileDraftHref(entry.id)}
+            className="neo-target inline-flex items-center break-all text-sm underline">{entry.subject || 'Thư chưa có tiêu đề'}</a></li>)}
+        </ul>
+      </nav>}
       {/* Form */}
       <form onSubmit={handleSend} className="flex-1 flex flex-col">
-        {error && (
+        {(error || fileCompose.error) && (
           <Alert variant="error" className="mx-4 mt-4">
-            {error}
-            {needsGmailPermission && <a href="/settings#email-accounts" target="_blank" rel="noopener noreferrer"
+            {error || fileCompose.error}
+            {fileCompose.blocked && <Button type="button" variant="outline" className="ml-2" onClick={fileCompose.reopen}>Mở lại bản nháp</Button>}
+            {(needsGmailPermission || fileCompose.permission) && <a href="/settings#email-accounts" target="_blank" rel="noopener noreferrer"
               className="ml-2 inline-flex min-h-11 items-center underline">Mở Cài đặt tài khoản</a>}
           </Alert>
         )}
 
+        {fileCompose.loading && <p role="status" className="px-4 py-2">Đang mở bản nháp…</p>}
+        {status && <div className="flex flex-wrap items-center gap-2 px-4 py-2">
+          <p role="status" className="text-sm text-[var(--foreground-secondary)]">{status}</p>
+          {(state === 'prepared' || state === 'unknown' || state === 'dispatching') &&
+            <Button type="button" loading={fileCompose.busy} onClick={() => void fileCompose.send('check')}>Kiểm tra trạng thái gửi</Button>}
+          {state === 'prepared' && <Button type="button" variant="outline" disabled={fileCompose.busy}
+            onClick={() => void fileCompose.send('send')}>Tiếp tục gửi thư đã duyệt</Button>}
+          {(state === 'prepared' || state === 'rejected') && <Button type="button" variant="ghost" disabled={fileCompose.busy}
+            onClick={() => void fileCompose.change('edit')}>Mở lại bản nháp để chỉnh sửa</Button>}
+          {(state === 'accepted' || state === 'partial') && <a href="/sent" className="neo-target inline-flex items-center underline">Mở thư đã gửi</a>}
+        </div>}
+        <fieldset disabled={locked || loading} className="flex min-w-0 flex-1 flex-col">
         <div className="p-4 space-y-3 border-b border-[var(--border)] bg-[var(--card)]">
           {/* From (Account Selector) */}
           <div className="flex items-center gap-3">
@@ -463,31 +519,39 @@ function NewCompose() {
           />
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center justify-between p-4 border-t border-[var(--border)] bg-[var(--secondary)]">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="neo-icon-button"
-              aria-label="Đính kèm tệp"
-            >
-              <Paperclip className="w-5 h-5" strokeWidth={1.5} />
-            </button>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={handleDiscard}
-              className="px-4 py-2 text-[var(--muted-foreground)] hover:bg-[var(--hover)] rounded-[var(--radius-control)] transition-colors"
-            >
-              Hủy
-            </button>
-            <Button type="submit" loading={loading} disabled={!to} leftIcon={<Send size={18} aria-hidden="true" />}>
-              {sendAction === 'check' ? 'Kiểm tra trạng thái' : sendAction === 'retry' ? 'Thử lại yêu cầu' : 'Gửi'}
-            </Button>
-          </div>
+        </fieldset>
+        <div className="border-t border-[var(--border)] px-4 py-3">
+          <ComposeFiles key={sourceId ?? 'new'} files={files} onChange={fileCompose.setFiles} onBusy={fileCompose.setFileBusy}
+            disabled={locked || loading || !!attempt.current} sourceId={sourceId ?? undefined} sourceFiles={fileCompose.sourceFiles} />
         </div>
+        {state === 'draft' && <div className="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] bg-[var(--secondary)] p-4">
+            {draft && <Button type="button" variant="ghost" disabled={!canSave}
+              onClick={() => setConfirmDiscard(true)}>Xóa bản nháp</Button>}
+            <Button type="button" variant="outline" loading={fileCompose.busy && !preview} disabled={!canSave}
+              onClick={() => void fileCompose.save(fields, selectedAccountId)}>Lưu bản nháp</Button>
+            <Button type="submit" loading={loading} disabled={!to || locked || fileCompose.fileBusy || (durable && !canSave)}
+              leftIcon={<Send size={18} aria-hidden="true" />}>
+              {durable ? 'Xem trước thư gửi' : sendAction === 'check' ? 'Kiểm tra trạng thái' : sendAction === 'retry' ? 'Thử lại yêu cầu' : 'Gửi'}
+            </Button>
+        </div>}
       </form>
+      {preview && <Modal open title="Xem trước thư gửi" description={preview.fields.subject}
+        onClose={() => { if (!fileCompose.busy) fileCompose.setPreview(null) }} showCloseButton={!fileCompose.busy}
+        closeOnEscape={!fileCompose.busy} footer={<>
+          <Button type="button" variant="outline" disabled={fileCompose.busy} onClick={() => fileCompose.setPreview(null)}>Quay lại</Button>
+          <Button type="button" loading={fileCompose.busy} onClick={() => void fileCompose.approve()}>Xác nhận gửi</Button>
+        </>}>
+        <dl className="space-y-2 break-words text-sm">
+          <div><dt className="font-semibold">Gửi từ</dt><dd>{accounts.find(account => account.id === preview.accountId)?.email_address}</dd></div>
+          <div><dt className="font-semibold">Người nhận</dt><dd>{preview.fields.to}</dd></div>
+          {preview.fields.cc && <div><dt className="font-semibold">Cc</dt><dd>{preview.fields.cc}</dd></div>}
+        </dl>
+        <div className="mt-4"><ComposeFileList files={preview.files} sourceFiles={fileCompose.sourceFiles} /></div>
+        <p className="mt-4 whitespace-pre-wrap break-words border-t border-[var(--border)] pt-4 text-sm">{preview.fields.body}</p>
+      </Modal>}
+      {confirmDiscard && <Modal open title="Xóa bản nháp?" onClose={() => setConfirmDiscard(false)}
+        footer={<><Button type="button" variant="outline" onClick={() => setConfirmDiscard(false)}>Giữ bản nháp</Button>
+          <Button type="button" variant="danger" onClick={() => { setConfirmDiscard(false); void fileCompose.change('discard') }}>Xóa bản nháp</Button></>} />}
     </div>
   )
 }

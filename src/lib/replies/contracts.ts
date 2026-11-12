@@ -1,3 +1,5 @@
+import type { ComposeFile } from '@/lib/compose/contracts'
+
 export type ReplyDraft = {
   id: string
   sourceId: string
@@ -8,6 +10,7 @@ export type ReplyDraft = {
   body: string
   state: 'draft' | 'prepared' | 'dispatching' | 'unknown' | 'accepted' | 'partial' | 'rejected'
   tracking: boolean
+  files: ComposeFile[]
   sentId: string | null
 }
 

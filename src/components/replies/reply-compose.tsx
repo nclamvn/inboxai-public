@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Check, FileText, Send } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
+import { ComposeFiles, ComposeFileList } from '@/components/email/compose-files'
+import type { ComposeFile } from '@/lib/compose/contracts'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
@@ -25,6 +27,9 @@ export function ReplyCompose({ source }: { source: string }) {
   const [draft, setDraft] = useState<ReplyDraft | null>(null)
   const [fields, setFields] = useState<ReplyFields>({ to: '', cc: '', body: '' })
   const [saved, setSaved] = useState<ReplyFields>(fields)
+  const [files, setFiles] = useState<ComposeFile[]>([])
+  const [savedFiles, setSavedFiles] = useState<ComposeFile[]>([])
+  const [fileBusy, setFileBusy] = useState(false)
   const [suggestion, setSuggestion] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [permission, setPermission] = useState(false)
@@ -37,7 +42,8 @@ export function ReplyCompose({ source }: { source: string }) {
   const [followupOn, setFollowupOn] = useState('')
   const busyRef = useRef(false)
   const saveRef = useRef<Promise<ReplyDraft> | null>(null)
-  const dirty = !equal(fields, saved)
+  const filesChanged = files.length !== savedFiles.length || files.some((file, index) => file.id !== savedFiles[index]?.id)
+  const dirty = !equal(fields, saved) || filesChanged
   const editable = !draft || draft.state === 'draft'
   const stale = context?.stale && editable
   const invalidate = () => void cache.invalidateQueries({ queryKey: ['reply-work'] })
@@ -49,6 +55,8 @@ export function ReplyCompose({ source }: { source: string }) {
       const next = fieldsFor(result)
       setFields(next)
       setSaved(next)
+      setFiles(result.draft?.files ?? [])
+      setSavedFiles(result.draft?.files ?? [])
     }
   }
 
@@ -84,12 +92,14 @@ export function ReplyCompose({ source }: { source: string }) {
     const pending = replyRequest<ReplyDraft>({
       action: 'save', source, id: draft?.id ?? null, revision: draft?.revision ?? null,
       fingerprint: context.fingerprint, ...fields,
+      ...(files.length || filesChanged ? { fileIds: files.map(file => file.id) } : {}),
     })
     saveRef.current = pending
     try {
       const result = await pending
       setDraft(result)
       setSaved(fields)
+      setSavedFiles(files)
       invalidate()
       return result
     } catch (reason) {
@@ -169,7 +179,7 @@ export function ReplyCompose({ source }: { source: string }) {
 
   function review(event: React.FormEvent) {
     event.preventDefault()
-    if (!editable || !fields.body.trim()) return
+    if (!editable || fileBusy || !fields.body.trim()) return
     void run(async () => {
       await save()
       setPreview(true)
@@ -236,6 +246,8 @@ export function ReplyCompose({ source }: { source: string }) {
                     onChange={event => setFields({ ...fields, body: event.target.value })} />
                 </label>
               </fieldset>
+              <ComposeFiles files={files} onChange={setFiles} onBusy={setFileBusy}
+                disabled={!editable || busy || saving || !!stale || conflict} />
               {draft && state === 'accepted' && !draft.tracking && <label className="block max-w-64 space-y-1 text-sm">
                 <span>Ngày kiểm tra lại (giờ Việt Nam)</span>
                 <input type="date" value={followupOn} onChange={event => setFollowupOn(event.target.value)}
@@ -243,12 +255,12 @@ export function ReplyCompose({ source }: { source: string }) {
               </label>}
               <div className="flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
                 {editable && <>
-                  <Button type="button" variant="outline" disabled={busy || saving || !!stale || conflict || !dirty}
+                  <Button type="button" variant="outline" disabled={busy || saving || fileBusy || !!stale || conflict || !dirty}
                     onClick={() => void save().catch(() => {})}>Lưu bản nháp</Button>
-                  <Button type="submit" disabled={busy || saving || !!stale || conflict || !fields.body.trim()} leftIcon={<Send size={16} aria-hidden="true" />}>
+                  <Button type="submit" disabled={busy || saving || fileBusy || !!stale || conflict || !fields.body.trim()} leftIcon={<Send size={16} aria-hidden="true" />}>
                     Xem trước thư gửi
                   </Button>
-                  {draft && <Button type="button" variant="ghost" disabled={busy || saving} onClick={() => setConfirmDiscard(true)}>Xóa bản nháp</Button>}
+                  {draft && <Button type="button" variant="ghost" disabled={busy || saving || fileBusy} onClick={() => setConfirmDiscard(true)}>Xóa bản nháp</Button>}
                 </>}
                 {draft && (state === 'prepared' || state === 'unknown' || state === 'dispatching') && <>
                   <Button type="button" loading={busy} onClick={() => void run(() => send('check', draft))}>Kiểm tra trạng thái gửi</Button>
@@ -292,6 +304,7 @@ export function ReplyCompose({ source }: { source: string }) {
           <div><dt className="font-semibold">Người nhận</dt><dd>{draft.to}</dd></div>
           {draft.cc && <div><dt className="font-semibold">Cc</dt><dd>{draft.cc}</dd></div>}
         </dl>
+        <div className="mt-4"><ComposeFileList files={draft.files ?? []} /></div>
         <p className="mt-4 whitespace-pre-wrap break-words border-t border-[var(--border)] pt-4 text-sm">{draft.body}</p>
         {error && <div className="mt-4"><Alert variant="error" title="Chưa xác nhận được thao tác">{error}</Alert></div>}
       </Modal>}

@@ -14,8 +14,8 @@ const userId = randomUUID(), accountId = randomUUID(), attachmentId = randomUUID
 const gif = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64')
 const active = Buffer.from('<!doctype html><script>window.attachmentRan=true</script>')
 
-function fixture(contentType: string, bytes: Buffer, emailOwner = userId) {
-  const metadata = { sync_part_key: '0', emails: {
+function fixture(contentType: string, bytes: Buffer, emailOwner = userId, second?: Buffer) {
+  const metadata = { sync_part_key: second ? '1' : '0', emails: {
     user_id: emailOwner, source_account_id: accountId, original_uid: '7', sync_namespace: 'INBOX:31',
   } }
   const account = { id: accountId, imap_host: 'fixture.example.test', imap_port: 993, imap_secure: true, username: 'fixture' }
@@ -32,7 +32,10 @@ function fixture(contentType: string, bytes: Buffer, emailOwner = userId) {
     'From: supplier@example.test', 'MIME-Version: 1.0', 'Content-Type: multipart/mixed; boundary="fixture"', '',
     '--fixture', 'Content-Type: text/plain', '', 'Synthetic message.', '--fixture',
     `Content-Type: ${contentType}`, 'Content-Disposition: attachment; filename="sample.gif"',
-    'Content-Transfer-Encoding: base64', '', bytes.toString('base64'), '--fixture--', '',
+    'Content-Transfer-Encoding: base64', '', bytes.toString('base64'),
+    ...(second ? ['--fixture', `Content-Type: ${contentType}`, 'Content-Disposition: attachment; filename="sample.gif"',
+      'Content-Transfer-Encoding: base64', '', second.toString('base64')] : []),
+    '--fixture--', '',
   ].join('\r\n'))
   const release = vi.fn(), close = vi.fn()
   vi.mocked(connectImap).mockResolvedValue({
@@ -76,4 +79,13 @@ it('stops a mismatched attachment owner before opening the vault or provider', a
   expect((await request()).status).toBe(403)
   expect(getImapPassword).not.toHaveBeenCalled()
   expect(connectImap).not.toHaveBeenCalled()
+})
+
+it('downloads the second IMAP MIME part when two attachments have the same filename', async () => {
+  const first = Buffer.from([1, 2, 3])
+  const second = Buffer.from([3, 2, 1])
+  fixture('application/octet-stream', first, userId, second)
+  const response = await request()
+  expect(response.status).toBe(200)
+  expect(Buffer.from(await response.arrayBuffer())).toEqual(second)
 })

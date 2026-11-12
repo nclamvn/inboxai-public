@@ -622,7 +622,7 @@ export function EmailDetailFull({
               <Reply className="w-4 h-4" strokeWidth={1.5} />
               Trả lời
             </button>}
-            <button
+            <button onClick={() => router.push('/compose?forward=' + encodeURIComponent(email.id))}
               type="button"
               className="flex items-center gap-2 px-4 py-2 border border-[var(--border)] rounded-lg text-[14px] text-[var(--muted)] hover:bg-[var(--hover)] transition-colors"
             >

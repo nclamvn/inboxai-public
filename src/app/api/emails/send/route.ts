@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
     const parsed = sendInput.safeParse(await readJson(request))
     if (!parsed.success) throw new SendError(400, 'Vui lòng kiểm tra tài khoản, người nhận và nội dung thư.')
     const input = parsed.data
+    if (input.attachmentIds?.length) throw new SendError(400, 'Hãy duyệt bản nháp trước khi gửi tệp.')
     const scope = {
       userId: user.id,
       accountId: input.sourceAccountId,

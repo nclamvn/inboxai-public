@@ -58,11 +58,14 @@ export function EmailList({ emails, selectedId, onSelect, onStar }: EmailListPro
 
             {/* Star */}
             <button
+              type="button"
+              aria-label={email.is_starred ? 'Bỏ gắn sao' : 'Gắn sao'}
+              aria-pressed={email.is_starred}
               onClick={(e) => {
                 e.stopPropagation()
                 onStar(email.id)
               }}
-              className="flex-shrink-0 mt-0.5"
+              className="neo-icon-button shrink-0"
             >
               <Star
                 className={cn(
@@ -74,8 +77,9 @@ export function EmailList({ emails, selectedId, onSelect, onStar }: EmailListPro
             </button>
 
             {/* Content */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
+            <button type="button" aria-label={email.subject || '(Không có tiêu đề)'}
+              className="focus-ring min-h-11 min-w-0 flex-1 text-start">
+              <span className="mb-1 flex items-center gap-2">
                 <span className={cn(
                   'text-[14px] truncate',
                   email.is_read ? 'text-[var(--muted)]' : 'font-semibold text-[var(--foreground)]'
@@ -92,17 +96,17 @@ export function EmailList({ emails, selectedId, onSelect, onStar }: EmailListPro
                     {categoryInfo.label}
                   </Badge>
                 )}
-              </div>
-              <p className={cn(
-                'text-[14px] truncate mb-1',
+              </span>
+              <span className={cn(
+                'mb-1 block truncate text-[14px]',
                 email.is_read ? 'text-[var(--muted)]' : 'font-medium text-[var(--foreground)]'
               )}>
                 {email.subject || '(Không có tiêu đề)'}
-              </p>
-              <p className="text-[13px] text-[var(--muted-foreground)] truncate">
+              </span>
+              <span className="block truncate text-[13px] text-[var(--muted-foreground)]">
                 {email.summary || truncate(email.snippet || '', 80)}
-              </p>
-            </div>
+              </span>
+            </button>
 
             {/* Time */}
             <div className="flex flex-col items-end gap-1 flex-shrink-0">

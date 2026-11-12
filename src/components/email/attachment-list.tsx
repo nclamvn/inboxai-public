@@ -8,7 +8,7 @@ import {
 import { cn } from '@/lib/utils'
 import { isRasterPreviewType } from '@/lib/email/attachment-preview'
 
-interface Attachment {
+export interface Attachment {
   id: string
   filename: string
   content_type: string | null
@@ -110,11 +110,12 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-1 ml-2 sm:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
                   {isPreviewable && (
                     <button
                       onClick={() => handlePreview(att)}
-                      className="p-1.5 rounded-lg hover:bg-[var(--card)] text-[var(--muted-foreground)]"
+                      type="button"
+                      className="neo-icon-button"
                       title="Xem trước"
                     >
                       <Eye className="w-4 h-4" />
@@ -122,7 +123,8 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
                   )}
                   <button
                     onClick={() => handleDownload(att)}
-                    className="p-1.5 rounded-lg hover:bg-[var(--card)] text-[var(--muted-foreground)]"
+                    type="button"
+                      className="neo-icon-button"
                     title="Tải xuống"
                   >
                     <Download className="w-4 h-4" />

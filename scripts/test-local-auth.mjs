@@ -36,7 +36,8 @@ const dailyCommitments = process.argv.includes('--daily-commitments')
 const catchup = process.argv.includes('--catchup')
 const replies = process.argv.includes('--reply-workflow')
 const followups = process.argv.includes('--reply-followup')
-const journeyE2E = followups || replies || catchup || process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
+const composeAttachments = process.argv.includes('--compose-attachments')
+const journeyE2E = composeAttachments || followups || replies || catchup || process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
 const journey = interactivePreview || journeyE2E
 const commitmentBenchmark = process.argv.includes('--m6g')
 const isolatedCommitment = commitmentDetection && process.argv.includes('--isolated')
@@ -48,7 +49,7 @@ const platformOutput = isolatedPlatform ? 'test-results/commitment-attention/pla
 const isolated = journeyE2E || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedPlatform
 const isolatedBuild = isolated || isolatedStaging
 const productionMode = m6 || staging || journey || isolated
-const journeyOutput = followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
+const journeyOutput = composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
 const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.test'
 const evidenceFile = journey ? `${journeyOutput}/report.json`
   : commitmentOutput ? commitmentOutput + '/local-run.json'
@@ -192,7 +193,7 @@ try {
     mkdirSync(journeyOutput, { recursive: true })
     rmSync(evidenceFile, { force: true })
     rmSync(`${journeyOutput}/failure.png`, { force: true })
-    if (dailyCommitments || catchup || replies || followups) rmSync(`${journeyOutput}/workflow.json`, { force: true })
+    if (dailyCommitments || catchup || replies || followups || composeAttachments) rmSync(`${journeyOutput}/workflow.json`, { force: true })
   }
   started = true
   docker(['up', '-d', '--pull', 'never', ...(staging ? ['--wait','--wait-timeout','60'] : [])])
@@ -353,7 +354,11 @@ try {
   record('admin revocation is enforced on the next request', (await appFetch('/api/admin/whitelist')).status === 403)
   sql("UPDATE public.registration_policy SET enabled=false;")
   record('closed policy rejects subsequent Next signups', (await appFetch('/api/signup-whitelist', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({email:'later@example.test',password,fullName:'Later'}) })).status === 503)
-  if (followups) {
+  if (composeAttachments) {
+    const { rehearseComposeAttachments } = await import('../tests/design/compose-attachments.mjs')
+    await rehearseComposeAttachments({ app, base, email, password, userId, admin, appFetch, sql, googleProvider,
+      previousEmail, anon, restartNext, record, output: journeyOutput })
+  } else if (followups) {
     const { rehearseReplyFollowup } = await import('../tests/design/reply-followup.mjs')
     await rehearseReplyFollowup({ app, base, email, password, userId, admin, appFetch, sql, googleProvider,
       previousEmail, anon, login, restartNext, smtpWire, record, output: journeyOutput })
@@ -467,7 +472,8 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = followups ? 'Production-mode Next (restarted), Chromium and PostgreSQL clocks advanced together in the isolated fixture, two loopback Gmail accounts and three conversations'
+  const provenance = composeAttachments ? 'Production-mode Next (restarted), Chromium, PostgreSQL and two loopback Gmail accounts, actual MIME and binary downloads, synthetic dropped acknowledgements'
+    : followups ? 'Production-mode Next (restarted), Chromium and PostgreSQL clocks advanced together in the isolated fixture, two loopback Gmail accounts and three conversations'
     : replies ? 'Production-mode Next (restarted), Chromium, GoTrue, PostgREST and PostgreSQL, two Gmail accounts and provider acknowledgement loss over loopback'
     : catchup ? 'Production-mode Next (restarted), Chromium, GoTrue, PostgREST and PostgreSQL; three-day synthetic Gmail history via two loopback accounts and injected transport failure'
     : day ? 'Interactive local guide and production-mode Next in Chromium, synthetic data and real local SMTP TLS to Mailpit'
