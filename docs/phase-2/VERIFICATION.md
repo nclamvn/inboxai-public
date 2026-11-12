@@ -1,5 +1,17 @@
 # Verification record
 
+## Reply workflow and follow-up
+
+On 2026-11-12, 23 browser and Auth checks passed with two loopback Gmail
+accounts and a production-mode Next build. A server-saved draft reopened in
+a new mobile viewport session. After Gmail accepted one reply and both the
+provider and browser acknowledgement paths were interrupted, a Next restart
+and three replays preserved one dispatch, one receipt and one Sent row.
+Inbox ignored three decoys and surfaced the linked reply. The commitment
+changed only after a separate approval. Local lint, TypeScript, 241 unit tests,
+197 integration tests, 20 SQL groups, 25 design, 19 platform, 41 E2E, 22 daily
+and 24 catch-up checks passed. See the [reply workflow handoff](REPLY_WORKFLOW_LOCAL_HANDOFF.md).
+
 ## Inbox catch-up after absence
 
 On 2026-11-12, the local catch-up workflow passed 24 checks in a production-mode

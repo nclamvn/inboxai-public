@@ -1,5 +1,6 @@
 import { boundedText } from '@/lib/sync/text'
 import 'server-only';
+import { replyHeaders } from '@/lib/replies/headers'
 import { connectImap } from '@/lib/email/imap-connection';
 import { simpleParser } from 'mailparser';
 import { SyncError, type SyncMessage } from './contracts';
@@ -47,7 +48,9 @@ export async function openImapReader(account: ImapAccount, password: string, sig
                 if ((msg.size ?? msg.source.length) > 10 * 1024 * 1024 || msg.source.length > 10 * 1024 * 1024)
                     throw new SyncError('provider');
                 const parsed = await simpleParser(msg.source, { skipHtmlToText: false, skipTextToHtml: true, skipImageLinks: true, maxHtmlLengthToParse: 300000 });
-                output.push({ uid: String(msg.uid), message_id: msg.envelope.messageId || `imap-${msg.uid}`, from_address: msg.envelope.from?.[0]?.address || '',
+                output.push({ uid: String(msg.uid),
+                    ...replyHeaders(parsed.replyTo?.value.length === 1 ? parsed.replyTo.value[0].address : undefined, parsed.inReplyTo, parsed.references),
+                    message_id: msg.envelope.messageId || `imap-${msg.uid}`, from_address: msg.envelope.from?.[0]?.address || '',
                     from_name: msg.envelope.from?.[0]?.name || '', to_addresses: msg.envelope.to?.flatMap(a => a.address ? [a.address] : []) || [], cc_addresses: msg.envelope.cc?.flatMap(a => a.address ? [a.address] : []) || [],
                     subject: msg.envelope.subject || '(No subject)', body_text: boundedText(parsed.text||'',100000), body_html: parsed.html ? boundedText(parsed.html,200000) : null,
                     received_at: (msg.internalDate instanceof Date ? msg.internalDate : msg.envelope.date || new Date(0)).toISOString(),

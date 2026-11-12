@@ -36,6 +36,7 @@ export function AutoSyncProvider({
     queryClient.invalidateQueries({ queryKey: ['emails'] })
     queryClient.invalidateQueries({ queryKey: ['email-counts'] })
     queryClient.invalidateQueries({ queryKey: ['unread-count'] })
+    queryClient.invalidateQueries({ queryKey: ['reply-work'] })
   }, [queryClient])
   const onSync = useCallback((result: { synced: number }) => {
     void queryClient.invalidateQueries({ predicate: ({ queryKey }) =>

@@ -18,6 +18,7 @@ import { MobileInboxHeader } from '@/components/layout/mobile-inbox-header'
 import { CategoryFilterSheet } from '@/components/layout/category-filter-sheet'
 import { AccountSwitcher } from '@/components/email/account-switcher'
 import { InboxPriorityDialog } from '@/components/email/inbox-priority-dialog'
+import { ReplyInbox } from '@/components/replies/reply-inbox'
 import { CommitmentAttention } from '@/components/commitments/commitment-attention'
 import { compareInboxPriority, rankActionInbox } from '@/lib/action-inbox/rank'
 import type { Email } from '@/types'
@@ -610,7 +611,10 @@ function InboxContent() {
             {/* Email List */}
             <div className="flex-1 overflow-y-auto">
               {userId && !selectedId && !activeFilter && !briefingFilter && !searchQuery && (!isMobile || mobileSegment === 'all') && (
-                <CommitmentAttention key={userId} userId={userId} accounts={selectedAccountIds} />
+                <>
+                  <ReplyInbox key={'replies:' + userId} userId={userId} accounts={selectedAccountIds} />
+                  <CommitmentAttention key={userId} userId={userId} accounts={selectedAccountIds} />
+                </>
               )}
               {error && emails.length === 0 ? (
                 <EmptyState type="error" title="Chưa tải được hộp thư"

@@ -33,7 +33,7 @@ function sendResponse(receipt: SendReceipt, needsGmailPermission: boolean) {
 }
 
 export async function sendFromAccount(
-  scope: SendScope, resolveInput: () => SendInput | Promise<SendInput>, approval?: SendApproval,
+  scope: SendScope, resolveInput: () => SendInput | Promise<SendInput>, approval?: SendApproval, checkOnly = false,
 ) {
   const admin = createSupabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -60,6 +60,9 @@ export async function sendFromAccount(
         .select('subject, message_id, source_account_id, original_uid, sync_namespace')
         .eq('id', input.replyToEmailId).eq('user_id', scope.userId).single()
       if (!original) throw new SendError(404, 'Không tìm thấy thư gốc.')
+      if (original.source_account_id !== scope.accountId) {
+        throw new SendError(409, 'Tài khoản gửi phải là tài khoản của thư gốc.')
+      }
       if (!/^re:/i.test(input.subject) && original.subject && !/[\r\n\x00]/.test(original.subject)) {
         payload.subject = `Re: ${original.subject.slice(0, 496)}`
       }
@@ -119,7 +122,7 @@ export async function sendFromAccount(
   }, async () => {
     // The send receipt is durable before this optional reputation update.
     await Promise.allSettled([...new Set(recipients)].map(email => markSenderAsTrusted(scope.userId, email, 'replied')))
-  })
+  }, checkOnly)
 
   return sendResponse(result, needsGmailPermission)
 }

@@ -1,0 +1,38 @@
+export type ReplyDraft = {
+  id: string
+  sourceId: string
+  revision: number
+  subject: string
+  to: string
+  cc: string
+  body: string
+  state: 'draft' | 'prepared' | 'dispatching' | 'unknown' | 'accepted' | 'partial' | 'rejected'
+  tracking: boolean
+  sentId: string | null
+}
+
+export type ReplyFields = Pick<ReplyDraft, 'to' | 'cc' | 'body'>
+
+export type ReplyWorkbench = {
+  accountId: string
+  account: string
+  fingerprint: string
+  sourceId: string
+  subject: string | null
+  to: string
+  draft: ReplyDraft | null
+  stale: boolean
+  thread: { id: string; sender: string; subject: string | null; at: string | null; snippet: string | null; source: boolean }[]
+}
+
+export type ReplyWork = {
+  id: string
+  sourceId: string
+  subject: string
+  account: string
+  status: 'reply' | 'waiting' | 'draft' | 'sending' | 'sent'
+  replyId: string | null
+  quote: string | null
+}
+
+export const replyHref = (source: string) => '/compose?reply=' + encodeURIComponent(source)

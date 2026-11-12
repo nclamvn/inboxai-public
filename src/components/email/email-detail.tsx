@@ -9,6 +9,8 @@ import { ReplyAssistant } from '@/components/ai/reply-assistant'
 import { AIFeaturesPanel } from '@/components/ai'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import { PhishingWarning } from '@/components/email/phishing-warning'
+import { offerReplyText } from '@/lib/replies/client'
+import { replyHref } from '@/lib/replies/contracts'
 import type { Email } from '@/types'
 
 interface EmailDetailProps {
@@ -127,18 +129,13 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
 
   const handleReply = () => {
     trackReply(email.id)
-    onReply?.()
+    if (onReply) onReply()
+    else router.push(replyHref(email.id))
   }
 
-  const handleUseDraft = (subject: string, body: string) => {
-    // Navigate to compose with pre-filled draft
-    const params = new URLSearchParams({
-      replyTo: email.from_address || '',
-      replyToEmailId: email.id,
-      subject,
-      body,
-    })
-    router.push(`/compose?${params.toString()}`)
+  const handleUseDraft = (_subject: string, body: string) => {
+    offerReplyText(email.id, body)
+    router.push(replyHref(email.id))
   }
 
 
@@ -193,7 +190,7 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
               <Sparkles className="w-5 h-5" strokeWidth={1.5} />
             )}
           </button>
-          <button
+          {email.direction !== 'outbound' && <button
             onClick={() => setShowReplyAssistant(!showReplyAssistant)}
             className={cn(
               'p-2 rounded-lg transition-colors',
@@ -204,7 +201,7 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
             title="Trợ lý phản hồi AI"
           >
             <MessageSquarePlus className="w-5 h-5" strokeWidth={1.5} />
-          </button>
+          </button>}
           {/* More Menu Dropdown */}
           <div className="relative" ref={moreMenuRef}>
             <button
@@ -380,7 +377,7 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
         </div>
 
         {/* Reply Assistant */}
-        {showReplyAssistant && (
+        {showReplyAssistant && email.direction !== 'outbound' && (
           <div className="p-4 border-t border-[var(--border)]">
             <ReplyAssistant
               email={email}
@@ -394,13 +391,13 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
       {/* Actions Footer */}
       <div className="p-4 border-t border-[var(--border)] bg-[var(--background)]">
         <div className="flex items-center gap-2">
-          <button
+          {email.direction !== 'outbound' && <button
             onClick={handleReply}
             className="flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg font-medium hover:opacity-90 transition-colors"
           >
             <Reply className="w-4 h-4" strokeWidth={1.5} />
             Trả lời
-          </button>
+          </button>}
           <button className="flex items-center gap-2 px-4 py-2 border border-[var(--border)] rounded-lg text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors">
             <Forward className="w-4 h-4" strokeWidth={1.5} />
             Chuyển tiếp

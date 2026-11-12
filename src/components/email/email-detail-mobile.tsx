@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   ChevronLeft, Star, MoreVertical, Reply, Forward,
   Archive, Trash2, Mail, AlertCircle, Loader2,
@@ -12,6 +13,8 @@ import { AttachmentList } from './attachment-list'
 import { AISummary } from './ai-summary'
 import { SmartReply } from './smart-reply'
 import { ActionItemsCard } from './action-items-card'
+import { offerReplyText } from '@/lib/replies/client'
+import { replyHref } from '@/lib/replies/contracts'
 import type { Email } from '@/types'
 
 interface Attachment {
@@ -41,6 +44,7 @@ export function EmailDetailMobile({
   onDelete,
   onExplainPriority
 }: EmailDetailMobileProps) {
+  const router = useRouter()
   const [showActions, setShowActions] = useState(false)
   const [isStarred, setIsStarred] = useState(email.is_starred)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -209,20 +213,15 @@ export function EmailDetailMobile({
         </div>
 
         {/* Smart Reply */}
-        <div className="px-4">
+        {email.direction !== 'outbound' && <div className="px-4">
           <SmartReply
             emailId={email.id}
-            onReply={(content, subject) => {
-              const params = new URLSearchParams({
-                replyTo: email.from_address || '',
-                replyToEmailId: email.id,
-                subject,
-                body: content,
-              })
-              window.location.href = `/compose?${params.toString()}`
+            onReply={content => {
+              offerReplyText(email.id, content)
+              router.push(replyHref(email.id))
             }}
           />
-        </div>
+        </div>}
 
         {/* Action Items */}
         <div className="px-4">
@@ -261,20 +260,13 @@ export function EmailDetailMobile({
       <div className="pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-[var(--card)] flex-shrink-0">
         {/* FLOATING ACTION BUTTONS - pill design */}
         <div className="flex items-center justify-center gap-4 px-6 py-3 border-t border-[var(--border)]">
-          <button
-            onClick={() => {
-              const params = new URLSearchParams({
-                replyTo: email.from_address || '',
-                replyToEmailId: email.id,
-                subject: /^re:/i.test(email.subject || '') ? email.subject || '' : `Re: ${email.subject || ''}`,
-              })
-              window.location.href = `/compose?${params}`
-            }}
+          {email.direction !== 'outbound' && <button
+            onClick={() => router.push(replyHref(email.id))}
             className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-[var(--radius-control)] active:opacity-80 max-w-[160px]"
           >
             <Reply className="w-4 h-4" />
             <span className="text-[14px] font-medium">Trả lời</span>
-          </button>
+          </button>}
           <button
             onClick={() => window.location.href = `/compose?forward=${email.id}`}
             className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--secondary)] text-[var(--foreground)] rounded-full active:bg-[var(--hover)] max-w-[160px]"

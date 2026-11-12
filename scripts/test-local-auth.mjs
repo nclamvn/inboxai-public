@@ -34,7 +34,8 @@ const day = dayPreview || dayTest
 const interactivePreview = journeyPreview || dayPreview
 const dailyCommitments = process.argv.includes('--daily-commitments')
 const catchup = process.argv.includes('--catchup')
-const journeyE2E = catchup || process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
+const replies = process.argv.includes('--reply-workflow')
+const journeyE2E = replies || catchup || process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
 const journey = interactivePreview || journeyE2E
 const commitmentBenchmark = process.argv.includes('--m6g')
 const isolatedCommitment = commitmentDetection && process.argv.includes('--isolated')
@@ -44,7 +45,7 @@ const isolatedPlatform = m6 && !m6Native && process.argv.includes('--isolated')
 const platformOutput = isolatedPlatform ? 'test-results/commitment-attention/platform' : undefined
 const isolated = journeyE2E || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedPlatform
 const productionMode = m6 || staging || journey || isolated
-const journeyOutput = catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
+const journeyOutput = replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
 const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.test'
 const evidenceFile = journey ? `${journeyOutput}/report.json`
   : commitmentOutput ? commitmentOutput + '/local-run.json'
@@ -187,7 +188,7 @@ try {
     mkdirSync(journeyOutput, { recursive: true })
     rmSync(evidenceFile, { force: true })
     rmSync(`${journeyOutput}/failure.png`, { force: true })
-    if (dailyCommitments || catchup) rmSync(`${journeyOutput}/workflow.json`, { force: true })
+    if (dailyCommitments || catchup || replies) rmSync(`${journeyOutput}/workflow.json`, { force: true })
   }
   started = true
   docker(['up', '-d', '--pull', 'never', ...(staging ? ['--wait','--wait-timeout','60'] : [])])
@@ -216,6 +217,10 @@ try {
     if (commitments && file === '20261111060000_commitment_ledger.sql') {
       sql(`INSERT INTO public.action_items(user_id,title) VALUES('${previousId}','Legacy task before ledger');`)
     }
+    if (replies && file === '20261112050000_reply_workflow.sql') {
+      sql(`INSERT INTO public.emails(user_id,from_address,subject,body_text) VALUES(
+        '${previousId}','archive@example.test','Hồ sơ trước nâng cấp','Email lịch sử giả lập.');`)
+    }
     if (catchup && file === '20261112040000_commitment_catchup.sql') {
       sql(`INSERT INTO public.emails(user_id,from_address,subject,body_text)
         VALUES('${previousId}','legacy@example.test','[LEG-420] Nâng cấp','Tôi sẽ gửi hồ sơ trước ngày 15/11/2026.');`)
@@ -225,6 +230,8 @@ try {
   if (staging) rehearsal.checkUpgrade(migrations)
   if (catchup) record('upgrade backfills existing inbound evidence as pending',
     Number(sql(`SELECT count(*) FROM private.commitment_catchup WHERE user_id='${previousId}' AND reference='LEG-420' AND hashes IS NULL`)) === 1)
+  if (replies) record('upgrade preserves an existing email and leaves its unverified reply metadata empty',
+    Number(sql(`SELECT count(*) FROM public.emails WHERE user_id='${previousId}' AND subject='Hồ sơ trước nâng cấp' AND in_reply_to IS NULL`)) === 1)
   record('upgrade preserves existing profile', Number(sql(`SELECT count(*) FROM public.profiles WHERE id='${previousId}'`)) === 1)
   const { error: blocked } = await createClient(base, anon).auth.signUp({ email: 'blocked@example.test', password: 'Synthetic-passphrase-123' })
   record('direct Auth API cannot bypass closed registration policy', Boolean(blocked))
@@ -342,7 +349,11 @@ try {
   record('admin revocation is enforced on the next request', (await appFetch('/api/admin/whitelist')).status === 403)
   sql("UPDATE public.registration_policy SET enabled=false;")
   record('closed policy rejects subsequent Next signups', (await appFetch('/api/signup-whitelist', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({email:'later@example.test',password,fullName:'Later'}) })).status === 503)
-  if (catchup) {
+  if (replies) {
+    const { rehearseReplyWorkflow } = await import('../tests/design/reply-workflow.mjs')
+    await rehearseReplyWorkflow({ app, base, email, password, userId, admin, login, appFetch, sql, googleProvider,
+      previousEmail, anon, anonymousClient, restartNext, smtpWire, record, output: journeyOutput })
+  } else if (catchup) {
     const { rehearseInboxCatchup } = await import('../tests/design/inbox-catchup.mjs')
     await rehearseInboxCatchup({ app, base, email, password, userId, admin, login, appFetch, sql, googleProvider,
       previousEmail, previousId, anon, anonymousClient, restartNext, smtpWire, record, output: journeyOutput })
@@ -448,7 +459,8 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = catchup ? 'Production-mode Next (restarted), Chromium, GoTrue, PostgREST and PostgreSQL; three-day synthetic Gmail history via two loopback accounts and injected transport failure'
+  const provenance = replies ? 'Production-mode Next (restarted), Chromium, GoTrue, PostgREST and PostgreSQL, two Gmail accounts and provider acknowledgement loss over loopback'
+    : catchup ? 'Production-mode Next (restarted), Chromium, GoTrue, PostgREST and PostgreSQL; three-day synthetic Gmail history via two loopback accounts and injected transport failure'
     : day ? 'Interactive local guide and production-mode Next in Chromium, synthetic data and real local SMTP TLS to Mailpit'
     : dailyCommitments ? 'Production-mode Next, GoTrue, PostgREST, PostgreSQL, Chromium and Mailpit over loopback with a synthetic daily commitment workflow'
     : journey ? 'Production-mode Next, GoTrue, PostgREST, PostgreSQL, Chromium, Mailpit and a simulated Google OAuth and Gmail API over loopback with synthetic data'

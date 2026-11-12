@@ -1,3 +1,4 @@
+import { replyHeaders } from '@/lib/replies/headers'
 import { boundedText } from '@/lib/sync/text'
 import { randomUUID } from 'node:crypto';
 import { parseHeaders, extractBody, type GmailMessage, type GmailMessagePart } from '@/lib/gmail/api';
@@ -59,7 +60,8 @@ export function normalizeGmail(message: GmailMessage): SyncMessage {
         part.parts?.forEach((child, index) => parts(child, `${path}.${index}`));
     }
     parts(message.payload, '0');
-    return { uid: message.id, message_id: headers['message-id'] || message.id, from_address: match?.[2] || from, from_name: match?.[1]?.replace(/^"|"$/g, ''),
+    return { uid: message.id, thread_id: message.threadId,
+        ...replyHeaders(headers['reply-to'], headers['in-reply-to'], headers.references), message_id: headers['message-id'] || message.id, from_address: match?.[2] || from, from_name: match?.[1]?.replace(/^"|"$/g, ''),
         to_addresses: headers.to ? [headers.to] : [], cc_addresses: headers.cc ? [headers.cc] : [], subject: headers.subject || '(Không có tiêu đề)',
         body_text: boundedText(body.text,100000), body_html: boundedText(body.html,200000) || null, received_at: new Date(Number(message.internalDate)).toISOString(),
         is_read: !labels.includes('UNREAD'), is_starred: labels.includes('STARRED'), is_archived: !labels.includes('INBOX'), is_deleted: labels.includes('TRASH'),

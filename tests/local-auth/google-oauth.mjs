@@ -57,12 +57,26 @@ export async function startGoogleOAuthFixture() {
         if (sendRevoked || !grant.scopes.includes(gmailSendScope)) {
           return json({ error: { errors: [{ reason: 'insufficientPermissions' }] } }, 403)
         }
-        const { raw } = JSON.parse(Buffer.concat(await Array.fromAsync(request)).toString())
+        const { raw, threadId } = JSON.parse(Buffer.concat(await Array.fromAsync(request)).toString())
         const mail = await simpleParser(Buffer.from(raw, 'base64url'))
-        assert.equal(mail.from.value[0].address, gmailFixtureEmail)
+        assert.equal(mail.from.value[0].address, grant.email)
         assert.ok(mail.to.value.every(recipient => recipient.address.endsWith('@example.test')))
-        calls.sent.push({ subject: mail.subject, messageId: mail.messageId })
-        return json({ id: `synthetic-sent-${calls.sent.length}` })
+        const id = `synthetic-sent-${calls.sent.length + 1}`
+        calls.sent.push({ subject: mail.subject, messageId: mail.messageId, from: mail.from.value[0].address,
+          to: mail.to.value.map(address => address.address), cc: mail.cc?.value.map(address => address.address) ?? [],
+          inReplyTo: mail.inReplyTo, threadId, body: mail.text.trim() })
+        if (grant.mailbox) {
+          grant.mailbox.messages.set(id, { id, at: new Date().toISOString(), from: grant.email, subject: mail.subject,
+            body: mail.text, messageId: mail.messageId, inReplyTo: mail.inReplyTo, threadId, sent: true,
+            to: mail.to.text, cc: mail.cc?.text, references: [].concat(mail.references ?? []).join(' ') })
+          grant.mailbox.history.push(id)
+          if (grant.mailbox.dropSendAcknowledgement) {
+            grant.mailbox.dropSendAcknowledgement = false
+            response.destroy()
+            return
+          }
+        }
+        return json({ id })
       }
       if (!grant.scopes.includes(gmailReadScope)) return json({ error: 'read_scope_missing' }, 403)
       calls.reads++
@@ -82,6 +96,9 @@ export async function startGoogleOAuthFixture() {
         const historyId = String(100 + box.history.length)
         if (pathname === gmail + '/profile') return json({ historyId })
         if (pathname === gmail + '/messages') {
+          const q = searchParams.get('q')
+          if (q) return json({ messages: [...box.messages.values()].filter(item =>
+            item.sent && q === 'rfc822msgid:' + item.messageId).map(item => ({ id: item.id })) })
           box.fullReads++
           const { page, nextPageToken } = paginate([...box.messages.keys()].reverse())
           return json({ messages: page.map(id => ({ id })), nextPageToken })
@@ -95,9 +112,11 @@ export async function startGoogleOAuthFixture() {
         const id = pathname.startsWith(gmail + '/messages/') ? pathname.slice((gmail + '/messages/').length) : null
         const item = box.messages.get(id)
         if (!item) return json({}, 404)
-        return json({ id, internalDate: String(Date.parse(item.at)), labelIds: ['INBOX', 'UNREAD'],
+        const headers = { Subject: item.subject, From: item.from, To: item.to ?? grant.email, Cc: item.cc, 'Message-ID': item.messageId,
+          'In-Reply-To': item.inReplyTo, 'Reply-To': item.replyTo, References: item.references }
+        return json({ id, threadId: item.threadId, internalDate: String(Date.parse(item.at)), labelIds: item.sent ? ['SENT'] : ['INBOX', 'UNREAD'],
           payload: { mimeType: 'text/plain', body: { data: Buffer.from(item.body).toString('base64url') },
-            headers: [{ name: 'Subject', value: item.subject }, { name: 'From', value: item.from }, { name: 'To', value: grant.email }] },
+            headers: Object.entries(headers).filter(([, value]) => value).map(([name, value]) => ({ name, value })) },
         })
       }
       if (pathname === gmail + '/profile' || pathname === gmail + '/history') return json({ historyId: '100' })
@@ -116,9 +135,9 @@ export async function startGoogleOAuthFixture() {
 
   return {
     url: `http://127.0.0.1:${server.address().port}`, calls,
-    registerMailbox(email) {
+    registerMailbox(email, canSend = false) {
       const box = { online: true, drops: 0, fullReads: 0, historyStarts: [], messages: new Map(), history: [] }
-      const grant = { mailbox: box, email, subject: email, scopes: [gmailReadScope, googleEmailScope] }
+      const grant = { mailbox: box, email, subject: email, scopes: [gmailReadScope, googleEmailScope, ...(canSend ? [gmailSendScope] : [])] }
       return {
         tokens: issue(grant, true), box,
         deliver(items) {

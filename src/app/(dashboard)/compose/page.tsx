@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Send, Paperclip, X, Loader2, ListChecks, ChevronDown, FilePenLine, FileText, Minus, Plus, Briefcase, Smile } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { ReplyCompose } from '@/components/replies/reply-compose'
 import { Alert } from '@/components/ui/alert'
 import { composeFingerprint, readComposeKey, saveComposeKey } from '@/lib/mail-send/compose-key'
 import { gmailSendPermissionRequired } from '@/lib/gmail/scopes'
@@ -18,6 +19,12 @@ interface SourceAccount {
 }
 
 export default function ComposePage() {
+  const params = useSearchParams()
+  const source = params.get('reply') ?? params.get('replyToEmailId')
+  return source ? <ReplyCompose key={source} source={source} /> : <NewCompose />
+}
+
+function NewCompose() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [to, setTo] = useState('')

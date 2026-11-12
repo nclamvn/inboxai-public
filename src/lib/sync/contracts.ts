@@ -27,6 +27,10 @@ export type Attachment = {
 export type SyncMessage = {
     uid: string;
     message_id: string;
+    thread_id?: string;
+    reply_to?: string | null;
+    in_reply_to?: string | null;
+    reply_references?: string[];
     from_address: string;
     from_name?: string;
     to_addresses?: string[];

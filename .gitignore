@@ -20,6 +20,7 @@
 /test-results/commitment-attention/
 /test-results/day-preview/
 /test-results/inbox-catchup/
+/test-results/reply-workflow/
 /.codex-db-test-*/
 
 # next.js

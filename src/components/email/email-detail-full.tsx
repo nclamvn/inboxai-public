@@ -12,6 +12,8 @@ import { ReplyAssistant } from '@/components/ai/reply-assistant'
 import { AIBottomBar } from './ai-bottom-bar'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import { AttachmentList } from './attachment-list'
+import { offerReplyText } from '@/lib/replies/client'
+import { replyHref } from '@/lib/replies/contracts'
 import type { Email } from '@/types'
 
 interface Attachment {
@@ -202,14 +204,9 @@ export function EmailDetailFull({
     onBack()
   }
 
-  const handleUseDraft = (subject: string, body: string) => {
-    const params = new URLSearchParams({
-      replyTo: email.from_address || '',
-      replyToEmailId: email.id,
-      subject,
-      body,
-    })
-    router.push(`/compose?${params.toString()}`)
+  const handleUseDraft = (_subject: string, body: string) => {
+    offerReplyText(email.id, body)
+    router.push(replyHref(email.id))
   }
 
   const formatDate = (date: string | null) => {
@@ -455,7 +452,7 @@ export function EmailDetailFull({
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          {email.direction !== 'outbound' && <button
             type="button"
             onClick={() => setShowAIAssistant(!showAIAssistant)}
             aria-expanded={showAIAssistant}
@@ -468,7 +465,7 @@ export function EmailDetailFull({
           >
             <ListTodo className="w-4 h-4" strokeWidth={1.5} />
             AI Trả lời
-          </button>
+          </button>}
           <button
             type="button"
             onClick={handleClose}
@@ -605,26 +602,26 @@ export function EmailDetailFull({
       </div>
 
       {/* AI Bottom Bar */}
-      <AIBottomBar
+      {email.direction !== 'outbound' && <AIBottomBar
         emailId={email.id}
         category={currentCategory}
         onReplySelect={(reply) => {
           handleUseDraft(`Re: ${email.subject}`, reply)
         }}
-      />
+      />}
 
       {/* Quick Reply Bar */}
       {!showAIAssistant && (
         <div className="px-6 py-4 border-t border-[var(--border)] bg-[var(--secondary)]">
           <div className="flex items-center gap-2">
-            <button
+            {email.direction !== 'outbound' && <button
               type="button"
               onClick={() => handleUseDraft(`Re: ${email.subject}`, '')}
               className="flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg text-[14px] font-medium hover:opacity-90 transition-colors"
             >
               <Reply className="w-4 h-4" strokeWidth={1.5} />
               Trả lời
-            </button>
+            </button>}
             <button
               type="button"
               className="flex items-center gap-2 px-4 py-2 border border-[var(--border)] rounded-lg text-[14px] text-[var(--muted)] hover:bg-[var(--hover)] transition-colors"
@@ -637,7 +634,7 @@ export function EmailDetailFull({
       )}
 
       {/* AI Reply Assistant */}
-      {showAIAssistant && (
+      {showAIAssistant && email.direction !== 'outbound' && (
         <div className="border-t border-[var(--border)]">
           <ReplyAssistant
             email={email}
