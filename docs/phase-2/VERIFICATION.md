@@ -1,5 +1,25 @@
 # Verification record
 
+## Workspace color and status cues
+
+On 2026-11-12, local Chrome with synthetic data verified the selected
+navigation tint and 2px indicator on desktop, tablet, mobile and dark
+Inbox. Navy marks priority and navigation. Amber identifies pending
+work, red indicates a failure or connection that requires attention,
+green indicates confirmation, and teal distinguishes transaction mail.
+State labels remain visible. The ten sampled foreground/background token
+pairs had calculated contrast ratios from 6.13:1 to 8.13:1.
+
+Local production-mode builds, lint, TypeScript, 241 unit and 200
+integration tests passed on macOS arm64 with Node 24.14.1 and Next.js
+16.4.6. Lint reported 91 existing warnings. The design, platform, Gmail
+reconnect, scheduled send and local staging suites passed 25, 19, 20,
+21 and 31 checks.
+Chrome sampled light and dark Outbox states with zero axe violations
+or horizontal overflow.
+[Inbox design evidence](../../test-results/m6d/design/browser.json) ·
+[Outbox dark](../../test-results/scheduled-send/04-trang-thai-mobile-toi.png)
+
 ## Gmail reconnection and catch-up
 
 On 2026-11-12, `npm run test:gmail-reconnect` passed 20 checks on macOS

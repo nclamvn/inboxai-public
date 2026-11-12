@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { ChevronRight, ClipboardList, FileText, RotateCw } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { cn } from '@/lib/utils'
@@ -46,7 +47,8 @@ function CommitmentRow({ item, group, active }: { item: BoardItem; group: Commit
           <p className={cn('text-xs font-medium tabular-nums', group === 'overdue' ? 'text-[var(--error)]' : 'text-[var(--foreground-secondary)]')}>
             {formatCommitmentDue(item.state)}
           </p>
-          {group === 'closed' && <p className="mt-1 text-xs text-[var(--foreground-muted)]">{statusLabels[item.state.status]}</p>}
+          {group === 'closed' && <Badge variant={item.state.status === 'completed' ? 'success' : 'secondary'}
+            size="xs" className="mt-1">{statusLabels[item.state.status]}</Badge>}
         </div>
         <ChevronRight size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-[var(--foreground-muted)]" />
       </Link>
@@ -119,7 +121,7 @@ export function CommitmentLedger({ userId }: { userId: string }) {
 
   return (
     <div className="flex min-h-full min-w-0 flex-col bg-[var(--canvas)] lg:h-full lg:overflow-hidden">
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-4 sm:px-6">
+      <header className="neo-section-accent flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-4 sm:px-6">
         <div className="min-w-0">
           <h1 className="neo-title" ref={listHeading} tabIndex={-1}>Cam kết</h1>
           <p className="mt-1 text-xs text-[var(--foreground-muted)]">Hạn chót theo giờ Việt Nam (UTC+7)</p>

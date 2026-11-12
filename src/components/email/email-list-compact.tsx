@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo, MouseEvent, TouchEvent } from 'react'
 import { Star, ListTodo, Inbox, Newspaper, ChevronDown, ChevronRight, Loader2, Paperclip, Check, X, Archive, Trash2, Mail, MailOpen, Info } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { useSelection } from '@/contexts/email-selection-context'
 import { ContextMenu } from './context-menu'
@@ -462,11 +463,11 @@ export function EmailListCompact({
           <span className="flex min-w-0 items-center gap-2 text-sm leading-5">
             {!email.is_read && <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-[var(--selection-line)]" />}
             <span className={cn('truncate', !email.is_read && 'font-semibold')}>{subject}</span>
-            {email.snoozed_until && <span className="shrink-0 text-xs text-[var(--accent-foreground)]">Đến hẹn</span>}
+            {email.snoozed_until && <Badge size="xs" variant="warning" className="shrink-0 px-1.5 py-0 leading-4">Đến hẹn</Badge>}
             {(email.attachment_count || 0) > 0 && <Paperclip size={14} className="shrink-0 text-[var(--foreground-muted)]" aria-label="Có tệp đính kèm" />}
           </span>
           {rank?.band === 'action' ? (
-            <span className="truncate text-xs leading-4 text-[var(--accent-foreground)]">
+            <span className="truncate border-s-2 border-[var(--selection-line)] ps-2 text-xs font-medium leading-4 text-[var(--accent-foreground)]">
               {rank.reasons[0].label}
             </span>
           ) : (
@@ -491,7 +492,11 @@ export function EmailListCompact({
             aria-label={`Lọc danh mục ${label}`}
             className="hidden h-8 w-24 shrink-0 items-center justify-end rounded-[var(--radius-control)] px-2 text-xs text-[var(--foreground-muted)] hover:bg-[var(--secondary)] lg:inline-flex"
           >
-            {label}
+            {email.category === 'work' ? (
+              <Badge variant="info" size="xs" className="px-1.5 py-0 leading-4">{label}</Badge>
+            ) : email.category === 'transaction' ? (
+              <span className="rounded-[var(--radius-control)] bg-[var(--category-transaction-bg)] px-2 py-px text-[11px] font-medium leading-4 text-[var(--category-transaction)]">{label}</span>
+            ) : label}
           </button>
         )}
       </div>
@@ -566,7 +571,10 @@ export function EmailListCompact({
                   type="button"
                   aria-expanded={!isCollapsed}
                   onClick={() => setCollapsedSections(previous => ({ ...previous, [section.id]: !isCollapsed }))}
-                  className="flex min-h-11 w-full items-center gap-2 border-b border-[var(--border)] bg-[var(--canvas)] px-4 py-2 text-start hover:bg-[var(--hover)]"
+                  className={cn(
+                    'flex min-h-11 w-full items-center gap-2 border-b border-[var(--border)] px-4 py-2 text-start hover:bg-[var(--hover)]',
+                    section.id === 'action' ? 'neo-section-accent' : 'bg-[var(--canvas)]',
+                  )}
                 >
                   {isCollapsed ? (
                     <ChevronRight className="w-4 h-4 text-[var(--muted-foreground)]" strokeWidth={1.5} />
@@ -581,8 +589,8 @@ export function EmailListCompact({
                     strokeWidth={1.5}
                   />
                   <span className={cn(
-                    'text-[13px] font-medium',
-                    section.id === 'action' ? 'text-[var(--accent-foreground)]' : 'text-[var(--foreground)]'
+                    'text-[13px]',
+                    section.id === 'action' ? 'font-semibold text-[var(--accent-foreground)]' : 'font-medium text-[var(--foreground)]'
                   )}>
                     {section.title}
                   </span>

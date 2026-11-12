@@ -272,10 +272,13 @@ export async function rehearseScheduledSend({ app, base, email, password, userId
     await row(movedSubject).getByText('Đã gửi', { exact: true }).waitFor()
     await row(canceledSubject).getByText('Đã hủy lịch', { exact: true }).waitFor()
     await capture('03-trang-thai-mobile')
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await page.waitForFunction(() => document.documentElement.classList.contains('dark'))
+    await capture('04-trang-thai-mobile-toi')
     await row(movedSubject).getByRole('link', { name: 'Mở thư đã gửi' }).click()
     await page.getByText(attachment.name, { exact: false }).waitFor()
     assert.deepEqual(pageErrors, [])
-    record('Chrome mobile viewport shows durable status and opens the exact Sent message with its attachment; three screens have no axe violations or horizontal overflow', true)
+    record('Chrome mobile viewport shows durable status and opens the exact Sent message with its attachment; light and dark screens have no axe violations or horizontal overflow', true)
     await writeFile(output + '/workflow.json', JSON.stringify({
       status: 'PASS', chromeVersion, timezone: zone, browserClosedDuringBothDispatches: true, nextRestarts: 2,
       providerSendAttempts: googleProvider.calls.sendAttempts, gmailAccounts: 2, scenarios: [

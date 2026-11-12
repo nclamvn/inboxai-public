@@ -28,7 +28,7 @@ export function MobileNav() {
           key={href}
           href={href}
           aria-current={pathname === href ? 'page' : undefined}
-          className="neo-nav-item neo-nav-inline h-[var(--mobile-nav-height)] min-w-0 flex-col justify-center gap-1 text-center text-[11px] leading-4"
+          className="neo-nav-item neo-nav-inline neo-destination h-[var(--mobile-nav-height)] min-w-0 flex-col justify-center gap-1 text-center text-[11px] leading-4"
         >
           <Icon size={20} strokeWidth={1.5} aria-hidden="true" />
           {label}

@@ -47,9 +47,11 @@ export function Sidebar() {
       className={cn('hidden h-full shrink-0 flex-col border-e border-[var(--border)] bg-[var(--canvas)] md:flex', width)}
     >
       <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-[var(--border)] px-3">
-        <Link href="/inbox" aria-label="InboxAI" className={cn('min-w-0', labelVisibility)}>
-          <span className="flex items-center gap-2 font-semibold tracking-tight">
-            <Mail size={18} strokeWidth={1.5} className="shrink-0 text-[var(--accent-foreground)]" aria-hidden="true" />
+        <Link href="/inbox" aria-label="InboxAI" className={cn('min-w-0 rounded-[var(--radius-control)]', labelVisibility)}>
+          <span className="flex items-center gap-2 text-sm font-semibold tracking-tight text-[var(--accent-foreground)]">
+            <span className="grid size-8 shrink-0 place-items-center rounded-[var(--radius-control)] bg-[var(--primary)] text-[var(--primary-foreground)]">
+              <Mail size={18} strokeWidth={1.75} aria-hidden="true" />
+            </span>
             InboxAI
           </span>
         </Link>
@@ -89,7 +91,7 @@ export function Sidebar() {
                     aria-current={pathname === href ? 'page' : undefined}
                     aria-label={label}
                     title={label}
-                    className="neo-nav-item neo-target px-5 text-sm"
+                    className="neo-nav-item neo-destination neo-target px-5 text-sm"
                   >
                     <Icon size={20} strokeWidth={1.5} className="shrink-0" aria-hidden="true" />
                     <span className={cn('flex-1 truncate', labelVisibility)}>{label}</span>

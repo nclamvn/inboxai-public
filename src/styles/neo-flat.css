@@ -30,6 +30,9 @@
   --secondary-hover: #E5EDF2;
   --accent: #EDF4F8;
   --accent-foreground: var(--navy);
+  --workspace-tint: #E8F1F7;
+  --category-transaction: #17635F;
+  --category-transaction-bg: #E8F4F2;
   --selection-line: var(--navy);
   --card: var(--surface);
   --card-foreground: var(--ink);
@@ -72,6 +75,9 @@
   --secondary-hover: #2B4250;
   --accent: #233C4D;
   --accent-foreground: #AED5EF;
+  --workspace-tint: #243B4B;
+  --category-transaction: #9CD8CE;
+  --category-transaction-bg: #203936;
   --selection-line: #A5CCE7;
   --hover: #223440;
   --success: #9BD5BA;
@@ -89,8 +95,6 @@
   --category-work-bg: var(--accent);
   --category-personal: var(--foreground-muted);
   --category-personal-bg: var(--secondary);
-  --category-transaction: var(--foreground-muted);
-  --category-transaction-bg: var(--secondary);
   --category-newsletter: var(--foreground-muted);
   --category-newsletter-bg: var(--secondary);
   --category-promotion: var(--foreground-muted);
@@ -121,6 +125,25 @@
   }
 
   .neo-icon-button:hover { background: var(--hover); color: var(--foreground); }
+
+  .neo-section-accent {
+    position: relative;
+    background-color: var(--workspace-tint);
+  }
+
+  .neo-section-accent::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: var(--accent-width);
+    background: var(--selection-line);
+    pointer-events: none;
+  }
+
+  .neo-destination[aria-current="page"] {
+    background-color: var(--workspace-tint);
+  }
 
   .neo-nav-item {
     position: relative;

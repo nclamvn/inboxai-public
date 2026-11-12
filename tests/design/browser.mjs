@@ -135,7 +135,16 @@ export async function rehearseDesign({ app, cookies, admin, userId, record, acti
         assert.deepEqual([styles.canvas, styles.surface, styles.border, styles.text], ['#F7F9FA', '#FFFFFF', '#E1E7EB', '#192532'])
       } else assert.equal(styles.canvas, '#111C25')
       const visibleNav = page.getByRole('navigation', { name: name === 'mobile' ? 'Điều hướng di động' : 'Hộp thư và công cụ' })
-      assert.equal(await visibleNav.locator('[aria-current="page"]').count(), 1)
+      const currentDestination = visibleNav.locator('[aria-current="page"]')
+      assert.equal(await currentDestination.count(), 1)
+      const destination = await currentDestination.evaluate(link => ({
+        surface: getComputedStyle(link).backgroundColor,
+        indicator: getComputedStyle(link, '::before')[link.classList.contains('neo-nav-inline') ? 'height' : 'width'],
+      }))
+      assert.deepEqual(destination, {
+        surface: name === 'dark' ? 'rgb(36, 59, 75)' : 'rgb(232, 241, 247)',
+        indicator: '2px',
+      })
       const dismissUrgent = page.getByRole('button', { name: `Đóng thông báo: ${subject}` })
       await dismissUrgent.waitFor()
       if (name !== 'mobile') await page.getByRole('button', { name: 'Tất cả tài khoản' }).waitFor()

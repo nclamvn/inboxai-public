@@ -4,6 +4,7 @@ import { useId, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { RotateCw } from 'lucide-react'
+import { Badge, type BadgeProps } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
@@ -19,6 +20,9 @@ const reasons = {
   overdue: 'Quá hạn',
   review: 'Bằng chứng cần kiểm tra',
   reply: 'Có phản hồi mới',
+}
+const reasonTones: Record<AttentionItem['reason'], BadgeProps['variant']> = {
+  today: 'warning', overdue: 'error', review: 'warning', reply: 'info',
 }
 const reminderLabels = {
   accepted: 'Đã gửi lời nhắc',
@@ -113,17 +117,19 @@ function ReminderReview({ item, userId, onClose, onChange }: {
   )
 }
 
-function syncStatus(account: CatchupAccount) {
-  if (account.status === 'reconnect') return 'Cần kết nối lại Gmail'
-  if (account.status === 'error') return 'Gián đoạn · chờ thử lại'
-  if (account.status === 'syncing' || account.status === 'pending') return 'Đang bắt kịp'
-  if (!account.lastSyncAt) return 'Chưa đồng bộ'
-  if (account.waitingAnalysis) return 'Đang kiểm tra cam kết'
-  return 'Đã đồng bộ'
+function syncStatus(account: CatchupAccount): { label: string; tone: BadgeProps['variant'] } {
+  if (account.status === 'reconnect') return { label: 'Cần kết nối lại Gmail', tone: 'error' }
+  if (account.status === 'error') return { label: 'Gián đoạn · chờ thử lại', tone: 'warning' }
+  if (account.status === 'syncing' || account.status === 'pending') return { label: 'Đang bắt kịp', tone: 'info' }
+  if (!account.lastSyncAt) return { label: 'Chưa đồng bộ', tone: 'secondary' }
+  if (account.waitingAnalysis) return { label: 'Đang kiểm tra cam kết', tone: 'info' }
+  return { label: 'Đã đồng bộ', tone: 'success' }
 }
 
 function CatchupStatus({ userId, accounts, filter }: { userId: string; accounts: CatchupAccount[]; filter: string[] }) {
   const cache = useQueryClient()
+  const needsReconnect = accounts.some(account => account.status === 'reconnect')
+  const interrupted = accounts.some(account => account.status === 'error')
   const sync = useMutation({
     networkMode: 'always',
     mutationFn: async () => {
@@ -150,18 +156,24 @@ function CatchupStatus({ userId, accounts, filter }: { userId: string; accounts:
         {accounts.length > 0 && (
           <details className="min-w-0 text-sm">
             <summary className="neo-target min-h-11 cursor-pointer list-item py-3 text-[var(--foreground-secondary)]">
-              Trạng thái đồng bộ{accounts.some(account => account.status === 'reconnect') ? ' · Cần kết nối lại'
-                : accounts.some(account => account.status === 'error') ? ' · Có gián đoạn' : ''}
+              Trạng thái đồng bộ{needsReconnect ? <span className="font-medium text-[var(--error)]"> · Cần kết nối lại</span>
+                : interrupted ? <span className="font-medium text-[var(--warning)]"> · Có gián đoạn</span> : null}
             </summary>
             <ul className="space-y-2 pb-2 text-xs">
-              {accounts.map(account => (
-                <li key={account.id} className="min-w-0 break-words">
-                  <span className="font-medium">{account.email}</span> · {syncStatus(account)}
-                  {account.lastSyncAt && <span> · Lần hoàn tất gần nhất {formatCommitmentMoment(account.lastSyncAt)}</span>}
-                  {account.status === 'reconnect' && <GmailReconnectButton accountId={account.id} email={account.email} surface="inbox" />}
-                  {account.waitingAnalysis > 0 && <span> · {account.waitingAnalysis} thư chờ kiểm tra</span>}
-                </li>
-              ))}
+              {accounts.map(account => {
+                const status = syncStatus(account)
+                return (
+                  <li key={account.id} className="min-w-0 break-words">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="min-w-0 font-medium">{account.email}</span>
+                      <Badge variant={status.tone} className="py-0.5">{status.label}</Badge>
+                    </div>
+                    {account.lastSyncAt && <p className="mt-1 text-[var(--foreground-muted)]">Lần hoàn tất gần nhất {formatCommitmentMoment(account.lastSyncAt)}</p>}
+                    {account.waitingAnalysis > 0 && <p className="text-[var(--foreground-muted)]">{account.waitingAnalysis} thư chờ kiểm tra</p>}
+                    {account.status === 'reconnect' && <GmailReconnectButton accountId={account.id} email={account.email} surface="inbox" />}
+                  </li>
+                )
+              })}
             </ul>
             <Button type="button" variant="outline" size="sm" className="mb-3 min-h-11" loading={sync.isPending}
               onClick={() => sync.mutate()}>Đồng bộ ngay</Button>
@@ -192,7 +204,7 @@ export function CommitmentAttention({ userId, accounts }: { userId: string; acco
     <>
       {(items.length > 0 || status.length > 0 || query.isError) && (
         <section aria-labelledby={title} className="border-b border-[var(--border)] bg-[var(--surface)]">
-          <div className="flex min-w-0 items-center justify-between gap-3 border-s-2 border-[var(--selection-line)] px-4 sm:px-5">
+          <div className="neo-section-accent flex min-w-0 items-center justify-between gap-3 px-4 sm:px-5">
             <h2 id={title} ref={heading} tabIndex={-1} className="py-3 text-sm font-semibold">Cam kết cần chú ý</h2>
             <button type="button" onClick={refresh} className="neo-icon-button" disabled={query.isFetching}
               aria-label="Làm mới cam kết cần chú ý" title="Làm mới cam kết cần chú ý">
@@ -208,9 +220,10 @@ export function CommitmentAttention({ userId, accounts }: { userId: string; acco
                 <li key={item.id} className="flex min-w-0 flex-wrap items-start justify-between gap-x-5 px-4 pt-3 sm:px-5">
                   <div className="min-w-0 flex-[1_1_15rem]">
                     <p className="break-words text-sm font-semibold">{item.state.title}</p>
-                    <p className="mt-1 break-words text-xs text-[var(--foreground-secondary)]">
-                      {reasons[item.reason]} · {formatCommitmentDue(item.state)} · {item.responsibility === 'mine' ? 'Tôi phải làm' : ownerLabel(item.state)}
-                    </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--foreground-secondary)]">
+                      <Badge variant={reasonTones[item.reason]} className="py-0.5">{reasons[item.reason]}</Badge>
+                      <span>{formatCommitmentDue(item.state)} · {item.responsibility === 'mine' ? 'Tôi phải làm' : ownerLabel(item.state)}</span>
+                    </div>
                     {item.reply && <blockquote className="mt-2 border-s-2 border-[var(--border)] ps-2 text-sm break-words">{item.reply.quote}</blockquote>}
                     <div className="flex flex-wrap items-center gap-x-4">
                       {item.source.href && <Link className={link} href={item.source.href} prefetch={false}>Mở email nguồn</Link>}

@@ -7,6 +7,7 @@ import { Clock, RefreshCw } from 'lucide-react'
 import { GmailReconnectButton, GmailReconnectNotice } from '@/components/gmail/gmail-reconnect'
 import { ScheduleSendDialog } from '@/components/email/schedule-send-dialog'
 import { Alert } from '@/components/ui/alert'
+import { Badge, type BadgeProps } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { composeRequest, fileDraftHref } from '@/lib/compose/client'
 import { ReplyError } from '@/lib/replies/client'
@@ -16,6 +17,10 @@ const states: Record<ScheduledMail['state'], string> = {
   scheduled: 'Đã lên lịch', dispatching: 'Đang xử lý', unknown: 'Đang chờ xác minh Gmail',
   accepted: 'Đã gửi', rejected: 'Gmail từ chối', partial: 'Gửi một phần',
   failed: 'Không gửi được', canceled: 'Đã hủy lịch',
+}
+const stateTones: Record<ScheduledMail['state'], BadgeProps['variant']> = {
+  scheduled: 'info', dispatching: 'info', unknown: 'warning', accepted: 'success',
+  rejected: 'error', partial: 'warning', failed: 'error', canceled: 'secondary',
 }
 const linkClass = 'neo-target inline-flex items-center text-sm font-medium text-[var(--accent-foreground)] underline underline-offset-4'
 const moment = (value: string) => new Intl.DateTimeFormat('vi-VN', {
@@ -60,7 +65,7 @@ export default function OutboxPage() {
   }
 
   return <div className="mx-auto min-h-full max-w-5xl bg-[var(--surface)]">
-    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-4 sm:px-6">
+    <header className="neo-section-accent flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-4 sm:px-6">
       <div><h1 className="neo-title">Chờ gửi</h1>
         <p className="mt-1 text-sm text-[var(--foreground-secondary)]">Lịch gửi và trạng thái xác nhận từ Gmail.</p></div>
       <Button variant="outline" type="button" disabled={isFetching} onClick={() => void refetch()}
@@ -82,7 +87,9 @@ export default function OutboxPage() {
           <article aria-label={mail.subject} className="space-y-2">
             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
               <h2 className="min-w-0 break-words font-semibold">{mail.subject}</h2>
-              <p className="border-s-2 border-[var(--accent)] ps-2 text-sm font-medium">{states[mail.state]}</p>
+              <Badge variant={mail.reconnectRequired ? 'error' : stateTones[mail.state]}>
+                {mail.reconnectRequired ? 'Cần kết nối lại Gmail' : states[mail.state]}
+              </Badge>
             </div>
             <dl className="grid gap-1 text-sm text-[var(--foreground-secondary)] sm:grid-cols-2">
               <div className="min-w-0 break-all"><dt className="inline font-medium">Gửi từ </dt><dd className="inline">{mail.account}</dd></div>
