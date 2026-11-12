@@ -15,6 +15,7 @@ those decisions, not an independently retrieved Library document or concept pack
 - [Actual verification](VERIFICATION.md)
 - [M1-A credential vault and maintenance](CREDENTIAL_VAULT.md)
 - [Sync contracts and recovery](SYNC_CONTRACTS.md)
+- [M6-G Commitment Intelligence evaluation](M6G_LOCAL_HANDOFF.md)
 - [M6-F adversarial security rehearsal](VERIFICATION.md#m6-f-adversarial-security-rehearsal)
 - [M6-E Gmail consent and synthetic browser evidence](VERIFICATION.md#m6-e-gmail-consent)
 - [M6-D Codex preview and purchasing journey](M6D_LOCAL_HANDOFF.md)

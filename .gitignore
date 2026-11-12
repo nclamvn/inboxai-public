@@ -14,6 +14,7 @@
 /coverage
 /test-results/m6d/
 /test-results/m6f/
+/test-results/m6g/
 /.codex-db-test-*/
 
 # next.js

@@ -1,7 +1,8 @@
 # Verification record
 
-Latest: [M6-F adversarial security rehearsal](#m6-f-adversarial-security-rehearsal).
-Previous: [M6-E Gmail consent](#m6-e-gmail-consent),
+Latest: [M6-G Commitment Intelligence evaluation](M6G_LOCAL_HANDOFF.md).
+Previous: [M6-F adversarial security rehearsal](#m6-f-adversarial-security-rehearsal),
+[M6-E Gmail consent](#m6-e-gmail-consent),
 [M6-D Codex preview and purchasing journey](M6D_LOCAL_HANDOFF.md),
 [M6-B local staging, recovery and alert evidence](M6B_LOCAL_HANDOFF.md),
 [M6-A local performance and platform evidence](M6A_LOCAL_HANDOFF.md),

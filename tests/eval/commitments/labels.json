@@ -1,0 +1,38 @@
+{
+  "PO-4812":[
+    {"source":"a1","target":"a1","kind":"create","owner":"tram@pump.example.test","due":"2026-10-12","quote":"Chúng tôi sẽ giao 40 bộ gioăng trước ngày 12/10/2026.","important":true},
+    {"source":"a2","target":"a1","kind":"deadline","owner":null,"due":"2026-10-15","quote":"Chúng tôi dời hạn sang ngày 15/10/2026.","important":true},
+    {"source":"a3","target":"a1","kind":"completed","owner":null,"due":null,"quote":"Chúng tôi đã hoàn thành cam kết.","important":false}
+  ],
+  "QA-6329":[
+    {"source":"b1","target":"b1","kind":"create","owner":"mai@meter.example.test","due":"2026-10-13","quote":"Tôi sẽ gửi bản ghi hiệu chuẩn áp kế trước ngày 13/10/2026.","important":true},
+    {"source":"b2","target":"b1","kind":"owner","owner":"minh@meter.example.test","due":null,"quote":"Tôi chuyển trách nhiệm cho minh@meter.example.test.","important":true},
+    {"source":"b3","target":"b1","kind":"completed","owner":null,"due":null,"quote":"Tôi đã đính kèm bản ghi hiệu chuẩn áp kế có chữ ký, coi như xong phần việc Mai bàn giao.","important":true}
+  ],
+  "LG-7426":[
+    {"source":"c3","target":"c3","kind":"create","owner":"quyen@dock.example.test","due":"2026-10-21","quote":"Chốt chắc lịch rồi: máy dán sẽ được bên em bàn giao vào ngày 21/10/2026.","important":true}
+  ],
+  "WO-8531":[],
+  "SP-7645":[
+    {"source":"e1","target":"e1","kind":"create","owner":"david@seal.example.test","due":"2026-10-20","quote":"We will deliver the seal samples by 2026-10-20.","important":true},
+    {"source":"e2","target":"e1","kind":"deadline","owner":null,"due":"2026-10-24","quote":"We have moved the deadline to 2026-10-24.","important":true}
+  ],
+  "AC-9962":[
+    {"source":"f1","target":"f1","kind":"create","owner":"lien@balance.example.test","due":"2026-10-21","quote":"Tôi sẽ gửi biên bản đối chiếu trước ngày 21/10/2026.","important":false},
+    {"source":"f1","target":"f1","kind":"create","owner":"lien@balance.example.test","due":"2026-10-23","quote":"Tôi sẽ nộp bảng kê thuế trước ngày 23/10/2026.","important":true}
+  ],
+  "RT-5248":[
+    {"source":"g1","target":"g1","kind":"create","owner":"thao@cabinet.example.test","due":"2026-10-16","quote":"Tôi sẽ gửi bản vẽ tủ điện ngày mai.","important":true},
+    {"source":"g2","target":"g1","kind":"cancelled","owner":null,"due":null,"quote":"Tôi hủy cam kết.","important":true}
+  ],
+  "PK-8473":[
+    {"source":"h1","target":"h1","kind":"create","owner":"ngan@packing.example.test","due":null,"quote":"Chúng tôi sẽ gửi bản quy cách đóng thùng.","important":false}
+  ],
+  "IN-9735":[
+    {"source":"i1","target":"i1","kind":"create","owner":"ale@workshop.example.test","due":"2026-10-27","quote":"I will submit the signed motor inspection report by 2026-10-27.","important":true}
+  ],
+  "FN-8652":[
+    {"source":"j1","target":"j1","kind":"create","owner":"hang@thermal.example.test","due":"2026-10-26","quote":"Chúng tôi sẽ thanh toán tiền cọc bộ gia nhiệt trước ngày 26/10/2026.","important":true},
+    {"source":"j3","target":"j1","kind":"deadline","owner":null,"due":"2026-10-28","quote":"Đã chốt với kế toán: tiền cọc sẽ chuyển ngày 28/10/2026, thay lịch 26/10/2026.","important":true}
+  ]
+}

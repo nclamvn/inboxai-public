@@ -30,12 +30,14 @@ const m6c = process.argv.includes('--m6c')
 const journeyPreview = process.argv.includes('--m6d-preview')
 const journeyE2E = process.argv.includes('--m6d-e2e')
 const journey = journeyPreview || journeyE2E
+const commitmentBenchmark = process.argv.includes('--m6g')
 const isolatedDesign = design && process.argv.includes('--isolated')
-const isolated = journeyE2E || isolatedDesign
-const productionMode = m6 || staging || journey || isolatedDesign
+const isolated = journeyE2E || isolatedDesign || commitmentBenchmark
+const productionMode = m6 || staging || journey || isolated
 const journeyOutput = 'test-results/m6d'
 const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.test'
 const evidenceFile = journey ? `${journeyOutput}/report.json`
+  : commitmentBenchmark ? 'test-results/m6g/local-run.json'
   : isolatedDesign ? `${journeyOutput}/design-run.json`
   : m6c ? `docs/phase-2/evidence/m6c-${staging ? 'staging' : 'auth'}-run.json`
   : staging ? 'docs/phase-2/evidence/m6b-run.json'
@@ -53,7 +55,7 @@ const compose = ['compose', '-p', isolated ? 'inboxai-m6d-e2e' : staging ? 'inbo
   '-f', 'tests/local-auth/compose.yml',
   ...(isolated ? ['-f', 'tests/local-auth/e2e.compose.yml'] : staging ? ['-f', 'tests/local-auth/staging.compose.yml'] : [])]
 let dockerContext = []
-const dockerEnv = staging || m6c || journey || isolatedDesign ? Object.fromEntries(['PATH','HOME','LANG','TMPDIR'].filter(key => process.env[key]).map(key => [key,process.env[key]])) : process.env
+const dockerEnv = staging || m6c || journey || isolated ? Object.fromEntries(['PATH','HOME','LANG','TMPDIR'].filter(key => process.env[key]).map(key => [key,process.env[key]])) : process.env
 const docker = (args, options) => execFileSync('docker', [...dockerContext, ...compose, ...args],
   { env: dockerEnv, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024, timeout: 90_000, ...options })
 const sql = source => docker(['exec', '-T', 'db', 'psql', '-U', 'postgres', '-d', 'inboxai_security_test',
@@ -84,7 +86,7 @@ const briefingReads = []
 const cookies = new Map()
 const shutdown = new AbortController()
 const stop = () => shutdown.abort()
-if (journey) {
+if (journey || commitmentBenchmark) {
   // The terminal and npm may both deliver the same signal during teardown.
   process.on('SIGINT', stop)
   process.on('SIGTERM', stop)
@@ -109,12 +111,16 @@ async function waitFor(url, predicate = r => r.ok) {
   throw new Error(`Local service did not become ready: ${new URL(url).port}`)
 }
 try {
+  if (commitmentBenchmark) {
+    mkdirSync('test-results/m6g', { recursive: true })
+    rmSync('test-results/m6g/product.json', { force: true })
+  }
   // A failed future run must never leave a stale success report behind.
   if (!journey) rmSync(evidenceFile, { force:true })
   if (commitments) rmSync('docs/phase-2/evidence/m3a-sample-ledger.json', { force: true })
   const freeKB = Number(execFileSync('df', ['-Pk', '/'], { encoding: 'utf8' }).trim().split('\n').at(-1).split(/\s+/)[3])
   assert.ok(freeKB >= 10 * 1024 * 1024, 'less than 10 GiB free')
-  if (staging || m6c || journey || isolatedDesign) {
+  if (staging || m6c || journey || isolated) {
     assert.ok(['.env', '.env.local', '.env.production', '.env.production.local', '.env.development', '.env.development.local']
       .every(path => !existsSync(path)), 'The isolated fixture requires a checkout without Next.js environment files')
     const context = execFileSync('docker', ['context','show'], { env: dockerEnv, encoding: 'utf8' }).trim()
@@ -325,6 +331,9 @@ try {
       const { rehearseSecurityJourney } = await import('../tests/design/security-journey.mjs')
       await rehearseSecurityJourney({ app, base, email, previousEmail, password, fixture, admin, sql, record, smtpWire, output: journeyOutput })
     }
+  } else if (commitmentBenchmark) {
+    const { runProduct } = await import('../tests/eval/commitments/product.mjs')
+    await runProduct({ admin, appFetch, userId, ownEmailId, record })
   } else if (staging) {
     await rehearsal.verify({ app, appFetch, admin, login, anonymous: anonymousClient, userId, previousId, ownEmailId, otherEmailId, email, password,
       selectRecovery: () => { useRecovery = true }, appLog: () => output })
@@ -388,6 +397,7 @@ try {
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
   const provenance = journey ? 'Production-mode Next, GoTrue, PostgREST, PostgreSQL, Chromium, Mailpit and a simulated Google OAuth and Gmail API over loopback with synthetic data'
+    : commitmentBenchmark ? 'Authenticated production-mode Next, PostgREST and PostgreSQL on the synthetic M6-G corpus'
     : staging ? 'Local staging and independent PostgreSQL recovery, GoTrue, PostgREST and production-mode Next on synthetic data'
     : m6Native ? 'Native simulator WebViews against production-mode local Next, GoTrue and PostgREST on synthetic mail'
     : m6 ? 'Production-mode Next locally with Chromium, GoTrue, PostgREST and PostgreSQL on synthetic mail'
@@ -401,9 +411,9 @@ try {
     : design ? 'Authenticated local Chromium with synthetic mail, loopback only'
     : 'Real local GoTrue/PostgREST/Next; synthetic Gmail/IMAP readers, loopback Gmail HTTP and SMTP TLS with fixture DNS/socket mapping; internal verification SMTP sink; .test identities; not hosted/provider interoperability'
   if (!journeyPreview) writeFileSync(evidenceFile, JSON.stringify({ date: new Date().toISOString(),
-    ...(journey && { status: 'PASS' }), provenance, images:{ auth:'supabase/gotrue:v2.197.0',rest:'postgrest/postgrest:v14.18',mail:'axllent/mailpit:v1.28.1',db:'postgres:16' }, ...rehearsal?.evidence, outcomes },null,2)+'\n')
+    ...((journey || commitmentBenchmark) && { status: 'PASS' }), provenance, images:{ auth:'supabase/gotrue:v2.197.0',rest:'postgrest/postgrest:v14.18',mail:'axllent/mailpit:v1.28.1',db:'postgres:16' }, ...rehearsal?.evidence, outcomes },null,2)+'\n')
 } catch (error) {
-  if (journey && !journeyPreview && started) {
+  if ((journeyE2E || commitmentBenchmark) && started) {
     writeFileSync(evidenceFile, JSON.stringify({ date: new Date().toISOString(), status: 'FAIL',
       error: error.message, outcomes }, null, 2) + '\n')
   }
@@ -420,7 +430,7 @@ try {
   if (proxy) await new Promise(resolve => { proxy.close(resolve); proxy.closeAllConnections() })
   rehearsal?.close()
   if (started) docker([...(staging ? ['--profile','recovery'] : []), 'down'])
-  if (journey) {
+  if (journey || commitmentBenchmark) {
     process.removeListener('SIGINT', stop)
     process.removeListener('SIGTERM', stop)
   }
