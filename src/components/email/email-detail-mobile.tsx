@@ -35,6 +35,8 @@ interface EmailDetailMobileProps {
   onSnooze?: () => void
   onDelete?: (id: string) => void
   onExplainPriority?: () => void
+  onEditCategory?: () => void
+  categoryNotice?: string
 }
 
 export function EmailDetailMobile({
@@ -45,7 +47,9 @@ export function EmailDetailMobile({
   onArchive,
   onSnooze,
   onDelete,
-  onExplainPriority
+  onExplainPriority,
+  onEditCategory,
+  categoryNotice
 }: EmailDetailMobileProps) {
   const router = useRouter()
   const [showActions, setShowActions] = useState(false)
@@ -169,6 +173,7 @@ export function EmailDetailMobile({
           <MoreVertical className="w-5 h-5 text-[var(--muted)]" />
         </button>
       </header>
+      {categoryNotice && <p role="status" className="border-b border-[var(--border)] px-4 py-2 text-sm">{categoryNotice}</p>}
 
       {/* CONTENT - maximum space */}
       <div role="region" aria-label="Nội dung thư" tabIndex={0} className="flex-1 overflow-y-auto overscroll-contain">
@@ -310,11 +315,10 @@ export function EmailDetailMobile({
                 danger
                 loading={actionLoading === 'delete'}
               />
-              <ActionItem
-                icon={Tag}
-                label="Đổi nhãn"
-                onClick={() => setShowActions(false)}
-              />
+              {onEditCategory && <ActionItem icon={Tag} label="Đổi nhãn" onClick={() => {
+                setShowActions(false)
+                onEditCategory()
+              }} />}
               <ActionItem
                 icon={Flag}
                 label="Đánh dấu quan trọng"

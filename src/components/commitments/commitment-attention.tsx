@@ -126,7 +126,9 @@ function syncStatus(account: CatchupAccount): { label: string; tone: BadgeProps[
   return { label: 'Đã đồng bộ', tone: 'success' }
 }
 
-function CatchupStatus({ userId, accounts, filter }: { userId: string; accounts: CatchupAccount[]; filter: string[] }) {
+function CatchupStatus({ userId, accounts, filter, onSynced }: {
+  userId: string; accounts: CatchupAccount[]; filter: string[]; onSynced: () => void
+}) {
   const cache = useQueryClient()
   const needsReconnect = accounts.some(account => account.status === 'reconnect')
   const interrupted = accounts.some(account => account.status === 'error')
@@ -141,6 +143,7 @@ function CatchupStatus({ userId, accounts, filter }: { userId: string; accounts:
       if (!result.ok) throw new Error('Sync unavailable')
       return result.json()
     },
+    onSuccess: onSynced,
     onSettled: () => {
       void cache.invalidateQueries({ predicate: ({ queryKey }) =>
         queryKey[0] === 'emails' || (queryKey[0] === 'commitments' && queryKey[1] === userId &&
@@ -185,7 +188,9 @@ function CatchupStatus({ userId, accounts, filter }: { userId: string; accounts:
   )
 }
 
-export function CommitmentAttention({ userId, accounts }: { userId: string; accounts: string[] }) {
+export function CommitmentAttention({ userId, accounts, onSynced }: {
+  userId: string; accounts: string[]; onSynced: () => void
+}) {
   const title = useId()
   const [review, setReview] = useState<AttentionItem | null>(null)
   const heading = useRef<HTMLHeadingElement>(null)
@@ -251,7 +256,7 @@ export function CommitmentAttention({ userId, accounts }: { userId: string; acco
               )
             })}
           </ul>
-          <CatchupStatus userId={userId} accounts={status} filter={accounts} />
+          <CatchupStatus userId={userId} accounts={status} filter={accounts} onSynced={onSynced} />
         </section>
       )}
       {review && (

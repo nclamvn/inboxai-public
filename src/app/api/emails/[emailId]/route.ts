@@ -55,7 +55,7 @@ export async function GET(
   // Fetch email with source account info
   const { data: email, error } = await supabase
     .from('emails')
-    .select('*')
+    .select('*,effective_category:mail_category')
     .eq('id', emailId)
     .eq('user_id', user.id)
     .single()
@@ -131,7 +131,8 @@ export async function GET(
     email.is_read = true
   }
 
-  return NextResponse.json({ email }, { headers: { 'Cache-Control': 'private, no-store' } })
+  const { effective_category, ...message } = email
+  return NextResponse.json({ email: { ...message, category: effective_category } }, { headers: { 'Cache-Control': 'private, no-store' } })
 }
 
 export async function PATCH(

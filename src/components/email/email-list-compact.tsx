@@ -17,6 +17,7 @@ interface Props {
   onSelect: (id: string) => void
   onStar?: (id: string) => void
   onCategoryClick?: (category: string) => void
+  onEditCategory?: (email: Email) => void
   compact?: boolean
   groupByPriority?: boolean
   rankings?: ReadonlyMap<string, InboxRanking>
@@ -45,6 +46,7 @@ export function EmailListCompact({
   onSelect,
   onStar,
   onCategoryClick,
+  onEditCategory,
   compact = false,
   groupByPriority = false,
   rankings,
@@ -281,6 +283,12 @@ export function EmailListCompact({
     const ids = Array.from(selectedIds)
 
     if (action === 'change-category') {
+      if (ids.length === 1 && contextMenu?.email.id === ids[0] && onEditCategory) {
+        onEditCategory(contextMenu.email)
+        clearSelection()
+        setContextMenu(null)
+        return
+      }
       setShowCategoryPicker(true)
       return
     }
@@ -293,7 +301,7 @@ export function EmailListCompact({
     }
 
     setContextMenu(null)
-  }, [selectedIds, onBulkAction, clearSelection, setIsSelecting])
+  }, [selectedIds, contextMenu, onEditCategory, onBulkAction, clearSelection, setIsSelecting])
 
   // Handle category change from picker - memoized
   const handleCategoryChange = useCallback((category: string) => {

@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation'
 import {
   Star, Archive, Clock, Trash2, Reply, Forward, MoreHorizontal,
   ListTodo, ChevronDown, ChevronUp, Loader2, X, Mail,
-  Check, ShieldAlert, Ban, Printer, Download, AlertTriangle
+  Check, ShieldAlert, Ban, Printer, Download, AlertTriangle, Tag
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
 import { AIBottomBar } from './ai-bottom-bar'
 import { EmailConversation } from './email-conversation'
+import { MailCategoryLabel } from './mail-category-label'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import { AttachmentList } from './attachment-list'
 import { offerReplyText } from '@/lib/replies/client'
@@ -34,6 +35,7 @@ interface Props {
   onSnooze?: () => void
   onDelete?: (id: string) => void
   onExplainPriority?: () => void
+  onEditCategory?: () => void
   fullWidth?: boolean
 }
 
@@ -46,6 +48,7 @@ export function EmailDetailFull({
   onSnooze,
   onDelete,
   onExplainPriority,
+  onEditCategory,
   fullWidth = false
 }: Props) {
   const router = useRouter()
@@ -224,19 +227,6 @@ export function EmailDetailFull({
     })
   }
 
-  const getCategoryLabel = (category: string | null) => {
-    if (!category) return ''
-    const labels: Record<string, string> = {
-      work: 'Công việc',
-      personal: 'Cá nhân',
-      transaction: 'Giao dịch',
-      newsletter: 'Newsletter',
-      promotion: 'Khuyến mãi',
-      social: 'Mạng XH',
-    }
-    return labels[category] || category
-  }
-
   const getPriorityLabel = (priority: number | null) => {
     if (!priority) return 'Bình thường'
     if (priority >= 5) return 'Khẩn cấp'
@@ -294,6 +284,11 @@ export function EmailDetailFull({
               <Trash2 className="w-5 h-5" strokeWidth={1.5} />
             )}
           </button>
+          {onEditCategory && (
+            <button type="button" onClick={onEditCategory} aria-label="Đổi nhãn" title="Đổi nhãn" className="neo-icon-button">
+              <Tag size={18} aria-hidden="true" />
+            </button>
+          )}
           {/* Spam Feedback Buttons */}
           {currentCategory === 'spam' ? (
             <button
@@ -549,11 +544,7 @@ export function EmailDetailFull({
                     {getPriorityLabel(email.priority)}
                   </span>
                 )}
-                {email.category && (
-                  <span className="px-1.5 py-0.5 rounded text-[11px] font-medium bg-[var(--secondary)] text-[var(--muted)]">
-                    {getCategoryLabel(email.category)}
-                  </span>
-                )}
+                <MailCategoryLabel category={email.category} />
               </span>
               {showAIAnalysis ? (
                 <ChevronUp className="w-3.5 h-3.5" strokeWidth={1.5} />

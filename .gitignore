@@ -27,6 +27,7 @@
 /test-results/scheduled-send/
 /test-results/gmail-reconnect/
 /test-results/gmail-triage/
+/test-results/personal-mail-rules/
 /test-results/compose-attachments/
 /test-results/staging/
 /.codex-db-test-*/

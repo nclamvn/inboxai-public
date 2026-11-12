@@ -36,9 +36,9 @@ export async function POST(
   }
 
   // Get email
-  const { data: email, error } = await supabaseAdmin
+  const { data: email, error } = await supabase
     .from('emails')
-    .select('*')
+    .select('from_address, category:mail_category')
     .eq('id', emailId)
     .eq('user_id', user.id)
     .single()
@@ -48,6 +48,10 @@ export async function POST(
   }
 
   const originalCategory = email.category
+  async function saveCategory(category: string) {
+    const { error } = await supabase.rpc('set_personal_mail_category', { p_emails: [emailId], p_category: category })
+    if (error) throw error
+  }
 
   try {
     switch (action) {
@@ -56,11 +60,8 @@ export async function POST(
         await markSenderAsTrusted(user.id, email.from_address, 'marked_not_spam')
 
         // Move to personal (or keep original if was something else)
-        const targetCategory = originalCategory === 'spam' ? 'personal' : originalCategory
-        await supabaseAdmin
-          .from('emails')
-          .update({ category: targetCategory })
-          .eq('id', emailId)
+        const targetCategory = originalCategory === 'spam' ? 'personal' : originalCategory || 'personal'
+        await saveCategory(targetCategory)
 
         // Update sender reputation with user feedback
         await updateReputation(user.id, email.from_address, targetCategory, true)
@@ -79,10 +80,7 @@ export async function POST(
         await markSenderAsUntrusted(user.id, email.from_address)
 
         // Move to spam
-        await supabaseAdmin
-          .from('emails')
-          .update({ category: 'spam' })
-          .eq('id', emailId)
+        await saveCategory('spam')
 
         // Update sender reputation with user feedback
         await updateReputation(user.id, email.from_address, 'spam', true)
@@ -128,10 +126,7 @@ export async function POST(
         }
 
         // Update category
-        await supabaseAdmin
-          .from('emails')
-          .update({ category: newCategory })
-          .eq('id', emailId)
+        await saveCategory(newCategory)
 
         // Update sender trust based on transition
         if (originalCategory === 'spam' && newCategory !== 'spam') {

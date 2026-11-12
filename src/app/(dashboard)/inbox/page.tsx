@@ -4,7 +4,7 @@ import { Suspense, useMemo, useState, useCallback, useEffect, useRef } from 'rea
 import { useSearchParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { Loader2, X, ListFilter } from 'lucide-react'
+import { Loader2, X, ListFilter, ListChecks } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
 import { useEmails } from '@/hooks/use-emails'
@@ -59,6 +59,9 @@ const EmailDetailMobile = dynamic(
   }
 )
 
+const MailCategoryDialog = dynamic(() => import('@/components/email/personal-mail-rules').then(module => module.MailCategoryDialog))
+const MailRulesDialog = dynamic(() => import('@/components/email/personal-mail-rules').then(module => module.MailRulesDialog))
+
 type ViewMode = 'list' | 'split' | 'full'
 
 interface BriefingFilter {
@@ -74,7 +77,7 @@ function InboxContent() {
   // Account filter state
   const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([])
 
-  const { userId, emails, error, loading, loadingMore, hasMore, pageError, toggleStar, archiveEmail, deleteEmail, markAsRead, changeFlags, refetch, loadMore, setInboxPriority } = useEmails({
+  const { userId, emails, error, loading, loadingMore, hasMore, pageError, toggleStar, archiveEmail, deleteEmail, markAsRead, changeFlags, refetch, refresh, loadMore, setInboxPriority } = useEmails({
     folder: 'inbox',
     accountIds: selectedAccountIds.length > 0 ? selectedAccountIds : undefined
   })
@@ -101,6 +104,9 @@ function InboxContent() {
   const [snoozeTarget, setSnoozeTarget] = useState<Email | null>(null)
   const [snoozeNotice, setSnoozeNotice] = useState(false)
   const [priorityTarget, setPriorityTarget] = useState<Email | null>(null)
+  const [categoryTarget, setCategoryTarget] = useState<Email | null>(null)
+  const [showMailRules, setShowMailRules] = useState(false)
+  const [mailRuleNotice, setMailRuleNotice] = useState('')
   const [now, setNow] = useState(Date.now)
 
   useEffect(() => {
@@ -488,6 +494,29 @@ function InboxContent() {
     }
   }, [emails, fetchedEmail, router, refetch, triageEnabled, changeFlags])
 
+  function refreshCategories() {
+    void refresh()
+    if (selectedId) void refetchEmail()
+    window.dispatchEvent(new Event('inbox-priority-changed'))
+  }
+
+  const categoryDialogs = <>
+    {categoryTarget && <MailCategoryDialog key={categoryTarget.id} email={categoryTarget}
+      onClose={() => setCategoryTarget(null)} onSaved={message => {
+        setCategoryTarget(null)
+        setMailRuleNotice(message)
+        refreshCategories()
+      }} />}
+    {showMailRules && <MailRulesDialog onClose={() => setShowMailRules(false)} onChanged={refreshCategories} />}
+  </>
+  const ruleButton = (
+    <button type="button" onClick={() => setShowMailRules(true)}
+      className="neo-target inline-flex min-h-11 shrink-0 items-center gap-2 rounded-[var(--radius-control)] px-2 text-sm text-[var(--accent-foreground)] hover:bg-[var(--hover)]">
+      <ListChecks size={16} aria-hidden="true" />
+      Quy tắc
+    </button>
+  )
+  const ruleStatus = mailRuleNotice && <p role="status" className="border-b border-[var(--border)] px-4 py-2 text-sm">{mailRuleNotice}</p>
   const selectedEmail = fetchedEmail
   const snoozeSelected = selectedEmail?.direction === 'inbound' && !selectedEmail.is_archived &&
     !selectedEmail.is_deleted && !selectedEmail.provider_deleted ? () => setSnoozeTarget(selectedEmail) : undefined
@@ -565,7 +594,13 @@ function InboxContent() {
           onDelete={handleDelete}
           onSnooze={snoozeSelected}
           onExplainPriority={explainSelected}
+          onEditCategory={!selectedEmail.provider_deleted ? () => {
+            setMailRuleNotice('')
+            setCategoryTarget(selectedEmail)
+          } : undefined}
+          categoryNotice={mailRuleNotice}
         />
+        {categoryDialogs}
         {priorityDialog}
         {snoozeDialog}
       </>
@@ -603,7 +638,10 @@ function InboxContent() {
               <h1 className="neo-title shrink-0">Hộp thư</h1>
               <span className="truncate text-xs tabular-nums text-[var(--foreground-muted)]">{filterCounts.unread || 0} chưa đọc</span>
             </div>
-            <AccountSwitcher selectedAccountIds={selectedAccountIds} onAccountChange={setSelectedAccountIds} />
+            <div className="flex shrink-0 items-center gap-2">
+              {ruleButton}
+              <AccountSwitcher selectedAccountIds={selectedAccountIds} onAccountChange={setSelectedAccountIds} />
+            </div>
           </div>
           <UnifiedTopBar
             currentFilter={activeFilter || 'all'}
@@ -616,7 +654,11 @@ function InboxContent() {
         </header>
       )}
 
-      {isMobile && <Link href="/snoozed" className="neo-target flex min-h-11 items-center border-b border-[var(--border)] px-4 text-sm text-[var(--accent-foreground)] underline">Đã hẹn</Link>}
+      {isMobile && <div className="flex items-center gap-3 border-b border-[var(--border)] px-4">
+        <Link href="/snoozed" className="neo-target flex min-h-11 items-center text-sm text-[var(--accent-foreground)] underline">Đã hẹn</Link>
+        {ruleButton}
+      </div>}
+      {ruleStatus}
       {snoozeNotice && <p role="status" className="border-b border-[var(--border)] px-4 py-2 text-sm">
         Đã lưu lịch xử lý. <Link href="/snoozed" className="inline-flex min-h-8 items-center text-[var(--accent-foreground)] underline">Xem thư đã hẹn</Link>
       </p>}
@@ -660,7 +702,7 @@ function InboxContent() {
               {userId && !selectedId && !activeFilter && !briefingFilter && !searchQuery && (!isMobile || mobileSegment === 'all') && (
                 <>
                   <ReplyInbox key={'replies:' + userId} userId={userId} accounts={selectedAccountIds} />
-                  <CommitmentAttention key={userId} userId={userId} accounts={selectedAccountIds} />
+                  <CommitmentAttention key={userId} userId={userId} accounts={selectedAccountIds} onSynced={refresh} />
                 </>
               )}
               {error && emails.length === 0 ? (
@@ -706,6 +748,7 @@ function InboxContent() {
                   onSelect={handleSelectEmail}
                   onStar={id => void toggleStar(id, fetchedEmail?.id === id ? fetchedEmail : undefined)}
                   onCategoryClick={handleCategoryClick}
+                  onEditCategory={setCategoryTarget}
                   compact={effectiveViewMode === 'split'}
                   groupByPriority={!activeFilter && !briefingFilter && !searchQuery && (!isMobile || mobileSegment === 'all')}
                   rankings={rankings}
@@ -727,13 +770,14 @@ function InboxContent() {
             <EmailDetailFull
               email={selectedEmail}
               onBack={handleCloseEmail}
-              onRefresh={refetch}
+              onRefresh={refreshCategories}
               onStar={id => void toggleStar(id, fetchedEmail?.id === id ? fetchedEmail : undefined)}
               onArchive={handleArchive}
               onDelete={handleDelete}
               onSnooze={snoozeSelected}
               fullWidth={effectiveViewMode === 'full'}
               onExplainPriority={explainSelected}
+              onEditCategory={!selectedEmail.provider_deleted ? () => setCategoryTarget(selectedEmail) : undefined}
             />
           </div>
         )}
@@ -764,6 +808,7 @@ function InboxContent() {
         )}
       </div>
 
+      {categoryDialogs}
       {priorityDialog}
       {snoozeDialog}
 

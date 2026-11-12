@@ -1,5 +1,37 @@
 # Verification record
 
+## Personal sender rules
+
+On 2026-11-12, `npm run test:personal-mail-rules` passed 22 checks on
+macOS arm64 with Chrome 157, Node 24.14.1, PostgreSQL 16 and a
+production-mode Next.js 16.4.6 build. Two Gmail fixtures on loopback
+delivered 112 initial messages and 118 by the end. Preview found a match
+outside the Inbox page without writing a rule. A new matching message
+invalidated that preview. Confirmation survived response loss, and a
+restart and Gmail history replay preserved unique emails and labels.
+The same sender and Gmail message ID in another account remained scoped
+to that account. Urgent alerts stayed visible alongside promotion labels.
+Undo survived response loss, removed six rule labels, preserved one manual
+correction and stopped applying the rule to new arrivals. Mobile verified
+a future-only rule. Four sampled screens passed axe and overflow checks.
+The Gmail fixture received zero label modifications or sends.
+
+From the Inbox reader, open **Đổi nhãn**, choose a label, and save the
+single email or preview a sender rule. The preview can include up to 200
+existing eligible Inbox emails. **Quy tắc** in the Inbox opens the undo
+receipt. A rule uses the exact normalized sender address in one Gmail
+account. Rule labels are local to InboxAI and leave the automatic
+classification available for undo. A same-label manual choice is still a
+manual correction. SQL also verified tenant isolation and restoration of
+a baseline changed after confirmation.
+
+Lint, TypeScript, 241 unit tests, 200 integration tests, 28 SQL checks and
+the local production build passed. Lint reported 91 existing warnings.
+Design, platform, local staging and Action Inbox regressions passed 29,
+19, 31 and 42 checks respectively.
+[Chrome report](../../test-results/personal-mail-rules/report.json) ·
+[Workflow evidence](../../test-results/personal-mail-rules/workflow.json)
+
 ## Message category and priority colors
 
 On 2026-11-12, `npm run test:design -- --isolated` passed 29 checks in

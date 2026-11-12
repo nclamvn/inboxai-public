@@ -22,7 +22,7 @@ interface UseEmailsOptions {
 const emailListFields = `
   id, from_name, from_address, to_addresses, subject,
   received_at, is_read, is_starred, is_archived, is_deleted,
-  priority, category, needs_reply, detected_deadline, direction,
+  priority, category:mail_category, needs_reply, detected_deadline, direction,
   summary, ai_confidence, source_account_id, attachment_count, sync_namespace, snoozed_until, snooze_version`
 const inboxListFields = `${emailListFields}, snippet:inbox_preview, inbox_priority, inbox_priority_version, inbox_appearance_at` as const
 
@@ -361,6 +361,7 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
   }
 
   const refetch = useCallback(() => fetchEmails(), [fetchEmails])
+  const refresh = useCallback(() => fetchEmails(true), [fetchEmails])
 
   return {
     userId,
@@ -371,6 +372,7 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
     pageError,
     hasMore,
     refetch,
+    refresh,
     loadMore,
     changeFlags,
     markAsRead,

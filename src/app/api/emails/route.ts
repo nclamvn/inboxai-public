@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
       .select(`
         id, from_name, from_address, to_addresses, subject,
         received_at, is_read, is_starred, is_archived, is_deleted,
-        priority, category, needs_reply, detected_deadline, direction,
+        priority, category:mail_category, needs_reply, detected_deadline, direction,
         summary, ai_confidence, snippet, source_account_id
       `)
       .eq('user_id', user.id)
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
 
     // Apply category filter if provided
     if (category) {
-      query = query.eq('category', category)
+      query = query.eq('mail_category', category)
     }
 
     // Order and paginate

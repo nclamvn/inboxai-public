@@ -35,7 +35,7 @@ async function fetchEmails(params: FetchEmailsParams & { cursor?: string | null 
     .select(`
       id, from_name, from_address, to_addresses, subject,
       received_at, is_read, is_starred, is_archived, is_deleted,
-      priority, category, needs_reply, detected_deadline, direction,
+      priority, category:mail_category, needs_reply, detected_deadline, direction,
       summary, ai_confidence
     `)
     .eq('user_id', user.id)
@@ -70,7 +70,7 @@ async function fetchEmails(params: FetchEmailsParams & { cursor?: string | null 
 
   // Category filter
   if (category && category !== 'all' && category !== 'needsAction') {
-    query = query.eq('category', category)
+    query = query.eq('mail_category', category)
   }
 
   // Needs action filter
@@ -116,13 +116,14 @@ async function fetchEmailDetail(emailId: string) {
 
   const { data, error } = await supabase
     .from('emails')
-    .select('*')
+    .select('*,effective_category:mail_category')
     .eq('id', emailId)
     .eq('user_id', user.id)
     .single()
 
   if (error) throw error
-  return data as Email
+  const { effective_category, ...message } = data
+  return { ...message, category: effective_category } as Email
 }
 
 // Update email

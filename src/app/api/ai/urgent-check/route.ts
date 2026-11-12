@@ -15,7 +15,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('emails')
-    .select('id, from_name, from_address, subject, priority, received_at, source_account_id, category, detected_deadline, needs_reply, is_starred, inbox_priority, snippet:inbox_preview')
+    .select('id, from_name, from_address, subject, priority, received_at, source_account_id, category:mail_category, detected_deadline, needs_reply, is_starred, inbox_priority, snippet:inbox_preview')
     .eq('user_id', user.id)
     .eq('direction', 'inbound')
     .eq('provider_deleted', false)
