@@ -1,5 +1,23 @@
 # Verification record
 
+## Bidirectional Gmail Inbox triage and undo
+
+On 2026-11-12, `npm run test:gmail-triage` exited 0 on macOS arm64 with
+Node 24.14.1, Next.js 16.4.6, Chrome 157 and PostgreSQL 16. A production-mode
+build and 25 browser/Auth checks passed using two loopback Gmail accounts.
+An archive affected the two selected messages even though the provider IDs
+were identical. After both acknowledgements were dropped and Next restarted,
+read-back verified the second archive with zero additional Gmail writes.
+After an external label changed away and back, undo rejected that message
+and restored the other. Label history from Gmail also refreshed InboxAI.
+The sampled desktop and mobile screens had zero axe violations.
+
+Lint exited 0 with 91 existing warnings. TypeScript, 241 unit tests, 199
+integration tests and 23 SQL checks passed. The design, platform, attachment,
+general E2E and staging suites exited 0 with 25, 19, 21, 41 and 31 checks.
+See the [Gmail triage handoff](GMAIL_TRIAGE_LOCAL_HANDOFF.md) for commands,
+local evidence and the limits of provider verification.
+
 ## Compose, reply and forward attachments
 
 On 2026-11-12 on macOS 27.2 arm64, Node 24.14.1, Chrome 157 and Next.js

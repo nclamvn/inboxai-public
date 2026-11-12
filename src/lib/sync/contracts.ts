@@ -26,6 +26,7 @@ export type Attachment = {
 };
 export type SyncMessage = {
     uid: string;
+    gmail_label_revision?: string;
     message_id: string;
     thread_id?: string;
     reply_to?: string | null;

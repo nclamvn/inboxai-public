@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { createHash, randomUUID } from 'node:crypto'
 import { createServer } from 'node:http'
 import { simpleParser } from 'mailparser'
-import { gmailReadScope, gmailSendScope, googleEmailScope } from '../../src/lib/gmail/scopes.ts'
+import { gmailModifyScope, gmailReadScope, gmailSendScope, googleEmailScope } from '../../src/lib/gmail/scopes.ts'
 
 export const gmailFixtureEmail = 'gmail-reader@example.test'
 export const gmailFixtureSubject = 'Biên bản giao hàng Gmail giả lập'
@@ -11,7 +11,7 @@ export const googleClientSecret = 'synthetic-oauth-client-secret'
 
 export async function startGoogleOAuthFixture() {
   const codes = new Map(), access = new Map(), refresh = new Map()
-  const calls = { exchanges: 0, refreshes: 0, reads: 0, sendAttempts: 0, sent: [] }
+  const calls = { exchanges: 0, refreshes: 0, reads: 0, sendAttempts: 0, sent: [], modifications: [] }
   let sendRevoked = false
   function issue(grant, withRefresh) {
     const accessToken = randomUUID(), refreshToken = withRefresh ? randomUUID() : undefined
@@ -19,6 +19,23 @@ export async function startGoogleOAuthFixture() {
     if (refreshToken) refresh.set(refreshToken, grant)
     return { access_token: accessToken, refresh_token: refreshToken, expires_in: 3600,
       token_type: 'Bearer', scope: grant.scopes.join(' ') }
+  }
+  const defaultLabels = item => item.sent ? ['SENT'] : ['INBOX', 'UNREAD']
+  function changeLabels(box, id, add, remove) {
+    const item = box.messages.get(id)
+    assert.ok(item)
+    const before = item.labelIds ?? defaultLabels(item)
+    const added = add.filter(label => !before.includes(label))
+    const removed = remove.filter(label => before.includes(label))
+    if (added.length || removed.length) {
+      const entry = { id: String(101 + box.history.length) }
+      if (added.length) entry.labelsAdded = [{ message: { id }, labelIds: added }]
+      if (removed.length) entry.labelsRemoved = [{ message: { id }, labelIds: removed }]
+      box.history.push(entry)
+      item.historyId = entry.id
+      item.labelIds = [...before.filter(label => !removed.includes(label)), ...added]
+    }
+    return { id, historyId: item.historyId, labelIds: item.labelIds ?? before }
   }
   const server = createServer(async (request, response) => {
     function json(body, status = 200) {
@@ -69,7 +86,7 @@ export async function startGoogleOAuthFixture() {
           inReplyTo: mail.inReplyTo, threadId, body: mail.text.trim(), attachments })
         if (grant.mailbox) {
           grant.mailbox.messages.set(id, { id, at: new Date().toISOString(), from: grant.email, subject: mail.subject,
-            body: mail.text, messageId: mail.messageId, inReplyTo: mail.inReplyTo, threadId, sent: true, attachments,
+            body: mail.text, historyId: String(101 + grant.mailbox.history.length), messageId: mail.messageId, inReplyTo: mail.inReplyTo, threadId, sent: true, attachments,
             to: mail.to.text, cc: mail.cc?.text, references: [].concat(mail.references ?? []).join(' ') })
           grant.mailbox.history.push(id)
           if (grant.mailbox.dropSendAcknowledgement) {
@@ -109,12 +126,31 @@ export async function startGoogleOAuthFixture() {
           const start = Number(searchParams.get('startHistoryId'))
           box.historyStarts.push(start)
           const { page, nextPageToken } = paginate(box.history.slice(Math.max(0, start - 100)))
-          return json({ historyId, nextPageToken, history: page.map(id => ({ messagesAdded: [{ message: { id } }] })) })
+          return json({ historyId, nextPageToken, history: page.map(entry =>
+            typeof entry === 'string' ? { messagesAdded: [{ message: { id: entry } }] } : entry) })
         }
         const [id, section, attachmentId] = pathname.startsWith(gmail + '/messages/')
           ? pathname.slice((gmail + '/messages/').length).split('/') : []
         const item = box.messages.get(id)
         if (!item) return json({}, 404)
+        if (section === 'modify' && request.method === 'POST') {
+          if (!grant.scopes.includes(gmailModifyScope) || box.denyModify) return json({ error: 'modify_scope_missing' }, 403)
+          const { addLabelIds = [], removeLabelIds = [] } = JSON.parse(Buffer.concat(await Array.fromAsync(request)).toString())
+          const labels = [...addLabelIds, ...removeLabelIds]
+          assert.equal(labels.length, 1)
+          assert.ok(['INBOX', 'UNREAD', 'STARRED'].includes(labels[0]))
+          const modified = changeLabels(box, id, addLabelIds, removeLabelIds)
+          calls.modifications.push({ account: grant.email, id, addLabelIds, removeLabelIds, historyId: modified.historyId })
+          if (box.dropModifyAcknowledgement) {
+            box.dropModifyAcknowledgement = false
+            response.destroy()
+            return
+          }
+          return json(modified)
+        }
+        if (searchParams.get('format') === 'minimal') {
+          return json({ id, historyId: item.historyId, labelIds: item.labelIds ?? defaultLabels(item) })
+        }
         const parts = (item.attachments ?? []).map((file, index) => ({
           filename: file.filename, mimeType: file.contentType, partId: String(index + 1),
           body: { attachmentId: 'part-' + (index + 1), size: Buffer.from(file.data, 'base64').length },
@@ -129,7 +165,7 @@ export async function startGoogleOAuthFixture() {
         const headers = { Subject: item.subject, From: item.from, To: item.to ?? grant.email, Cc: item.cc, 'Message-ID': item.messageId,
           'In-Reply-To': item.inReplyTo, 'Reply-To': item.replyTo, References: item.references }
         const text = { mimeType: 'text/plain', body: { data: Buffer.from(item.body).toString('base64url') } }
-        return json({ id, threadId: item.threadId, internalDate: String(Date.parse(item.at)), labelIds: item.sent ? ['SENT'] : ['INBOX', 'UNREAD'],
+        return json({ id, threadId: item.threadId, internalDate: String(Date.parse(item.at)), historyId: item.historyId, labelIds: item.labelIds ?? defaultLabels(item),
           payload: { ...(parts.length ? { mimeType: 'multipart/mixed', parts: [{ ...text, partId: '0' }, ...parts] } : text),
             headers: Object.entries(headers).filter(([, value]) => value).map(([name, value]) => ({ name, value })) },
         })
@@ -150,14 +186,15 @@ export async function startGoogleOAuthFixture() {
 
   return {
     url: `http://127.0.0.1:${server.address().port}`, calls,
-    registerMailbox(email, canSend = false) {
+    registerMailbox(email, canSend = false, canModify = false) {
       const box = { online: true, drops: 0, fullReads: 0, historyStarts: [], messages: new Map(), history: [] }
-      const grant = { mailbox: box, email, subject: email, scopes: [gmailReadScope, googleEmailScope, ...(canSend ? [gmailSendScope] : [])] }
+      const grant = { mailbox: box, email, subject: email, scopes: [gmailReadScope, googleEmailScope, ...(canSend ? [gmailSendScope] : []), ...(canModify ? [gmailModifyScope] : [])] }
       return {
         tokens: issue(grant, true), box,
+        changeLabels: (id, add, remove) => changeLabels(box, id, add, remove),
         deliver(items) {
           for (const item of items) {
-            box.messages.set(item.id, item)
+            box.messages.set(item.id, { ...item, historyId: String(101 + box.history.length) })
             box.history.push(item.id)
           }
         },

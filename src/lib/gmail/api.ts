@@ -7,6 +7,7 @@ const GMAIL_API_BASE = 'https://gmail.googleapis.com/gmail/v1';
 export interface GmailMessage {
   id: string;
   threadId: string;
+  historyId?: string;
   labelIds: string[];
   snippet: string;
   payload: {

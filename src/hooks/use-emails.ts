@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { gmailTriageRefresh, useGmailTriage } from '@/components/email/gmail-triage'
+import { triageBatchLimit, type TriageFlag } from '@/lib/gmail-triage/contracts'
 import type { Email, InboxPriority } from '@/types'
 
 export interface InboxPriorityResult {
@@ -20,7 +22,7 @@ const emailListFields = `
   id, from_name, from_address, to_addresses, subject,
   received_at, is_read, is_starred, is_archived, is_deleted,
   priority, category, needs_reply, detected_deadline, direction,
-  summary, ai_confidence, source_account_id, attachment_count`
+  summary, ai_confidence, source_account_id, attachment_count, sync_namespace`
 const inboxListFields = `${emailListFields}, snippet:inbox_preview, inbox_priority, inbox_priority_version` as const
 
 export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEmailsOptions = {}) {
@@ -36,6 +38,7 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
   const paging = useRef(false)
 
   const supabase = createClient()
+  const { enabled: triageEnabled, run: runTriage } = useGmailTriage()
 
   // Build base query with folder filters
   const buildQuery = useCallback((userId: string) => {
@@ -186,6 +189,31 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
     return () => { requestGeneration.current++ }
   }, [fetchEmails])
 
+  useEffect(() => {
+    if (!triageEnabled) return
+    const refresh = () => { void fetchEmails() }
+    window.addEventListener(gmailTriageRefresh, refresh)
+    return () => window.removeEventListener(gmailTriageRefresh, refresh)
+  }, [triageEnabled, fetchEmails])
+
+  const changeFlags = async (targets: Email[], flag: TriageFlag, desired: boolean) => {
+    if (targets.length === 0) return false
+    const gmail = triageEnabled ? targets.filter(email => email.sync_namespace === 'gmail') : []
+    const local = targets.filter(email => !triageEnabled || email.sync_namespace !== 'gmail')
+    let saved = true
+    for (let start = 0; start < gmail.length; start += triageBatchLimit) {
+      if (!await runTriage({ action: 'apply', id: crypto.randomUUID(), flag, desired,
+        emailIds: gmail.slice(start, start + triageBatchLimit).map(email => email.id) })) saved = false
+    }
+    if (local.length > 0) {
+      const { error } = await supabase.from('emails').update({ [`is_${flag}`]: desired })
+        .eq('user_id', userId ?? '').in('id', local.map(email => email.id))
+      if (error) return false
+      await fetchEmails()
+    }
+    return saved
+  }
+
   const setInboxPriority = async (emailId: string, choice: InboxPriority, version: number): Promise<InboxPriorityResult> => {
     const { data, error } = await supabase.rpc('set_inbox_priority', {
       p_email_id: emailId, p_choice: choice, p_version: version,
@@ -202,7 +230,9 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
     return result
   }
 
-  const markAsRead = async (emailId: string) => {
+  const markAsRead = async (emailId: string, source?: Email) => {
+    const email = source ?? emails.find(row => row.id === emailId)
+    if (triageEnabled && email?.sync_namespace === 'gmail') return changeFlags([email], 'read', true)
     const { error } = await supabase
       .from('emails')
       .update({ is_read: true })
@@ -213,11 +243,12 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
     }
   }
 
-  const toggleStar = async (emailId: string) => {
-    const email = emails.find(e => e.id === emailId)
+  const toggleStar = async (emailId: string, source?: Email) => {
+    const email = source ?? emails.find(e => e.id === emailId)
     if (!email) return
 
     const newStarred = !email.is_starred
+    if (triageEnabled && email.sync_namespace === 'gmail') return changeFlags([email], 'starred', newStarred)
 
     const { error } = await supabase
       .from('emails')
@@ -229,7 +260,9 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
     }
   }
 
-  const archiveEmail = async (emailId: string) => {
+  const archiveEmail = async (emailId: string, source?: Email) => {
+    const email = source ?? emails.find(row => row.id === emailId)
+    if (triageEnabled && email?.sync_namespace === 'gmail') return changeFlags([email], 'archived', true)
     const { error } = await supabase
       .from('emails')
       .update({ is_archived: true })
@@ -252,6 +285,8 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
   }
 
   const restoreEmail = async (emailId: string) => {
+    const email = emails.find(row => row.id === emailId)
+    if (triageEnabled && folder === 'archive' && email?.sync_namespace === 'gmail') return changeFlags([email], 'archived', false)
     const { error } = await supabase
       .from('emails')
       .update({ is_deleted: false, is_archived: false })
@@ -295,6 +330,7 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
     hasMore,
     refetch: fetchEmails,
     loadMore,
+    changeFlags,
     markAsRead,
     toggleStar,
     archiveEmail,

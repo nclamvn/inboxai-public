@@ -66,7 +66,7 @@ export async function notifySyncComplete(userId: string, count: number) {
     userId,
     'sync_complete',
     `Đồng bộ hoàn tất`,
-    `Đã đồng bộ ${count} email mới`
+    `Đã đồng bộ ${count} email`
   )
 }
 

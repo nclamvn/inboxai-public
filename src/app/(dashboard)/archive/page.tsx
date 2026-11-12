@@ -5,10 +5,18 @@ import { Archive } from 'lucide-react'
 import { useEmails } from '@/hooks/use-emails'
 import { EmailList } from '@/components/email/email-list'
 import { EmailDetail } from '@/components/email/email-detail'
+import { SelectionProvider } from '@/contexts/email-selection-context'
+import { SelectionToolbar } from '@/components/email/selection-toolbar'
+import { triageActions, useGmailTriage } from '@/components/email/gmail-triage'
 import type { Email } from '@/types'
 
 export default function ArchivePage() {
-  const { emails, loading, toggleStar, deleteEmail, restoreEmail, markAsRead } = useEmails({ folder: 'archive' })
+  return <SelectionProvider><ArchiveContent /></SelectionProvider>
+}
+
+function ArchiveContent() {
+  const { enabled: triageEnabled } = useGmailTriage()
+  const { emails, loading, toggleStar, deleteEmail, restoreEmail, markAsRead, changeFlags } = useEmails({ folder: 'archive' })
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null)
 
   const handleSelectEmail = (email: Email) => {
@@ -64,7 +72,13 @@ export default function ArchivePage() {
           <h1 className="text-[18px] font-semibold text-[var(--foreground)]">Lưu trữ</h1>
           <p className="text-[14px] text-[var(--muted-foreground)]">{emails.length} email</p>
         </div>
+        {triageEnabled && <SelectionToolbar triageFolder="archive" onAction={(action, ids) => {
+          const change = triageActions[action]
+          const targets = emails.filter(email => ids.includes(email.id))
+          if (change && targets.length === ids.length) void changeFlags(targets, change.flag, change.desired)
+        }} />}
         <EmailList
+          selectable={triageEnabled}
           emails={emails}
           selectedId={selectedEmail?.id}
           onSelect={handleSelectEmail}
@@ -80,6 +94,7 @@ export default function ArchivePage() {
             onClose={() => setSelectedEmail(null)}
             onStar={() => toggleStar(selectedEmail.id)}
             onArchive={handleRestore}
+            archiveLabel={triageEnabled ? 'Đưa về hộp thư' : undefined}
             onDelete={handleDelete}
           />
         </div>

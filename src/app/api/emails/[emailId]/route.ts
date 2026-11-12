@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createSupabaseAdmin, createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { gmailTriageEnabled } from '@/lib/gmail-triage/server'
 import { fetchEmailBody } from '@/lib/email/imap-client'
 
 // Allow up to 30 seconds for IMAP fetch
@@ -122,7 +123,7 @@ export async function GET(
   }
 
   // Mark as read if unread
-  if (!email.is_read) {
+  if (!email.is_read && !(gmailTriageEnabled() && email.sync_namespace === 'gmail')) {
     await supabase
       .from('emails')
       .update({ is_read: true })

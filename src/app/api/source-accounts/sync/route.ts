@@ -160,8 +160,8 @@ export async function POST(request: NextRequest) {
     duration: `${duration}ms`,
     errors: errors.slice(0, 3),
     message: totalSynced > 0
-      ? `Đã đồng bộ ${totalSynced} email mới`
-      : 'Không có email mới'
+      ? `Đã đồng bộ ${totalSynced} email`
+      : 'Chưa có cập nhật email'
   })
 }
 

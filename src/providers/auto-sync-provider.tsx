@@ -2,7 +2,8 @@
 
 import { useCallback } from 'react'
 import { useAutoSync } from '@/hooks/use-auto-sync'
-import { toastSuccess, toastInfo } from '@/lib/toast'
+import { gmailTriageRefresh } from '@/components/email/gmail-triage'
+import { toastInfo } from '@/lib/toast'
 import { useQueryClient } from '@tanstack/react-query'
 
 interface AutoSyncProviderProps {
@@ -26,12 +27,8 @@ export function AutoSyncProvider({
   interval = 30000
 }: AutoSyncProviderProps) {
   const queryClient = useQueryClient()
-  const onNewEmails = useCallback((count: number) => {
-    if (count === 1) {
-      toastInfo('Email mới', 'Bạn có 1 email mới')
-    } else if (count > 1) {
-      toastSuccess('Email mới', `Bạn có ${count} email mới`)
-    }
+  const onEmailsSynced = useCallback((count: number) => {
+    toastInfo('Đồng bộ hộp thư', `Đã đồng bộ ${count} email`)
 
     queryClient.invalidateQueries({ queryKey: ['emails'] })
     queryClient.invalidateQueries({ queryKey: ['email-counts'] })
@@ -39,6 +36,7 @@ export function AutoSyncProvider({
     queryClient.invalidateQueries({ queryKey: ['reply-work'] })
   }, [queryClient])
   const onSync = useCallback((result: { synced: number }) => {
+    if (result.synced > 0) window.dispatchEvent(new Event(gmailTriageRefresh))
     void queryClient.invalidateQueries({ predicate: ({ queryKey }) =>
       queryKey[0] === 'commitments' && (queryKey[2] === 'attention' || queryKey[2] === 'catchup'),
     })
@@ -52,7 +50,7 @@ export function AutoSyncProvider({
     }
   }, [])
 
-  useAutoSync({ enabled, interval, onNewEmails, onSync, onError })
+  useAutoSync({ enabled, interval, onEmailsSynced, onSync, onError })
 
   return <>{children}</>
 }

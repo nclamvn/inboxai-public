@@ -12,6 +12,7 @@ import { useIsMobile } from '@/hooks/use-media-query'
 // FilterChips removed - replaced by UnifiedTopBar dropdown
 import { EmailListSkeleton } from '@/components/email/email-list-skeleton'
 import { SelectionProvider } from '@/contexts/email-selection-context'
+import { gmailTriageRefresh, triageActions, useGmailTriage } from '@/components/email/gmail-triage'
 import { SelectionToolbar } from '@/components/email/selection-toolbar'
 import { UnifiedTopBar } from '@/components/layout/unified-top-bar'
 import { MobileInboxHeader } from '@/components/layout/mobile-inbox-header'
@@ -70,17 +71,19 @@ function InboxContent() {
   // Account filter state
   const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([])
 
-  const { userId, emails, error, loading, loadingMore, hasMore, pageError, toggleStar, archiveEmail, deleteEmail, markAsRead, refetch, loadMore, setInboxPriority } = useEmails({
+  const { userId, emails, error, loading, loadingMore, hasMore, pageError, toggleStar, archiveEmail, deleteEmail, markAsRead, changeFlags, refetch, loadMore, setInboxPriority } = useEmails({
     folder: 'inbox',
     accountIds: selectedAccountIds.length > 0 ? selectedAccountIds : undefined
   })
 
   // Use media query hook for responsive detection
   const isMobile = useIsMobile()
+  const { enabled: triageEnabled } = useGmailTriage()
 
   // URL-based state - selectedId from URL
   const selectedId = searchParams.get('email')
   const lastOpenedEmail = useRef<string | null>(selectedId)
+  const readOnOpen = useRef<string | null>(null)
   const briefingType = searchParams.get('briefing')
 
   // Local UI state only
@@ -126,6 +129,21 @@ function InboxContent() {
 
   // ALWAYS fetch full email when selectedId is set (list only has preview, not body)
   const { email: fetchedEmail, loading: fetchingEmail, error: sourceError, refetch: refetchEmail } = useEmail(selectedId)
+
+  useEffect(() => {
+    if (!triageEnabled || !selectedId) return
+    const refresh = () => { void refetchEmail() }
+    window.addEventListener(gmailTriageRefresh, refresh)
+    return () => window.removeEventListener(gmailTriageRefresh, refresh)
+  }, [triageEnabled, selectedId, refetchEmail])
+
+  useEffect(() => {
+    if (!selectedId) readOnOpen.current = null
+    if (!triageEnabled || !fetchedEmail || fetchedEmail.sync_namespace !== 'gmail' ||
+      fetchedEmail.is_deleted || fetchedEmail.provider_deleted || readOnOpen.current === selectedId) return
+    readOnOpen.current = selectedId
+    if (!fetchedEmail.is_read) void markAsRead(fetchedEmail.id, fetchedEmail)
+  }, [triageEnabled, selectedId, fetchedEmail, markAsRead])
 
   // Update viewMode when URL changes
   const effectiveViewMode = selectedId ? (viewMode === 'list' ? 'split' : viewMode) : 'list'
@@ -328,10 +346,10 @@ function InboxContent() {
     router.push(`/inbox?email=${id}`, { scroll: false })
     setViewMode('split')
     const email = emails.find(e => e.id === id)
-    if (email && !email.is_read) {
-      markAsRead(id)
+    if (email && !email.is_read && !(triageEnabled && email.sync_namespace === 'gmail')) {
+      void markAsRead(id)
     }
-  }, [router, emails, markAsRead])
+  }, [router, emails, markAsRead, triageEnabled])
 
   const handleCloseEmail = useCallback(() => {
     router.push('/inbox', { scroll: false })
@@ -366,9 +384,9 @@ function InboxContent() {
   }
 
   const handleArchive = useCallback((id: string) => {
-    archiveEmail(id)
+    void archiveEmail(id, fetchedEmail?.id === id ? fetchedEmail : undefined)
     router.push('/inbox', { scroll: false })
-  }, [archiveEmail, router])
+  }, [archiveEmail, fetchedEmail, router])
 
   const handleDelete = useCallback((id: string) => {
     deleteEmail(id)
@@ -434,6 +452,15 @@ function InboxContent() {
         return
       }
 
+      const triage = triageActions[action]
+      if (triageEnabled && triage) {
+        const targets = emailIds.map(id => emails.find(email => email.id === id) ??
+          (fetchedEmail?.id === id ? fetchedEmail : undefined))
+        if (targets.some(email => !email)) return
+        await changeFlags(targets.filter((email): email is Email => !!email), triage.flag, triage.desired)
+        return
+      }
+
       // Send bulk action to API
       const res = await fetch('/api/emails/bulk', {
         method: 'POST',
@@ -454,7 +481,7 @@ function InboxContent() {
       console.error('[BULK ACTION] Error:', error)
       alert('Có lỗi xảy ra')
     }
-  }, [emails, router, refetch])
+  }, [emails, fetchedEmail, router, refetch, triageEnabled, changeFlags])
 
   const selectedEmail = fetchedEmail
   const explainSelected = selectedEmail?.direction === 'inbound' &&
@@ -520,7 +547,7 @@ function InboxContent() {
           email={selectedEmail}
           onBack={handleCloseEmail}
           onRefresh={refetch}
-          onStar={toggleStar}
+          onStar={id => void toggleStar(id, fetchedEmail?.id === id ? fetchedEmail : undefined)}
           onArchive={handleArchive}
           onDelete={handleDelete}
           onExplainPriority={explainSelected}
@@ -606,7 +633,7 @@ function InboxContent() {
             effectiveViewMode === 'list' ? 'flex-1' : 'hidden border-e border-[var(--border)] lg:flex lg:w-[34%] lg:min-w-[320px] lg:max-w-[440px]'
           )}>
             {/* Selection Toolbar - shows when emails are selected */}
-            <SelectionToolbar onAction={handleBulkAction} />
+            <SelectionToolbar onAction={handleBulkAction} triageFolder={triageEnabled ? 'inbox' : undefined} />
 
             {/* Email List */}
             <div className="flex-1 overflow-y-auto">
@@ -657,7 +684,7 @@ function InboxContent() {
                   emails={filteredEmails}
                   selectedId={selectedId}
                   onSelect={handleSelectEmail}
-                  onStar={toggleStar}
+                  onStar={id => void toggleStar(id, fetchedEmail?.id === id ? fetchedEmail : undefined)}
                   onCategoryClick={handleCategoryClick}
                   compact={effectiveViewMode === 'split'}
                   groupByPriority={!activeFilter && !briefingFilter && !searchQuery && (!isMobile || mobileSegment === 'all')}
@@ -681,7 +708,7 @@ function InboxContent() {
               email={selectedEmail}
               onBack={handleCloseEmail}
               onRefresh={refetch}
-              onStar={toggleStar}
+              onStar={id => void toggleStar(id, fetchedEmail?.id === id ? fetchedEmail : undefined)}
               onArchive={handleArchive}
               onDelete={handleDelete}
               fullWidth={effectiveViewMode === 'full'}

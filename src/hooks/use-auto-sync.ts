@@ -14,7 +14,7 @@ interface UseAutoSyncOptions {
   enabled?: boolean
   onSync?: (result: SyncResult) => void
   onError?: (error: Error) => void
-  onNewEmails?: (count: number) => void
+  onEmailsSynced?: (count: number) => void
 }
 
 export function useAutoSync({
@@ -22,7 +22,7 @@ export function useAutoSync({
   enabled = true,
   onSync,
   onError,
-  onNewEmails
+  onEmailsSynced
 }: UseAutoSyncOptions = {}) {
   const lastAttemptRef = useRef<number>(0)
   const syncingRef = useRef<boolean>(false)
@@ -60,7 +60,7 @@ export function useAutoSync({
       setLastSyncTime(new Date())
 
       if (result.synced > 0) {
-        onNewEmails?.(result.synced)
+        onEmailsSynced?.(result.synced)
       }
 
       onSync?.(result)
@@ -74,7 +74,7 @@ export function useAutoSync({
       syncingRef.current = false
       setIsSyncing(false)
     }
-  }, [interval, onSync, onError, onNewEmails])
+  }, [interval, onSync, onError, onEmailsSynced])
 
   useEffect(() => {
     if (!enabled) return

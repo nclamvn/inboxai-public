@@ -3,6 +3,7 @@
 import { Star, Paperclip, AlertCircle } from 'lucide-react'
 import { cn, formatDate, truncate } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import { useOptionalSelection } from '@/contexts/email-selection-context'
 import type { Email } from '@/types'
 
 interface EmailListProps {
@@ -10,6 +11,7 @@ interface EmailListProps {
   selectedId?: string
   onSelect: (email: Email) => void
   onStar: (emailId: string) => void
+  selectable?: boolean
 }
 
 const priorityColors: Record<number, string> = {
@@ -29,7 +31,8 @@ const categoryLabels: Record<string, { label: string; variant: 'default' | 'seco
   social: { label: 'Mạng XH', variant: 'secondary' },
 }
 
-export function EmailList({ emails, selectedId, onSelect, onStar }: EmailListProps) {
+export function EmailList({ emails, selectedId, onSelect, onStar, selectable }: EmailListProps) {
+  const selection = useOptionalSelection()
   if (emails.length === 0) {
     return null
   }
@@ -53,6 +56,11 @@ export function EmailList({ emails, selectedId, onSelect, onStar }: EmailListPro
                   : 'bg-[var(--background)] hover:bg-[var(--secondary)]'
             )}
           >
+            {selectable && selection && <label className="flex min-h-11 shrink-0 items-center px-1" onClick={event => event.stopPropagation()}>
+              <input type="checkbox" className="focus-ring size-4"
+                aria-label={`Chọn thư: ${email.subject || '(Không có tiêu đề)'}`}
+                checked={selection.isSelected(email.id)} onChange={() => selection.toggleSelect(email.id)} />
+            </label>}
             {/* Priority Indicator */}
             <div className={cn('w-1 h-14 rounded-full flex-shrink-0', priorityColors[email.priority || 3])} />
 

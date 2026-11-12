@@ -51,6 +51,7 @@ export interface Email {
   is_starred: boolean
   is_archived: boolean
   is_deleted: boolean
+  sync_namespace?: string
   provider_deleted?: boolean
   snoozed_until: string | null
   user_notes: string | null

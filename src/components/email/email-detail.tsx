@@ -20,6 +20,7 @@ interface EmailDetailProps {
   onClose: () => void
   onStar: () => void
   onArchive: () => void
+  archiveLabel?: string
   onDelete: () => void
   onReply?: () => void
   onRefresh?: () => void
@@ -42,7 +43,7 @@ const categoryLabels: Record<string, string> = {
   social: 'Mạng xã hội',
 }
 
-export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onReply, onRefresh }: EmailDetailProps) {
+export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onReply, onRefresh, archiveLabel = 'Lưu trữ' }: EmailDetailProps) {
   const router = useRouter()
   const [classifying, setClassifying] = useState(false)
   const [showReplyAssistant, setShowReplyAssistant] = useState(false)
@@ -182,7 +183,7 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
           <button
             onClick={handleArchive}
             className="p-2 text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] rounded-lg transition-colors"
-            title="Lưu trữ"
+            title={archiveLabel}
           >
             <Archive className="w-5 h-5" strokeWidth={1.5} />
           </button>
