@@ -2,7 +2,7 @@
 
 ## Authority and scope
 - Product owner instructions and `docs/phase-2/PRODUCT_STANDARD.md` govern Phase 2.
-- Owner direction through M6-A (2026-11-12): local implementation and verification only.
+- Owner direction through M6-B (2026-11-12): local implementation and verification only.
   Do not push, create remote PRs, run hosted deployments or modify hosted settings.
   Prepare PR drafts locally; report local evidence separately from unrun remote CI.
 - Work on `phase2/m0-security-baseline-20261111` for current local Phase 2 work. Never modify main,
@@ -85,6 +85,8 @@
 - Run lint, TypeScript, unit, integration and build. Record actual commands, environment,
   exit status, counts and limitations in `docs/phase-2/VERIFICATION.md`.
 - Never relabel mock tests as real provider, database, device or production validation.
+- Run `npm run test:staging` for the synthetic migration, backup and recovery
+  rehearsal. Keep its Docker project, loopback endpoints and credentials local.
 - Do not mute existing checks to make CI green. A failing baseline remains a release blocker.
 - Major AI investments need a direct LLM and tool-enabled agent comparison: equivalent
   inputs, declared quality/privacy floors, unseen cases, time/cost and human effort.

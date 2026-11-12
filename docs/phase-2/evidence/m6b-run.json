@@ -1,0 +1,302 @@
+{
+  "date": "2026-11-12T00:50:40.715Z",
+  "provenance": "Local staging and independent PostgreSQL recovery, GoTrue, PostgREST and production-mode Next on synthetic data",
+  "images": {
+    "auth": "supabase/gotrue:v2.197.0",
+    "rest": "postgrest/postgrest:v14.18",
+    "mail": "axllent/mailpit:v1.28.1",
+    "db": "postgres:16"
+  },
+  "backups": [
+    {
+      "stage": "before-upgrade",
+      "bytes": 259356,
+      "sha256": "9fb05e1dae2145038bae21fb42fdfdaf14bf774c4060b5283ceda43790a14c1b",
+      "backupMs": 247,
+      "restoreMs": 485
+    },
+    {
+      "stage": "after-upgrade",
+      "bytes": 442385,
+      "sha256": "3a45a5b5b88302d5baaa3def24ff3abbde51e14b5561b4024120fcea3a4d3acf",
+      "backupMs": 189,
+      "restoreMs": 454
+    }
+  ],
+  "alerts": [
+    {
+      "check": "staging.cron.sync",
+      "state": "open",
+      "incident": "7d2f7777-dcaf-4e0f-82a8-8ddb334948cc",
+      "at": "2026-11-12T00:50:36.430Z"
+    },
+    {
+      "check": "staging.cron.sync",
+      "state": "resolved",
+      "incident": "7d2f7777-dcaf-4e0f-82a8-8ddb334948cc",
+      "at": "2026-11-12T00:50:40.200Z"
+    }
+  ],
+  "probes": [
+    {
+      "at": "2026-11-12T00:50:36.199Z",
+      "liveness": 200,
+      "scheduler": 200
+    },
+    {
+      "at": "2026-11-12T00:50:36.417Z",
+      "liveness": 200,
+      "scheduler": 500
+    },
+    {
+      "at": "2026-11-12T00:50:36.429Z",
+      "liveness": 200,
+      "scheduler": 500
+    },
+    {
+      "at": "2026-11-12T00:50:36.444Z",
+      "liveness": 200,
+      "scheduler": 500
+    },
+    {
+      "at": "2026-11-12T00:50:40.189Z",
+      "liveness": 200,
+      "scheduler": 200
+    },
+    {
+      "at": "2026-11-12T00:50:40.200Z",
+      "liveness": 200,
+      "scheduler": 200
+    }
+  ],
+  "appErrors": [
+    {
+      "level": "error",
+      "component": "cron.sync",
+      "code": "account_lookup_failed"
+    },
+    {
+      "level": "error",
+      "component": "cron.sync",
+      "code": "account_lookup_failed"
+    },
+    {
+      "level": "error",
+      "component": "cron.sync",
+      "code": "account_lookup_failed"
+    }
+  ],
+  "migrations": [
+    {
+      "name": "00000000000000_initial_schema.sql",
+      "sha256": "ca870bf4b6bc4d6335549aa6a526954843510c5f630914e100a23ba7aff05c8e"
+    },
+    {
+      "name": "20241213_ai_monitoring_domain_reputation.sql",
+      "sha256": "d9d37ceaea7783c186bcb8b6a9036eaa2569de73d3f573f8def62bcbc94a0698"
+    },
+    {
+      "name": "20241213_classification_feedback.sql",
+      "sha256": "950b083b9438dc1ac9336dae54e08682ca2724aca421eaf1a991399530a10902"
+    },
+    {
+      "name": "20241213_phishing_detection.sql",
+      "sha256": "185ce6a3bb73855f0e91bdbf831d22c6954dfd9fb97bc8310284e5341eee2e59"
+    },
+    {
+      "name": "20241213_sender_reputation.sql",
+      "sha256": "38fc60397552a89d708407cedd2532b75c552d522bccad53a1eae417c617bc01"
+    },
+    {
+      "name": "20241214_smart_ai_features.sql",
+      "sha256": "f20f7ffa93b420951755df9333a10c50a634fb60b6ae6adb92621e8b508c9dd3"
+    },
+    {
+      "name": "20241216_multiple_accounts.sql",
+      "sha256": "c597acddc6dd00b4f09682db4a4799d645b4eb1f7c9541459717c8e708f74879"
+    },
+    {
+      "name": "20241217_imap_smtp_support.sql",
+      "sha256": "78365bee45c646fc6cbb0b8fd3009736d8bbb325b68df9e421149af41b48e18b"
+    },
+    {
+      "name": "20261111000000_security_baseline.sql",
+      "sha256": "0f0bd7c92c819e3e49824edc2b740488eafe797a73269f208c1d0d039cdaa362"
+    },
+    {
+      "name": "20261111010000_registration_admission.sql",
+      "sha256": "6e56f0a22d09567a025fb33d63d8009be1ffea5a2e75b13812879ea1d7897947"
+    },
+    {
+      "name": "20261111020000_credential_vault.sql",
+      "sha256": "5da0b0fe71e196b6d45a4621b0fbdd5ab041ac9eff7f559fcbd5cd13389313ac"
+    },
+    {
+      "name": "20261111030000_sync_contracts.sql",
+      "sha256": "1ce03c8bfa0d91abb27f86a2b780407bd880a25433d5800f9fcee011a4f04365"
+    },
+    {
+      "name": "20261111040000_mail_send.sql",
+      "sha256": "dcc8b423d756095938c1b40134fe038cd7823f2eead747a160b0b50abe0fbc3e"
+    },
+    {
+      "name": "20261111050000_action_inbox.sql",
+      "sha256": "2f146ac8bd4f56fe50a5812a3bb4f71bdac93f39fb1cd11f8b2af76459d406a6"
+    },
+    {
+      "name": "20261111060000_commitment_ledger.sql",
+      "sha256": "7c9ac9632f63a2b830aa8979b7514783e59c17dc73b0e15f1475c32a0e6a5293"
+    },
+    {
+      "name": "20261111070000_commitment_board.sql",
+      "sha256": "c8b7d9854022946feb260342e235d2d8d3ec10432a4a858177a7e8e73d9a57c6"
+    },
+    {
+      "name": "20261111080000_commitment_detection.sql",
+      "sha256": "cd7813704433c50a4aa52b40feb2ad0622a1d556f26037256a57cdd7c110562b"
+    },
+    {
+      "name": "20261111090000_ask_inbox.sql",
+      "sha256": "023392c0244b025267dc03e244cef2c333c7ba2d6345456e65adf205e4db5740"
+    },
+    {
+      "name": "20261111100000_ask_inbox_answers.sql",
+      "sha256": "f32e612c6b9ac64a51552dae4c7443a006364dad08a42ff79c4aa273074fbace"
+    },
+    {
+      "name": "20261112000000_operator_plans.sql",
+      "sha256": "c5f02d6baba4b57935451956d19fc22f268244d6bcd5576a8b559b1a70de5d8c"
+    },
+    {
+      "name": "20261112010000_operator_outcomes.sql",
+      "sha256": "b6d4eefad376db3503d2c994356d5d2b56d095de72d761b1cd50cf003b9a5735"
+    }
+  ],
+  "recoveryMs": 3999,
+  "outcomes": [
+    {
+      "name": "staging uses an independent Docker project, internal service network and loopback gateway",
+      "status": "PASS"
+    },
+    {
+      "name": "source and recovery use separate PostgreSQL clusters",
+      "status": "PASS"
+    },
+    {
+      "name": "pre-upgrade archive restores Auth, metadata, legacy credentials and mail to a blank database",
+      "status": "PASS"
+    },
+    {
+      "name": "failure after vault migration statements rolls back DDL and data on the recovery database",
+      "status": "PASS"
+    },
+    {
+      "name": "forward upgrade preserves legacy mail identity, quarantines credentials and removes public secret columns",
+      "status": "PASS"
+    },
+    {
+      "name": "upgrade preserves existing profile",
+      "status": "PASS"
+    },
+    {
+      "name": "direct Auth API cannot bypass closed registration policy",
+      "status": "PASS"
+    },
+    {
+      "name": "Next signup requires email verification",
+      "status": "PASS"
+    },
+    {
+      "name": "signup sets no authenticated access-token cookie",
+      "status": "PASS"
+    },
+    {
+      "name": "unverified signup has no admin access",
+      "status": "PASS"
+    },
+    {
+      "name": "password login rejected before verification",
+      "status": "PASS"
+    },
+    {
+      "name": "PKCE email callback creates a verified session",
+      "status": "PASS"
+    },
+    {
+      "name": "verified admitted user can open the inbox page",
+      "status": "PASS"
+    },
+    {
+      "name": "non-admin verified user cannot access global whitelist",
+      "status": "PASS"
+    },
+    {
+      "name": "real PostgREST JWT/RLS returns only own email",
+      "status": "PASS"
+    },
+    {
+      "name": "anonymous PostgREST cannot read tenant email",
+      "status": "PASS"
+    },
+    {
+      "name": "server-provisioned admin role grants whitelist access",
+      "status": "PASS"
+    },
+    {
+      "name": "admin revocation is enforced on the next request",
+      "status": "PASS"
+    },
+    {
+      "name": "closed policy rejects subsequent Next signups",
+      "status": "PASS"
+    },
+    {
+      "name": "staging stores an AEAD credential, a cited commitment and a verified Operator action before backup",
+      "status": "PASS"
+    },
+    {
+      "name": "restore rejects a damaged archive before creating the target database",
+      "status": "PASS"
+    },
+    {
+      "name": "staging cron denies unauthenticated callers",
+      "status": "PASS"
+    },
+    {
+      "name": "stopped PostgREST triggers one local alert while Next liveness stays 200",
+      "status": "PASS"
+    },
+    {
+      "name": "cron error response exposes no raw upstream details",
+      "status": "PASS"
+    },
+    {
+      "name": "post-upgrade restore preserves the selected auth, mail, vault, ledger and Operator row fingerprints",
+      "status": "PASS"
+    },
+    {
+      "name": "cutover to restored PostgREST clears the same local alert after two healthy probes",
+      "status": "PASS"
+    },
+    {
+      "name": "restored GoTrue login, Next Inbox, owner isolation and anonymous RLS work over HTTP",
+      "status": "PASS"
+    },
+    {
+      "name": "restored application reads the same commitment source and Operator verification receipt",
+      "status": "PASS"
+    },
+    {
+      "name": "restored credential decrypts only with the original key present and stays inaccessible to a user JWT",
+      "status": "PASS"
+    },
+    {
+      "name": "restored Operator can undo and the source database is unchanged by recovery writes",
+      "status": "PASS"
+    },
+    {
+      "name": "staging app logs, probe records and delivered alerts omit synthetic credentials and mail metadata",
+      "status": "PASS"
+    }
+  ]
+}

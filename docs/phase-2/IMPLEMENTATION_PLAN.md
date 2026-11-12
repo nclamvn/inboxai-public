@@ -172,3 +172,13 @@ See the [M5-B handoff](M5B_LOCAL_HANDOFF.md) for local evidence and remaining pr
 | M6-A2 | M6-A1 | Reading focus, touch target and Capacitor shell integration | Email opening and return preserve focus on the three web sizes. Verify native behavior with simulator evidence and record untested device or assistive-technology coverage. |
 
 See the [M6-A handoff](M6A_LOCAL_HANDOFF.md) for measurements, fixtures and release limitations.
+
+## M6-B local review units
+
+| Unit | Depends on | Scope | Acceptance |
+| --- | --- | --- | --- |
+| M6-B1 | M6-A | Local staging and an independent recovery database | Local Docker socket, loopback gateway, internal service network, synthetic credentials and mail sink |
+| M6-B2 | M6-B1 | Forward migrations, archive verification and recovery | Restore both snapshots, roll back a failed migration, reject corrupt bytes, preserve Auth, vault access boundaries and source evidence |
+| M6-B3 | M6-B2 | Dependency outage, alert delivery and application cutover | Real outage triggers a single redacted alert, restored services clear it, ownership and anonymous access are checked after cutover |
+
+See the [M6-B handoff](M6B_LOCAL_HANDOFF.md) for commands and local evidence.

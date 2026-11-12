@@ -1,7 +1,8 @@
 # Verification record
 
-Latest: [M6-A local performance and platform evidence](M6A_LOCAL_HANDOFF.md).
-Previous: [M5-B local AI Operator verification and undo evidence](M5B_LOCAL_HANDOFF.md),
+Latest: [M6-B local staging, recovery and alert evidence](M6B_LOCAL_HANDOFF.md).
+Previous: [M6-A local performance and platform evidence](M6A_LOCAL_HANDOFF.md),
+[M5-B local AI Operator verification and undo evidence](M5B_LOCAL_HANDOFF.md),
 [M5-A local AI Operator evidence](M5A_LOCAL_HANDOFF.md),
 [M4-B local Ask Inbox answer evidence](M4B_LOCAL_HANDOFF.md),
 [M4-A local Ask Inbox evidence](M4A_LOCAL_HANDOFF.md),

@@ -14,7 +14,8 @@ Required evidence before proposing a supervised real-mailbox test:
 - [x] Local Gmail HTTP and SMTP TLS send, duplicate protection, partial acceptance and Gmail Sent reconciliation tested (M1C_LOCAL_HANDOFF.md).
 - [ ] Real-provider sync and send interoperability, SMTP destination controls and large-message/folder support verified.
 - [ ] CI lint/typecheck/tests/build succeed; required checks and branch protection confirmed remotely.
-- [ ] Isolated staging, synthetic data, redacted telemetry and incident/recovery procedure verified.
+- [x] Isolated local staging with synthetic data, database restore and redacted local alert delivery verified. [M6-B evidence](M6B_LOCAL_HANDOFF.md)
+- [ ] Hosted staging telemetry, incident response and recovery validated.
 - [ ] Explicit owner authorization for the particular supervised mailbox test.
 
 M0 only establishes the baseline and closes identified paths. Vault/sync release
