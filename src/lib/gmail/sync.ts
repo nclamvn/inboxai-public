@@ -14,12 +14,13 @@ export async function getValidAccessToken(userId: string, accountId: string, sig
 export async function syncGmailEmails(userId: string, accountId: string, options: {
     maxResults?: number;
     fullSync?: boolean;
+    timeoutMs?: number;
 } = {}) {
     const result = await runSync(getSyncStore(), { userId, accountId, provider: 'gmail' }, async signal => {
         const token = await getValidAccessToken(userId, accountId, signal);
         if (!token)
             throw new SyncError('credentials');
         return gmailProvider(gmailReader(token));
-    }, { limit: options.maxResults, fullSync: options.fullSync });
+    }, { limit: options.maxResults, fullSync: options.fullSync, timeoutMs: options.timeoutMs });
     return { ...result, syncedCount: result.synced };
 }

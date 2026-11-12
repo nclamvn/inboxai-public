@@ -34,6 +34,7 @@ export function ReplyCompose({ source }: { source: string }) {
   const [conflict, setConflict] = useState(false)
   const [readVersion, setReadVersion] = useState(0)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
+  const [followupOn, setFollowupOn] = useState('')
   const busyRef = useRef(false)
   const saveRef = useRef<Promise<ReplyDraft> | null>(null)
   const dirty = !equal(fields, saved)
@@ -152,7 +153,9 @@ export function ReplyCompose({ source }: { source: string }) {
   function change(action: 'edit' | 'discard' | 'finish' | 'track') {
     if (!draft || !context) return
     void run(async () => {
-      await replyRequest({ action, id: draft.id, ...(action === 'edit' && { fingerprint: context.fingerprint }) })
+      await replyRequest(action === 'track' && followupOn
+        ? { action: 'schedule-followup', id: draft.id, on: followupOn, expected: null }
+        : { action, id: draft.id, ...(action === 'edit' && { fingerprint: context.fingerprint }) })
       if (action === 'finish' || action === 'discard') {
         const next = await readReply(source)
         acceptContext({ ...next, draft: null, stale: false }, true)
@@ -166,7 +169,7 @@ export function ReplyCompose({ source }: { source: string }) {
 
   function review(event: React.FormEvent) {
     event.preventDefault()
-    if (!fields.body.trim()) return
+    if (!editable || !fields.body.trim()) return
     void run(async () => {
       await save()
       setPreview(true)
@@ -233,6 +236,11 @@ export function ReplyCompose({ source }: { source: string }) {
                     onChange={event => setFields({ ...fields, body: event.target.value })} />
                 </label>
               </fieldset>
+              {draft && state === 'accepted' && !draft.tracking && <label className="block max-w-64 space-y-1 text-sm">
+                <span>Ngày kiểm tra lại (giờ Việt Nam)</span>
+                <input type="date" value={followupOn} onChange={event => setFollowupOn(event.target.value)}
+                  disabled={busy} className={inputClass} />
+              </label>}
               <div className="flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
                 {editable && <>
                   <Button type="button" variant="outline" disabled={busy || saving || !!stale || conflict || !dirty}

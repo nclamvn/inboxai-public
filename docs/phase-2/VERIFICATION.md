@@ -1,5 +1,18 @@
 # Verification record
 
+## Scheduled reply follow-up
+
+On 2026-11-12, 20 browser and Auth checks passed with two loopback Gmail
+accounts and three conversations. A simulated Vietnam midnight surfaced
+only the due conversation. A moved appointment kept its new date across
+restart. A reply delivered during preview was picked up at confirmation and
+prevented dispatch. One approved reminder lost both provider and browser
+acknowledgements. A restart and three replays preserved one dispatch, one
+receipt and one Sent row. Local lint, TypeScript, 241 unit tests, 197
+integration tests, 21 SQL checks, 23 reply workflow checks, 25 design checks,
+19 platform checks and 31 staging checks passed. See the
+[scheduled follow-up handoff](REPLY_FOLLOWUP_LOCAL_HANDOFF.md).
+
 ## Reply workflow and follow-up
 
 On 2026-11-12, 23 browser and Auth checks passed with two loopback Gmail

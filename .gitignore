@@ -21,6 +21,8 @@
 /test-results/day-preview/
 /test-results/inbox-catchup/
 /test-results/reply-workflow/
+/test-results/reply-followup/
+/test-results/staging/
 /.codex-db-test-*/
 
 # next.js

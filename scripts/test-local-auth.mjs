@@ -35,23 +35,26 @@ const interactivePreview = journeyPreview || dayPreview
 const dailyCommitments = process.argv.includes('--daily-commitments')
 const catchup = process.argv.includes('--catchup')
 const replies = process.argv.includes('--reply-workflow')
-const journeyE2E = replies || catchup || process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
+const followups = process.argv.includes('--reply-followup')
+const journeyE2E = followups || replies || catchup || process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
 const journey = interactivePreview || journeyE2E
 const commitmentBenchmark = process.argv.includes('--m6g')
 const isolatedCommitment = commitmentDetection && process.argv.includes('--isolated')
 const commitmentOutput = commitmentBenchmark ? (await import('../tests/eval/commitments/benchmark.mjs')).output : null
 const isolatedDesign = design && process.argv.includes('--isolated')
 const isolatedPlatform = m6 && !m6Native && process.argv.includes('--isolated')
+const isolatedStaging = staging && process.argv.includes('--isolated')
 const platformOutput = isolatedPlatform ? 'test-results/commitment-attention/platform' : undefined
 const isolated = journeyE2E || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedPlatform
+const isolatedBuild = isolated || isolatedStaging
 const productionMode = m6 || staging || journey || isolated
-const journeyOutput = replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
+const journeyOutput = followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
 const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.test'
 const evidenceFile = journey ? `${journeyOutput}/report.json`
   : commitmentOutput ? commitmentOutput + '/local-run.json'
   : isolatedDesign ? `${journeyOutput}/design-run.json`
   : m6c ? `docs/phase-2/evidence/m6c-${staging ? 'staging' : 'auth'}-run.json`
-  : staging ? 'docs/phase-2/evidence/m6b-run.json'
+  : staging ? (isolatedStaging ? 'test-results/staging/run.json' : 'docs/phase-2/evidence/m6b-run.json')
   : platformOutput ? platformOutput + '/run.json'
   : m6 ? `docs/phase-2/evidence/m6a-${m6Baseline ? 'baseline' : m6Native ? 'native-run' : 'browser-run'}.json`
   : operatorOutcomes ? 'docs/phase-2/evidence/m5b-browser-run.json'
@@ -131,6 +134,7 @@ try {
   }
   if (isolatedCommitment) mkdirSync('test-results/commitment-lifecycle', { recursive: true })
   if (platformOutput) mkdirSync(platformOutput, { recursive: true })
+  if (isolatedStaging) mkdirSync('test-results/staging', { recursive: true })
   // A failed future run must never leave a stale success report behind.
   if (!journey) rmSync(evidenceFile, { force:true })
   if (commitments) rmSync('docs/phase-2/evidence/m3a-sample-ledger.json', { force: true })
@@ -188,7 +192,7 @@ try {
     mkdirSync(journeyOutput, { recursive: true })
     rmSync(evidenceFile, { force: true })
     rmSync(`${journeyOutput}/failure.png`, { force: true })
-    if (dailyCommitments || catchup || replies) rmSync(`${journeyOutput}/workflow.json`, { force: true })
+    if (dailyCommitments || catchup || replies || followups) rmSync(`${journeyOutput}/workflow.json`, { force: true })
   }
   started = true
   docker(['up', '-d', '--pull', 'never', ...(staging ? ['--wait','--wait-timeout','60'] : [])])
@@ -249,7 +253,7 @@ try {
   }
   const nextEnv = { ...Object.fromEntries(['PATH','HOME','LANG','TMPDIR', ...(askInbox ? ['ASK_INBOX_MODEL_DIR'] : [])]
         .filter(key => process.env[key]).map(key => [key,process.env[key]])),
-      ...(isolated ? { INBOXAI_E2E_BUILD: '1' } : {}),
+      ...(isolatedBuild ? { INBOXAI_E2E_BUILD: '1' } : {}),
       ...(googleProvider ? { INBOXAI_TEST_GOOGLE_OAUTH_URL: googleProvider.url, GOOGLE_CLIENT_ID: googleClientId,
         GOOGLE_CLIENT_SECRET: googleClientSecret, GOOGLE_REDIRECT_URI: app + '/api/auth/google/callback' } : {}),
       ...(staging ? { CRON_SECRET: rehearsal.cronSecret } : {
@@ -263,12 +267,12 @@ try {
   const nextCommand = ['--import', staging ? './tests/local-auth/staging-network.mjs' : './tests/local-auth/mail-network.mjs', 'node_modules/next/dist/bin/next']
   if (productionMode) {
     const declaration = 'next-env.d.ts'
-    const existing = isolated && existsSync(declaration) ? readFileSync(declaration) : null
+    const existing = isolatedBuild && existsSync(declaration) ? readFileSync(declaration) : null
     try {
       execFileSync(process.execPath, [...nextCommand, 'build'], { env: nextEnv, stdio: 'inherit' })
     } finally {
       // Next regenerates the shared declaration for the selected build directory.
-      if (isolated && existsSync(declaration) && readFileSync(declaration, 'utf8').includes('"./.next-build/types/routes.d.ts"')) {
+      if (isolatedBuild && existsSync(declaration) && readFileSync(declaration, 'utf8').includes('"./.next-build/types/routes.d.ts"')) {
         if (existing) writeFileSync(declaration, existing)
         else rmSync(declaration)
       }
@@ -349,7 +353,11 @@ try {
   record('admin revocation is enforced on the next request', (await appFetch('/api/admin/whitelist')).status === 403)
   sql("UPDATE public.registration_policy SET enabled=false;")
   record('closed policy rejects subsequent Next signups', (await appFetch('/api/signup-whitelist', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({email:'later@example.test',password,fullName:'Later'}) })).status === 503)
-  if (replies) {
+  if (followups) {
+    const { rehearseReplyFollowup } = await import('../tests/design/reply-followup.mjs')
+    await rehearseReplyFollowup({ app, base, email, password, userId, admin, appFetch, sql, googleProvider,
+      previousEmail, anon, login, restartNext, smtpWire, record, output: journeyOutput })
+  } else if (replies) {
     const { rehearseReplyWorkflow } = await import('../tests/design/reply-workflow.mjs')
     await rehearseReplyWorkflow({ app, base, email, password, userId, admin, login, appFetch, sql, googleProvider,
       previousEmail, anon, anonymousClient, restartNext, smtpWire, record, output: journeyOutput })
@@ -459,7 +467,8 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = replies ? 'Production-mode Next (restarted), Chromium, GoTrue, PostgREST and PostgreSQL, two Gmail accounts and provider acknowledgement loss over loopback'
+  const provenance = followups ? 'Production-mode Next (restarted), Chromium and PostgreSQL clocks advanced together in the isolated fixture, two loopback Gmail accounts and three conversations'
+    : replies ? 'Production-mode Next (restarted), Chromium, GoTrue, PostgREST and PostgreSQL, two Gmail accounts and provider acknowledgement loss over loopback'
     : catchup ? 'Production-mode Next (restarted), Chromium, GoTrue, PostgREST and PostgreSQL; three-day synthetic Gmail history via two loopback accounts and injected transport failure'
     : day ? 'Interactive local guide and production-mode Next in Chromium, synthetic data and real local SMTP TLS to Mailpit'
     : dailyCommitments ? 'Production-mode Next, GoTrue, PostgREST, PostgreSQL, Chromium and Mailpit over loopback with a synthetic daily commitment workflow'

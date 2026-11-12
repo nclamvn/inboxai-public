@@ -30,9 +30,23 @@ export type ReplyWork = {
   sourceId: string
   subject: string
   account: string
-  status: 'reply' | 'waiting' | 'draft' | 'sending' | 'sent'
+  status: 'reply' | 'due' | 'waiting' | 'draft' | 'sending' | 'sent'
   replyId: string | null
   quote: string | null
+  followupOn: string | null
+  followupKey: string | null
+  reminderState: 'dispatching' | 'unknown' | 'accepted' | 'partial' | 'rejected' | null
+}
+
+export type ReplyFollowupPreview = {
+  key: string
+  proof: string
+  sourceId: string
+  from: { address: string }
+  to: string[]
+  cc: string[]
+  subject: string
+  text: string
 }
 
 export const replyHref = (source: string) => '/compose?reply=' + encodeURIComponent(source)

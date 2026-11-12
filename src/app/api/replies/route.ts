@@ -6,6 +6,7 @@ import { createClientForRequest } from '@/lib/supabase/server'
 import { sendFromAccount } from '@/lib/mail-send/server'
 import { sendInput, sendKey, SendError } from '@/lib/mail-send/contracts'
 import type { ReplyWorkbench } from '@/lib/replies/contracts'
+import { syncAccount } from '@/lib/sync/account'
 
 export const maxDuration = 60
 const id = z.uuid()
@@ -19,7 +20,17 @@ const actions = z.discriminatedUnion('action', [
   z.strictObject({ action: z.literal('prepare'), source: id, id, revision }),
   z.strictObject({ action: z.enum(['send', 'check', 'track', 'stop', 'finish', 'discard']), id }),
   z.strictObject({ action: z.literal('edit'), id, fingerprint }),
+  z.strictObject({ action: z.literal('schedule-followup'), id, on: z.iso.date(), expected: id.nullable() }),
+  z.strictObject({ action: z.enum(['preview-followup', 'check-followup']), id }),
+  z.strictObject({ action: z.literal('send-followup'), id, key: sendKey, proof: fingerprint }),
 ])
+
+const followupPreview = z.object({
+  key: sendKey, proof: fingerprint, accountId: id, sourceId: id, subject: z.string(), text: z.string(),
+  to: z.array(z.string()), cc: z.array(z.string()),
+})
+const followupReceipt = z.object({ accountId: id, key: sendKey, hash: fingerprint })
+const followupChanged = 'Lịch hẹn hoặc hồi đáp đã thay đổi. Hãy xem lại hội thoại.'
 
 type Client = Awaited<ReturnType<typeof createClientForRequest>>
 function json(data: unknown, status = 200) {
@@ -29,7 +40,11 @@ async function rpc(client: Client, name: string, args: Record<string, unknown>) 
   const { data, error } = await client.rpc(name, args).abortSignal(AbortSignal.timeout(8000))
   if (!error) return data
   if (error.code === 'PT404') throw new SendError(404, 'Không tìm thấy thư nguồn hoặc bản nháp.')
-  if (error.code === 'PT409') throw new SendError(409, 'Bản nháp hoặc thư nguồn đã thay đổi. Hãy kiểm tra lại.')
+  if (error.code === 'PT409') throw new SendError(409, name === 'read_reply_followup_preview' || name === 'schedule_reply_followup'
+    ? followupChanged : 'Bản nháp hoặc thư nguồn đã thay đổi. Hãy kiểm tra lại.')
+  if (name === 'schedule_reply_followup' && ['22023', '22007', '22008'].includes(error.code)) {
+    throw new SendError(400, 'Chọn ngày kiểm tra từ hôm nay theo giờ Việt Nam.')
+  }
   if (error.code === '22023' || error.code === '23514' || error.code === '22P05') throw new SendError(400, 'Thông tin bản nháp không hợp lệ.')
   throw new SendError(503, 'Chưa thể truy cập bản nháp. Hãy thử lại.')
 }
@@ -76,6 +91,37 @@ async function readAction(request: NextRequest) {
 }
 const workbench = (client: Client, source: string) => rpc(client, 'read_reply_workbench', { p_source: source }) as Promise<ReplyWorkbench>
 
+async function sendFollowup(client: Client, actor: string, input: { id: string; key?: string; proof?: string }) {
+  const receipt = await rpc(client, 'read_reply_followup_receipt', { p_id: input.id })
+  const unavailable = () => { throw new SendError(409, followupChanged) }
+  if (receipt) {
+    const scope = followupReceipt.parse(receipt)
+    if (input.key && (scope.key !== input.key || scope.hash !== input.proof)) return unavailable()
+    // A status check reconciles the existing operation even if a reply has arrived.
+    return sendFromAccount({ userId: actor, ...scope }, unavailable, { followupId: input.id }, true)
+  }
+  if (!input.key) throw new SendError(409, 'Chưa có lượt gửi để xác minh. Hãy mở lại thư nhắc.')
+
+  async function currentPreview() {
+    const preview = followupPreview.parse(await rpc(client, 'read_reply_followup_preview', { p_id: input.id }))
+    if (preview.key !== input.key || preview.proof !== input.proof) return unavailable()
+    return preview
+  }
+  const approved = await currentPreview()
+  return sendFromAccount({ userId: actor, accountId: approved.accountId, key: approved.key, hash: approved.proof }, async () => {
+    const { data: account, error } = await client.from('source_accounts').select('*')
+      .eq('id', approved.accountId).eq('user_id', actor).eq('is_active', true).single()
+    if (error || !account) throw new SendError(409, 'Tài khoản gửi không còn khả dụng.')
+    const synced = await syncAccount(account, { limit: 100, timeoutMs: 10_000 })
+    if (!synced.success || synced.pending) {
+      throw new SendError(409, 'Chưa kiểm tra xong thư mới. Hãy thử lại sau khi đồng bộ.')
+    }
+    const fresh = await currentPreview()
+    return sendInput.parse({ sourceAccountId: fresh.accountId, replyToEmailId: fresh.sourceId,
+      subject: fresh.subject, text: fresh.text, to: fresh.to, cc: fresh.cc })
+  }, { followupId: input.id })
+}
+
 export async function GET(request: NextRequest) {
   return authenticated(request, async client => {
     const params = request.nextUrl.searchParams
@@ -93,6 +139,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return authenticated(request, async (client, actor) => {
     const input = await readAction(request)
+    if (input.action === 'schedule-followup') return json(await rpc(client, 'schedule_reply_followup', {
+      p_id: input.id, p_on: input.on, p_expected: input.expected,
+    }))
+    if (input.action === 'preview-followup') {
+      return json(await rpc(client, 'read_reply_followup_preview', { p_id: input.id }))
+    }
+    if (input.action === 'check-followup' || input.action === 'send-followup') {
+      const result = await sendFollowup(client, actor, input)
+      result.headers.set('Cache-Control', 'private, no-store')
+      return result
+    }
     if (input.action === 'save') {
       return json(await rpc(client, 'save_reply_draft', {
         p_source: input.source, p_id: input.id, p_revision: input.revision, p_fingerprint: input.fingerprint,

@@ -23,7 +23,7 @@ export async function testImapConnection(config: MailCredentials): Promise<{ suc
 }
 
 
-export async function syncEmails(account:SourceAccount,options:{limit?:number;fullSync?:boolean}={}){
+export async function syncEmails(account:SourceAccount,options:{limit?:number;fullSync?:boolean;timeoutMs?:number}={}){
  const result=await runSync(getSyncStore(),{userId:account.user_id,accountId:account.id,provider:'imap'},async signal=>{
   let password:string
   try{password=await getImapPassword(account.user_id,account.id)}catch{throw new SyncError('credentials')}

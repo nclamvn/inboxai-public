@@ -16,6 +16,7 @@ DECLARE
   context jsonb;
   input jsonb;
   payload jsonb;
+  reminder jsonb;
 BEGIN
   IF has_table_privilege('authenticated','private.reply_drafts','SELECT')
     OR has_function_privilege('anon','public.read_reply_workbench(uuid)','EXECUTE')
@@ -50,11 +51,24 @@ BEGIN
   VALUES(actor,other_account,'<other-account@example.test>','Re: Đối chiếu','vendor@example.test',ARRAY[sent_id]);
   IF public.list_reply_work('{}')#>>'{0,status}' IS DISTINCT FROM 'waiting'
   THEN RAISE EXCEPTION 'other account fulfilled waiting item'; END IF;
+  PERFORM public.schedule_reply_followup(draft,private.reply_followup_today(),NULL);
+  reminder := public.read_reply_followup_preview(draft);
+  IF public.list_reply_work('{}')#>>'{0,status}' IS DISTINCT FROM 'due'
+  THEN RAISE EXCEPTION 'current appointment did not become due'; END IF;
   INSERT INTO public.emails(id,user_id,source_account_id,message_id,subject,from_address,reply_references)
   VALUES(linked,actor,own_account,'<referenced@example.test>','Re: Đối chiếu','vendor@example.test',ARRAY['<origin@example.test>',sent_id]);
   IF public.list_reply_work('{}')#>>'{0,replyId}' IS DISTINCT FROM linked::text
   THEN RAISE EXCEPTION 'References-only evidence failed to match'; END IF;
+  BEGIN
+    PERFORM public.begin_reply_followup(actor,own_account,draft,(reminder->>'key')::uuid,reminder->>'proof',
+      reminder - ARRAY['key','proof','followupOn','accountId','sourceId']);
+    RAISE EXCEPTION 'preview was claimed after a reply was committed';
+  EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL;
+  END;
+  IF EXISTS (SELECT 1 FROM private.mail_send_operations WHERE request_key=(reminder->>'key')::uuid)
+  THEN RAISE EXCEPTION 'a rejected claim left a send operation'; END IF;
 END $$;
 
 SELECT 'PASS: Reply approval freezes recipients and References matches only in the sending account';
+SELECT 'PASS: Due reminder cannot be claimed once a matching reply is committed';
 ROLLBACK;
