@@ -26,7 +26,6 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
-import { NotificationDropdown } from '@/components/notifications/notification-dropdown';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 
 // Category definitions
@@ -380,9 +379,6 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
           </div>
         )}
       </div>
-
-      {/* Notification Dropdown */}
-      <NotificationDropdown />
 
       <button type="button" aria-label="Cài đặt" onClick={onProfileClick} className="neo-icon-button">
         <Settings size={20} strokeWidth={1.5} aria-hidden="true" />

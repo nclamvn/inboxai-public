@@ -34,16 +34,16 @@ interface UserData {
   profile?: { full_name?: string }
 }
 
-export function Header() {
+export function Header({ owner }: { owner: string }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const isMobile = useIsMobile()
 
   if (pathname === '/inbox' || (isMobile && searchParams.has('email'))) return null
-  return <DashboardHeader pathname={pathname} />
+  return <DashboardHeader pathname={pathname} owner={owner} />
 }
 
-function DashboardHeader({ pathname }: { pathname: string }) {
+function DashboardHeader({ pathname, owner }: { pathname: string; owner: string }) {
   const [user, setUser] = useState<UserData | null>(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showAIPopover, setShowAIPopover] = useState(false)
@@ -242,7 +242,7 @@ function DashboardHeader({ pathname }: { pathname: string }) {
         </div>
 
         {/* Notifications */}
-        <NotificationDropdown />
+        <NotificationDropdown owner={owner} />
 
         {/* User Menu */}
         <div className="relative ml-2" ref={userMenuRef}>

@@ -237,7 +237,7 @@ export async function rehearseReplyFollowup({ app, base, email, password, userId
     assert.equal(googleProvider.calls.sendAttempts, 4)
     record('the moved date appears at its new boundary and a provider reply during preview cancels the unclaimed send', true)
 
-    await row(moved).getByRole('button', { name: 'Đã xem' }).click()
+    await row(moved).getByRole('button', { name: 'Đã xử lý hồi đáp', exact: true }).click()
     await row(moved).waitFor({ state: 'hidden' })
     assert.equal(await queue(moved), undefined)
     const foreign = createClient(base, anon, { auth: { persistSession: false, autoRefreshToken: false } })

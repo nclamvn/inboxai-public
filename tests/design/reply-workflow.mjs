@@ -361,7 +361,7 @@ export async function rehearseReplyWorkflow({ app, base, email, password, userId
     assert.ok((await login.rpc('begin_reply_send', { p_user_id: userId, p_account_id: buying.id, p_draft: saved.id,
       p_key: randomUUID(), p_hash: 'a'.repeat(64), p_payload: {} })).error)
     await page.goto(app + '/inbox')
-    await replyPane().getByRole('button', { name: 'Đã xem', exact: true }).click()
+    await replyPane().getByRole('button', { name: 'Đã xử lý hồi đáp', exact: true }).click()
     await replyPane().waitFor({ state: 'hidden' })
     await page.reload()
     assert.deepEqual(await queue(), [])

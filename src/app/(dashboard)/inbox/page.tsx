@@ -26,6 +26,7 @@ import { ReplyInbox } from '@/components/replies/reply-inbox'
 import { CommitmentAttention } from '@/components/commitments/commitment-attention'
 import { compareInboxPriority, rankActionInbox } from '@/lib/action-inbox/rank'
 import { offlineHome, useOfflineWorkspace } from '@/components/offline/offline-provider'
+import { NotificationDropdown } from '@/components/notifications/notification-dropdown'
 import type { Email } from '@/types'
 import { lookupCategory, mailLookupHref, returnToMailLookup } from '@/lib/search/mail-lookup'
 
@@ -76,6 +77,7 @@ function InboxContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const offline = useOfflineWorkspace()
+  const notifications = offline && <NotificationDropdown owner={offline.owner} />
 
   // Account filter state
   const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([])
@@ -91,6 +93,7 @@ function InboxContent() {
 
   // URL-based state - selectedId from URL
   const selectedId = searchParams.get('email')
+  const followup = searchParams.get('followup') ?? undefined
   const lookupReturn = returnToMailLookup(searchParams.get('lookup'))
   const closeLabel = lookupReturn ? 'Về kết quả tìm kiếm' : undefined
   const lastOpenedEmail = useRef<string | null>(selectedId)
@@ -633,6 +636,7 @@ function InboxContent() {
           onSearch={handleSearch}
           onFilterClick={() => setIsCategorySheetOpen(true)}
           title={activeFilter ? CATEGORY_LABELS[activeFilter] || 'Hộp thư' : 'Hộp thư'}
+          notifications={notifications}
         />
       ) : (
         <header className="border-b border-[var(--border)] bg-[var(--surface)]">
@@ -642,6 +646,7 @@ function InboxContent() {
               <span className="truncate text-xs tabular-nums text-[var(--foreground-muted)]">{filterCounts.unread || 0} chưa đọc</span>
             </div>
             <div className="flex shrink-0 items-center gap-2">
+              {notifications}
               {offlineLink}
               {ruleButton}
               <AccountSwitcher selectedAccountIds={selectedAccountIds} onAccountChange={setSelectedAccountIds} />
@@ -704,12 +709,10 @@ function InboxContent() {
 
             {/* Email List */}
             <div className="flex-1 overflow-y-auto">
-              {userId && !selectedId && !activeFilter && !briefingFilter && (!isMobile || mobileSegment === 'all') && (
-                <>
-                  <ReplyInbox key={'replies:' + userId} userId={userId} accounts={selectedAccountIds} />
-                  <CommitmentAttention key={userId} userId={userId} accounts={selectedAccountIds} onSynced={refresh} />
-                </>
-              )}
+              {userId && !selectedId && (followup || (!activeFilter && !briefingFilter && (!isMobile || mobileSegment === 'all'))) &&
+                <ReplyInbox key={'replies:' + userId} userId={userId} accounts={followup ? [] : selectedAccountIds} focus={followup} />}
+              {userId && !selectedId && !activeFilter && !briefingFilter && (!isMobile || mobileSegment === 'all') &&
+                <CommitmentAttention key={userId} userId={userId} accounts={selectedAccountIds} onSynced={refresh} />}
               {error && emails.length === 0 ? (
                 <EmptyState type="error" title="Chưa tải được hộp thư"
                   description="Kiểm tra kết nối rồi thử tải lại."

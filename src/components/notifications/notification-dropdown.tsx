@@ -1,227 +1,154 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import {
-  Bell, Mail, RefreshCw, ClipboardList, AlertCircle,
-  CheckCheck
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { useEffect, useRef, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Bell, CalendarClock, FileText, Mail, PlugZap } from 'lucide-react'
+import { GmailReconnectButton } from '@/components/gmail/gmail-reconnect'
+import { Alert } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Modal } from '@/components/ui/modal'
+import { createClient } from '@/lib/supabase/client'
+import { actionNotificationsKey, type ActionNotification } from '@/lib/notifications/action-contracts'
 
-interface Notification {
-  id: string
-  type: string
-  title: string
-  message?: string
-  link?: string
-  is_read: boolean
-  created_at: string
+const path = '/api/notifications/action'
+const types = {
+  reconnect: { label: 'Kết nối Gmail', icon: PlugZap, tone: 'text-[var(--error)]', action: '' },
+  'commitment-change': { label: 'Cam kết cần xác nhận', icon: FileText, tone: 'text-[var(--accent-foreground)]', action: 'Xem thay đổi cam kết' },
+  'commitment-due': { label: 'Cam kết cần xử lý', icon: CalendarClock, tone: 'text-[var(--accent-foreground)]', action: 'Mở cam kết' },
+  reply: { label: 'Có hồi đáp', icon: Mail, tone: 'text-[var(--accent-foreground)]', action: 'Mở thư hồi đáp' },
+  followup: { label: 'Đến hẹn theo dõi', icon: CalendarClock, tone: 'text-[var(--accent-foreground)]', action: 'Mở lịch theo dõi' },
 }
 
-const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  new_email: Mail,
-  sync_complete: RefreshCw,
-  ai_classified: ClipboardList,
-  important: AlertCircle,
-}
-
-const typeColors: Record<string, string> = {
-  new_email: 'text-[var(--accent-foreground)]',
-  sync_complete: 'text-[var(--success)]',
-  ai_classified: 'text-[var(--accent-foreground)]',
-  important: 'text-[var(--warning)]',
-}
-
-export function NotificationDropdown() {
+export function NotificationDropdown({ owner }: { owner: string }) {
+  const [open, setOpen] = useState(false)
+  const [ready, setReady] = useState(false)
+  const [available, setAvailable] = useState(true)
+  const [pending, setPending] = useState<string | null>(null)
+  const [failed, setFailed] = useState(false)
+  const requestPending = useRef(false)
+  const cache = useQueryClient()
   const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
-  const [notifications, setNotifications] = useState<Notification[]>([])
-  const [unreadCount, setUnreadCount] = useState(0)
-  const [loading, setLoading] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const query = useQuery({
+    queryKey: [...actionNotificationsKey, owner],
+    enabled: available && (open || ready),
+    queryFn: async ({ signal }) => {
+      const response = await fetch(path, { signal, cache: 'no-store' })
+      if (!response.ok) throw new Error('Notifications unavailable')
+      const data: { owner: string; items: ActionNotification[] } = await response.json()
+      if (data.owner !== owner) throw new Error('Notification session changed')
+      return data.items
+    },
+    refetchOnMount: 'always', refetchOnReconnect: 'always', refetchOnWindowFocus: 'always',
+    refetchInterval: open ? 60_000 : false, retry: false, staleTime: 0,
+  })
+  const items = available ? query.data ?? [] : []
+  const unread = items.filter(item => !item.seenAt).length
 
-  // Fetch notifications
-  const fetchNotifications = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/notifications?limit=10')
-      const data = await res.json()
-      setNotifications(data.notifications || [])
-      setUnreadCount(data.unreadCount || 0)
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Fetch on mount and every 2 minutes (was 30 seconds - performance optimization)
   useEffect(() => {
-    fetchNotifications()
-    const interval = setInterval(fetchNotifications, 120000) // 2 minutes
-    return () => clearInterval(interval)
+    // Let the Inbox render first. Opening the bell requests the list immediately.
+    const afterInbox = window.setTimeout(() => setReady(true), 1500)
+    return () => window.clearTimeout(afterInbox)
   }, [])
 
-  // Close on click outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
+    const { data: { subscription } } = createClient().auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || session?.user.id !== owner && event === 'SIGNED_IN') {
+        setAvailable(false)
+        setOpen(false)
+        cache.removeQueries({ queryKey: [...actionNotificationsKey, owner] })
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [cache, owner])
+
+  async function view(item: ActionNotification, href?: string) {
+    if (requestPending.current) return
+    setFailed(false)
+    if (!item.seenAt) {
+      requestPending.current = true
+      setPending(item.id)
+      try {
+        const response = await fetch(path, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: item.id }), signal: AbortSignal.timeout(15_000),
+        })
+        if (!response.ok) throw new Error('View receipt unavailable')
+        cache.setQueryData<ActionNotification[]>([...actionNotificationsKey, owner], current => current?.map(row =>
+          row.id === item.id ? { ...row, seenAt: new Date().toISOString() } : row))
+        void query.refetch()
+      } catch {
+        setFailed(true)
+        void query.refetch()
+        return
+      } finally {
+        requestPending.current = false
+        setPending(null)
       }
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
-  // Mark as read
-  const markAsRead = async (ids?: string[]) => {
-    try {
-      await fetch('/api/notifications', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(ids ? { notificationIds: ids } : { markAllRead: true })
-      })
-      fetchNotifications()
-    } catch (error) {
-      console.error('Failed to mark as read:', error)
+    if (href) {
+      setOpen(false)
+      router.push(href)
     }
   }
 
-  // Handle notification click
-  const handleClick = (notification: Notification) => {
-    if (!notification.is_read) {
-      markAsRead([notification.id])
-    }
-    if (notification.link) {
-      router.push(notification.link)
-    }
-    setIsOpen(false)
+  function sourceLink(item: ActionNotification, href: string, label: string) {
+    return <Link href={href} prefetch={false} className="neo-target inline-flex min-h-11 items-center text-sm font-medium text-[var(--accent-foreground)] underline underline-offset-4"
+      onClick={event => {
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+        event.preventDefault()
+        void view(item, href)
+      }}>{label}</Link>
   }
 
-  // Format time
-  const formatTime = (date: string) => {
-    const d = new Date(date)
-    const now = new Date()
-    const diff = now.getTime() - d.getTime()
-
-    if (diff < 60000) return 'Vừa xong'
-    if (diff < 3600000) return `${Math.floor(diff / 60000)} phút trước`
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)} giờ trước`
-    return d.toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' })
-  }
-
-  return (
-    <div className="relative" ref={dropdownRef}>
-      {/* Bell button */}
-      <button
-        type="button"
-        aria-label="Thông báo"
-        aria-expanded={isOpen}
-        onClick={() => setIsOpen(!isOpen)}
-        className="neo-icon-button relative"
-      >
-        <Bell className="w-5 h-5" strokeWidth={1.5} />
-
-        {/* Unread badge */}
-        {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-[var(--primary)] text-[var(--primary-foreground)] text-[11px] font-medium rounded-full flex items-center justify-center">
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        )}
-      </button>
-
-      {/* Dropdown */}
-      {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-32px)] bg-[var(--surface)] rounded-[var(--radius-panel)] border border-[var(--border-strong)] overflow-hidden z-50 animate-fadeIn">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
-            <h3 className="text-[15px] font-semibold text-[var(--foreground)]">Thông báo</h3>
-            {unreadCount > 0 && (
-              <button
-                onClick={() => markAsRead()}
-                className="text-[13px] text-[var(--accent-foreground)] hover:underline flex items-center gap-1"
-              >
-                <CheckCheck className="w-4 h-4" />
-                Đọc tất cả
-              </button>
-            )}
-          </div>
-
-          {/* Notifications list */}
-          <div className="max-h-[400px] overflow-y-auto">
-            {loading && notifications.length === 0 ? (
-              <div className="flex items-center justify-center py-8">
-                <RefreshCw className="w-5 h-5 animate-spin text-[var(--muted-foreground)]" />
+  return <>
+    <button type="button" aria-label="Thông báo cần hành động" title="Thông báo cần hành động"
+      aria-haspopup="dialog" aria-expanded={open} disabled={!available}
+      aria-description={unread ? `${unread} thông báo chưa xem` : undefined}
+      className="neo-icon-button relative" onClick={() => {
+        setFailed(false)
+        setOpen(true)
+        if (ready) void query.refetch()
+      }}>
+      <Bell size={20} strokeWidth={1.5} aria-hidden="true" />
+      {unread > 0 && <span aria-hidden="true" className="absolute end-1 top-1 size-2 bg-[var(--accent)]" />}
+    </button>
+    <Modal open={open && available} title="Thông báo cần hành động" size="xl" onClose={() => setOpen(false)}>
+      {query.isPending && query.fetchStatus === 'fetching' && <p role="status" className="py-4 text-sm">Đang tải thông báo…</p>}
+      {(query.isError || query.fetchStatus === 'paused') && <Alert variant="warning" title="Chưa làm mới được thông báo">
+        Kiểm tra kết nối rồi <button type="button" className="neo-target inline-flex min-h-11 items-center underline" onClick={() => void query.refetch()}>thử lại</button>.
+      </Alert>}
+      {failed && <Alert variant="warning" title="Chưa xác nhận được trạng thái đã xem">
+        Khi có kết nối, danh sách sẽ kiểm tra lại. Bạn có thể đánh dấu lại mục này.
+      </Alert>}
+      {query.isSuccess && items.length === 0 && <p className="py-4 text-sm text-[var(--foreground-secondary)]">Không có việc cần xử lý.</p>}
+      {items.length > 0 && <ul aria-label="Việc cần xử lý" className="divide-y divide-[var(--border)] border-y border-[var(--border)]">
+        {items.map(item => {
+          const type = types[item.kind]
+          const Icon = type.icon
+          return <li key={item.id} className="flex min-w-0 gap-3 py-3">
+            <Icon size={18} strokeWidth={1.5} aria-hidden="true" className={'mt-0.5 shrink-0 ' + type.tone} />
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs">
+                <p className={'font-medium ' + type.tone}>{type.label}</p>
+                <p className="text-[var(--foreground-secondary)]">{item.seenAt ? 'Đã xem' : 'Chưa xem'} · Cần xử lý</p>
               </div>
-            ) : notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-[var(--muted-foreground)]">
-                <Bell className="w-10 h-10 mb-2 opacity-50" />
-                <span className="text-[14px]">Không có thông báo</span>
+              <h3 className="mt-1 break-words text-sm font-semibold">{item.title}</h3>
+              {item.account && <p className="mt-1 break-words text-xs text-[var(--foreground-secondary)]">{item.account}</p>}
+              {item.detail && <p className="mt-2 line-clamp-2 break-words text-sm text-[var(--foreground-secondary)]">{item.detail}</p>}
+              <div className="mt-1 flex flex-wrap items-center gap-x-4">
+                {item.href && sourceLink(item, item.href, type.action)}
+                {item.followupId && sourceLink(item, '/inbox?followup=' + item.followupId + '#followup-' + item.followupId, 'Mở theo dõi')}
+                {item.sourceId && item.kind !== 'reply' && sourceLink(item, '/inbox?email=' + item.sourceId, 'Mở email nguồn')}
+                {item.accountId && item.account && <GmailReconnectButton accountId={item.accountId} email={item.account} surface="inbox" />}
+                {!item.seenAt && <Button type="button" size="sm" variant="ghost" className="min-h-11" disabled={pending !== null}
+                  loading={pending === item.id} onClick={() => void view(item)}>Đánh dấu đã xem</Button>}
               </div>
-            ) : (
-              notifications.map((notification) => {
-                const Icon = typeIcons[notification.type] || Bell
-                const colorClass = typeColors[notification.type] || 'bg-[var(--secondary)] text-[var(--muted-foreground)]'
-
-                return (
-                  <button
-                    key={notification.id}
-                    onClick={() => handleClick(notification)}
-                    className={cn(
-                      'w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-[var(--hover)] transition-colors',
-                      !notification.is_read && 'bg-[var(--canvas)]'
-                    )}
-                  >
-                    {/* Icon */}
-                    <div className={cn('flex-shrink-0 mt-0.5', colorClass)}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <span className={cn(
-                          'text-[14px] line-clamp-1',
-                          !notification.is_read ? 'font-medium text-[var(--foreground)]' : 'text-[var(--muted)]'
-                        )}>
-                          {notification.title}
-                        </span>
-                        {!notification.is_read && (
-                          <span className="w-2 h-2 bg-[var(--selection-line)] rounded-full flex-shrink-0 mt-1.5" />
-                        )}
-                      </div>
-
-                      {notification.message && (
-                        <p className="text-[13px] text-[var(--muted-foreground)] line-clamp-2 mt-0.5">
-                          {notification.message}
-                        </p>
-                      )}
-
-                      <span className="text-[12px] text-[var(--muted-foreground)] mt-1 block">
-                        {formatTime(notification.created_at)}
-                      </span>
-                    </div>
-                  </button>
-                )
-              })
-            )}
-          </div>
-
-          {/* Footer - only show if there are notifications */}
-          {notifications.length > 0 && (
-            <div className="px-4 py-2 border-t border-[var(--border)] bg-[var(--secondary)]">
-              <button
-                onClick={() => {
-                  setIsOpen(false)
-                }}
-                className="text-[13px] text-[var(--muted)] hover:text-[var(--foreground)] w-full text-center"
-              >
-                Xem tất cả thông báo
-              </button>
             </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
+          </li>
+        })}
+      </ul>}
+    </Modal>
+  </>
 }

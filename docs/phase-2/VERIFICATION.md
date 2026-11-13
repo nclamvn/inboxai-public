@@ -1,5 +1,42 @@
 # Verification record
 
+## Actionable notifications
+
+The Inbox and dashboard bell open a list of current work from tracked
+replies, due follow-ups, the commitment ledger and Gmail reconnect state.
+Each item links to the corresponding email, review, follow-up or OAuth
+flow. Viewing records an owner-scoped receipt. Resolving the work updates
+the original workflow and removes the item from the next list. A new
+Gmail revocation receives a fresh notification identity. The list reuses
+the existing bounded reply and commitment views and opens in the web app.
+
+The Chrome journey closes the browser before background sync, injects a
+reply and a proposed deadline change, advances the follow-up date, and
+revokes one of the two loopback Gmail accounts. After a restart, it
+checks four actionable items and excludes 48 promotional emails. It
+drops the mark-seen acknowledgement after the database commits, then
+reloads and syncs again. The same four IDs and one view receipt survive.
+The journey follows the source links, resolves the reply, reschedules
+the follow-up, approves the ledger revision, reconnects Gmail and
+switches to a second InboxAI user in the same Chrome context.
+
+On 2026-11-13, `npm run test:action-notifications` passed 20 checks in
+Chrome 157 on macOS arm64 with Node 24.14.1, PostgreSQL 16 and the
+local production-mode Next.js 16.4.6 build. The flow recorded zero
+additional Gmail dispatches, no page errors, and no axe violations or
+horizontal overflow on the three captured screens. Lint exited 0
+with 91 existing warnings. TypeScript, 245 unit tests, 200 integration
+tests and 30 SQL checks passed. The isolated design and platform runs
+passed 29 and 19 checks. Isolated staging passed 31 checks, including
+backup and restore. The reply-followup and reply-workflow regressions
+passed 20 and 23 checks.
+
+[Chrome checks](../../test-results/action-notifications/report.json) ·
+[Workflow evidence](../../test-results/action-notifications/workflow.json) ·
+[Desktop](../../test-results/action-notifications/01-reopen.png) ·
+[Seen and still actionable](../../test-results/action-notifications/02-seen-still-open.png) ·
+[Mobile](../../test-results/action-notifications/03-mobile.png)
+
 ## GitHub Actions attachment authorization regression
 
 The GitHub Actions run for `82c7a46` passed seven of eight jobs. The

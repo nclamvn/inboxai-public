@@ -5,6 +5,7 @@ import { useAutoSync } from '@/hooks/use-auto-sync'
 import { gmailTriageRefresh } from '@/components/email/gmail-triage'
 import { toastInfo } from '@/lib/toast'
 import { useQueryClient } from '@tanstack/react-query'
+import { actionNotificationsKey } from '@/lib/notifications/action-contracts'
 
 interface AutoSyncProviderProps {
   children: React.ReactNode
@@ -37,6 +38,7 @@ export function AutoSyncProvider({
   }, [queryClient])
   const onSync = useCallback((result: { synced: number }) => {
     if (result.synced > 0) window.dispatchEvent(new Event(gmailTriageRefresh))
+    void queryClient.invalidateQueries({ queryKey: actionNotificationsKey })
     void queryClient.invalidateQueries({ predicate: ({ queryKey }) =>
       queryKey[0] === 'commitments' && (queryKey[2] === 'attention' || queryKey[2] === 'catchup'),
     })

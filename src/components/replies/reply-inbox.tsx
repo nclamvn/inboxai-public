@@ -1,13 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { formatCommitmentDue } from '@/lib/commitments/view'
 import { readReplyWork, replyRequest } from '@/lib/replies/client'
 import { replyHref, type ReplyWork } from '@/lib/replies/contracts'
 import { ReplyFollowupDialog } from './reply-followup-dialog'
+import { actionNotificationsKey } from '@/lib/notifications/action-contracts'
 
 const labels: Record<ReplyWork['status'], string> = {
   reply: 'Có hồi đáp', due: 'Đến hẹn', waiting: 'Đang chờ', draft: 'Bản nháp', sending: 'Cần kiểm tra lượt gửi', sent: 'Đã gửi',
@@ -17,11 +18,14 @@ const reminderLabels = {
   partial: 'Thư nhắc chỉ gửi được một phần', rejected: 'Gửi thư nhắc thất bại',
 }
 
-export function ReplyInbox({ userId, accounts }: { userId: string; accounts: string[] }) {
+export function ReplyInbox({ userId, accounts, focus }: { userId: string; accounts: string[]; focus?: string }) {
   const cache = useQueryClient()
   const [expanded, setExpanded] = useState(false)
   const [dialog, setDialog] = useState<{ item: ReplyWork; mode: 'date' | 'preview' | 'check' } | null>(null)
-  const refresh = () => void cache.invalidateQueries({ queryKey: ['reply-work', userId] })
+  const refresh = () => {
+    void cache.invalidateQueries({ queryKey: ['reply-work', userId] })
+    void cache.invalidateQueries({ queryKey: [...actionNotificationsKey, userId] })
+  }
   const query = useQuery({
     queryKey: ['reply-work', userId, ...accounts],
     queryFn: ({ signal }) => readReplyWork(accounts, signal),
@@ -32,8 +36,16 @@ export function ReplyInbox({ userId, accounts }: { userId: string; accounts: str
     onSuccess: refresh,
   })
   const items = query.data ?? []
+  const focused = items.find(item => item.id === focus)
+  const focusedId = focused?.id
+  useEffect(() => {
+    if (!focusedId) return
+    const row = document.getElementById('followup-' + focusedId)
+    row?.focus({ preventScroll: true })
+    row?.scrollIntoView({ block: 'nearest' })
+  }, [focusedId])
   if (!items.length && !query.isError) return null
-  const visible = expanded ? items : items.slice(0, 3)
+  const visible = expanded ? items : focused ? [focused, ...items.filter(item => item.id !== focused.id).slice(0, 2)] : items.slice(0, 3)
   const due = visible.filter(item => item.status === 'due')
   const other = visible.filter(item => item.status !== 'due')
 
@@ -43,7 +55,8 @@ export function ReplyInbox({ userId, accounts }: { userId: string; accounts: str
         {rows.map(item => {
           const verifying = item.reminderState === 'unknown' || item.reminderState === 'dispatching'
           const waiting = item.status === 'waiting' || item.status === 'due'
-          return <li key={item.id} className="px-4 py-3 sm:px-5">
+          return <li key={item.id} id={'followup-' + item.id} tabIndex={-1}
+            className="scroll-mt-4 px-4 py-3 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--accent)] sm:px-5">
             <p className="text-xs font-medium text-[var(--foreground-secondary)]">
               {labels[item.status]}
               {item.followupOn && <span> · {formatCommitmentDue({ dueOn: item.followupOn, dueAt: null })}</span>}
@@ -65,7 +78,7 @@ export function ReplyInbox({ userId, accounts }: { userId: string; accounts: str
                 onClick={() => setDialog({ item, mode: 'date' })}>{item.followupOn ? 'Dời hẹn' : 'Đặt ngày kiểm tra'}</Button>}
               {(item.status === 'reply' || waiting) && !verifying && <Button type="button" variant="ghost" size="sm"
                 className="min-h-11" disabled={stop.isPending} onClick={() => stop.mutate(item.id)}>
-                {item.status === 'reply' ? 'Đã xem' : 'Ngừng theo dõi'}
+                {item.status === 'reply' ? 'Đã xử lý hồi đáp' : 'Ngừng theo dõi'}
               </Button>}
             </div>
           </li>

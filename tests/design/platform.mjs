@@ -92,12 +92,13 @@ export async function rehearsePlatform({
         page.on('response', response => {
           if (response.status() >= 400) failedRequests.push([new URL(response.url()).pathname, response.status()])
         })
-        const requests = { briefing: 0, profiles: 0, attention: 0 }
+        const requests = { briefing: 0, profiles: 0, attention: 0, actionNotifications: 0 }
         page.on('request', request => {
           const { pathname } = new URL(request.url())
           if (pathname === '/api/ai/briefing') requests.briefing++
           if (pathname === '/rest/v1/profiles') requests.profiles++
           if (pathname === '/api/commitments/attention') requests.attention++
+          if (pathname === '/api/notifications/action') requests.actionNotifications++
         })
         await page.goto(app + '/inbox')
         const opener = page.getByRole('button', { name: /Mở thư: Lịch kho M6 000/ })
@@ -116,7 +117,9 @@ export async function rehearsePlatform({
         const result = { name, viewport: device.viewport, firstRowMs, jsBytes, requests: { ...requests } }
         measurements.push(result)
         if (baseline) continue
-        assert.deepEqual(requests, { briefing: name === 'mobile' ? 0 : 1, profiles: 0, attention: 1 })
+        assert.ok(requests.actionNotifications <= 1)
+        assert.deepEqual({ briefing: requests.briefing, profiles: requests.profiles, attention: requests.attention },
+          { briefing: name === 'mobile' ? 0 : 1, profiles: 0, attention: 1 })
         assert.ok(jsBytes > 0 && jsBytes <= 550 * 1024, `${name} JS bytes ${jsBytes}`)
         assert.ok(firstRowMs <= 5000, `${name} local first row at ${firstRowMs} ms`)
         await checkPage(page, result, 'inbox')

@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { cn } from '@/lib/utils'
+import { actionNotificationsKey } from '@/lib/notifications/action-contracts'
 import { loadCommitmentBoard, loadCommitmentCatchup, loadCommitmentDetail, loadCommitmentDetections, LedgerApiError } from '@/lib/commitments/client'
 import {
   commitmentsHref, formatCommitmentDue, groupLabels, isCommitmentGroup,
@@ -113,7 +114,10 @@ export function CommitmentLedger({ userId }: { userId: string }) {
   const totals = board.data?.pages.at(-1)?.totals
   const proposals = [...new Map(detections.data?.pages.flatMap(page => page.proposals)
     .map(proposal => [proposal.proposalId, proposal])).values()]
-  const refresh = () => void cache.invalidateQueries({ queryKey: ['commitments', userId] })
+  const refresh = () => {
+    void cache.invalidateQueries({ queryKey: ['commitments', userId] })
+    void cache.invalidateQueries({ queryKey: [...actionNotificationsKey, userId] })
+  }
   const reloadDetail = () => {
     setEditingId(null)
     refresh()

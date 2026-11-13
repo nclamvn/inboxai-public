@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useRef, useState } from 'react'
+import { memo, useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { Search, Pencil, SlidersHorizontal, X } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
@@ -22,11 +22,12 @@ interface MobileInboxHeaderProps {
   onFilterClick?: () => void
   title?: string
   className?: string
+  notifications?: ReactNode
 }
 
 export const MobileInboxHeader = memo(function MobileInboxHeader({
   currentSegment, onSegmentChange, unreadCount, importantCount, onSearch, onCompose,
-  onFilterClick, title = 'Hộp thư', className,
+  onFilterClick, title = 'Hộp thư', className, notifications,
 }: MobileInboxHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -58,6 +59,7 @@ export const MobileInboxHeader = memo(function MobileInboxHeader({
             <Search size={20} strokeWidth={1.5} aria-hidden="true" />
           </button>
           <ThemeToggle />
+          {notifications}
           {onCompose && (
             <button type="button" aria-label="Soạn thư" onClick={onCompose} className="neo-icon-button">
               <Pencil size={20} strokeWidth={1.5} aria-hidden="true" />
