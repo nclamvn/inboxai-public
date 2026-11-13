@@ -79,6 +79,10 @@ export function CommitmentConfirmationDialog({ detail, history, onClose, onReloa
     const state: CommitmentState = {
       title: title.trim(), ownerName: ownerName.trim() || null, ownerEmail: ownerEmail.trim() || null,
       status, ...draftDeadline(dueKind, due, base.state),
+      ...(base.state.delivery && { delivery: base.state.delivery }),
+    }
+    if (state.status === 'completed' && state.delivery && state.delivery.delivered < state.delivery.ordered) {
+      return setFormError('Ghi nhận email giao đủ số lượng trước khi khép cam kết.')
     }
     if (!state.title) return setFormError('Nhập nội dung cam kết.')
     const changes = commitmentChanges(base.state, state)
@@ -205,7 +209,7 @@ export function CommitmentConfirmationDialog({ detail, history, onClose, onReloa
               </select>
             </label>
             <label className={labelStyle}>Loại hạn
-              <select className={control} value={dueKind} onChange={event => {
+              <select className={control} value={dueKind} disabled={!!base.state.delivery} onChange={event => {
                 const kind = event.target.value as DueKind
                 setDueKind(kind)
                 setDue(kind === 'time' && base.state.dueAt ? localDeadline(base.state.dueAt) : kind === 'date' ? base.state.dueOn ?? '' : '')
@@ -214,11 +218,12 @@ export function CommitmentConfirmationDialog({ detail, history, onClose, onReloa
                 <option value="date">Theo ngày</option>
                 <option value="time">Có giờ (UTC+7)</option>
               </select>
+              {base.state.delivery && <span className="block text-xs text-[var(--foreground-muted)]">Duyệt đề xuất từ email nguồn để cập nhật hạn giao.</span>}
             </label>
             {dueKind !== 'none' && (
               <label className={labelStyle}>{dueKind === 'date' ? 'Ngày đến hạn' : 'Giờ đến hạn (UTC+7)'}
                 <input className={control} type={dueKind === 'date' ? 'date' : 'datetime-local'}
-                  step={dueKind === 'time' ? 1 : undefined} value={due} required onChange={event => setDue(event.target.value)} />
+                  step={dueKind === 'time' ? 1 : undefined} value={due} disabled={!!base.state.delivery} required onChange={event => setDue(event.target.value)} />
               </label>
             )}
           </div>

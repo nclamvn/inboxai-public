@@ -1,3 +1,4 @@
+import { detectDeliveryLine } from '@/lib/commitments/delivery'
 import { isQuotedMailBoundary } from '@/lib/email/plain-text'
 import { answerFields, type AnswerCitation, type AnswerClaim, type AnswerField, type AnswerObservation, type AskAnswer } from './ask-answer-contracts'
 import { readAnswerDate, readAnswerMoney } from './ask-answer-values'
@@ -111,15 +112,28 @@ function sourceFacts(source: AnswerSource, reference: string) {
     const codes = references(quote)
     if (codes.some(code => code !== reference) || (sourceCodes.length > 1 && !codes.includes(reference))) return []
     const statement = quote.replace(prefix, '')
-    const { regex, field: claim } = matchers.find(matcher => matcher.regex.test(statement)) ?? {}
-    const match = regex?.exec(statement)
-    if (!match || !claim) return []
-    let raw = match[3].replace(possiblePrefix, '').replace(prefix, '').replace(suffix, '').replace(/[.!;]$/u, '').trim()
-    if (match[1]) raw = raw.replace(/^ngày\s+/iu, '')
     const citation: AnswerCitation = {
       emailId: source.id, version: source.version, sender: source.sender, account: source.account,
       subject: source.subject, at: source.at, field, quote,
     }
+    if (reference.startsWith('PO-') && field === 'body_text') {
+      const delivery = detectDeliveryLine(statement.normalize('NFC').replace(/\s+/gu, ' ').replace(/[.!]$/u, ''),
+        quote, value => {
+          const parsed = readAnswerDate(value, 'vi')
+          return parsed?.kind === 'date' ? parsed.iso : null
+        })
+      if (delivery?.dueOn) {
+        return [{ claim: 'deliveryDate' as const, value: delivery.kind === 'review' || sourceTentative || conditional
+          ? null : { kind: 'date' as const, iso: delivery.dueOn }, citation }]
+      }
+    }
+    const { regex, field: claim } = matchers.find(matcher => matcher.regex.test(statement)) ?? {}
+    const match = regex?.exec(statement)
+    if (!match || !claim) return []
+    let raw = match[3].replace(possiblePrefix, '').replace(prefix, '').replace(suffix, '').replace(/[.!;]$/u, '').trim()
+    // A delivery subject can name the topic without making a date claim.
+    if (field === 'subject' && claim === 'deliveryDate' && !/^(?:\d|[a-z]+\s+\d)/iu.test(raw)) return []
+    if (match[1]) raw = raw.replace(/^ngày\s+/iu, '')
     const uncertain = sourceTentative || conditional || tentative.test(quote)
     const language = match[1] ? 'vi' : 'en'
     const payment = claim === 'paidAmount' ? /^(.+?)\s+(?:vào ngày|ngày|on)\s+(.+)$/iu.exec(raw) : null

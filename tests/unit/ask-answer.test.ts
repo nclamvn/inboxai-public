@@ -54,6 +54,21 @@ describe('exact date and amount normalization', () => {
 })
 
 describe('cited multi-email synthesis', () => {
+  it('keeps a supplier’s proposed date separate from confirmed delivery dates', () => {
+    const subject = '[PO-6831] Lịch giao vật tư'
+    const quote = 'Bên em đề nghị dời lịch giao sang 19/11/2026 và giao trước 50 bộ.'
+    const result = answer('Đối chiếu ngày giao PO-6831', [
+      source('original', 'Chúng tôi xác nhận giao 200 bộ gá vào ngày 15/11/2026.', { subject }),
+      source('pending', quote, { subject }),
+      source('confirmed', 'Chúng tôi xác nhận dời lịch giao từ 15/11/2026 sang 19/11/2026.', { subject: subject + ' · m4' }),
+    ])
+    const delivery = result.claims.find(claim => claim.field === 'deliveryDate')
+    expect(delivery?.observations.map(observation => observation.value)).toEqual([
+      { kind: 'date', iso: '2026-11-15' }, { kind: 'date', iso: '2026-11-19' },
+    ])
+    expect(delivery?.unclear).toEqual([expect.objectContaining({ emailId: 'pending', quote })])
+  })
+
   it('combines distinct fields across accounts and consolidates equivalent values', () => {
     const input = [
       source('one', 'Tổng tiền hóa đơn: 12.500.000 đồng.\nHạn thanh toán: ngày 19/11/2026.'),

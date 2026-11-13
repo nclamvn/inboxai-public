@@ -24,9 +24,11 @@ export type CommitmentProposal = {
   quote: string
   kind: DetectionSignal['kind']
   reference: string | null
+  proposedDueOn?: string | null
+  proposedBatch?: DetectionSignal['proposedBatch'] | null
   previous: LedgerState | null
   review: { command: DetectionCommand; title: string } | null
-  blocked: 'unmatched' | 'chronology' | 'ambiguous' | 'conflicting' | 'uncertain' | null
+  blocked: 'unmatched' | 'chronology' | 'ambiguous' | 'conflicting' | 'uncertain' | 'quantity' | null
 }
 
 export type DetectionPage = { proposals: CommitmentProposal[]; nextBeforeId: string | null }

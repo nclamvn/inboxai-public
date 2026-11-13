@@ -19,6 +19,7 @@
 /test-results/commitment-lifecycle/
 /test-results/commitment-regression/
 /test-results/commitment-attention/
+/test-results/delivery-commitments/
 /test-results/day-preview/
 /test-results/inbox-catchup/
 /test-results/reply-workflow/

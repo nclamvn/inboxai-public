@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { ArrowLeft, FileText, Pencil } from 'lucide-react'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { deliveryLabel } from '@/lib/commitments/delivery'
+import { subjectReference } from '@/lib/commitments/detect'
 import { cn } from '@/lib/utils'
 import {
   commitmentsHref, fieldLabels, formatCommitmentDue, formatCommitmentMoment, ownerLabel, revisionLabels,
@@ -12,6 +14,7 @@ import {
 } from '@/lib/commitments/view'
 
 function revisionValue(state: LedgerState, field: keyof LedgerState) {
+  if (field === 'delivery') return state.delivery ? deliveryLabel(state.delivery) : 'Chưa ghi nhận'
   if (field === 'status') return statusLabels[state.status]
   if (field === 'dueOn' || field === 'dueAt') return formatCommitmentDue(state)
   if (field === 'review') return state.review?.note ?? 'Đã xác nhận'
@@ -90,6 +93,9 @@ export function CommitmentDetail({
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => { heading.current?.focus() }, [])
   const { state } = detail
+  const reference = state.delivery
+    ? history.flatMap(revision => revision.sources).map(source => subjectReference(source.subject)).find(code => code?.startsWith('PO-'))
+    : detail.referenceKey
   return (
     <section aria-labelledby="commitment-heading" className="min-h-full min-w-0 bg-[var(--surface)]">
       <header className="border-b border-[var(--border)] px-4 pb-5 pt-3 sm:px-6">
@@ -99,7 +105,7 @@ export function CommitmentDetail({
         </Link>
         <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1 basis-52">
-            <p className="break-all text-xs text-[var(--foreground-muted)]">{detail.referenceKey}</p>
+            {reference && <p className="break-all text-xs text-[var(--foreground-muted)]">{reference}</p>}
             <h2 id="commitment-heading" ref={heading} tabIndex={-1} className="mt-1 break-words text-xl font-semibold leading-7 sm:text-2xl">
               {state.title}
             </h2>
@@ -119,7 +125,7 @@ export function CommitmentDetail({
             {state.ownerEmail && state.ownerName && <dd className="break-all text-xs text-[var(--foreground-muted)]">{state.ownerEmail}</dd>}
           </div>
           <div className="min-w-0">
-            <dt className="text-xs text-[var(--foreground-muted)]">Hạn chót</dt>
+            <dt className="text-xs text-[var(--foreground-muted)]">{state.delivery ? 'Hạn giao đã chốt' : 'Hạn chót'}</dt>
             <dd className="mt-1 break-words text-sm font-medium">{formatCommitmentDue(state)}</dd>
           </div>
           <div className="min-w-0">
@@ -127,6 +133,10 @@ export function CommitmentDetail({
             <dd className={cn('mt-1 text-sm font-medium', state.status === 'completed' && 'text-[var(--success)]')}>{statusLabels[state.status]}</dd>
           </div>
         </dl>
+        {state.delivery && <div className="mt-4 flex flex-wrap items-baseline justify-between gap-2 border-s-2 border-[var(--selection-line)] ps-3">
+          <span className="text-sm text-[var(--foreground-secondary)]">Nhà cung cấp báo đã giao</span>
+          <span className="font-semibold tabular-nums">{deliveryLabel(state.delivery)}</span>
+        </div>}
         {state.review && (
           <Alert variant="warning" title={state.review.kind === 'conflicting' ? 'Có nguồn mâu thuẫn' : 'Còn điểm chưa rõ'} className="mt-4 break-words">
             {state.review.note}

@@ -1,5 +1,37 @@
 # Verification record
 
+## Theo dõi cam kết giao hàng
+
+Nghiệm thu ngày 13/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,
+Chrome 157.0.8103.79 và PostgreSQL 16. Chrome đóng vai người mua hàng đi từ
+đề nghị đổi lịch đến giao đủ, mở chứng cứ từ hai Gmail giả lập và kiểm tra
+Ask Inbox. Phát lại lần lưu bị mất phản hồi giữ đúng một phiên bản. Lời
+nhắc quá hạn được duyệt trên Chrome và chỉ gửi một lần về Gmail giả lập
+khi phát lại cùng yêu cầu. Phiên khác nhận 404 khi mở cam kết của người mua.
+
+| Kiểm tra | Kết quả local |
+| --- | --- |
+| `npm run lint` | Exit 0, 92 cảnh báo hiện có |
+| `npm run typecheck` | Exit 0 |
+| `npm run test:unit` và `npm run test:integration` | Exit 0, 246 và 200 test |
+| `npm run test:db` | Exit 0, 34 nhóm. Chặn xác nhận sai hạn, giao đủ khi nguồn báo một phần và sửa trực tiếp các điều khoản giao |
+| `npm run build` | Exit 0, build Next production với biến giả lập. Cảnh báo Sentry hiện có |
+| `npm run test:delivery-commitments` | Exit 0, 18 kiểm tra gồm 14 kiểm tra Auth chung. Năm ảnh chụp có 0 lỗi axe và không tràn ngang |
+| `npm run test:design -- --isolated` | Exit 0, 29 kiểm tra |
+| `npm run test:platform -- --isolated` | Exit 0, 19 kiểm tra. Inbox 600 thư, hàng đầu tiên 1,11–1,48 giây ở ba kích thước Chrome |
+| `npm run test:staging -- --isolated` | Exit 0, 31 kiểm tra nâng cấp, phục hồi và cảnh báo local |
+| Bộ đo giao hàng | InboxAI khớp 24/24 quyết định, giữ nguyên văn nguồn ở 19/19 phiên bản được xác nhận. Codex đóng vai đọc thủ công 24/24, LLM trực tiếp 19/24, agent đọc thư 20/24 |
+
+Lần chạy Chrome trước đó phát hiện tiêu đề thư chung có thể lấp dẫn chứng
+đề nghị dời lịch trong Ask Inbox. Ca hồi quy đi qua sau khi sửa. Lần chạy
+gửi thử bị Gmail giả lập từ chối do fixture chỉ chấp nhận miền chính xác
+`example.test`. Đã sửa địa chỉ thử và chạy lại trọn luồng.
+
+Tất cả email và người dùng là giả lập. Số đo phản ánh bộ thư do Codex soạn
+và khóa nhãn trước khi sửa bộ phát hiện. Chưa đo thời gian đọc của con người,
+độ chính xác trên thư độc lập, xác nhận nhập kho hay tương thích Gmail thật.
+[Phạm vi, bộ đo và cách chạy lại](DELIVERY_COMMITMENTS.md).
+
 ## Offline compose and attachments
 
 Choose **Bật lưu bản nháp trên thiết bị** while connected to enroll or unlock

@@ -9,12 +9,13 @@ import { Modal } from '@/components/ui/modal'
 import { Alert } from '@/components/ui/alert'
 import { confirmCommitmentDetection, dismissCommitmentCatchup, LedgerApiError } from '@/lib/commitments/client'
 import { commitmentChanges, commitmentsHref, formatCommitmentDue, formatCommitmentMoment, ownerLabel, statusLabels, type CommitmentGroup } from '@/lib/commitments/view'
+import { deliveryLabel } from '@/lib/commitments/delivery'
 import { catchupHref } from '@/lib/commitments/catchup'
 import type { CommitmentProposal } from '@/lib/commitments/detection'
 
 const labels: Record<CommitmentProposal['kind'], string> = {
   create: 'Cam kết mới', deadline: 'Đổi hạn chót', owner: 'Đổi người phụ trách',
-  completed: 'Hoàn tất', cancelled: 'Hủy cam kết',
+  progress: 'Giao một phần', completed: 'Hoàn tất', cancelled: 'Hủy cam kết',
   review: 'Phản hồi cần kiểm tra',
 }
 
@@ -23,7 +24,8 @@ const blockedReasons: Record<NonNullable<CommitmentProposal['blocked']>, string>
   chronology: 'Chưa xác minh được thư này mới hơn bằng chứng đang có trong sổ.',
   ambiguous: 'Có nhiều đầu việc có thể liên quan. Hãy kiểm tra email và sổ cam kết.',
   conflicting: 'Hạn cũ trong thư khác với hạn đã xác nhận trong sổ.',
-  uncertain: 'Người phụ trách chưa xác nhận lịch. Cam kết giữ nguyên hạn đã duyệt.',
+  quantity: 'Số lượng hoặc đơn vị trong thư khác cam kết. Cần kiểm tra trước khi cập nhật.',
+  uncertain: 'Phản hồi chưa đủ bằng chứng để cập nhật. Sổ giữ nguyên nội dung đã xác nhận.',
 }
 
 function Source({ proposal }: { proposal: CommitmentProposal }) {
@@ -106,7 +108,7 @@ function ProposalReview({ proposal, close, refresh, saved }: {
               <dd className="break-words text-[var(--foreground-secondary)]">Trước đây · {change.from}</dd>
               <dd className="break-words">Đề xuất · {change.to}</dd>
             </div>
-          )) : [['Người phụ trách', ownerLabel(state)], ['Hạn chót', formatCommitmentDue(state)], ['Trạng thái', statusLabels[state.status]]].map(([label, value]) => (
+          )) : [['Người phụ trách', ownerLabel(state)], ['Hạn chót', formatCommitmentDue(state)], ['Trạng thái', statusLabels[state.status]], ...(state.delivery ? [['Đã giao', deliveryLabel(state.delivery)]] : [])].map(([label, value]) => (
             <div key={label} className="grid grid-cols-[minmax(112px,1fr)_2fr] gap-3 py-3">
               <dt className="text-[var(--foreground-secondary)]">{label}</dt>
               <dd className="break-words">{value}</dd>
@@ -199,6 +201,10 @@ export function CommitmentProposals({ group, proposals, sourceId, hasMore, loadi
                   )}
                 </div>
                 <div className="mt-3"><Source proposal={proposal} /></div>
+                {proposal.kind === 'review' && proposal.proposedDueOn && <p className="mt-2 text-sm">
+                  Đề nghị giao {formatCommitmentDue({ dueOn: proposal.proposedDueOn, dueAt: null })}
+                  {proposal.proposedBatch ? ' · Đợt đầu ' + proposal.proposedBatch.quantity + ' ' + proposal.proposedBatch.unit : ''}
+                </p>}
                 {proposal.blocked && (
                   <p className="mt-2 text-sm text-[var(--foreground-secondary)]">
                     {blockedReasons[proposal.blocked]}

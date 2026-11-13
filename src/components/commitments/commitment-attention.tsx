@@ -12,6 +12,7 @@ import { GmailReconnectButton, GmailReconnectNotice } from '@/components/gmail/g
 import { catchupHref, type CatchupAccount } from '@/lib/commitments/catchup'
 import type { AttentionItem } from '@/lib/commitments/attention'
 import { approveCommitmentReminder, LedgerApiError, loadCommitmentAttention, loadCommitmentReminder } from '@/lib/commitments/client'
+import { deliveryLabel } from '@/lib/commitments/delivery'
 import { commitmentsHref, formatCommitmentDue, formatCommitmentMoment, ownerLabel } from '@/lib/commitments/view'
 
 const link = 'neo-target inline-flex min-h-11 min-w-0 items-center text-sm font-medium text-[var(--accent-foreground)] underline underline-offset-4'
@@ -229,6 +230,7 @@ export function CommitmentAttention({ userId, accounts, onSynced }: {
                       <Badge variant={reasonTones[item.reason]} className="py-0.5">{reasons[item.reason]}</Badge>
                       <span>{formatCommitmentDue(item.state)} · {item.responsibility === 'mine' ? 'Tôi phải làm' : ownerLabel(item.state)}</span>
                     </div>
+                    {item.state.delivery && <p className="mt-1 text-sm tabular-nums">Nhà cung cấp báo đã giao {deliveryLabel(item.state.delivery)}</p>}
                     {item.reply && <blockquote className="mt-2 border-s-2 border-[var(--border)] ps-2 text-sm break-words">{item.reply.quote}</blockquote>}
                     <div className="flex flex-wrap items-center gap-x-4">
                       {item.source.href && <Link className={link} href={item.source.href} prefetch={false}>Mở email nguồn</Link>}

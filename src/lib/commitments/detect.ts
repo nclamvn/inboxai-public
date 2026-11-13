@@ -1,14 +1,17 @@
 import { z } from 'zod'
 import { isQuotedMailBoundary } from '@/lib/email/plain-text'
+import { detectDeliveryLine, type DeliveryProgress } from './delivery'
 import type { CommitmentState } from './contracts'
 
 export type DetectionSignal = {
-  kind: 'create' | 'deadline' | 'owner' | 'completed' | 'cancelled' | 'review'
+  kind: 'create' | 'deadline' | 'owner' | 'progress' | 'completed' | 'cancelled' | 'review'
   quote: string
   title: string | null
   dueOn: string | null
   ownerEmail?: string
   priorDueOn?: string
+  delivery?: DeliveryProgress
+  proposedBatch?: { quantity: number; unit: DeliveryProgress['unit'] }
 }
 
 const speaker = '(?:tôi|chúng tôi|bên tôi|i|we)'
@@ -51,7 +54,7 @@ export function commitmentTitleKey(title: string) {
   return title.normalize('NFC').toLowerCase().replace(/\s+/gu, ' ').trim()
 }
 
-export function detectCommitments(body: string | null, receivedAt: string | null = null): DetectionSignal[] {
+export function detectCommitments(body: string | null, receivedAt: string | null = null, reference: string | null = null): DetectionSignal[] {
   if (!body || body.length > 8000 || body.includes('\0')) return []
   const signals: DetectionSignal[] = []
   for (const raw of body.split(/\r?\n/u)) {
@@ -65,6 +68,11 @@ export function detectCommitments(body: string | null, receivedAt: string | null
       continue
     }
     if (uncertain.test(line)) continue
+    const deliveryEvent = reference?.startsWith('PO-') && detectDeliveryLine(line, quote, value => calendarDate(value, receivedAt))
+    if (deliveryEvent) {
+      signals.push(deliveryEvent)
+      continue
+    }
     const replacement = confirmedReplacement.exec(line)
     if (replacement) {
       const dueOn = calendarDate(replacement[1], receivedAt)
@@ -123,17 +131,25 @@ export function proposedState(signal: DetectionSignal, sender: string, name: str
     return {
       title: signal.title, ownerName: name?.trim() || null, ownerEmail: sender,
       dueOn: signal.dueOn, dueAt: null, status: 'open',
+      ...(signal.delivery && { delivery: signal.delivery }),
     }
   }
   if (prior?.status !== 'open') return null
-  const { title, ownerName, ownerEmail, dueOn, dueAt, status } = prior
+  const { title, ownerName, ownerEmail, dueOn, dueAt, status, delivery } = prior
+  const quantities = delivery ? { delivery } : {}
+  if (signal.delivery) {
+    if (!delivery || signal.delivery.delivered <= delivery.delivered || signal.delivery.ordered !== delivery.ordered ||
+        signal.delivery.unit !== delivery.unit) return null
+    return { title, ownerName, ownerEmail, dueOn, dueAt, status: signal.kind === 'completed' ? 'completed' : 'open', delivery: signal.delivery }
+  }
+  if (signal.kind === 'progress' || (signal.kind === 'completed' && delivery)) return null
   if (signal.kind === 'deadline') {
     if (dueOn === signal.dueOn && !dueAt) return null
-    return { title, ownerName, ownerEmail, dueOn: signal.dueOn, dueAt: null, status }
+    return { title, ownerName, ownerEmail, dueOn: signal.dueOn, dueAt: null, status, ...quantities }
   }
   if (signal.kind === 'owner') {
     if (!signal.ownerEmail || ownerEmail?.toLowerCase() === signal.ownerEmail) return null
-    return { title, ownerName: null, ownerEmail: signal.ownerEmail, dueOn, dueAt, status }
+    return { title, ownerName: null, ownerEmail: signal.ownerEmail, dueOn, dueAt, status, ...quantities }
   }
-  return { title, ownerName, ownerEmail, dueOn, dueAt, status: signal.kind }
+  return { title, ownerName, ownerEmail, dueOn, dueAt, status: signal.kind, ...quantities }
 }

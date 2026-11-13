@@ -32,6 +32,7 @@ const dayPreview = process.argv.includes('--day-preview')
 const dayTest = process.argv.includes('--day-test')
 const day = dayPreview || dayTest
 const interactivePreview = journeyPreview || dayPreview
+const deliveryCommitments = process.argv.includes('--delivery-commitments')
 const dailyCommitments = process.argv.includes('--daily-commitments')
 const catchup = process.argv.includes('--catchup')
 const conversation = process.argv.includes('--inbox-conversation')
@@ -50,7 +51,7 @@ const actionNotifications = process.argv.includes('--action-notifications')
 const draftContinuity = process.argv.includes('--draft-continuity')
 const composeRecipients = process.argv.includes('--compose-recipients')
 const composeAttachments = process.argv.includes('--compose-attachments')
-const journeyE2E = offlineCompose || draftContinuity || composeRecipients || actionNotifications || offlineReply || mailLookup || personalMailRules || gmailReconnect || scheduledSend || emailSnoozes || gmailTriage || composeAttachments || followups || replies || catchup || process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
+const journeyE2E = deliveryCommitments || offlineCompose || draftContinuity || composeRecipients || actionNotifications || offlineReply || mailLookup || personalMailRules || gmailReconnect || scheduledSend || emailSnoozes || gmailTriage || composeAttachments || followups || replies || catchup || process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
 const journey = interactivePreview || journeyE2E
 const commitmentBenchmark = process.argv.includes('--m6g')
 const isolatedCommitment = commitmentDetection && process.argv.includes('--isolated')
@@ -63,7 +64,7 @@ const platformOutput = isolatedPlatform ? 'test-results/commitment-attention/pla
 const isolated = journeyE2E || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedPlatform || isolatedAuth
 const isolatedBuild = isolated || isolatedStaging
 const productionMode = m6 || staging || journey || isolated
-const journeyOutput = offlineCompose ? 'test-results/offline-compose' : draftContinuity ? 'test-results/draft-continuity' : composeRecipients ? 'test-results/compose-recipients' : actionNotifications ? 'test-results/action-notifications' : offlineReply ? 'test-results/offline-reply' : mailLookup ? 'test-results/mail-lookup' : personalMailRules ? 'test-results/personal-mail-rules' : conversation ? 'test-results/inbox-conversation' : gmailReconnect ? 'test-results/gmail-reconnect' : scheduledSend ? 'test-results/scheduled-send' : emailSnoozes ? 'test-results/email-snoozes' : gmailTriage ? 'test-results/gmail-triage' : composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
+const journeyOutput = deliveryCommitments ? 'test-results/delivery-commitments' : offlineCompose ? 'test-results/offline-compose' : draftContinuity ? 'test-results/draft-continuity' : composeRecipients ? 'test-results/compose-recipients' : actionNotifications ? 'test-results/action-notifications' : offlineReply ? 'test-results/offline-reply' : mailLookup ? 'test-results/mail-lookup' : personalMailRules ? 'test-results/personal-mail-rules' : conversation ? 'test-results/inbox-conversation' : gmailReconnect ? 'test-results/gmail-reconnect' : scheduledSend ? 'test-results/scheduled-send' : emailSnoozes ? 'test-results/email-snoozes' : gmailTriage ? 'test-results/gmail-triage' : composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
 const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.test'
 const evidenceFile = journey ? `${journeyOutput}/report.json`
   : isolatedAuth ? 'test-results/local-auth/report.json'
@@ -438,6 +439,9 @@ try {
     const { rehearseInboxCatchup } = await import('../tests/design/inbox-catchup.mjs')
     await rehearseInboxCatchup({ app, base, email, password, userId, admin, login, appFetch, sql, googleProvider,
       previousEmail, previousId, anon, anonymousClient, restartNext, smtpWire, record, output: journeyOutput })
+  } else if (deliveryCommitments) {
+    const { rehearseDeliveryCommitments } = await import('../tests/design/delivery-commitments.mjs')
+    await rehearseDeliveryCommitments({ app, base, email, previousEmail, password, userId, admin, appFetch, googleProvider, record, output: journeyOutput })
   } else if (journey) {
     const { seedPurchasingJourney, rehearsePurchasingJourney } = await import('../tests/design/purchasing-journey.mjs')
     const fixture = await seedPurchasingJourney({ admin, sql, userId, foreignId: previousId, ownEmailId, otherEmailId })
@@ -540,7 +544,9 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = offlineCompose
+  const provenance = deliveryCommitments
+    ? 'Production-mode Next and Chrome on PostgreSQL with two loopback Gmail accounts, simulated buyer approvals and lost save acknowledgement'
+    : offlineCompose
     ? 'Production-mode Next and a persistent Google Chrome profile, actual encrypted IndexedDB and service worker, local PostgreSQL, two loopback Gmail accounts'
     : draftContinuity
     ? 'Production-mode Next, independent Google Chrome profiles, GoTrue, PostgREST and PostgreSQL with two loopback Gmail accounts and injected save and send response loss'

@@ -7,6 +7,12 @@ const evidence = z.array(z.strictObject({
   quote: z.string().min(1).max(480).refine(value => value.trim().length > 0 && !value.includes('\0')),
 })).min(1).max(3)
 
+const delivery = z.strictObject({
+  ordered: z.number().int().min(1).max(9_999_999),
+  delivered: z.number().int().min(0).max(9_999_999),
+  unit: z.enum(['bộ', 'chiếc', 'kiện', 'cuộn', 'hộp', 'cái']),
+})
+
 const state = z.strictObject({
   title: boundedText(200),
   ownerName: boundedText(120).nullable(),
@@ -14,7 +20,11 @@ const state = z.strictObject({
   dueOn: z.iso.date().nullable(),
   dueAt: z.iso.datetime({ offset: true }).regex(/T\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|[+-]\d{2}:\d{2})$/).nullable(),
   status: z.enum(['open', 'completed', 'cancelled']),
+  delivery: delivery.optional(),
 }).refine(value => value.dueOn === null || value.dueAt === null)
+  .refine(value => !value.delivery || (value.delivery.delivered <= value.delivery.ordered &&
+    (value.status === 'completed' ? value.delivery.delivered === value.delivery.ordered :
+      value.status === 'cancelled' || value.delivery.delivered < value.delivery.ordered)))
 
 export type CommitmentState = z.infer<typeof state>
 export type CommitmentEvidence = z.infer<typeof evidence>[number]

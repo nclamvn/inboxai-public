@@ -40,7 +40,7 @@ export function interpretScan(page: ScanPage): Signal[] {
     const sender = senderIdentity(source.sender)
     if (!sender) return []
     const reference = subjectReference(source.subject)
-    const signals = detectCommitments(source.body, source.receivedAt)
+    const signals = detectCommitments(source.body, source.receivedAt, reference)
     return signals.flatMap(signal => {
       const quoteHash = digest(signal.quote)
       if (source.usedQuotes.includes(quoteHash)) return []
@@ -58,19 +58,24 @@ export function buildProposals(page: ScanPage, signals: Signal[], targets: Targe
     const { source, sender, signal, reference, key, quoteHash } = item
     const related = (reference && byReference.get(reference)) || []
     const matching = related.filter(target => (
+      signal.kind === 'create' && signal.delivery && target.state.delivery && target.originSender === sender
+    ) || (
       target.originAccountId === source.accountId && target.originSender === sender
     ) || (
       target.state.ownerEmail?.toLowerCase() === sender &&
       (target.originAccountId === source.accountId || target.originSender !== sender)
     ))
-    const open = matching.filter(target => target.state.status === 'open' && target.state.ownerEmail?.toLowerCase() === sender)
+    const open = (signal.delivery && signal.kind !== 'create' || (signal.kind === 'review' && reference?.startsWith('PO-'))
+      ? related.filter(target => target.state.delivery)
+      : matching).filter(target => target.state.status === 'open' && target.state.ownerEmail?.toLowerCase() === sender)
     const current = signal.kind !== 'create' && open.length === 1 ? open[0] : null
     const at = source.at && Number.isFinite(Date.parse(source.at)) ? source.at : null
     const common = {
       proposalId: source.id + ':' + quoteHash,
       emailId: source.id, accountId: source.accountId, commitmentId: current?.id ?? null,
       subject: source.subject, sender, at, quote: signal.quote,
-      kind: signal.kind, reference, previous: current?.state ?? null,
+      kind: signal.kind, reference, proposedDueOn: signal.kind === 'review' ? signal.dueOn : null,
+      proposedBatch: signal.proposedBatch ?? null, previous: current?.state ?? null,
       ...(source.catchupToken ? { catchupToken: source.catchupToken } : {}),
     }
     if (related.length > 8 || (signal.kind !== 'create' && (open.length > 1 || current?.multiOrigin))) {
@@ -86,9 +91,17 @@ export function buildProposals(page: ScanPage, signals: Signal[], targets: Targe
       return [{ ...common, review: null, blocked: 'chronology' }]
     }
     if (signal.kind === 'review') return [{ ...common, review: null, blocked: 'uncertain' }]
+    if (signal.kind === 'deadline' && current?.state.delivery && !signal.priorDueOn)
+      return [{ ...common, review: null, blocked: 'uncertain' }]
     if (signal.priorDueOn && current?.state.dueOn !== signal.priorDueOn) {
       return [{ ...common, review: null, blocked: 'conflicting' }]
     }
+    if (signal.delivery && current && (current.state.delivery?.ordered !== signal.delivery.ordered ||
+      current.state.delivery.unit !== signal.delivery.unit)) return [{ ...common, review: null, blocked: 'quantity' }]
+    if (signal.kind === 'completed' && !signal.delivery && current?.state.delivery)
+      return [{ ...common, review: null, blocked: 'quantity' }]
+    if (signal.delivery && current?.state.delivery && signal.delivery.delivered < current.state.delivery.delivered)
+      return [{ ...common, review: null, blocked: 'quantity' }]
     const state = proposedState(signal, sender, source.senderName, common.previous)
     if (!state) return []
 

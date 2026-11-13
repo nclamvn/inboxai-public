@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     if (initial.tracking) {
       const { proposals } = await scanCatchupProposals(client, accounts.data, null, null, true)
       for (const proposal of proposals) {
-        if (!proposal.commitmentId || (!proposal.review && proposal.blocked !== 'uncertain' && proposal.blocked !== 'conflicting')) continue
+        if (!proposal.commitmentId || (!proposal.review && proposal.blocked !== 'uncertain' && proposal.blocked !== 'conflicting' && proposal.blocked !== 'quantity')) continue
         if (accounts.data.length && (!proposal.accountId || !accounts.data.includes(proposal.accountId))) continue
         const previous = replies.get(proposal.commitmentId)
         if (!previous || Date.parse(proposal.at ?? '') > Date.parse(previous.at ?? '')) replies.set(proposal.commitmentId, proposal)

@@ -1,3 +1,4 @@
+import { deliveryLabel } from './delivery'
 import type { CommitmentState, CommitmentEvidence } from './contracts'
 
 export const groupLabels = {
@@ -63,6 +64,7 @@ export const fieldLabels: Record<keyof LedgerState, string> = {
   dueAt: 'Giờ đến hạn',
   status: 'Trạng thái',
   review: 'Xem xét',
+  delivery: 'Tiến độ giao hàng',
 }
 
 export function commitmentsHref(group: CommitmentGroup, id?: string) {
@@ -133,6 +135,9 @@ export function commitmentChanges(before: LedgerState, after: CommitmentState) {
   }
   if (before.dueOn !== after.dueOn || before.dueAt !== after.dueAt) {
     changes.push({ field: 'Hạn chót', from: formatCommitmentDue(before), to: formatCommitmentDue(after) })
+  }
+  if (after.delivery && (!before.delivery || before.delivery.delivered !== after.delivery.delivered)) {
+    changes.push({ field: fieldLabels.delivery, from: before.delivery ? deliveryLabel(before.delivery) : 'Chưa ghi nhận', to: deliveryLabel(after.delivery) })
   }
   if (before.status !== after.status) changes.push({ field: 'Trạng thái', from: statusLabels[before.status], to: statusLabels[after.status] })
   if (before.review) changes.push({

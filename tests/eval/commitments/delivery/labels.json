@@ -1,0 +1,255 @@
+{
+  "PO-6831": [
+    {
+      "source": "m1",
+      "target": "m1",
+      "kind": "create",
+      "owner": "trang@nhamay.example.test",
+      "due": "2026-11-15",
+      "received": 0,
+      "quote": "Chúng tôi xác nhận giao 200 bộ gá vào ngày 15/11/2026.",
+      "important": true
+    },
+    {
+      "source": "m2",
+      "target": "m1",
+      "kind": "review",
+      "owner": null,
+      "due": null,
+      "received": null,
+      "quote": "Bên em đề nghị dời lịch giao sang 19/11/2026 và giao trước 50 bộ.",
+      "important": true
+    },
+    {
+      "source": "m3",
+      "target": "m1",
+      "kind": "progress",
+      "owner": null,
+      "due": null,
+      "received": 50,
+      "quote": "Chúng tôi đã giao lũy kế 50/200 bộ.",
+      "important": true
+    },
+    {
+      "source": "m4",
+      "target": "m1",
+      "kind": "deadline",
+      "owner": null,
+      "due": "2026-11-19",
+      "received": null,
+      "quote": "Chúng tôi xác nhận dời lịch giao từ 15/11/2026 sang 19/11/2026.",
+      "important": true
+    },
+    {
+      "source": "m5",
+      "target": "m1",
+      "kind": "completed",
+      "owner": null,
+      "due": null,
+      "received": 200,
+      "quote": "Chúng tôi đã giao đủ 200/200 bộ.",
+      "important": true
+    }
+  ],
+  "PO-9106": [
+    {
+      "source": "m1",
+      "target": "m1",
+      "kind": "create",
+      "owner": "hung@ocvit.example.test",
+      "due": "2026-11-18",
+      "received": 0,
+      "quote": "Bên em xác nhận giao 600 chiếc bulông chậm nhất ngày 18/11/2026.",
+      "important": true
+    },
+    {
+      "source": "m2",
+      "target": "m1",
+      "kind": "progress",
+      "owner": null,
+      "due": null,
+      "received": 240,
+      "quote": "Chúng tôi đã giao lũy kế 240/600 chiếc.",
+      "important": true
+    },
+    {
+      "source": "m4",
+      "target": "m1",
+      "kind": "completed",
+      "owner": null,
+      "due": null,
+      "received": 600,
+      "quote": "Chúng tôi đã giao đủ 600/600 chiếc.",
+      "important": true
+    }
+  ],
+  "PO-4720": [
+    {
+      "source": "m1",
+      "target": "m1",
+      "kind": "create",
+      "owner": "lan@phutung.example.test",
+      "due": "2026-11-20",
+      "received": 0,
+      "quote": "Chúng tôi xác nhận giao 80 kiện gioăng ngày 20/11/2026.",
+      "important": true
+    },
+    {
+      "source": "m2",
+      "target": "m1",
+      "kind": "review",
+      "owner": null,
+      "due": null,
+      "received": null,
+      "quote": "Chúng tôi xác nhận dời lịch giao từ 21/11/2026 sang 24/11/2026.",
+      "important": true
+    },
+    {
+      "source": "m4",
+      "target": "m1",
+      "kind": "deadline",
+      "owner": null,
+      "due": "2026-11-24",
+      "received": null,
+      "quote": "Chúng tôi xác nhận dời lịch giao từ 20/11/2026 sang 24/11/2026.",
+      "important": true
+    },
+    {
+      "source": "m5",
+      "target": "m1",
+      "kind": "completed",
+      "owner": null,
+      "due": null,
+      "received": 80,
+      "quote": "Chúng tôi đã giao đủ 80/80 kiện.",
+      "important": true
+    }
+  ],
+  "PO-3768": [
+    {
+      "source": "m1",
+      "target": "m1",
+      "kind": "create",
+      "owner": "an@daydien.example.test",
+      "due": "2026-11-22",
+      "received": 0,
+      "quote": "Chúng tôi xác nhận giao 120 cuộn dây dẫn vào ngày 22/11/2026.",
+      "important": true
+    },
+    {
+      "source": "m2",
+      "target": "m1",
+      "kind": "progress",
+      "owner": null,
+      "due": null,
+      "received": 30,
+      "quote": "Chúng tôi đã giao lũy kế 30/120 cuộn.",
+      "important": true
+    },
+    {
+      "source": "m4",
+      "target": "m1",
+      "kind": "review",
+      "owner": null,
+      "due": null,
+      "received": null,
+      "quote": "Chúng tôi đã giao đủ 150/150 cuộn.",
+      "important": true
+    },
+    {
+      "source": "m5",
+      "target": "m1",
+      "kind": "completed",
+      "owner": null,
+      "due": null,
+      "received": 120,
+      "quote": "Chúng tôi đã giao đủ 120/120 cuộn.",
+      "important": true
+    }
+  ],
+  "PO-7542": [
+    {
+      "source": "m1",
+      "target": "m1",
+      "kind": "create",
+      "owner": "ha@van.example.test",
+      "due": "2026-11-21",
+      "received": 0,
+      "quote": "Chúng tôi xác nhận giao 40 hộp van ngày 21/11/2026.",
+      "important": true
+    },
+    {
+      "source": "m2",
+      "target": "m1",
+      "kind": "review",
+      "owner": null,
+      "due": null,
+      "received": null,
+      "quote": "Bên em xin dời lịch giao sang 25/11/2026.",
+      "important": true
+    },
+    {
+      "source": "m3",
+      "target": "m1",
+      "kind": "review",
+      "owner": null,
+      "due": null,
+      "received": null,
+      "quote": "Chúng tôi đã giao 10 hộp trong đợt này.",
+      "important": true
+    },
+    {
+      "source": "m4",
+      "target": "m1",
+      "kind": "deadline",
+      "owner": null,
+      "due": "2026-11-25",
+      "received": null,
+      "quote": "Chúng tôi xác nhận dời lịch giao từ 21/11/2026 sang 25/11/2026.",
+      "important": true
+    },
+    {
+      "source": "m5",
+      "target": "m1",
+      "kind": "completed",
+      "owner": null,
+      "due": null,
+      "received": 40,
+      "quote": "Chúng tôi đã giao đủ 40/40 hộp.",
+      "important": true
+    }
+  ],
+  "PO-8213": [
+    {
+      "source": "m1",
+      "target": "m1",
+      "kind": "create",
+      "owner": "linh@dongco.example.test",
+      "due": "2026-11-23",
+      "received": 0,
+      "quote": "Chúng tôi xác nhận giao 24 bộ động cơ ngày 23/11/2026.",
+      "important": true
+    },
+    {
+      "source": "m2",
+      "target": "m1",
+      "kind": "progress",
+      "owner": null,
+      "due": null,
+      "received": 8,
+      "quote": "Chúng tôi đã giao lũy kế 8/24 bộ.",
+      "important": true
+    },
+    {
+      "source": "m4",
+      "target": "m1",
+      "kind": "completed",
+      "owner": null,
+      "due": null,
+      "received": 24,
+      "quote": "Chúng tôi đã giao đủ 24/24 bộ.",
+      "important": true
+    }
+  ],
+  "PO-6932": []
+}
