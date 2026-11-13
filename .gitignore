@@ -32,6 +32,7 @@
 /test-results/mail-lookup/
 /test-results/offline-reply/
 /test-results/action-notifications/
+/test-results/compose-recipients/
 /.codex-offline-browser-*/
 /test-results/compose-attachments/
 /test-results/staging/

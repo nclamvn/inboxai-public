@@ -54,7 +54,8 @@
     "test:personal-mail-rules": "npm run test:local-auth -- --personal-mail-rules",
     "test:mail-lookup": "npm run test:local-auth -- --mail-lookup",
     "test:offline-reply": "npm run test:local-auth -- --offline-reply",
-    "test:action-notifications": "npm run test:local-auth -- --action-notifications"
+    "test:action-notifications": "npm run test:local-auth -- --action-notifications",
+    "test:compose-recipients": "npm run test:local-auth -- --compose-recipients"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

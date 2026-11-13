@@ -138,7 +138,8 @@ export function useFileCompose(draftId: string | null, forwardId: string | null,
 
   async function submit(action: 'send' | 'check', current: FileComposeDraft) {
     try {
-      await composeDraftAction({ action, id: current.id })
+      const receipt = await composeDraftAction<{ state: string; error?: string }>({ action, id: current.id })
+      if (receipt.state !== 'accepted') throw new ReplyError(receipt.error ?? 'Chưa xác nhận được kết quả gửi.', 202)
       setDraft({ ...current, state: 'accepted' })
       router.push('/sent')
     } catch (reason) {

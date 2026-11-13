@@ -50,3 +50,7 @@ export type SendOutcome =
 export class SendError extends Error {
   constructor(readonly status: number, message: string, readonly code?: typeof gmailSendPermissionRequired) { super(message) }
 }
+
+export class SendOperationMissing extends SendError {
+  constructor() { super(409, 'Yêu cầu chưa được tiếp nhận. Bạn có thể tiếp tục gửi.') }
+}

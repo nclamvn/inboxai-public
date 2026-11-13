@@ -103,8 +103,10 @@ export async function rehearseGmailConsent({ app, base, email, password, userId,
       await page.getByLabel('Đến', { exact: true }).fill('warehouse@example.test')
       await page.getByLabel('Tiêu đề', { exact: true }).fill(subject)
       await page.getByRole('textbox', { name: 'Nội dung thư' }).fill('Xác nhận giả lập trong môi trường kiểm thử local.')
-      const result = page.waitForResponse(response => response.url() === app + '/api/emails/send')
-      await page.getByRole('button', { name: 'Gửi', exact: true }).click()
+      await page.getByRole('button', { name: 'Xem trước thư gửi', exact: true }).click()
+      const result = page.waitForResponse(response => response.url() === app + '/api/compose-drafts'
+        && response.request().method() === 'POST' && response.request().postDataJSON().action === 'send')
+      await page.getByRole('dialog', { name: 'Xem trước thư gửi' }).getByRole('button', { name: 'Xác nhận gửi' }).click()
       const response = await result
       return { status: response.status(), data: await response.json() }
     }

@@ -17,7 +17,8 @@ import { readReply, replyRequest, ReplyError, takeReplyText } from '@/lib/replie
 import type { ReplyDraft, ReplyFields, ReplyWorkbench } from '@/lib/replies/contracts'
 import { useHydrated } from '@/hooks/use-hydrated'
 import { useNetworkStatus } from '@/hooks/use-network-status'
-import { offlineHome } from '@/components/offline/offline-provider'
+import { offlineHome, useOfflineWorkspace } from '@/components/offline/offline-provider'
+import { RecipientField } from '@/components/email/recipient-field'
 import { useOfflineReply } from '@/components/offline/use-offline-reply'
 import { sameReply } from '@/lib/offline/contracts'
 
@@ -29,6 +30,7 @@ const fieldsFor = (context: ReplyWorkbench): ReplyFields => ({
 
 export function ReplyCompose({ source }: { source: string }) {
   const router = useRouter()
+  const owner = useOfflineWorkspace()?.owner
   const cache = useQueryClient()
   const [context, setContext] = useState<ReplyWorkbench | null>(null)
   const [draft, setDraft] = useState<ReplyDraft | null>(null)
@@ -281,12 +283,14 @@ export function ReplyCompose({ source }: { source: string }) {
             </Alert>}
             <form onSubmit={review} className="space-y-4">
               <fieldset disabled={busy || saving || !editable || needsDeviceReview} className="space-y-4">
-                <label className="block space-y-1 text-sm"><span>Người nhận</span>
-                  <input className={inputClass} value={fields.to} onChange={event => setFields({ ...fields, to: event.target.value })} required maxLength={4000} />
-                </label>
-                <label className="block space-y-1 text-sm"><span>Cc</span>
-                  <input className={inputClass} value={fields.cc} onChange={event => setFields({ ...fields, cc: event.target.value })} maxLength={4000} />
-                </label>
+                <div className="space-y-1 text-sm"><label htmlFor="reply-to">Người nhận</label>
+                  <RecipientField id="reply-to" className={inputClass} value={fields.to} owner={owner} accountId={context.accountId}
+                    onChange={to => setFields({ ...fields, to })} required />
+                </div>
+                <div className="space-y-1 text-sm"><label htmlFor="reply-cc">Cc</label>
+                  <RecipientField id="reply-cc" className={inputClass} value={fields.cc} owner={owner} accountId={context.accountId}
+                    onChange={cc => setFields({ ...fields, cc })} />
+                </div>
                 {suggestion && editable && <div className="border-s-2 border-[var(--accent)] ps-3">
                   <p className="whitespace-pre-wrap break-words text-sm">{suggestion}</p>
                   <Button type="button" variant="outline" className="mt-2" onClick={() => {

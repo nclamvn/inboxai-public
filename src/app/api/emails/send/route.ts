@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { sendInput, sendKey, SendError } from '@/lib/mail-send/contracts'
+import { sendInput, sendKey, SendError, SendOperationMissing } from '@/lib/mail-send/contracts'
 import { sendFromAccount } from '@/lib/mail-send/server'
 
 export const maxDuration = 60
@@ -46,10 +46,11 @@ export async function POST(request: NextRequest) {
       key: key.data,
       hash: createHash('sha256').update(JSON.stringify(input)).digest('hex'),
     }
-    return await sendFromAccount(scope, () => input)
+    return await sendFromAccount(scope, () => input, undefined, request.nextUrl.searchParams.get('check') === '1')
   } catch (error) {
     return NextResponse.json({
       error: error instanceof SendError ? error.message : 'Chưa thể xác nhận yêu cầu. Hãy kiểm tra lại với cùng nội dung.',
+      ...(error instanceof SendOperationMissing && { code: 'send_operation_missing' }),
       ...(error instanceof SendError && error.code && { code: error.code }),
     }, { status: error instanceof SendError ? error.status : 503 })
   }

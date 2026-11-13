@@ -13,8 +13,11 @@ import { ScheduleSendDialog } from '@/components/email/schedule-send-dialog'
 import { composeDraftAction, fileDraftHref } from '@/lib/compose/client'
 import { useFileCompose } from '@/lib/compose/use-file-compose'
 import { Alert } from '@/components/ui/alert'
-import { composeFingerprint, readComposeKey, saveComposeKey } from '@/lib/mail-send/compose-key'
-import { gmailSendPermissionRequired } from '@/lib/gmail/scopes'
+import { RecipientField } from '@/components/email/recipient-field'
+import { useOfflineWorkspace } from '@/components/offline/offline-provider'
+import { readLegacyComposeAttempt } from '@/lib/mail-send/compose-key'
+
+const recipientInput = 'min-h-11 px-3 py-2 border border-[var(--input-border)] rounded-[var(--radius-control)] focus-ring bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]'
 
 interface SourceAccount {
   id: string
@@ -32,6 +35,7 @@ export default function ComposePage() {
 
 function NewCompose() {
   const router = useRouter()
+  const owner = useOfflineWorkspace()?.owner
   const searchParams = useSearchParams()
   const [to, setTo] = useState('')
   const [cc, setCc] = useState('')
@@ -40,17 +44,15 @@ function NewCompose() {
   const draftId = searchParams.get('draft')
   const forwardId = searchParams.get('forward')
   const [showCc, setShowCc] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [sendAction, setSendAction] = useState<'send' | 'retry' | 'check'>('send')
-  const sendBusy = useRef(false)
-  const attempt = useRef<{ fingerprint: string; key: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [needsGmailPermission, setNeedsGmailPermission] = useState(false)
+  const [checkingLegacy, setCheckingLegacy] = useState(false)
+  const legacyBusy = useRef(false)
   const [isFromAI, setIsFromAI] = useState(false)
 
   // Account selection
   const [accounts, setAccounts] = useState<SourceAccount[]>([])
   const [selectedAccountId, setSelectedAccountId] = useState<string>('')
+  const [reviewRecipients, setReviewRecipients] = useState(false)
   const [loadingAccounts, setLoadingAccounts] = useState(true)
   const [scheduleMode, setScheduleMode] = useState(false)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
@@ -60,17 +62,17 @@ function NewCompose() {
     setShowCc(!!fields.cc)
     setSubject(fields.subject)
     setBody(fields.body)
+    setReviewRecipients(false)
     if (account) setSelectedAccountId(account)
   })
   const { draft, files, preview } = fileCompose
   const sourceId = draft ? draft.sourceId : forwardId
   const forward = !!sourceId
   const state = draft?.state ?? 'draft'
-  const durable = !!(draftId || forward || draft || files.length)
-  const locked = fileCompose.loading || fileCompose.blocked || fileCompose.busy || state !== 'draft'
+  const locked = fileCompose.loading || fileCompose.blocked || fileCompose.busy || checkingLegacy || state !== 'draft'
   const fields = { to, cc, subject, body }
   const canSave = !!selectedAccountId && accounts.some(account => account.id === selectedAccountId)
-    && !locked && !fileCompose.fileBusy && !loading && !attempt.current
+    && !locked && !fileCompose.fileBusy
   const changed = draft && (selectedAccountId !== draft.accountId ||
     (Object.keys(fields) as (keyof typeof fields)[]).some(key => fields[key] !== draft.fields[key]) ||
     files.length !== draft.files.length || files.some((file, index) => file.id !== draft.files[index]?.id))
@@ -165,77 +167,52 @@ function NewCompose() {
     }
   }, [searchParams, draftId, forwardId])
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (sendBusy.current || locked || fileCompose.fileBusy) return
+  async function reviewSend(schedule: boolean) {
+    if (!canSave || legacyBusy.current) return
     setError(null)
-    setNeedsGmailPermission(false)
+    if (!forward && !files.length) {
+      legacyBusy.current = true
+      setCheckingLegacy(true)
+      try {
+        const addresses = (value: string) => value.split(',').map(item => item.trim()).filter(Boolean)
+        const payload = JSON.stringify({ sourceAccountId: selectedAccountId, to: addresses(to), subject, text: body, cc: addresses(cc) })
+        const legacy = await readLegacyComposeAttempt(payload)
+        if (legacy) {
+          const response = await fetch('/api/emails/send?check=1', {
+            method: 'POST', body: payload, signal: AbortSignal.timeout(25_000),
+            headers: { 'Content-Type': 'application/json', 'Idempotency-Key': legacy.key },
+          })
+          const receipt = await response.json()
+          if (receipt.state === 'accepted') {
+            legacy.clear()
+            router.push('/sent')
+            return
+          }
+          if (receipt.state !== 'rejected' && receipt.code !== 'send_operation_missing') {
+            setError(receipt.error || 'Chưa xác nhận được lượt gửi trước. Hãy kiểm tra lại.')
+            return
+          }
+          legacy.clear()
+        }
+      } catch {
+        setError('Chưa xác nhận được lượt gửi trước. Hãy kiểm tra lại.')
+        return
+      } finally {
+        legacyBusy.current = false
+        setCheckingLegacy(false)
+      }
+    }
+    setScheduleMode(schedule)
+    await fileCompose.save(fields, selectedAccountId, true)
+  }
 
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault()
     if (!to.trim() || !subject.trim()) {
       setError('Vui lòng điền đầy đủ thông tin người nhận và tiêu đề.')
       return
     }
-
-    if (!selectedAccountId) {
-      setError('Vui lòng chọn tài khoản gửi.')
-      return
-    }
-
-    if (durable) {
-      if (canSave) await fileCompose.save(fields, selectedAccountId, true)
-      return
-    }
-
-    sendBusy.current = true
-    setLoading(true)
-
-    try {
-      const recipients = (value: string) => value.split(',').map(email => email.trim()).filter(Boolean)
-      const data = JSON.stringify({
-        sourceAccountId: selectedAccountId,
-        to: recipients(to),
-        subject,
-        text: body,
-        cc: recipients(cc),
-        replyToEmailId: searchParams.get('replyToEmailId') || undefined,
-      })
-      const fingerprint = await composeFingerprint(data)
-      if (attempt.current && attempt.current.fingerprint !== fingerprint) {
-        setError('Hãy khôi phục nội dung của lần gửi trước để kiểm tra kết quả.')
-        return
-      }
-      const key = attempt.current?.key ?? readComposeKey(fingerprint) ?? crypto.randomUUID()
-      attempt.current = { fingerprint, key }
-      saveComposeKey(fingerprint, key)
-      setSendAction(action => action === 'check' ? action : 'retry')
-      const response = await fetch('/api/emails/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key },
-        body: data,
-      })
-      const result = await response.json()
-
-      const permissionRequired = result.code === gmailSendPermissionRequired
-      if (permissionRequired) setNeedsGmailPermission(true)
-      if (permissionRequired || result.state === 'rejected' || [400, 404, 413].includes(response.status)) {
-        attempt.current = null
-        saveComposeKey(fingerprint, null)
-        setSendAction('send')
-      }
-      if (['dispatching', 'unknown', 'partial'].includes(result.state)) setSendAction('check')
-      if (!response.ok || result.success !== true) {
-        setError(result.error || 'Chưa thể xác nhận yêu cầu. Hãy kiểm tra lại.')
-        return
-      }
-
-      saveComposeKey(fingerprint, null)
-      router.push('/sent')
-    } catch {
-      setError('Chưa thể xác nhận yêu cầu. Hãy kiểm tra lại trạng thái với cùng nội dung.')
-    } finally {
-      sendBusy.current = false
-      setLoading(false)
-    }
+    void reviewSend(false)
   }
 
   const handleDiscard = () => {
@@ -288,7 +265,7 @@ function NewCompose() {
           <Alert variant="error" className="mx-4 mt-4">
             {error || fileCompose.error}
             {fileCompose.blocked && <Button type="button" variant="outline" className="ml-2" onClick={fileCompose.reopen}>Mở lại bản nháp</Button>}
-            {(needsGmailPermission || fileCompose.permission) && <a href="/settings#email-accounts" target="_blank" rel="noopener noreferrer"
+            {fileCompose.permission && <a href="/settings#email-accounts" target="_blank" rel="noopener noreferrer"
               className="ml-2 inline-flex min-h-11 items-center underline">Mở Cài đặt tài khoản</a>}
           </Alert>
         )}
@@ -305,7 +282,7 @@ function NewCompose() {
             onClick={() => void fileCompose.change('edit')}>Mở lại bản nháp để chỉnh sửa</Button>}
           {(state === 'accepted' || state === 'partial') && <a href="/sent" className="neo-target inline-flex items-center underline">Mở thư đã gửi</a>}
         </div>}
-        <fieldset disabled={locked || loading} className="flex min-w-0 flex-1 flex-col">
+        <fieldset disabled={locked} className="flex min-w-0 flex-1 flex-col">
         <div className="p-4 space-y-3 border-b border-[var(--border)] bg-[var(--card)]">
           {/* From (Account Selector) */}
           <div className="flex items-center gap-3">
@@ -314,7 +291,10 @@ function NewCompose() {
               <select
                 id="compose-from"
                 value={selectedAccountId}
-                onChange={event => setSelectedAccountId(event.target.value)}
+                onChange={event => {
+                  setSelectedAccountId(event.target.value)
+                  setReviewRecipients(Boolean(to.trim() || cc.trim()))
+                }}
                 disabled={loadingAccounts || accounts.length === 0}
                 className="focus-ring min-h-11 w-full appearance-none rounded-[var(--radius-control)] border border-[var(--input-border)] bg-[var(--surface)] ps-3 pe-8 text-sm"
               >
@@ -331,16 +311,8 @@ function NewCompose() {
           {/* To */}
           <div className="flex items-center gap-3">
             <label htmlFor="compose-to" className="w-16 shrink-0 text-sm text-[var(--foreground-muted)]">Đến</label>
-            <input
-              type="text"
-              inputMode="email"
-              id="compose-to"
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
-              placeholder="email@example.com"
-              required
-              className="min-h-11 min-w-0 flex-1 px-3 py-2 border border-[var(--input-border)] rounded-[var(--radius-control)] focus-ring bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
-            />
+            <RecipientField key={'to:' + selectedAccountId} id="compose-to" value={to} onChange={setTo} owner={owner}
+              accountId={selectedAccountId} className={recipientInput} required />
             {!showCc && (
               <button
                 type="button"
@@ -356,17 +328,13 @@ function NewCompose() {
           {showCc && (
             <div className="flex items-center gap-3">
               <label htmlFor="compose-cc" className="w-16 shrink-0 text-sm text-[var(--foreground-muted)]">Cc</label>
-              <input
-                type="text"
-                inputMode="email"
-                id="compose-cc"
-              value={cc}
-                onChange={(e) => setCc(e.target.value)}
-                placeholder="email@example.com"
-                className="min-h-11 min-w-0 flex-1 px-3 py-2 border border-[var(--input-border)] rounded-[var(--radius-control)] focus-ring bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
-              />
+              <RecipientField key={'cc:' + selectedAccountId} id="compose-cc" value={cc} onChange={setCc} owner={owner}
+                accountId={selectedAccountId} className={recipientInput} />
             </div>
           )}
+          {reviewRecipients && <p role="status" className="ms-[76px] border-s-2 border-[var(--accent)] ps-2 text-xs text-[var(--foreground-secondary)]">
+            Đã đổi tài khoản gửi. Kiểm tra lại địa chỉ trong Đến và Cc trước khi duyệt.
+          </p>}
 
           {/* Subject */}
           <div className="flex items-center gap-3">
@@ -539,7 +507,7 @@ function NewCompose() {
         </fieldset>
         <div className="border-t border-[var(--border)] px-4 py-3">
           <ComposeFiles key={sourceId ?? 'new'} files={files} onChange={fileCompose.setFiles} onBusy={fileCompose.setFileBusy}
-            disabled={locked || loading || !!attempt.current} sourceId={sourceId ?? undefined} sourceFiles={fileCompose.sourceFiles} />
+            disabled={locked} sourceId={sourceId ?? undefined} sourceFiles={fileCompose.sourceFiles} />
         </div>
         {state === 'draft' && <div className="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] bg-[var(--secondary)] p-4">
             {draft && <Button type="button" variant="ghost" disabled={!canSave}
@@ -547,10 +515,10 @@ function NewCompose() {
             <Button type="button" variant="outline" loading={fileCompose.busy && !preview} disabled={!canSave}
               onClick={() => void fileCompose.save(fields, selectedAccountId)}>Lưu bản nháp</Button>
             <Button type="button" variant="outline" disabled={!canSave || !to.trim() || !subject.trim()}
-              onClick={() => { setScheduleMode(true); void fileCompose.save(fields, selectedAccountId, true) }}>Lên lịch gửi</Button>
-            <Button type="submit" onClick={() => setScheduleMode(false)} loading={loading} disabled={!to || locked || fileCompose.fileBusy || (durable && !canSave)}
+              onClick={() => void reviewSend(true)}>Lên lịch gửi</Button>
+            <Button type="submit" disabled={!to || !canSave}
               leftIcon={<Send size={18} aria-hidden="true" />}>
-              {durable ? 'Xem trước thư gửi' : sendAction === 'check' ? 'Kiểm tra trạng thái' : sendAction === 'retry' ? 'Thử lại yêu cầu' : 'Gửi'}
+              Xem trước thư gửi
             </Button>
         </div>}
       </form>

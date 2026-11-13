@@ -1,5 +1,47 @@
 # Verification record
 
+## Recipient suggestions and sending identity
+
+Compose, Reply and Forward share a keyboard-accessible recipient picker for
+To and Cc. It searches up to 160 recent visible outbound messages from the
+selected sending account and ranks by frequency and recency. It returns up
+to eight addresses, with the full address shown even when names collide.
+When Sent contains only an address, an inbound message in the same account
+can supply the display name. The lookup uses synchronized mail and supports
+Vietnamese names with and without diacritics. Manual address entry remains
+available.
+
+Changing the sending account keeps the entered addresses and shows a review
+notice. Every new message now uses the existing server draft and approval
+flow. The preview displays the saved sender, recipients and content.
+Approval binds those fields to that draft revision. An uncertain send resumes by draft ID and checks the
+same receipt. When the earlier composer left a matching receipt key in the
+tab, the new composer checks it without requesting a second dispatch.
+
+The synthetic Chrome scenario used two loopback Gmail accounts and two
+InboxAI users. It distinguished matching Vietnamese names by their full
+addresses, kept To while switching accounts and checked Cc against the
+new account. Chrome and Next restarted before verifying the saved From,
+To and Cc. Both the Gmail acknowledgement and the browser response were
+dropped. The same receipt was recovered with one provider dispatch and
+one Sent row. The second user could not retrieve either mailbox's
+suggestions or read the original draft.
+
+On 2026-11-13, `npm run test:compose-recipients` exited 0 with 20
+checks in Chrome 157, with the local Next.js 16.4.6 production-mode
+build, Node 24.14.1 and PostgreSQL 16 on macOS arm64. Desktop keyboard
+and mobile touch selection worked. The three captured views had zero
+axe violations or horizontal overflow. TypeScript, 245 unit tests,
+200 integration tests and 31 SQL checks passed. Lint reported 92 warnings
+and zero errors. The design, platform, staging, compose attachments,
+offline reply, scheduled send and full purchasing/security browser
+runs passed 29, 19, 31, 21, 20, 21 and 41 checks respectively.
+
+[Chrome checks](../../test-results/compose-recipients/report.json) ·
+[Workflow evidence](../../test-results/compose-recipients/workflow.json) ·
+[Two people with the same name](../../test-results/compose-recipients/01-nguoi-trung-ten.png) ·
+[Recovered draft](../../test-results/compose-recipients/02-ban-nhap-khoi-phuc.png)
+
 ## Actionable notifications
 
 The Inbox and dashboard bell open a list of current work from tracked

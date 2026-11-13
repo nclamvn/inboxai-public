@@ -223,32 +223,36 @@ export async function rehearsePurchasingJourney({ app, base, email, previousEmai
     await page.getByLabel('Đến', { exact: true }).fill(vendor)
     await page.getByLabel('Tiêu đề', { exact: true }).fill(sendSubject)
     await page.getByRole('textbox', { name: 'Nội dung thư' }).fill(`Bên mua xác nhận đã nhận lịch giao mới ${newDate}.`)
-    const sendUrl = app + '/api/emails/send'
-    const keys = []
+    const sendUrl = app + '/api/compose-drafts'
+    const draftIds = []
     let accepted
     await page.route(sendUrl, async route => {
-      keys.push(route.request().headers()['idempotency-key'])
-      if (keys.length > 1) return route.continue()
+      if (route.request().method() !== 'POST') return route.continue()
+      const command = route.request().postDataJSON()
+      if (!['send', 'check'].includes(command.action)) return route.continue()
+      draftIds.push(command.id)
+      if (draftIds.length > 1) return route.continue()
       const actual = await route.fetch({ maxRetries: 0, maxRedirects: 0 })
       accepted = await actual.json()
       await route.abort('failed')
     })
-    await page.getByRole('button', { name: 'Gửi', exact: true }).click()
-    await page.getByText('Chưa thể xác nhận yêu cầu. Hãy kiểm tra lại trạng thái với cùng nội dung.').waitFor()
+    await page.getByRole('button', { name: 'Xem trước thư gửi', exact: true }).click()
+    await page.getByRole('dialog', { name: 'Xem trước thư gửi' }).getByRole('button', { name: 'Xác nhận gửi' }).click()
+    await page.getByText('Mất kết nối. Mở lại bản nháp để kiểm tra trạng thái.', { exact: true }).waitFor()
     assert.equal(accepted?.state, 'accepted')
     assert.equal(smtpWire.state.messages.length, 1)
-    const sendResult = page.waitForResponse(response => response.url() === sendUrl && response.request().method() === 'POST')
-    await page.getByRole('button', { name: 'Thử lại yêu cầu', exact: true }).click()
-    const sent = await (await sendResult).json()
+    const replay = await page.request.post(sendUrl, { data: { action: 'send', id: draftIds[0] } })
+    const sent = await replay.json()
     assert.equal(sent.state, 'accepted')
     assert.equal(sent.messageId, accepted.messageId)
-    assert.ok(keys.length === 2 && keys[0] && keys[0] === keys[1])
+    assert.ok(draftIds.length === 1 && draftIds[0])
+    await page.getByRole('link', { name: 'Mở thư đã gửi', exact: true }).click()
     await page.waitForURL('**/sent')
     assert.equal(smtpWire.state.messages.length, 1)
     const inbox = await (await loopbackFetch(mailpit + '/api/v1/messages')).json()
     assert.equal(inbox.messages.filter(message => message.Subject === sendSubject &&
       message.To.some(recipient => recipient.Address === vendor)).length, 1)
-    record('Compose retries a lost acceptance response without duplicating the SMTP message in Mailpit', true)
+    record('Compose recovers a lost acceptance response and replay preserves the single SMTP message in Mailpit', true)
 
     step = 'Cách ly tổ chức'
     await signIn(previousEmail, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })

@@ -1,6 +1,6 @@
 import 'server-only'
 import type { MailSendStore } from './store'
-import { SendError, type MailPayload, type SendScope, type SendOutcome, type SendReceipt } from './contracts'
+import { SendOperationMissing, type MailPayload, type SendScope, type SendOutcome, type SendReceipt } from './contracts'
 
 export async function executeMailSend(
   store: MailSendStore,
@@ -23,7 +23,7 @@ export async function executeMailSend(
 
   const previous = await store.begin(scope)
   if (previous) return replay(previous)
-  if (checkOnly) throw new SendError(409, 'Yêu cầu chưa được tiếp nhận. Bạn có thể tiếp tục gửi.')
+  if (checkOnly) throw new SendOperationMissing()
   const { payload, dispatch } = await prepare()
   const receipt = await store.begin(scope, payload)
   if (!receipt) throw new Error('Missing send receipt')

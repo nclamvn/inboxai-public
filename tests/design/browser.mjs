@@ -91,7 +91,8 @@ export async function rehearseDesign({ app, cookies, admin, userId, record, acti
           return route.abort()
         }
         if (url.pathname === '/api/source-accounts/sync') return route.abort()
-        if (url.pathname === '/api/emails/send') {
+        if (url.pathname === '/api/emails/send' ||
+          (url.pathname === '/api/compose-drafts' && route.request().method() === 'POST' && route.request().postDataJSON().action === 'send')) {
           sendRequests++
           return route.abort()
         }
@@ -305,7 +306,7 @@ export async function rehearseDesign({ app, cookies, admin, userId, record, acti
         const from = page.getByRole('combobox', { name: 'Từ', exact: true })
         await from.getByRole('option', { name: 'design-1@example.test' }).waitFor({ state: 'attached' })
         const [sender] = await from.selectOption({ label: 'design-1@example.test' })
-        await page.getByRole('textbox', { name: 'Đến', exact: true }).fill('recipient@example.test')
+        await page.getByRole('combobox', { name: 'Đến', exact: true }).fill('recipient@example.test')
         await page.getByRole('textbox', { name: 'Tiêu đề', exact: true }).fill('Xác nhận lịch giao hàng')
         await page.getByRole('button', { name: 'Viết', exact: true }).click()
         const prompt = page.getByRole('textbox', { name: 'Yêu cầu soạn bản nháp' })
@@ -316,7 +317,7 @@ export async function rehearseDesign({ app, cookies, admin, userId, record, acti
         assert.equal(await from.inputValue(), sender)
         assert.equal(sendRequests, 0)
         assert.equal(await page.getByRole('region', { name: 'Thư quan trọng' }).count(), 0)
-        assert.ok(await page.getByRole('button', { name: 'Gửi', exact: true }).isEnabled())
+        assert.ok(await page.getByRole('button', { name: 'Xem trước thư gửi', exact: true }).isEnabled())
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false)
         results.at(-1).composeAxe = await audit(page)
         await screenshot(page, 'mobile-compose')
