@@ -1,5 +1,51 @@
 # Verification record
 
+## Cross-device draft continuity
+
+The Bản nháp folder lists server-backed new messages, replies and forwards
+with sending-account filters and a recency cursor. Scheduled mail stays in
+Chờ gửi. Pending sends can be reopened to verify the original receipt.
+The editors save after 1.1 seconds of inactivity and report when a change
+still needs to sync. Autosave does not approve or send mail.
+
+The first save of a new message or forward uses a tenant-scoped creation
+key. A replay returns the same draft and a discarded key cannot recreate it.
+Subsequent saves check the draft revision. On conflict the editor keeps
+both copies visible, including their attachment manifests, until the user
+selects a version. The existing opt-in encrypted offline reply still
+supports reopening without a connection. New messages, forwards and
+attachment changes need a server acknowledgement before they are safe to
+reopen after closing the tab.
+
+On 2026-11-13, the synthetic rehearsal ran with Chrome 157.0.8103.79,
+Next.js 16.4.6, Node 24.14.1 and PostgreSQL 16 on macOS arm64. Independent
+Chrome profiles reopened the exact sender, To, Cc, subject, body and file.
+An offline edit and a simultaneous online edit preserved both versions.
+The approved message and exact attachment were dispatched once after
+losing the Gmail acknowledgement and the browser response. A second
+InboxAI user could open only their own pre-migration draft. The three
+captured surfaces had zero axe violations and no horizontal overflow.
+
+| Command | Local result |
+| --- | --- |
+| `npm run lint` | Exit 0 with 92 existing warnings |
+| `npm run typecheck` | Exit 0 |
+| `npm run test:unit` and `npm run test:integration` | Exit 0 with 245 unit tests and 200 integration tests |
+| `npm run test:db` | Exit 0 with 32 SQL checks, including creation replay, attachment conflicts and tenant isolation |
+| `npm run test:design -- --isolated` | Exit 0 with 29 checks |
+| `npm run test:platform -- --isolated` | Exit 0 with 19 checks across desktop, tablet and mobile Chrome |
+| `npm run test:staging -- --isolated` | Exit 0 with 31 checks including migration, backup and restore |
+| `npm run test:offline-reply` | Exit 0 with 20 checks on rerun. One initial run stopped at the shared PostgREST RLS assertion before Chrome opened. |
+| `npm run test:compose-attachments` | Exit 0 with 21 checks, including byte-for-byte Sent downloads |
+| `npm run test:scheduled-send` | Exit 0 with 21 checks, including scheduled sends and cancellation on mobile |
+| `npm run test:draft-continuity` | Exit 0 with 21 checks including the shared Auth checks |
+| `npm run build` | Exit 0 with synthetic CI configuration and the isolated build directory |
+
+[Chrome report](../../test-results/draft-continuity/report.json) ·
+[Workflow evidence](../../test-results/draft-continuity/workflow.json) ·
+[Draft folder](../../test-results/draft-continuity/03-danh-sach-ban-nhap.png) ·
+[Mobile conflict](../../test-results/draft-continuity/02-doi-chieu-hai-ban.png)
+
 ## Recipient suggestions and sending identity
 
 Compose, Reply and Forward share a keyboard-accessible recipient picker for

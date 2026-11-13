@@ -53,7 +53,7 @@ it('uses the saved identity and recipients for approval and restores an uncertai
   readDraft.mockResolvedValueOnce(json({ ...draft, state: 'unknown' })).mockResolvedValueOnce(json({ ...draft, state: 'unknown' }))
   const approve = await preview()
   expect(post).toHaveBeenCalledTimes(1)
-  expect(post).toHaveBeenCalledWith({ action: 'save', id: null, revision: null, sourceId: null, accountId, fields, fileIds: [] })
+  expect(post).toHaveBeenCalledWith({ action: 'save', id: null, revision: null, sourceId: null, accountId, fields, fileIds: [], clientId: expect.any(String) })
   fireEvent.click(approve)
   await screen.findByText('Đang chờ xác minh')
   expect(nav.push).not.toHaveBeenCalled()

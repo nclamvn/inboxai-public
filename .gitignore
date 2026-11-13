@@ -33,6 +33,7 @@
 /test-results/offline-reply/
 /test-results/action-notifications/
 /test-results/compose-recipients/
+/test-results/draft-continuity/
 /.codex-offline-browser-*/
 /test-results/compose-attachments/
 /test-results/staging/

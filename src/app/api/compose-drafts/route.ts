@@ -14,7 +14,7 @@ const id = z.uuid()
 const revision = z.number().int().positive().max(2_147_483_647)
 const actions = z.discriminatedUnion('action', [
   z.strictObject({ action: z.literal('save'), id: id.nullable(), sourceId: id.nullable(), revision: revision.nullable(),
-    accountId: id, fields: composeFields, fileIds: composeFileIds }),
+    accountId: id, clientId: z.uuidv4().optional(), fields: composeFields, fileIds: composeFileIds }),
   z.strictObject({ action: z.literal('prepare'), id, revision }),
   z.strictObject({ action: z.literal('schedule'), id, revision, at: z.iso.datetime(), requestId: z.uuidv4() }),
   z.strictObject({ action: z.enum(['send', 'check', 'edit', 'discard']), id }),
@@ -89,8 +89,12 @@ export async function POST(request: NextRequest) {
     const action = await readAction(request)
     if (action.action === 'save') {
       const fields = { ...action.fields, to: addresses(action.fields.to).join(', '), cc: addresses(action.fields.cc).join(', ') }
-      return json(await rpc(client, 'save_file_compose', { p_id: action.id, p_revision: action.revision,
-        p_account: action.accountId, p_source: action.sourceId, p_fields: fields, p_files: action.fileIds }))
+      const input = { p_account: action.accountId, p_source: action.sourceId, p_fields: fields, p_files: action.fileIds }
+      if (action.clientId) {
+        if (action.id !== null || action.revision !== null) throw composeRpcError('22023')
+        return json(await rpc(client, 'create_file_compose_once', { p_client_id: action.clientId, ...input }))
+      }
+      return json(await rpc(client, 'save_file_compose', { p_id: action.id, p_revision: action.revision, ...input }))
     }
     if (action.action === 'prepare' || action.action === 'schedule') {
       const draft = await readDraft(client, action.id)

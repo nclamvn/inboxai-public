@@ -81,3 +81,4 @@ psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/personal-mail-rules.
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/mail-lookup.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/action-notifications.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/compose-recipient-history.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/draft-continuity.sql

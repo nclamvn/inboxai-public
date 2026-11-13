@@ -105,19 +105,8 @@ export function useOfflineReply(
     }
   }
 
-  async function compareLatest(next: ReplyWorkbench) {
-    if (!vault || !epoch) return false
-    const local = await vault.get<OfflineReply>('draft', source).catch(() => null)
-    if (local) {
-      queued.current = null
-      setScan({ epoch, vault, pending: local, exists: true })
-      setFields(offlineReplyFor(next, local.fields).base.fields)
-    }
-    return Boolean(local)
-  }
-
   return {
-    pending, comparison, lockedDraft, busy, error, choose, clear, compareLatest,
+    pending, comparison, lockedDraft, busy, error, choose, clear,
     recover: offline?.requestVault,
     showUnlock: Boolean(offline?.scope && !vault),
     enrolled,

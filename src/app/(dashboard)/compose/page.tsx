@@ -11,7 +11,11 @@ import { ComposeFiles, ComposeFileList } from '@/components/email/compose-files'
 import { Modal } from '@/components/ui/modal'
 import { ScheduleSendDialog } from '@/components/email/schedule-send-dialog'
 import { composeDraftAction, fileDraftHref } from '@/lib/compose/client'
-import { useFileCompose } from '@/lib/compose/use-file-compose'
+import { useDraftExitWarning } from '@/lib/compose/use-draft-exit-warning'
+import { useDraftAutosave } from '@/lib/compose/use-draft-autosave'
+import { DraftVersion } from '@/components/email/draft-version'
+import { useNetworkStatus } from '@/hooks/use-network-status'
+import { sameComposeFields, useFileCompose } from '@/lib/compose/use-file-compose'
 import { Alert } from '@/components/ui/alert'
 import { RecipientField } from '@/components/email/recipient-field'
 import { useOfflineWorkspace } from '@/components/offline/offline-provider'
@@ -69,14 +73,26 @@ function NewCompose() {
   const sourceId = draft ? draft.sourceId : forwardId
   const forward = !!sourceId
   const state = draft?.state ?? 'draft'
-  const locked = fileCompose.loading || fileCompose.blocked || fileCompose.busy || checkingLegacy || state !== 'draft'
+  const { isOnline } = useNetworkStatus()
+  const locked = fileCompose.loading || fileCompose.blocked || fileCompose.busy || checkingLegacy || state !== 'draft' || !!fileCompose.conflict
   const fields = { to, cc, subject, body }
-  const canSave = !!selectedAccountId && accounts.some(account => account.id === selectedAccountId)
-    && !locked && !fileCompose.fileBusy
-  const changed = draft && (selectedAccountId !== draft.accountId ||
-    (Object.keys(fields) as (keyof typeof fields)[]).some(key => fields[key] !== draft.fields[key]) ||
-    files.length !== draft.files.length || files.some((file, index) => file.id !== draft.files[index]?.id))
-  const status = { draft: changed ? 'Có thay đổi chưa lưu' : draft ? 'Bản nháp đã lưu' : '', prepared: 'Đã lưu yêu cầu gửi', unknown: 'Đang chờ xác minh',
+  const accountAddress = (id: string) => accounts.find(account => account.id === id)?.email_address
+  const changed = fileCompose.saveUnconfirmed || (draft
+    ? selectedAccountId !== draft.accountId || !sameComposeFields(fields, draft.fields) ||
+      files.length !== draft.files.length || files.some((file, index) => file.id !== draft.files[index]?.id)
+    : fileCompose.initial ? selectedAccountId !== fileCompose.initial.account ||
+      !sameComposeFields(fields, fileCompose.initial.fields) || files.length > 0
+      : Boolean(to.trim() || cc.trim() || subject.trim() || body.trim() || files.length))
+  const canSave = !!accountAddress(selectedAccountId) && !locked && !fileCompose.fileBusy && !fileCompose.autoSaving && isOnline
+  useDraftAutosave(canSave && changed && !preview && !fileCompose.saveFailed && !confirmDiscard,
+    JSON.stringify([selectedAccountId, fields, files.map(file => file.id)]),
+    () => void fileCompose.save(fields, selectedAccountId, false, true))
+  const lossRisk = (changed || fileCompose.autoSaving || !!fileCompose.conflict) && state === 'draft' && !fileCompose.loading
+  useDraftExitWarning(lossRisk)
+  const status = { draft: fileCompose.conflict ? 'Cần đối chiếu bản nháp'
+    : fileCompose.autoSaving || fileCompose.busy ? 'Đang lưu bản nháp…'
+    : changed ? (isOnline ? 'Có thay đổi chưa lưu' : 'Chưa đồng bộ · Mất kết nối')
+    : draft ? 'Bản nháp đã lưu' : '', prepared: 'Đã lưu yêu cầu gửi', unknown: 'Đang chờ xác minh',
     dispatching: 'Đang chờ xác minh', accepted: 'Đã gửi', partial: 'Chấp nhận một phần', rejected: 'Yêu cầu bị từ chối' }[state]
 
   // AI Compose
@@ -216,13 +232,7 @@ function NewCompose() {
   }
 
   const handleDiscard = () => {
-    if ((!draft && (to || subject || body || files.length)) || changed) {
-      if (confirm('Bạn có chắc muốn hủy email này?')) {
-        router.back()
-      }
-    } else {
-      router.back()
-    }
+    if (!lossRisk || window.confirm('Rời trang khi bản nháp còn thay đổi chưa lưu?')) router.back()
   }
 
   const scopePreview = preview && <>
@@ -238,9 +248,10 @@ function NewCompose() {
   return (
     <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col border-x border-[var(--border)] bg-[var(--surface)]">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 p-4 border-b border-[var(--border)] bg-[var(--card)]">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--card)] p-4">
         <h1 className="neo-title">{forward ? 'Chuyển tiếp thư' : 'Soạn thư mới'}</h1>
         <div className="flex shrink-0 items-center gap-3">
+          <Link href="/drafts" className="neo-target inline-flex items-center text-sm underline">Bản nháp</Link>
           <Link href="/outbox" className="neo-target inline-flex items-center text-sm underline md:hidden">Chờ gửi</Link>
           <button
             type="button" onClick={handleDiscard} aria-label="Đóng soạn thư"
@@ -270,6 +281,19 @@ function NewCompose() {
           </Alert>
         )}
 
+        {fileCompose.conflict && <section aria-labelledby="compose-draft-conflict" className="mx-4 mt-4 space-y-3 border-s-2 border-[var(--accent)] ps-3">
+          <h2 id="compose-draft-conflict" className="text-sm font-semibold">Bản nháp đã thay đổi ở hai nơi</h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <DraftVersion label="Bản đang soạn" fields={fields} files={files} account={accountAddress(selectedAccountId)} />
+            <DraftVersion label="Bản trên máy chủ" fields={fileCompose.conflict.fields}
+              files={fileCompose.conflict.files} account={accountAddress(fileCompose.conflict.accountId)} />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="outline" disabled={fileCompose.conflict.state !== 'draft'}
+              onClick={() => fileCompose.chooseConflict(true)}>Giữ bản đang soạn</Button>
+            <Button type="button" variant="outline" onClick={() => fileCompose.chooseConflict(false)}>Dùng bản trên máy chủ</Button>
+          </div>
+        </section>}
         {fileCompose.loading && <p role="status" className="px-4 py-2">Đang mở bản nháp…</p>}
         {status && <div className="flex flex-wrap items-center gap-2 px-4 py-2">
           <p role="status" className="text-sm text-[var(--foreground-secondary)]">{draft?.scheduledId ? 'Thư đã lên lịch' : status}</p>
@@ -507,7 +531,7 @@ function NewCompose() {
         </fieldset>
         <div className="border-t border-[var(--border)] px-4 py-3">
           <ComposeFiles key={sourceId ?? 'new'} files={files} onChange={fileCompose.setFiles} onBusy={fileCompose.setFileBusy}
-            disabled={locked} sourceId={sourceId ?? undefined} sourceFiles={fileCompose.sourceFiles} />
+            disabled={locked || fileCompose.autoSaving || !isOnline} sourceId={sourceId ?? undefined} sourceFiles={fileCompose.sourceFiles} />
         </div>
         {state === 'draft' && <div className="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] bg-[var(--secondary)] p-4">
             {draft && <Button type="button" variant="ghost" disabled={!canSave}

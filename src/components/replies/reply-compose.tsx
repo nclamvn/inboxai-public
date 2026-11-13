@@ -7,6 +7,9 @@ import { ScheduleSendDialog } from '@/components/email/schedule-send-dialog'
 import { ArrowLeft, Check, FileText, Send } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ComposeFiles, ComposeFileList } from '@/components/email/compose-files'
+import { DraftVersion } from '@/components/email/draft-version'
+import { useDraftExitWarning } from '@/lib/compose/use-draft-exit-warning'
+import { useDraftAutosave } from '@/lib/compose/use-draft-autosave'
 import type { ComposeFile } from '@/lib/compose/contracts'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -45,6 +48,9 @@ export function ReplyCompose({ source }: { source: string }) {
   const [saving, setSaving] = useState(false)
   const [busy, setBusy] = useState(false)
   const [preview, setPreview] = useState<'send' | 'schedule' | null>(null)
+  const [latestDraft, setLatestDraft] = useState<ReplyWorkbench | null>(null)
+  const [saveUnconfirmed, setSaveUnconfirmed] = useState(false)
+  const [saveFailed, setSaveFailed] = useState(false)
   const [conflict, setConflict] = useState(false)
   const [readVersion, setReadVersion] = useState(0)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
@@ -52,7 +58,7 @@ export function ReplyCompose({ source }: { source: string }) {
   const busyRef = useRef(false)
   const saveRef = useRef<Promise<ReplyDraft> | null>(null)
   const filesChanged = files.length !== savedFiles.length || files.some((file, index) => file.id !== savedFiles[index]?.id)
-  const dirty = !sameReply(fields, saved) || filesChanged
+  const dirty = saveUnconfirmed || !sameReply(fields, saved) || filesChanged
   const device = useOfflineReply(source, context, draft, fields, saved, setFields)
   const network = useNetworkStatus()
   const isOnline = !useHydrated() || network.isOnline
@@ -79,6 +85,7 @@ export function ReplyCompose({ source }: { source: string }) {
     void readReply(source, controller.signal).then(result => {
       if (controller.signal.aborted) return
       acceptContext(result, true)
+      setSaveUnconfirmed(false)
       const pending = takeReplyText(source)
       if (pending) setSuggestion(pending)
     }).catch(reason => {
@@ -87,15 +94,13 @@ export function ReplyCompose({ source }: { source: string }) {
     return () => controller.abort()
   }, [source, readVersion])
 
+  useDraftExitWarning(lossRisk || saving)
+
   useEffect(() => {
-    if (!lossRisk) return
-    function preventLoss(event: BeforeUnloadEvent) {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', preventLoss)
-    return () => window.removeEventListener('beforeunload', preventLoss)
-  }, [lossRisk])
+    function resume() { setSaveFailed(false) }
+    window.addEventListener('online', resume)
+    return () => window.removeEventListener('online', resume)
+  }, [])
 
   async function save() {
     if (saveRef.current) return saveRef.current
@@ -106,29 +111,74 @@ export function ReplyCompose({ source }: { source: string }) {
     const pending = replyRequest<ReplyDraft>({
       action: 'save', source, id: draft?.id ?? null, revision: draft?.revision ?? null,
       fingerprint: context.fingerprint, ...fields,
-      ...(files.length || filesChanged ? { fileIds: files.map(file => file.id) } : {}),
+      fileIds: files.map(file => file.id),
     })
     saveRef.current = pending
     try {
       const result = await pending
       setDraft(result)
+      setSaveFailed(false)
+      setSaveUnconfirmed(false)
       setSaved(fields)
       setSavedFiles(files)
-      await device.clear()
       invalidate()
       return result
     } catch (reason) {
       if (reason instanceof ReplyError && reason.status === 409) {
         setConflict(true)
         const latest = await readReply(source, AbortSignal.timeout(8_000)).catch(() => null)
-        if (latest && await device.compareLatest(latest)) acceptContext(latest, true)
+        if (latest) {
+          const serverFiles = latest.draft?.files ?? []
+          if (!latest.stale && latest.draft?.state === 'draft' && (!draft || latest.draft.id === draft.id) &&
+              sameReply(fields, fieldsFor(latest)) && files.length === serverFiles.length &&
+              files.every((file, index) => file.id === serverFiles[index]?.id)) {
+            setContext(latest)
+            setDraft(latest.draft)
+            setSaved(fields)
+            setSavedFiles(files)
+            setConflict(false)
+            setSaveFailed(false)
+            setSaveUnconfirmed(false)
+            invalidate()
+            return latest.draft
+          }
+          setLatestDraft(latest)
+        }
       }
+      setSaveFailed(true)
+      setSaveUnconfirmed(!(reason instanceof ReplyError) || reason.status >= 500 || reason.status === 409 || saveUnconfirmed)
       setError(reason instanceof ReplyError ? reason.message : 'Bản nháp chưa được lưu. Hãy thử lại khi có mạng.')
       throw reason
     } finally {
       saveRef.current = null
       setSaving(false)
     }
+  }
+
+  useDraftAutosave(Boolean(context && editable && !stale && dirty && !saving && !busy && !fileBusy &&
+    !conflict && isOnline && !needsDeviceReview && !preview && !confirmDiscard && !saveFailed),
+  JSON.stringify([fields, files.map(file => file.id)]), () => void save().catch(() => {}))
+
+  async function chooseDeviceVersion(choice: 'device' | 'server') {
+    if (!await device.choose(choice)) return
+    setConflict(false)
+    setSaveFailed(false)
+    setSaveUnconfirmed(false)
+  }
+
+  function resolveDraft(keepLocal: boolean) {
+    if (!latestDraft || (keepLocal && (latestDraft.stale || latestDraft.draft?.state !== 'draft' ||
+      latestDraft.fingerprint !== context?.fingerprint))) return
+    acceptContext(latestDraft, !keepLocal)
+    if (keepLocal) {
+      setSaved(fieldsFor(latestDraft))
+      setSavedFiles(latestDraft.draft?.files ?? [])
+    }
+    setLatestDraft(null)
+    setConflict(false)
+    setSaveFailed(false)
+    setSaveUnconfirmed(false)
+    setError(null)
   }
 
   async function refresh() {
@@ -146,7 +196,7 @@ export function ReplyCompose({ source }: { source: string }) {
     await refresh()
   }
 
-  async function run(task: () => Promise<void>) {
+  async function run(task: () => Promise<void>, recoverReceipt = true) {
     if (busyRef.current) return
     busyRef.current = true
     setBusy(true)
@@ -156,7 +206,7 @@ export function ReplyCompose({ source }: { source: string }) {
     } catch (reason) {
       setPermission(reason instanceof ReplyError && reason.code === gmailSendPermissionRequired)
       setError(reason instanceof ReplyError ? reason.message : 'Mất kết nối. Mở lại bản nháp để kiểm tra trạng thái.')
-      await refresh().catch(() => {})
+      if (recoverReceipt) await refresh().catch(() => {})
     } finally {
       busyRef.current = false
       setBusy(false)
@@ -193,17 +243,19 @@ export function ReplyCompose({ source }: { source: string }) {
         acceptContext(await readReply(source), action === 'edit')
       }
       setConflict(false)
+      setSaveFailed(false)
+      setSaveUnconfirmed(false)
       invalidate()
     })
   }
 
   function review(event: React.FormEvent) {
     event.preventDefault()
-    if (!editable || fileBusy || !fields.body.trim() || !isOnline || needsDeviceReview) return
+    if (!editable || fileBusy || !fields.body.trim() || !isOnline || needsDeviceReview || saving || conflict) return
     void run(async () => {
       await save()
       setPreview('send')
-    })
+    }, false)
   }
 
   const back = '/inbox?email=' + encodeURIComponent(source)
@@ -211,7 +263,9 @@ export function ReplyCompose({ source }: { source: string }) {
   const status = draft?.scheduledId ? 'Thư đã lên lịch' : state === 'accepted' ? 'Đã gửi' : state === 'partial' ? 'Chấp nhận một phần'
     : state === 'rejected' ? 'Yêu cầu bị từ chối' : state === 'unknown' || state === 'dispatching' ? 'Đang chờ xác minh'
     : state === 'prepared' ? 'Đã lưu yêu cầu gửi' : saving ? 'Đang lưu bản nháp…'
-    : dirty ? device.savedLocally && !filesChanged ? 'Đã lưu trên thiết bị' : 'Có thay đổi chưa lưu' : draft ? 'Bản nháp đã lưu' : null
+    : latestDraft ? 'Cần đối chiếu bản nháp'
+    : dirty ? device.savedLocally && !filesChanged ? 'Đã lưu trên thiết bị' :
+      isOnline ? 'Có thay đổi chưa lưu' : 'Chưa đồng bộ · Mất kết nối' : draft ? 'Bản nháp đã lưu' : null
   const scopePreview = context && draft && <>
     <dl className="space-y-2 break-words text-sm">
       <div><dt className="font-semibold">Gửi từ</dt><dd>{context.account}</dd></div>
@@ -225,9 +279,8 @@ export function ReplyCompose({ source }: { source: string }) {
   return (
     <div className="mx-auto min-h-full max-w-6xl bg-[var(--surface)]">
       <header className="border-b border-[var(--border)] px-4 py-4 sm:px-6">
-        <Link href={back} className={messageLink} onClick={event => {
-          if (lossRisk && !window.confirm('Rời trang khi bản nháp còn thay đổi chưa lưu?')) event.preventDefault()
-        }}><ArrowLeft size={16} aria-hidden="true" /> Về email nguồn</Link>
+        <Link href={back} className={messageLink}><ArrowLeft size={16} aria-hidden="true" /> Về email nguồn</Link>
+        <Link href="/drafts" className={messageLink + ' ms-4'}>Bản nháp</Link>
         <h1 className="neo-title mt-1 break-words">Trả lời hội thoại</h1>
         {context?.subject && <p className="mt-1 break-words text-sm text-[var(--foreground-secondary)]">{context.subject}</p>}
       </header>
@@ -256,22 +309,36 @@ export function ReplyCompose({ source }: { source: string }) {
               {device.comparison === 'source' && <p className="text-sm">Email nguồn đã thay đổi. Hãy kiểm tra nguồn trước khi chọn bản nháp.</p>}
               {device.comparison === 'blocked' && <p className="text-sm">Máy chủ đã chuyển bản nháp sang bước gửi hoặc đổi tài khoản. Kiểm tra trạng thái gửi hiện tại.</p>}
               <div className="grid gap-3 sm:grid-cols-2">
-                <ReplyVersion label="Bản trên thiết bị" fields={device.pending.fields} />
-                <ReplyVersion label="Bản trên máy chủ" fields={fieldsFor({ ...context, draft })} />
+                <DraftVersion label="Bản trên thiết bị" fields={device.pending.fields} />
+                <DraftVersion label="Bản trên máy chủ" fields={fieldsFor({ ...context, draft })} />
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button type="button" variant="outline" disabled={device.busy || device.comparison === 'blocked' || !!stale}
-                  onClick={async () => { if (await device.choose('device')) setConflict(false) }}>Giữ bản trên thiết bị</Button>
+                  onClick={() => void chooseDeviceVersion('device')}>Giữ bản trên thiết bị</Button>
                 <Button type="button" variant="outline" disabled={device.busy}
-                  onClick={async () => { if (await device.choose('server')) setConflict(false) }}>Giữ bản trên máy chủ</Button>
+                  onClick={() => void chooseDeviceVersion('server')}>Giữ bản trên máy chủ</Button>
               </div>
             </section>}
-            {(stale || (conflict && !device.pending)) && <Alert variant="warning" title="Bản nháp cần đối chiếu">
+            {latestDraft && !device.pending && <section aria-labelledby="reply-draft-conflict" className="space-y-3 border-s-2 border-[var(--accent)] ps-3">
+              <h2 id="reply-draft-conflict" className="text-sm font-semibold">Bản nháp đã thay đổi ở hai nơi</h2>
+              {latestDraft.fingerprint !== context.fingerprint && <p className="text-sm">Email nguồn đã thay đổi. Hãy kiểm tra lại nguồn.</p>}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <DraftVersion label="Bản đang soạn" fields={fields} files={files} />
+                <DraftVersion label="Bản trên máy chủ" fields={fieldsFor(latestDraft)} files={latestDraft.draft?.files ?? []} />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" variant="outline" disabled={latestDraft.stale || latestDraft.draft?.state !== 'draft' || latestDraft.fingerprint !== context.fingerprint}
+                  onClick={() => resolveDraft(true)}>Giữ bản đang soạn</Button>
+                <Button type="button" variant="outline" onClick={() => resolveDraft(false)}>Dùng bản trên máy chủ</Button>
+              </div>
+            </section>}
+            {(stale || (conflict && !device.pending && !latestDraft)) && <Alert variant="warning" title="Bản nháp cần đối chiếu">
               Hãy kiểm tra lại email nguồn và bản nháp đã lưu trước khi tiếp tục.
               <div className="mt-2 flex flex-wrap gap-2">
                 {conflict && <Button type="button" variant="outline" onClick={() => {
                   if (!dirty || window.confirm('Mở bản nháp đã lưu và bỏ thay đổi chưa lưu?')) {
                     setConflict(false)
+                    setSaveFailed(false)
                     setError(null)
                     setReadVersion(version => version + 1)
                   }
@@ -282,7 +349,7 @@ export function ReplyCompose({ source }: { source: string }) {
               </div>
             </Alert>}
             <form onSubmit={review} className="space-y-4">
-              <fieldset disabled={busy || saving || !editable || needsDeviceReview} className="space-y-4">
+              <fieldset disabled={busy || !editable || needsDeviceReview || !!latestDraft} className="space-y-4">
                 <div className="space-y-1 text-sm"><label htmlFor="reply-to">Người nhận</label>
                   <RecipientField id="reply-to" className={inputClass} value={fields.to} owner={owner} accountId={context.accountId}
                     onChange={to => setFields({ ...fields, to })} required />
@@ -298,10 +365,11 @@ export function ReplyCompose({ source }: { source: string }) {
                     setSuggestion(null)
                   }}>Chèn gợi ý vào bản nháp</Button>
                 </div>}
-                <label className="block space-y-1 text-sm"><span>Nội dung thư</span>
-                  <textarea className={inputClass + ' min-h-48 resize-y'} value={fields.body} maxLength={100000}
+                <div className="space-y-1 text-sm">
+                  <label htmlFor="reply-body">Nội dung thư</label>
+                  <textarea id="reply-body" className={inputClass + ' min-h-48 resize-y'} value={fields.body} maxLength={100000}
                     onChange={event => setFields({ ...fields, body: event.target.value })} />
-                </label>
+                </div>
               </fieldset>
               <ComposeFiles files={files} onChange={setFiles} onBusy={setFileBusy}
                 disabled={!editable || busy || saving || !!stale || conflict || !isOnline || needsDeviceReview} />
@@ -312,7 +380,7 @@ export function ReplyCompose({ source }: { source: string }) {
               </label>}
               <div className="flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
                 {editable && <>
-                  <Button type="button" variant="outline" disabled={busy || saving || fileBusy || !!stale || conflict || !dirty || !isOnline || needsDeviceReview}
+                  <Button type="button" variant="outline" disabled={busy || saving || fileBusy || !!stale || conflict || (!dirty && !draft) || !isOnline || needsDeviceReview}
                     onClick={() => void save().catch(() => {})}>Lưu bản nháp</Button>
                   <Button type="submit" disabled={busy || saving || fileBusy || !!stale || conflict || !fields.body.trim() || !isOnline || needsDeviceReview} leftIcon={<Send size={16} aria-hidden="true" />}>
                     Xem trước thư gửi
@@ -342,9 +410,7 @@ export function ReplyCompose({ source }: { source: string }) {
           <h2 className="px-4 pt-4 text-sm font-semibold sm:px-6">Hội thoại</h2>
           <ol className="divide-y divide-[var(--border)]">
             {context.thread.map(message => <li key={message.id} className="px-4 py-3 sm:px-6">
-              <Link href={'/inbox?email=' + message.id} className={messageLink} onClick={event => {
-                if (lossRisk && !window.confirm('Rời trang khi bản nháp còn thay đổi chưa lưu?')) event.preventDefault()
-              }}><FileText size={15} aria-hidden="true" className="shrink-0" /><span className="break-all">{message.sender}</span></Link>
+              <Link href={'/inbox?email=' + message.id} className={messageLink}><FileText size={15} aria-hidden="true" className="shrink-0" /><span className="break-all">{message.sender}</span></Link>
               <p className="break-words text-xs text-[var(--foreground-secondary)]">
                 {message.source ? 'Email đang trả lời' : message.subject}{message.at ? ' · ' + formatCommitmentMoment(message.at) : ''}
               </p>
@@ -375,13 +441,4 @@ export function ReplyCompose({ source }: { source: string }) {
         </>} />}
     </div>
   )
-}
-
-function ReplyVersion({ label, fields }: { label: string; fields: ReplyFields }) {
-  return <div className="min-w-0 space-y-2 rounded-[var(--radius-control)] bg-[var(--secondary)] p-3 text-sm">
-    <h3 className="font-semibold">{label}</h3>
-    <p className="break-all">Người nhận {fields.to}</p>
-    {fields.cc && <p className="break-all">Cc {fields.cc}</p>}
-    <p className="whitespace-pre-wrap break-words">{fields.body || 'Chưa có nội dung thư.'}</p>
-  </div>
 }
