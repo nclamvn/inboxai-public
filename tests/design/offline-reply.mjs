@@ -176,8 +176,11 @@ export async function rehearseOfflineReply({
       const entries = await Promise.all(keys.map(async key => (await caches.open(key)).keys()))
       return entries.flat().map(entry => new URL(entry.url).pathname)
     })
-    assert.equal(cached.length, 7)
-    assert.ok(cached.every(path => path.startsWith('/offline-workspace/')))
+    assert.deepEqual(cached.sort(), [
+      'compose-editor.mjs', 'compose.mjs', 'fonts/inter-latin-ext-wght-normal.woff2',
+      'fonts/inter-latin-wght-normal.woff2', 'fonts/inter-vietnamese-wght-normal.woff2',
+      'index.html', 'storage.mjs', 'workspace.css', 'workspace.mjs',
+    ].map(path => '/offline-workspace/' + path).sort())
     await capture('01-offline-after-restart')
     record('cold Chrome restart uses the cached shell while offline; wrong password stays locked, correct password restores only the selected mail and draft', true)
 

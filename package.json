@@ -56,7 +56,8 @@
     "test:offline-reply": "npm run test:local-auth -- --offline-reply",
     "test:action-notifications": "npm run test:local-auth -- --action-notifications",
     "test:compose-recipients": "npm run test:local-auth -- --compose-recipients",
-    "test:draft-continuity": "npm run test:local-auth -- --draft-continuity"
+    "test:draft-continuity": "npm run test:local-auth -- --draft-continuity",
+    "test:offline-compose": "npm run test:local-auth -- --offline-compose"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

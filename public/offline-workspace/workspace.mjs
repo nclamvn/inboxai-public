@@ -1,4 +1,5 @@
 import { offlineScope, openOfflineVault, watchOfflineScope } from './storage.mjs'
+import { renderCompose } from './compose-editor.mjs'
 
 const byId = id => document.getElementById(id)
 const work = byId('work')
@@ -12,6 +13,7 @@ let source = query.get('reply') || query.get('email')
 let vault = null
 let epoch = 0
 let unsaved = false
+let renderVersion = 0
 
 function node(tag, text, props = {}) {
   const element = document.createElement(tag)
@@ -61,11 +63,31 @@ function renderConnection() {
 async function render() {
   const active = vault
   if (!active) return
+  const view = ++renderVersion
+  const isActive = () => vault === active && view === renderVersion
   const entries = await active.list()
-  if (vault !== active) return
+  if (!isActive()) return
   work.replaceChildren()
+  const drafts = entries.filter(entry => entry.kind === 'compose').sort((a, b) => b.value.updatedAt - a.value.updatedAt)
+  const deviceKey = query.get('compose')
+  const draftId = query.get('draft')
+  const forwardId = query.get('forward')
+  const editing = deviceKey ? drafts.find(entry => entry.source === deviceKey)
+    : draftId ? drafts.find(entry => entry.value.draftId === draftId)
+    : forwardId ? drafts.find(entry => entry.value.sourceId === forwardId) : null
+  if (editing || deviceKey || draftId || forwardId) {
+    work.append(node('a', 'Về thư và bản nháp trên thiết bị', { href: home }))
+    if (editing) renderCompose({ work, active, entry: editing, node, action, isActive,
+      changed: value => { if (isActive()) unsaved = value },
+      render: () => { history.replaceState(null, '', home); navigate() },
+    })
+    else work.append(node('p', 'Chưa có bản nháp này trên thiết bị. Mở lại khi có kết nối.'))
+    renderConnection()
+    return
+  }
+  const profile = entries.find(entry => entry.kind === 'profile' && entry.source === 'compose')?.value
   const records = new Map()
-  for (const entry of entries) {
+  for (const entry of entries.filter(entry => entry.kind === 'mail' || entry.kind === 'draft')) {
     const record = records.get(entry.source) ?? {}
     record[entry.kind] = entry.value
     records.set(entry.source, record)
@@ -96,6 +118,18 @@ async function render() {
     if (query.has('reply') && editable) renderEditor(active, editable)
     if (query.has('reply') && !editable) work.append(node('p', 'Có thể mở lại phần trả lời khi có kết nối.'))
   } else {
+    if (profile?.accounts.length) {
+      const tools = node('div', '', { className: 'actions' })
+      tools.append(action('Soạn thư trên thiết bị', async () => {
+        const id = crypto.randomUUID()
+        await active.saveCompose(id, null, { ...profile, draftId: null, revision: null, sourceId: null,
+          fields: { to: '', cc: '', subject: '', body: '' }, files: [], updatedAt: Date.now() })
+        if (!isActive()) return
+        history.pushState(null, '', href('compose', id))
+        navigate()
+      }))
+      work.append(tools)
+    }
     const list = node('ul', '', { className: 'list' })
     for (const [id, record] of records) {
       const item = node('li')
@@ -104,7 +138,15 @@ async function render() {
       if (record.draft) item.append(node('p', 'Có bản nháp trên thiết bị', { className: 'meta' }))
       list.append(item)
     }
-    work.append(records.size ? list : node('p', 'Chưa lưu thư hoặc bản nháp nào.'))
+    for (const draft of drafts) {
+      const item = node('li')
+      const kind = draft.value.sourceId ? 'Chuyển tiếp' : 'Thư mới'
+      const subject = draft.value.fields.subject || 'Thư chưa có tiêu đề'
+      item.append(node('a', subject, { href: href('compose', draft.source) }),
+        node('p', kind + ' · ' + draft.value.files.length + ' tệp · Đã lưu trên thiết bị', { className: 'meta' }))
+      list.append(item)
+    }
+    work.append(list.children.length ? list : node('p', 'Chưa lưu thư hoặc bản nháp nào.'))
   }
   renderConnection()
 }
@@ -188,16 +230,23 @@ function navigate() {
 work.addEventListener('click', event => {
   const anchor = event.target.closest('a')
   if (!anchor || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
-  if (new URL(anchor.href).pathname !== home) return
-  event.preventDefault()
   if (unsaved) {
+    event.preventDefault()
     notice.textContent = 'Hãy đợi bản nháp lưu xong trước khi rời trang.'
     return
   }
+  if (new URL(anchor.href).pathname !== home) return
+  event.preventDefault()
   history.pushState(null, '', anchor.href)
   navigate()
 })
-window.addEventListener('popstate', navigate)
+window.addEventListener('popstate', () => {
+  if (!unsaved) navigate()
+  else {
+    history.pushState(null, '', home + (query.size ? '?' + query : ''))
+    notice.textContent = 'Hãy đợi bản nháp lưu xong trước khi rời trang.'
+  }
+})
 lockButton.addEventListener('click', () => {
   if (unsaved && !window.confirm('Khóa khi vẫn còn thay đổi chưa lưu?')) return
   void lock()

@@ -1,7 +1,7 @@
 import { z } from 'zod'
+import { composeFileLimit, composeFileCount } from '../../../public/offline-workspace/compose.mjs'
 
-export const composeFileLimit = 8 * 1024 * 1024
-export const composeFileCount = 5
+export { composeFileLimit, composeFileCount }
 export const composeFileIds = z.array(z.uuid()).max(composeFileCount)
 export const composeFile = z.object({
   id: z.uuid(), filename: z.string(), contentType: z.string(),
@@ -15,6 +15,11 @@ export const composeFields = z.strictObject({
   to: z.string().max(4000), cc: z.string().max(4000), subject: z.string().max(500), body: z.string().max(100_000),
 })
 export type ComposeFields = z.infer<typeof composeFields>
+export const composeAddresses = (value: string) => value.split(',').map(address => address.trim()).filter(Boolean)
+export const sameComposeFields = (left: ComposeFields, right: ComposeFields) =>
+  composeAddresses(left.to).join(', ') === composeAddresses(right.to).join(', ') &&
+  composeAddresses(left.cc).join(', ') === composeAddresses(right.cc).join(', ') &&
+  left.subject === right.subject && left.body === right.body
 export type FileComposeDraft = {
   scheduledId?: string
   id: string

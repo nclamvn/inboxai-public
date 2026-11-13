@@ -15,9 +15,13 @@ import { useDraftExitWarning } from '@/lib/compose/use-draft-exit-warning'
 import { useDraftAutosave } from '@/lib/compose/use-draft-autosave'
 import { DraftVersion } from '@/components/email/draft-version'
 import { useNetworkStatus } from '@/hooks/use-network-status'
-import { sameComposeFields, useFileCompose } from '@/lib/compose/use-file-compose'
+import { useFileCompose } from '@/lib/compose/use-file-compose'
+import { sameComposeFields } from '@/lib/compose/contracts'
 import { Alert } from '@/components/ui/alert'
 import { RecipientField } from '@/components/email/recipient-field'
+import { OfflineComposeRecovery } from '@/components/offline/offline-compose-recovery'
+import { DeviceComposeFiles } from '@/components/offline/device-compose-files'
+import { useDeviceCompose } from '@/components/offline/use-device-compose'
 import { useOfflineWorkspace } from '@/components/offline/offline-provider'
 import { readLegacyComposeAttempt } from '@/lib/mail-send/compose-key'
 
@@ -33,6 +37,8 @@ interface SourceAccount {
 
 export default function ComposePage() {
   const params = useSearchParams()
+  const offlineDraft = params.get('offlineDraft')
+  if (offlineDraft !== null) return <OfflineComposeRecovery key={offlineDraft} deviceKey={offlineDraft} />
   const source = params.get('reply') ?? params.get('replyToEmailId')
   return source ? <ReplyCompose key={source} source={source} /> : <NewCompose />
 }
@@ -76,6 +82,7 @@ function NewCompose() {
   const { isOnline } = useNetworkStatus()
   const locked = fileCompose.loading || fileCompose.blocked || fileCompose.busy || checkingLegacy || state !== 'draft' || !!fileCompose.conflict
   const fields = { to, cc, subject, body }
+  const device = useDeviceCompose({ routeKey: draftId ?? forwardId ?? '', draft, sourceId, accounts, accountId: selectedAccountId, fields, serverFiles: files })
   const accountAddress = (id: string) => accounts.find(account => account.id === id)?.email_address
   const changed = fileCompose.saveUnconfirmed || (draft
     ? selectedAccountId !== draft.accountId || !sameComposeFields(fields, draft.fields) ||
@@ -83,13 +90,15 @@ function NewCompose() {
     : fileCompose.initial ? selectedAccountId !== fileCompose.initial.account ||
       !sameComposeFields(fields, fileCompose.initial.fields) || files.length > 0
       : Boolean(to.trim() || cc.trim() || subject.trim() || body.trim() || files.length))
-  const canSave = !!accountAddress(selectedAccountId) && !locked && !fileCompose.fileBusy && !fileCompose.autoSaving && isOnline
+  const canSave = !!accountAddress(selectedAccountId) && !locked && !fileCompose.fileBusy && !fileCompose.autoSaving && !device.enabled && !device.locked && !device.busy && isOnline
   useDraftAutosave(canSave && changed && !preview && !fileCompose.saveFailed && !confirmDiscard,
     JSON.stringify([selectedAccountId, fields, files.map(file => file.id)]),
     () => void fileCompose.save(fields, selectedAccountId, false, true))
-  const lossRisk = (changed || fileCompose.autoSaving || !!fileCompose.conflict) && state === 'draft' && !fileCompose.loading
+  const lossRisk = (device.enabled ? device.dirty || device.busy : changed || fileCompose.autoSaving || !!fileCompose.conflict)
+    && state === 'draft' && !fileCompose.loading
   useDraftExitWarning(lossRisk)
-  const status = { draft: fileCompose.conflict ? 'Cần đối chiếu bản nháp'
+  const status = { draft: device.enabled ? device.error && device.dirty ? 'Có thay đổi chưa lưu trên thiết bị' : device.busy || device.dirty ? 'Đang lưu trên thiết bị…' : 'Đã lưu trên thiết bị'
+    : fileCompose.conflict ? 'Cần đối chiếu bản nháp'
     : fileCompose.autoSaving || fileCompose.busy ? 'Đang lưu bản nháp…'
     : changed ? (isOnline ? 'Có thay đổi chưa lưu' : 'Chưa đồng bộ · Mất kết nối')
     : draft ? 'Bản nháp đã lưu' : '', prepared: 'Đã lưu yêu cầu gửi', unknown: 'Đang chờ xác minh',
@@ -245,6 +254,12 @@ function NewCompose() {
     <p className="mt-4 whitespace-pre-wrap break-words border-t border-[var(--border)] pt-4 text-sm">{preview.fields.body}</p>
   </>
 
+  if (device.locked) return <div className="mx-auto max-w-5xl p-4">
+    <Alert variant="warning" title="Kho bản nháp đã khóa">
+      <Link href="/drafts" className="neo-target inline-flex items-center text-sm underline">Về mục Bản nháp</Link>
+    </Alert>
+  </div>
+
   return (
     <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col border-x border-[var(--border)] bg-[var(--surface)]">
       {/* Header */}
@@ -281,6 +296,15 @@ function NewCompose() {
           </Alert>
         )}
 
+        {device.error && <Alert variant="error" className="mx-4 mt-4">
+          {device.error}
+          {device.enabled && <Button type="button" variant="outline" className="ms-2" onClick={device.retry}>Thử lưu lại</Button>}
+        </Alert>}
+        {!locked && device.available && !device.enabled && <div className="flex flex-wrap items-center gap-2 px-4 pt-3">
+          <Button type="button" variant="outline" loading={device.busy} disabled={!!preview || fileCompose.fileBusy || fileCompose.autoSaving ||
+            fileCompose.saveUnconfirmed || !isOnline} onClick={() => void device.enable()}>Bật lưu bản nháp trên thiết bị</Button>
+          {device.deviceHref && <Link href={device.deviceHref} className="neo-target inline-flex items-center text-sm underline">Mở bản trên thiết bị</Link>}
+        </div>}
         {fileCompose.conflict && <section aria-labelledby="compose-draft-conflict" className="mx-4 mt-4 space-y-3 border-s-2 border-[var(--accent)] ps-3">
           <h2 id="compose-draft-conflict" className="text-sm font-semibold">Bản nháp đã thay đổi ở hai nơi</h2>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -306,7 +330,7 @@ function NewCompose() {
             onClick={() => void fileCompose.change('edit')}>Mở lại bản nháp để chỉnh sửa</Button>}
           {(state === 'accepted' || state === 'partial') && <a href="/sent" className="neo-target inline-flex items-center underline">Mở thư đã gửi</a>}
         </div>}
-        <fieldset disabled={locked} className="flex min-w-0 flex-1 flex-col">
+        <fieldset disabled={locked || (device.busy && !device.enabled)} className="flex min-w-0 flex-1 flex-col">
         <div className="p-4 space-y-3 border-b border-[var(--border)] bg-[var(--card)]">
           {/* From (Account Selector) */}
           <div className="flex items-center gap-3">
@@ -530,10 +554,15 @@ function NewCompose() {
 
         </fieldset>
         <div className="border-t border-[var(--border)] px-4 py-3">
-          <ComposeFiles key={sourceId ?? 'new'} files={files} onChange={fileCompose.setFiles} onBusy={fileCompose.setFileBusy}
-            disabled={locked || fileCompose.autoSaving || !isOnline} sourceId={sourceId ?? undefined} sourceFiles={fileCompose.sourceFiles} />
+          {device.enabled ? <DeviceComposeFiles files={device.files} busy={device.busy} attach={device.attach} remove={device.remove} />
+          : <ComposeFiles key={sourceId ?? 'new'} files={files} onChange={fileCompose.setFiles} onBusy={fileCompose.setFileBusy}
+            disabled={locked || device.busy || fileCompose.autoSaving || !isOnline} sourceId={sourceId ?? undefined} sourceFiles={fileCompose.sourceFiles} />}
         </div>
-        {state === 'draft' && <div className="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] bg-[var(--secondary)] p-4">
+        {device.enabled && <div className="flex flex-wrap gap-3 border-t border-[var(--border)] px-4 py-3">
+          {device.saved && device.deviceHref && <Link href={device.deviceHref} className="neo-target inline-flex items-center text-sm underline">Mở bản trên thiết bị</Link>}
+          {device.saved && isOnline && device.syncHref && <Link href={device.syncHref} className="neo-target inline-flex items-center text-sm underline">Đối chiếu bản nháp trên máy chủ</Link>}
+        </div>}
+        {state === 'draft' && !device.enabled && <div className="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] bg-[var(--secondary)] p-4">
             {draft && <Button type="button" variant="ghost" disabled={!canSave}
               onClick={() => setConfirmDiscard(true)}>Xóa bản nháp</Button>}
             <Button type="button" variant="outline" loading={fileCompose.busy && !preview} disabled={!canSave}

@@ -44,12 +44,13 @@ const emailSnoozes = process.argv.includes('--email-snoozes')
 const gmailTriage = process.argv.includes('--gmail-triage')
 const personalMailRules = process.argv.includes('--personal-mail-rules')
 const mailLookup = process.argv.includes('--mail-lookup')
+const offlineCompose = process.argv.includes('--offline-compose')
 const offlineReply = process.argv.includes('--offline-reply')
 const actionNotifications = process.argv.includes('--action-notifications')
 const draftContinuity = process.argv.includes('--draft-continuity')
 const composeRecipients = process.argv.includes('--compose-recipients')
 const composeAttachments = process.argv.includes('--compose-attachments')
-const journeyE2E = draftContinuity || composeRecipients || actionNotifications || offlineReply || mailLookup || personalMailRules || gmailReconnect || scheduledSend || emailSnoozes || gmailTriage || composeAttachments || followups || replies || catchup || process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
+const journeyE2E = offlineCompose || draftContinuity || composeRecipients || actionNotifications || offlineReply || mailLookup || personalMailRules || gmailReconnect || scheduledSend || emailSnoozes || gmailTriage || composeAttachments || followups || replies || catchup || process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
 const journey = interactivePreview || journeyE2E
 const commitmentBenchmark = process.argv.includes('--m6g')
 const isolatedCommitment = commitmentDetection && process.argv.includes('--isolated')
@@ -62,7 +63,7 @@ const platformOutput = isolatedPlatform ? 'test-results/commitment-attention/pla
 const isolated = journeyE2E || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedPlatform || isolatedAuth
 const isolatedBuild = isolated || isolatedStaging
 const productionMode = m6 || staging || journey || isolated
-const journeyOutput = draftContinuity ? 'test-results/draft-continuity' : composeRecipients ? 'test-results/compose-recipients' : actionNotifications ? 'test-results/action-notifications' : offlineReply ? 'test-results/offline-reply' : mailLookup ? 'test-results/mail-lookup' : personalMailRules ? 'test-results/personal-mail-rules' : conversation ? 'test-results/inbox-conversation' : gmailReconnect ? 'test-results/gmail-reconnect' : scheduledSend ? 'test-results/scheduled-send' : emailSnoozes ? 'test-results/email-snoozes' : gmailTriage ? 'test-results/gmail-triage' : composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
+const journeyOutput = offlineCompose ? 'test-results/offline-compose' : draftContinuity ? 'test-results/draft-continuity' : composeRecipients ? 'test-results/compose-recipients' : actionNotifications ? 'test-results/action-notifications' : offlineReply ? 'test-results/offline-reply' : mailLookup ? 'test-results/mail-lookup' : personalMailRules ? 'test-results/personal-mail-rules' : conversation ? 'test-results/inbox-conversation' : gmailReconnect ? 'test-results/gmail-reconnect' : scheduledSend ? 'test-results/scheduled-send' : emailSnoozes ? 'test-results/email-snoozes' : gmailTriage ? 'test-results/gmail-triage' : composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
 const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.test'
 const evidenceFile = journey ? `${journeyOutput}/report.json`
   : isolatedAuth ? 'test-results/local-auth/report.json'
@@ -208,7 +209,7 @@ try {
     mkdirSync(journeyOutput, { recursive: true })
     rmSync(evidenceFile, { force: true })
     rmSync(`${journeyOutput}/failure.png`, { force: true })
-    if (draftContinuity || composeRecipients || actionNotifications || offlineReply || mailLookup || personalMailRules || dailyCommitments || catchup || replies || followups || composeAttachments || gmailTriage || emailSnoozes || scheduledSend || gmailReconnect) rmSync(`${journeyOutput}/workflow.json`, { force: true })
+    if (offlineCompose || draftContinuity || composeRecipients || actionNotifications || offlineReply || mailLookup || personalMailRules || dailyCommitments || catchup || replies || followups || composeAttachments || gmailTriage || emailSnoozes || scheduledSend || gmailReconnect) rmSync(`${journeyOutput}/workflow.json`, { force: true })
   }
   started = true
   docker(['up', '-d', '--pull', 'never', ...(staging ? ['--wait','--wait-timeout','60'] : [])])
@@ -401,6 +402,10 @@ try {
     const { rehearseActionNotifications } = await import('../tests/design/action-notifications.mjs')
     await rehearseActionNotifications({ app, base, email, password, userId, admin, appFetch, sql, googleProvider,
       previousEmail, restartNext, cronSecret: scheduledCronSecret, record, output: journeyOutput })
+  } else if (offlineCompose) {
+    const { rehearseOfflineCompose } = await import('../tests/design/offline-compose.mjs')
+    await rehearseOfflineCompose({ app, base, email, password, userId, admin, appFetch, sql, googleProvider,
+      previousEmail, record, output: journeyOutput })
   } else if (offlineReply) {
     const { rehearseOfflineReply } = await import('../tests/design/offline-reply.mjs')
     await rehearseOfflineReply({ app, base, email, password, userId, admin, appFetch, sql, googleProvider,
@@ -535,7 +540,9 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = draftContinuity
+  const provenance = offlineCompose
+    ? 'Production-mode Next and a persistent Google Chrome profile, actual encrypted IndexedDB and service worker, local PostgreSQL, two loopback Gmail accounts'
+    : draftContinuity
     ? 'Production-mode Next, independent Google Chrome profiles, GoTrue, PostgREST and PostgreSQL with two loopback Gmail accounts and injected save and send response loss'
     : composeRecipients ? 'Production-mode Next, Google Chrome, local PostgreSQL and two loopback Gmail accounts with real sync, browser restart and lost send acknowledgements'
     : actionNotifications ? 'Production-mode Next, Google Chrome, local PostgreSQL and two loopback Gmail accounts with browser restart, controlled clock, injected response loss and OAuth recovery'

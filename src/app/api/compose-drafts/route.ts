@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { createClientForRequest } from '@/lib/supabase/server'
-import { composeFields, composeFileIds, type FileComposeDraft } from '@/lib/compose/contracts'
+import { composeAddresses, composeFields, composeFileIds, type FileComposeDraft } from '@/lib/compose/contracts'
 import { composeRpcError, composeService } from '@/lib/compose/server'
 import { SendError, sendInput, sendKey } from '@/lib/mail-send/contracts'
 import { sendFromAccount } from '@/lib/mail-send/server'
@@ -36,6 +36,8 @@ async function authenticated(request: NextRequest, run: (client: Client, actor: 
     const client = await createClientForRequest(request)
     const { data: { user } } = await client.auth.getUser()
     if (!user) return json({ error: 'Yêu cầu đăng nhập.' }, 401)
+    const expectedOwner = request.headers.get('X-Draft-Owner')
+    if (expectedOwner !== null && expectedOwner !== user.id) return json({ error: 'Phiên đăng nhập đã thay đổi.' }, 403)
     return await run(client, user.id)
   } catch (error) {
     const failure = error instanceof SendError ? error : composeRpcError('unavailable')
@@ -72,12 +74,16 @@ async function readAction(request: NextRequest) {
     reader.releaseLock()
   }
 }
-const addresses = (value: string) => value.split(',').map(address => address.trim()).filter(Boolean)
 const readDraft = (client: Client, draftId: string) =>
   rpc(client, 'read_file_compose', { p_id: draftId }) as Promise<FileComposeDraft>
 
 export async function GET(request: NextRequest) {
   return authenticated(request, async client => {
+    const creation = request.nextUrl.searchParams.get('creation')
+    if (creation !== null) {
+      if (!z.uuidv4().safeParse(creation).success || request.nextUrl.searchParams.has('id')) throw composeRpcError('22023')
+      return json(await rpc(client, 'read_file_compose_creation', { p_client_id: creation }))
+    }
     const target = id.nullable().safeParse(request.nextUrl.searchParams.get('id'))
     if (!target.success) throw composeRpcError('22023')
     return json(await rpc(client, 'read_file_compose', { p_id: target.data }))
@@ -88,7 +94,7 @@ export async function POST(request: NextRequest) {
   return authenticated(request, async (client, actor) => {
     const action = await readAction(request)
     if (action.action === 'save') {
-      const fields = { ...action.fields, to: addresses(action.fields.to).join(', '), cc: addresses(action.fields.cc).join(', ') }
+      const fields = { ...action.fields, to: composeAddresses(action.fields.to).join(', '), cc: composeAddresses(action.fields.cc).join(', ') }
       const input = { p_account: action.accountId, p_source: action.sourceId, p_fields: fields, p_files: action.fileIds }
       if (action.clientId) {
         if (action.id !== null || action.revision !== null) throw composeRpcError('22023')
@@ -100,7 +106,7 @@ export async function POST(request: NextRequest) {
       const draft = await readDraft(client, action.id)
       if (draft.revision !== action.revision) throw composeRpcError('PT409')
       const input = sendInput.safeParse({ sourceAccountId: draft.accountId, subject: draft.fields.subject,
-        text: draft.fields.body, to: addresses(draft.fields.to), cc: addresses(draft.fields.cc),
+        text: draft.fields.body, to: composeAddresses(draft.fields.to), cc: composeAddresses(draft.fields.cc),
         ...(draft.files.length > 0 && { attachmentIds: draft.files.map(file => file.id) }) })
       if (!input.success) throw new SendError(400, 'Kiểm tra người nhận và tiêu đề trước khi gửi.')
       const hash = createHash('sha256').update(JSON.stringify(input.data)).digest('hex')

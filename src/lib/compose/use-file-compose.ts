@@ -3,17 +3,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { composeDraftAction, composeRequest, fileDraftHref } from './client'
-import type { ComposeFields, ComposeFile, FileComposeDraft, SourceFile } from './contracts'
+import { sameComposeFields, type ComposeFields, type ComposeFile, type FileComposeDraft, type SourceFile } from './contracts'
 import { ReplyError } from '@/lib/replies/client'
 import { gmailSendPermissionRequired } from '@/lib/gmail/scopes'
 
 type DraftEntry = Pick<FileComposeDraft, 'id' | 'sourceId'> & { subject: string }
 type SaveSnapshot = { sourceId: string | null; accountId: string; fields: ComposeFields; fileIds: string[] }
-const addressList = (value: string) => value.split(',').map(address => address.trim()).filter(Boolean).join(', ')
-export const sameComposeFields = (a: ComposeFields, b: ComposeFields) =>
-  addressList(a.to) === addressList(b.to) && addressList(a.cc) === addressList(b.cc) &&
-  a.subject === b.subject && a.body === b.body
-
 const matches = (draft: FileComposeDraft, snapshot: SaveSnapshot) =>
   draft.state === 'draft' && draft.accountId === snapshot.accountId && draft.sourceId === snapshot.sourceId &&
   sameComposeFields(draft.fields, snapshot.fields) && draft.files.length === snapshot.fileIds.length &&

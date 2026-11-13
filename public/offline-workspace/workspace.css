@@ -65,3 +65,9 @@ li p { margin: 0 0 8px; }
 .meta { color: var(--muted); font-size: .875rem; }
 .copy { white-space: pre-wrap; }
 #notice { color: var(--error); }
+select { display: block; width: 100%; min-height: 44px; margin-top: 4px; padding: 8px 12px; border: 1px solid var(--muted); border-radius: 4px; background: var(--surface); color: var(--ink); font: inherit; }
+.compose-files li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-block: 8px; border-top: 1px solid var(--border); }
+.error { color: var(--error); }
+#work > .actions { margin-bottom: 12px; }
+.compose-field { margin-bottom: 12px; }
+.compose-field label { margin-bottom: 0; }

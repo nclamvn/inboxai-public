@@ -4,6 +4,7 @@ import { useRef, useState, type ChangeEvent } from 'react'
 import { Paperclip } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { composeRequest } from '@/lib/compose/client'
+import type { DeviceFile } from '../../../public/offline-workspace/compose.mjs'
 import { composeFileCount, composeFileLimit, type ComposeFile, type SourceFile } from '@/lib/compose/contracts'
 
 const formatter = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })
@@ -11,7 +12,7 @@ const fileSize = (size: number) => size < 1024 ? size + ' B'
   : formatter.format(size / (size < 1024 * 1024 ? 1024 : 1024 * 1024)) + (size < 1024 * 1024 ? ' KB' : ' MB')
 
 export function ComposeFileList({ files, sourceFiles = [], onRemove }: {
-  files: ComposeFile[]
+  files: DeviceFile[]
   sourceFiles?: SourceFile[]
   onRemove?: (id: string) => void
 }) {

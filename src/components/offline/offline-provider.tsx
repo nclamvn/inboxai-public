@@ -25,14 +25,24 @@ export function useOfflineWorkspace() {
 
 async function installShell() {
   if (!('serviceWorker' in navigator) || !crypto.subtle) throw new Error('Trình duyệt chưa hỗ trợ lưu ngoại tuyến.')
-  await navigator.serviceWorker.register('/inbox-offline-sw.js', { scope: '/' })
+  const registration = await navigator.serviceWorker.register('/inbox-offline-sw.js', { scope: '/', updateViaCache: 'none' })
+  await registration.update()
   const signal = AbortSignal.timeout(10_000)
-  await Promise.race([
-    navigator.serviceWorker.ready,
-    new Promise<never>((_, reject) => {
-      signal.addEventListener('abort', () => reject(new Error('Chưa tải được màn hình ngoại tuyến. Hãy thử lại.')), { once: true })
-    }),
-  ])
+  const timeout = new Promise<never>((_, reject) => {
+    signal.addEventListener('abort', () => reject(new Error('Chưa tải được màn hình ngoại tuyến. Hãy thử lại.')), { once: true })
+  })
+  const candidate = registration.installing ?? registration.waiting
+  if (candidate && candidate.state !== 'activated') {
+    await Promise.race([timeout, new Promise<void>((resolve, reject) => {
+      const changed = () => {
+        if (candidate.state === 'activated') resolve()
+        if (candidate.state === 'redundant') reject(new Error('Chưa cập nhật được màn hình ngoại tuyến.'))
+      }
+      candidate.addEventListener('statechange', changed, { signal })
+      changed()
+    })])
+  }
+  await Promise.race([navigator.serviceWorker.ready, timeout])
 }
 
 export function OfflineWorkspaceProvider({ owner, children }: { owner: string; children: ReactNode }) {
@@ -101,7 +111,7 @@ export function OfflineWorkspaceProvider({ owner, children }: { owner: string; c
     setBusy(true)
     setError('')
     try {
-      if (!scope.enrolled) await installShell()
+      if (navigator.onLine) await installShell()
       const active = await openOfflineVault(owner, password, !scope.enrolled)
       setScope({ owner, epoch: active.epoch, enrolled: true })
       setVault(active)

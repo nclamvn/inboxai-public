@@ -8,8 +8,9 @@ export async function composeRequest<T>(url: string, init?: RequestInit) {
   return result as T
 }
 
-export const composeDraftAction = <T = FileComposeDraft>(command: object) => composeRequest<T>('/api/compose-drafts', {
-  method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(command),
+export const composeDraftAction = <T = FileComposeDraft>(command: object, owner?: string) => composeRequest<T>('/api/compose-drafts', {
+  method: 'POST', headers: { 'Content-Type': 'application/json', ...(owner && { 'X-Draft-Owner': owner }) },
+  body: JSON.stringify(command),
 })
 
 export const fileDraftHref = (draft: string) => '/compose?draft=' + encodeURIComponent(draft)

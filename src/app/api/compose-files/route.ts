@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { createClientForRequest } from '@/lib/supabase/server'
 import { SendError } from '@/lib/mail-send/contracts'
 import { composeFileLimit } from '@/lib/compose/contracts'
-import { composeRpcError, composeService } from '@/lib/compose/server'
+import { composeRpcError, composeService, loadComposeFiles } from '@/lib/compose/server'
 import { readMailAttachment } from '@/lib/compose/attachment-source'
 
 export const maxDuration = 40
@@ -38,7 +38,13 @@ export async function POST(request: NextRequest) {
   try {
     let file: { filename: string; contentType: string; content: Buffer }
     let sourceAttachmentId: string | undefined
+    const deviceId = z.uuidv4().nullable().safeParse(request.headers.get('X-Draft-File-Id'))
+    if (!deviceId.success) throw composeRpcError('22023')
+    if (deviceId.data && request.headers.get('X-Draft-Owner') !== user.id) {
+      throw new SendError(403, 'Phiên đăng nhập đã thay đổi.')
+    }
     const encodedName = request.headers.get('X-File-Name')
+    if (deviceId.data && !encodedName) throw composeRpcError('22023')
     if (encodedName) {
       file = { filename: decodeURIComponent(encodedName), contentType: request.headers.get('Content-Type') || '',
         content: await readBytes(request, composeFileLimit) }
@@ -56,8 +62,12 @@ export async function POST(request: NextRequest) {
     const mime = file.contentType.split(';')[0].trim().toLowerCase()
     const contentType = mime.length <= 120 && /^[a-z0-9][a-z0-9.+_-]*\/[a-z0-9][a-z0-9.+_-]*$/.test(mime)
       ? mime : 'application/octet-stream'
-    const result = await composeService().rpc('store_compose_file', { p_actor: user.id, p_filename: filename,
-      p_content_type: contentType, p_source_attachment: sourceAttachmentId ?? null, p_data: file.content.toString('base64') }).abortSignal(AbortSignal.timeout(12_000))
+    const input = { p_actor: user.id, p_filename: filename, p_content_type: contentType, p_data: file.content.toString('base64') }
+    const service = composeService()
+    const result = await (deviceId.data
+      ? service.rpc('store_device_compose_file', { ...input, p_id: deviceId.data })
+      : service.rpc('store_compose_file', { ...input, p_source_attachment: sourceAttachmentId ?? null }))
+      .abortSignal(AbortSignal.timeout(12_000))
     if (result.error) throw composeRpcError(result.error.code)
     return Response.json(result.data, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
@@ -65,5 +75,22 @@ export async function POST(request: NextRequest) {
       : error instanceof URIError || error instanceof SyntaxError ? new SendError(400, 'Thông tin tệp không hợp lệ.')
       : new SendError(503, 'Chưa thể lưu tệp. Hãy thử lại.')
     return Response.json({ error: failure.message }, { status: failure.status })
+  }
+}
+
+export async function GET(request: NextRequest) {
+  const headers = { 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' }
+  const client = await createClientForRequest(request)
+  const { data: { user } } = await client.auth.getUser()
+  if (!user) return Response.json({ error: 'Yêu cầu đăng nhập.' }, { status: 401, headers })
+  const id = z.uuid().safeParse(request.nextUrl.searchParams.get('id'))
+  if (!id.success) return Response.json({ error: 'Mã tệp không hợp lệ.' }, { status: 400, headers })
+  try {
+    const [file] = await loadComposeFiles(user.id, [id.data])
+    return new Response(new Uint8Array(file.content), { headers: { ...headers, 'Content-Type': 'application/octet-stream',
+      'Content-Disposition': 'attachment', 'Content-Length': String(file.metadata.size) } })
+  } catch (reason) {
+    const failure = reason instanceof SendError ? reason : composeRpcError('unavailable')
+    return Response.json({ error: failure.message }, { status: failure.status, headers })
   }
 }

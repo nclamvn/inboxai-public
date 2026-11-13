@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, FileText, Forward, Paperclip, Pencil, Reply } from 'lucide-react'
-import { useOfflineWorkspace } from '@/components/offline/offline-provider'
+import { offlineHome, useOfflineWorkspace } from '@/components/offline/offline-provider'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { composeRequest, fileDraftHref } from '@/lib/compose/client'
@@ -59,9 +59,12 @@ export default function DraftsPage() {
   return <section aria-labelledby="drafts-heading" className="mx-auto min-h-full w-full max-w-5xl border-x border-[var(--border)] bg-[var(--surface)]">
     <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-4 sm:px-6">
       <h1 id="drafts-heading" className="neo-title">Bản nháp</h1>
-      <Link href="/compose" className="neo-target inline-flex min-h-10 items-center gap-2 rounded-[var(--radius-control)] bg-[var(--primary)] px-3 text-sm font-medium text-[var(--primary-foreground)] focus-ring hover:bg-[var(--primary-hover)]">
-        <Pencil size={16} aria-hidden="true" /> Soạn thư
-      </Link>
+      <div className="flex flex-wrap items-center gap-3">
+        <Link href={offlineHome} className="neo-target inline-flex items-center text-sm underline">Bản nháp trên thiết bị</Link>
+        <Link href="/compose" className="neo-target inline-flex min-h-10 items-center gap-2 rounded-[var(--radius-control)] bg-[var(--primary)] px-3 text-sm font-medium text-[var(--primary-foreground)] focus-ring hover:bg-[var(--primary-hover)]">
+          <Pencil size={16} aria-hidden="true" /> Soạn thư
+        </Link>
+      </div>
     </header>
     <div className="flex flex-wrap items-center gap-3 border-b border-[var(--border)] px-4 py-3 sm:px-6">
       <label htmlFor="draft-account" className="text-sm font-medium">Tài khoản gửi</label>

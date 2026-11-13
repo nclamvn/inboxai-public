@@ -1,5 +1,62 @@
 # Verification record
 
+## Offline compose and attachments
+
+Choose **Bật lưu bản nháp trên thiết bị** while connected to enroll or unlock
+the vault and save the current message. After the first setup, **Soạn thư trên
+thiết bị** in the offline workspace also starts a new message without a
+connection. The installed service worker serves the workspace shell on
+network failure. Its cache contains only static assets.
+
+The vault encrypts recipients, sender choices, source and revision, body,
+attachment metadata, and attachment bytes. Attachment bytes occupy separate
+encrypted records. Changes to those records and the manifest commit in one
+IndexedDB transaction. The device allows up to five files and 8 MiB per
+draft, with a 32 MiB attachment budget per browser profile. Existing reply
+and pinned-mail records remain readable after the IndexedDB schema upgrade.
+
+After reconnecting, **Kiểm tra và đồng bộ** uses the saved server revision.
+A divergence shows both versions and waits for the user's choice. Browser
+retries use the same upload and creation IDs. The server checks the current
+session against the device owner, and a sync keeps its pending write until
+the server acknowledges it. Sending still requires the separate approval
+step. Signing out clears the local vault and locks open offline tabs.
+
+The synthetic run used desktop and mobile Chrome, two loopback Gmail
+accounts, three cold browser restarts, and two separate browser profiles.
+Two equal-name files were recovered byte-for-byte while offline. The
+scenario also verified a forward's source, upload and creation response
+loss, user isolation, and one approved Gmail dispatch. The two captured
+views had zero axe violations and no horizontal overflow.
+
+Use the offline workspace to manage device copies. Uploaded attachments
+remain subject to the existing server attachment lifecycle. Drafts must
+show **Đã lưu trên thiết bị** before closing Chrome. Browser storage
+deletion removes local copies. Verification used loopback synthetic mail
+and browser viewports.
+
+The tests ran on 2026-11-13 with Chrome 157.0.8103.79, Node 24.14.1,
+Next.js 16.4.6 and local PostgreSQL 16 on macOS arm64.
+
+| Command | Local result |
+| --- | --- |
+| `npm run lint` | Exit 0 with 92 existing warnings |
+| `npm run typecheck` | Exit 0 |
+| `npm run test:unit` and `npm run test:integration` | Exit 0 with 245 and 200 tests |
+| `npm run test:db` | Exit 0 with 33 checks |
+| `npm run test:draft-continuity` | Exit 0 with 21 checks |
+| `npm run test:design -- --isolated` | Exit 0 with 29 checks |
+| `npm run test:platform -- --isolated` | Exit 0 with 19 checks |
+| `npm run test:staging -- --isolated` | Exit 0 with 31 checks |
+| `npm run test:offline-compose` | Exit 0 with 21 checks including a v1 IndexedDB upgrade and session switch |
+| `npm run test:offline-reply` | Exit 0 with 20 checks after updating the cache assertion to check the exact static asset list |
+| `npm run build` | Exit 0 with the synthetic CI configuration and isolated build output |
+
+[Chrome report](../../test-results/offline-compose/report.json) ·
+[Workflow details](../../test-results/offline-compose/workflow.json) ·
+[Offline recovery](../../test-results/offline-compose/01-khoi-phuc-ngoai-tuyen.png) ·
+[Version comparison](../../test-results/offline-compose/02-doi-chieu-sau-ket-noi.png)
+
 ## Cross-device draft continuity
 
 The Bản nháp folder lists server-backed new messages, replies and forwards

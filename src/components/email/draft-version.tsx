@@ -1,10 +1,10 @@
 import { ComposeFileList } from '@/components/email/compose-files'
-import type { ComposeFile } from '@/lib/compose/contracts'
+import type { DeviceFile } from '../../../public/offline-workspace/compose.mjs'
 
 export function DraftVersion({ label, fields, files = [], account }: {
   label: string
   fields: { to: string; cc: string; body: string; subject?: string }
-  files?: ComposeFile[]
+  files?: DeviceFile[]
   account?: string
 }) {
   return <div className="min-w-0 space-y-2 border border-[var(--border)] bg-[var(--background)] p-3 text-sm">
