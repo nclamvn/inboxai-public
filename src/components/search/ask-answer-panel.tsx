@@ -60,6 +60,13 @@ export function AskAnswerPanel({ answer }: { answer: AskAnswer }) {
         <div><dt className="text-xs">Kho thực nhận</dt><dd className="font-semibold tabular-nums">{result.receipts.length ? amount(result.received) : 'Chưa có phiếu'}</dd></div>
         <div><dt className="text-xs">Còn thiếu theo đơn</dt><dd className="font-semibold tabular-nums">{amount(result.ordered - result.received)}</dd></div>
       </dl>
+      {result.reopenedBy && result.status === 'open' && (
+        <p role="status" className="text-sm font-medium">Cam kết đã mở lại sau khi duyệt đính chính phiếu nhập.</p>
+      )}
+      {result.corrections.length > 0 && <section aria-label="Đính chính đã duyệt">
+        <p className="text-xs font-medium">Đính chính đã duyệt</p>
+        <Sources citations={result.corrections} />
+      </section>}
       <section aria-label="Nguồn nhà cung cấp"><p className="text-xs font-medium">Nguồn nhà cung cấp</p><Sources citations={[result.supplier]} /></section>
       <section aria-label="Phiếu nhập đã duyệt">
         <p className="text-xs font-medium">Phiếu nhập đã duyệt</p>

@@ -1,11 +1,11 @@
 import { z } from 'zod'
 import { isQuotedMailBoundary } from '@/lib/email/plain-text'
 import { detectDeliveryLine, type DeliveryProgress } from './delivery'
-import { readWarehouseReceipt } from './receiving'
+import { readWarehouseCorrection, readWarehouseReceipt } from './receiving'
 import type { CommitmentState } from './contracts'
 
 export type DetectionSignal = {
-  kind: 'create' | 'deadline' | 'owner' | 'progress' | 'completed' | 'cancelled' | 'review' | 'receipt'
+  kind: 'create' | 'deadline' | 'owner' | 'progress' | 'completed' | 'cancelled' | 'review' | 'receipt' | 'correction'
   quote: string
   title: string | null
   dueOn: string | null
@@ -13,6 +13,7 @@ export type DetectionSignal = {
   priorDueOn?: string
   delivery?: DeliveryProgress
   receipt?: NonNullable<ReturnType<typeof readWarehouseReceipt>>
+  correction?: NonNullable<ReturnType<typeof readWarehouseCorrection>>
   proposedBatch?: { quantity: number; unit: DeliveryProgress['unit'] }
 }
 
@@ -70,6 +71,11 @@ export function detectCommitments(body: string | null, receivedAt: string | null
       continue
     }
     if (uncertain.test(line)) continue
+    const correction = reference?.startsWith('PO-') && readWarehouseCorrection(quote)
+    if (correction) {
+      signals.push({ kind: 'correction', quote, title: null, dueOn: null, correction })
+      continue
+    }
     const receipt = reference?.startsWith('PO-') && readWarehouseReceipt(quote)
     if (receipt) {
       signals.push({ kind: 'receipt', quote, title: null, dueOn: null, receipt })
@@ -132,7 +138,7 @@ export function senderIdentity(sender: string) {
 }
 
 export function proposedState(signal: DetectionSignal, sender: string, name: string | null, prior: CommitmentState | null): CommitmentState | null {
-  if (signal.kind === 'review' || signal.kind === 'receipt') return null
+  if (signal.kind === 'review' || signal.kind === 'receipt' || signal.kind === 'correction') return null
   if (signal.kind === 'create') {
     if (prior || !signal.title) return null
     return {

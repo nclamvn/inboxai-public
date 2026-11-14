@@ -66,10 +66,12 @@ export const commitmentReceipt = z.strictObject({
 })
 
 const receivingVersion = { expectedVersion: version }
+const warehouseEvidence = { ...receivingVersion, emailId: z.uuid(),
+  sourceFingerprint: z.string().regex(/^[0-9a-f]{64}$/), quote: evidence.element.shape.quote }
 export const receivingCommand = z.discriminatedUnion('operation', [
   z.strictObject({ ...receivingVersion, operation: z.literal('configure'), accountId: z.uuid(), sender: warehouseSender }),
-  z.strictObject({ ...receivingVersion, operation: z.literal('receive'), emailId: z.uuid(),
-    sourceFingerprint: z.string().regex(/^[0-9a-f]{64}$/), quote: evidence.element.shape.quote }),
+  z.strictObject({ ...warehouseEvidence, operation: z.literal('receive') }),
+  z.strictObject({ ...warehouseEvidence, operation: z.literal('correct') }),
   z.strictObject({ ...receivingVersion, operation: z.literal('close') }),
 ])
 export type ReceivingCommand = z.infer<typeof receivingCommand>

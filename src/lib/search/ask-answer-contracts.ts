@@ -40,6 +40,8 @@ export type WarehouseAnswer = {
   unit: string
   supplier: AnswerCitation
   receipts: AnswerCitation[]
+  corrections: AnswerCitation[]
+  reopenedBy: string | null
 }
 
 export type AskAnswer = {

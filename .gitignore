@@ -21,6 +21,7 @@
 /test-results/commitment-attention/
 /test-results/delivery-commitments/
 /test-results/warehouse-reconciliation/
+/test-results/warehouse-correction/
 /test-results/day-preview/
 /test-results/inbox-catchup/
 /test-results/reply-workflow/

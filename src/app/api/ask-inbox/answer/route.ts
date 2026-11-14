@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       if (error) return askReply({ error: 'Chưa đối chiếu được sổ nhập kho. Hãy thử lại.' }, 503)
       const warehouse = data?.supplier ? data as WarehouseAnswer : null
       return askReply({ reference: plan.plan.reference, status: warehouse ? 'answered' : 'insufficient',
-        reason: null, examined: warehouse ? warehouse.receipts.length + 1 : 0, limited: false, claims: [], warehouse })
+        reason: null, examined: warehouse ? warehouse.receipts.length + warehouse.corrections.length + 1 : 0, limited: false, claims: [], warehouse })
     }
 
     const { data, error } = await client.rpc('ask_inbox_reference_evidence', {

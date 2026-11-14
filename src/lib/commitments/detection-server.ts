@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto'
 import { z } from 'zod'
 import { createCommitment, reviseCommitment } from './contracts'
 import { commitmentTitleKey, detectCommitments, proposedState, senderIdentity, subjectReference, type DetectionSignal } from './detect'
-import type { LedgerState } from './view'
+import type { LedgerState, SourceEvidence } from './view'
 import type { CommitmentProposal, DetectionCommand, DetectionPage } from './detection'
 import { ledgerRpc, type LedgerSession } from './http'
 
@@ -19,6 +19,12 @@ type Target = {
   reference: string; referenceKey: string; id: string; version: number; state: LedgerState; lastSourceAt: string | null
   receiptNumbers?: string[]; originAt?: string | null; supplierAt?: string | null
   originId: string; originTitle: string; originSender: string | null; originAccountId: string | null; multiOrigin: boolean
+}
+
+type CorrectionEvidence = {
+  id: string; reference: string; receiptNumber: string; correctionNumber: string
+  original: SourceEvidence | null; latest: SourceEvidence | null; amount: number | null
+  effectiveAt: string | null; duplicate: boolean
 }
 
 export type ScanPage = { messages: Source[]; nextBeforeId: string | null }
@@ -53,8 +59,9 @@ export function interpretScan(page: ScanPage): Signal[] {
   })
 }
 
-export function buildProposals(page: ScanPage, signals: Signal[], targets: Target[]): DetectionPage {
+export function buildProposals(page: ScanPage, signals: Signal[], targets: Target[], corrections: CorrectionEvidence[] = []): DetectionPage {
   const byReference = Map.groupBy(targets, target => target.reference)
+  const correctionProof = new Map(corrections.map(proof => [JSON.stringify([proof.id, proof.receiptNumber, proof.correctionNumber]), proof]))
   const proposals = signals.flatMap((item): CommitmentProposal[] => {
     const { source, sender, signal, reference, key, quoteHash } = item
     const related = (reference && byReference.get(reference)) || []
@@ -69,9 +76,10 @@ export function buildProposals(page: ScanPage, signals: Signal[], targets: Targe
     const open = (signal.delivery && signal.kind !== 'create' || (signal.kind === 'review' && reference?.startsWith('PO-'))
       ? related.filter(target => target.state.delivery)
       : matching).filter(target => target.state.status === 'open' && target.state.ownerEmail?.toLowerCase() === sender)
-    const receiptTargets = signal.receipt ? related.filter(target => target.state.delivery && target.state.status === 'open' &&
-      target.state.receiving?.accountId === source.accountId && target.state.receiving?.sender === sender) : []
-    const candidates = signal.receipt ? receiptTargets : open
+    const warehouse = signal.receipt || signal.correction
+    const candidates = warehouse ? related.filter(target => target.state.delivery &&
+      (target.state.status === 'open' || (signal.correction && target.state.status === 'completed')) &&
+      target.state.receiving?.accountId === source.accountId && target.state.receiving?.sender === sender) : open
     const current = signal.kind !== 'create' && candidates.length === 1 ? candidates[0] : null
     const at = source.at && Number.isFinite(Date.parse(source.at)) ? source.at : null
     const common = {
@@ -82,13 +90,38 @@ export function buildProposals(page: ScanPage, signals: Signal[], targets: Targe
       proposedBatch: signal.proposedBatch ?? null, previous: current?.state ?? null,
       ...(source.catchupToken ? { catchupToken: source.catchupToken } : {}),
     }
-    if (related.length > 8 || (signal.kind !== 'create' && (candidates.length > 1 || (signal.receipt && related.length > 1) || current?.multiOrigin))) {
+    if (related.length > 8 || (signal.kind !== 'create' && (candidates.length > 1 || (warehouse && related.length > 1) || current?.multiOrigin))) {
       return [{ ...common, review: null, blocked: 'ambiguous' }]
     }
     if (signal.kind === 'create') {
       const title = commitmentTitleKey(signal.title!)
       if (matching.some(target => target.referenceKey === key || commitmentTitleKey(target.originTitle) === title)) return []
       if (matching.some(target => target.originId !== source.id)) return [{ ...common, review: null, blocked: 'ambiguous' }]
+    }
+    if (signal.correction) {
+      if (!current?.state.delivery || !current.state.receiving) return [{ ...common, review: null, blocked: 'warehouse' }]
+      if (current.state.review) return [{ ...common, review: null, blocked: 'uncertain' }]
+      const { number, receiptNumber, amount, unit } = signal.correction
+      const proof = correctionProof.get(JSON.stringify([current.id, receiptNumber, number]))
+      if (proof?.duplicate) return [{ ...common, review: null, blocked: 'duplicate_receipt' }]
+      if (!proof?.original || proof.original.availability !== 'available' ||
+        (proof.latest && proof.latest.availability !== 'available') || proof.amount === null) {
+        return [{ ...common, review: null, blocked: 'receipt_unavailable' }]
+      }
+      if (!source.receivedAt || !proof.effectiveAt || !(Date.parse(source.receivedAt) > Date.parse(proof.effectiveAt))) {
+        return [{ ...common, review: null, blocked: 'chronology' }]
+      }
+      const { title, ownerName, ownerEmail, dueOn, dueAt, delivery, receiving } = current.state
+      const total = receiving.received - proof.amount + amount
+      if (unit !== delivery.unit || amount === proof.amount || total < 0 || total > delivery.ordered) {
+        return [{ ...common, review: null, blocked: 'quantity' }]
+      }
+      return [{ ...common, originalReceipt: proof.original, ...(proof.latest && { priorCorrection: proof.latest }),
+        blocked: null, review: { title, command: {
+          operation: 'correct', id: current.id, expectedVersion: current.version, emailId: source.id,
+          sourceFingerprint: source.fingerprint, quote: signal.quote,
+          state: { title, ownerName, ownerEmail, dueOn, dueAt, delivery, status: 'open', receiving: { ...receiving, received: total } },
+        } } }]
     }
     if (signal.receipt) {
       if (!current?.state.delivery || !current.state.receiving) return [{ ...common, review: null, blocked: 'warehouse' }]
@@ -156,6 +189,12 @@ export async function scanCatchupProposals(client: LedgerSession, accounts: stri
 async function proposalsForPage(client: LedgerSession, page: ScanPage) {
   const signals = interpretScan(page)
   const references = [...new Set(signals.flatMap(signal => signal.reference ? [signal.reference] : []))]
-  const targets = references.length ? await ledgerRpc(client, 'read_commitment_lifecycle_targets', { p_references: references }) : []
-  return buildProposals(page, signals, targets)
+  const correctionSignals = signals.flatMap(({ reference, signal }) => signal.correction && reference ? [
+    { reference, receipt: signal.correction.receiptNumber, correction: signal.correction.number },
+  ] : [])
+  const [targets, corrections] = await Promise.all([
+    references.length ? ledgerRpc(client, 'read_commitment_lifecycle_targets', { p_references: references }) : [],
+    correctionSignals.length ? ledgerRpc(client, 'read_warehouse_correction_evidence', { p_signals: correctionSignals }) : [],
+  ])
+  return buildProposals(page, signals, targets, corrections)
 }

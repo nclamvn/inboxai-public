@@ -7,7 +7,7 @@ import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { deliveryLabel } from '@/lib/commitments/delivery'
 import { subjectReference } from '@/lib/commitments/detect'
-import { receivingTotals, receivingValue } from '@/lib/commitments/receiving'
+import { readWarehouseCorrection, receivingTotals, receivingValue } from '@/lib/commitments/receiving'
 import { WarehouseTotals } from './warehouse-reconciliation'
 import { cn } from '@/lib/utils'
 import {
@@ -30,7 +30,7 @@ function Revision({ item, previous }: { item: LedgerRevision; previous?: LedgerR
     <li className="relative border-s border-[var(--border-strong)] pb-5 ps-4 last:border-transparent last:pb-0">
       <span aria-hidden="true" className="absolute start-[-4px] top-2 size-2 rounded-full bg-[var(--selection-line)]" />
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <h3 className="text-sm font-semibold">{revisionLabels[item.kind]}</h3>
+        <h3 className="text-sm font-semibold">{item.changedFields.includes('receiving') && readWarehouseCorrection(item.sources[0]?.quote ?? '') ? 'Duyệt đính chính phiếu nhập' : revisionLabels[item.kind]}</h3>
         <span className="text-xs text-[var(--foreground-muted)]">Phiên bản {item.version}</span>
         <time dateTime={item.recordedAt} className="text-xs tabular-nums text-[var(--foreground-muted)]">
           {formatCommitmentMoment(item.recordedAt)}
@@ -97,6 +97,7 @@ export function CommitmentDetail({
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => { heading.current?.focus() }, [])
   const { state } = detail
+  const hasCorrections = history.some(item => item.sources.some(source => readWarehouseCorrection(source.quote ?? '')))
   const totals = receivingTotals(state)
   const reference = state.delivery
     ? history.flatMap(revision => revision.sources).map(source => subjectReference(source.subject)).find(code => code?.startsWith('PO-'))
@@ -146,9 +147,9 @@ export function CommitmentDetail({
           <div className="mt-4 space-y-3 border-t border-[var(--border)] pt-4">
             <h3 className="text-sm font-semibold">Đối soát nhập kho</h3>
             {totals ? <>
-              <WarehouseTotals state={state} />
+              <WarehouseTotals state={state} hasReceipts={hasCorrections} />
               <p className="break-all text-xs text-[var(--foreground-muted)]">Nguồn xác nhận kho {state.receiving?.sender}</p>
-              {totals.received > 0 && totals.discrepancy > 0 && <p className="text-sm font-medium text-[var(--warning)]">Kho ghi nhận ít hơn số nhà cung cấp báo giao.</p>}
+              {totals.discrepancy > 0 && (totals.received > 0 || hasCorrections) && <p className="text-sm font-medium text-[var(--warning)]">Kho ghi nhận ít hơn số nhà cung cấp báo giao.</p>}
               {state.status === 'open' && totals.short === 0 && totals.reported === totals.ordered && !state.review &&
                 <Button type="button" loading={hasMore && loadingMore}
                   onClick={hasMore ? onLoadHistory : () => onReceiving('close')}>

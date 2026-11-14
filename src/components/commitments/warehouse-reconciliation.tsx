@@ -9,19 +9,19 @@ import { Modal } from '@/components/ui/modal'
 import { confirmCommitmentReceiving, LedgerApiError } from '@/lib/commitments/client'
 import { warehouseSender, type CommitmentState, type ReceivingCommand } from '@/lib/commitments/contracts'
 import type { LedgerRevision } from '@/lib/commitments/view'
-import { readWarehouseReceipt, receivingTotals } from '@/lib/commitments/receiving'
+import { readWarehouseCorrection, readWarehouseReceipt, receivingTotals } from '@/lib/commitments/receiving'
 
 export type WarehouseAccount = { id: string; email_address: string }
 const control = 'min-h-11 w-full rounded-[var(--radius-control)] border border-[var(--input-border)] bg-[var(--input)] px-3 text-sm text-[var(--foreground)]'
 const count = new Intl.NumberFormat('vi-VN')
 
-export function WarehouseTotals({ state }: { state: CommitmentState }) {
+export function WarehouseTotals({ state, hasReceipts = false }: { state: CommitmentState; hasReceipts?: boolean }) {
   const totals = receivingTotals(state)
   if (!totals) return null
   return <dl aria-label="Số lượng đối soát" className="grid grid-cols-3 gap-3 border-s-2 border-[var(--selection-line)] ps-3">
     {[
       { label: 'Nhà cung cấp báo giao', value: totals.reported },
-      { label: 'Kho thực nhận', value: totals.received || null },
+      { label: 'Kho thực nhận', value: totals.received || (hasReceipts ? 0 : null) },
       { label: 'Còn thiếu theo đơn', value: totals.short },
     ].map(({ label, value }) => (
       <div key={label}>
@@ -46,10 +46,10 @@ export function WarehouseReview({ id, version, state, mode, accounts, history, c
   const formId = useId()
   const supplier = history.find(item => item.changedFields.includes('delivery'))?.sources[0]
   const receipts = history.filter((item, index) => item.changedFields.includes('receiving') &&
-      item.state.receiving && item.state.receiving.received > (history[index + 1]?.state.receiving?.received ?? 0))
-    .flatMap(item => item.sources)
+      item.state.receiving && item.state.receiving.received !== (history[index + 1]?.state.receiving?.received ?? 0))
+    .map(item => item.sources[0]).filter(Boolean)
   const evidenceReady = !!supplier && supplier.availability === 'available' &&
-    receipts.length > 0 && receipts.every(source => source.availability === 'available' && source.quote && readWarehouseReceipt(source.quote))
+    receipts.length > 0 && receipts.every(source => source.availability === 'available' && source.quote && (readWarehouseReceipt(source.quote) || readWarehouseCorrection(source.quote)))
   const sources = supplier ? [supplier, ...receipts] : receipts
 
   async function approve(event: FormEvent<HTMLFormElement>) {

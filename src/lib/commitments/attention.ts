@@ -10,7 +10,7 @@ export type AttentionItem = {
   reason: 'reply' | 'receiving' | 'receiving_ready' | 'review' | 'overdue' | 'today'
   source: SourceEvidence
   reminderState: SendReceipt['state'] | null
-  reply: { emailId: string; subject: string | null; quote: string; needsReview: boolean } | null
+  reply: { emailId: string; subject: string | null; quote: string; needsReview: boolean; correction?: boolean } | null
 }
 
 export type ReminderPreview = {

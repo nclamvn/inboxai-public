@@ -1,5 +1,31 @@
 # Verification record
 
+## Điều chỉnh phiếu nhập và mở lại cam kết
+
+Nghiệm thu ngày 14/11/2026 trên macOS arm64, Node 24.14.1, Chrome
+157.0.8103.79, Next.js 16.4.6 và PostgreSQL 16. Chrome đóng vai người mua,
+nhà cung cấp và kho sử dụng hai Gmail loopback. PO đã khép với 200 bộ.
+Bản xem trước đính chính dẫn phiếu gốc và cho thấy tổng thực nhận giảm
+xuống 190. Bản ghi 7 mở lại cam kết. Khi mất phản hồi HTTP, thử lại trả
+về chính bản ghi 7. Đính chính gửi trùng, sai người gửi, sai hộp thư và
+đính chính cũ đến muộn giữ nguyên phiên bản. Người mua duyệt lời nhắc
+thiếu 10 bộ, ghi phiếu nhận hàng thay thế và duyệt khép ở phiên bản 9.
+
+| Kiểm tra | Kết quả local |
+| --- | --- |
+| `npm run lint` | Exit 0, 92 cảnh báo hiện có |
+| `npm run typecheck` | Exit 0 |
+| `npm run test:unit` và `npm run test:integration` | Exit 0, 251 và 200 test |
+| `npm run test:db` | Exit 0, 35 nhóm. Bao gồm giả mạo dấu nguồn, sửa phiếu gốc sau khi xem, cập nhật hai lần cùng phiếu và quyền tenant |
+| Build Next production | Exit 0 với cấu hình giả lập trong lượt Chrome |
+| `npm run test:warehouse-correction` | Exit 0, 23 kiểm tra. Bảy màn hình Chrome desktop và mobile đạt axe và không tràn ngang |
+| `npm run test:delivery-commitments` | Exit 0, 18 kiểm tra hồi quy giao hàng |
+| `npm run test:design -- --isolated` | Exit 0, 29 kiểm tra |
+| `npm run test:platform -- --isolated` | Exit 0, 19 kiểm tra. Inbox 600 thư, hàng đầu tiên 1,00–1,12 giây |
+| `npm run test:staging -- --isolated` | Exit 0, 31 kiểm tra nâng cấp, sao lưu, phục hồi và cảnh báo local |
+
+[Phạm vi, kịch bản và lệnh chạy lại](WAREHOUSE_RECEIPT_CORRECTION.md).
+
 ## Đối soát giao hàng và xác nhận nhập kho
 
 Kiểm tra ngày 14/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,

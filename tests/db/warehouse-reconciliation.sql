@@ -15,6 +15,9 @@ DECLARE
   duplicate public.emails;
   wrong public.emails;
   final_receipt public.emails;
+  correction public.emails;
+  changed_source public.emails;
+  correction_key uuid := gen_random_uuid();
   commitment uuid;
   key text;
   state jsonb := '{"title":"Giao 200 bộ thiết bị","ownerEmail":"supplier-warehouse@example.test","ownerName":null,"dueOn":"2026-11-21","dueAt":null,"status":"open","delivery":{"ordered":200,"delivered":0,"unit":"bộ"}}';
@@ -122,6 +125,78 @@ BEGIN
   IF result->>'version' IS DISTINCT FROM '6' OR
     (public.confirm_commitment_receiving(commitment,final_key,'{"operation":"close","expectedVersion":5}')->>'replayed') IS DISTINCT FROM 'true'
   THEN RAISE EXCEPTION 'close approval did not replay'; END IF;
+  INSERT INTO public.emails(user_id,source_account_id,subject,from_address,body_text,received_at,direction)
+    VALUES(actor,warehouse,'[PO-9653] Đính chính',warehouse_sender,'Đính chính DC-1003 cho PN-9002: kho thực nhận 170 bộ.',
+      '2026-11-13T01:00:00Z','inbound') RETURNING * INTO correction;
+  payload := jsonb_build_object('operation','correct','expectedVersion',6,'emailId',correction.id,
+    'sourceFingerprint',private.commitment_detection_fingerprint(correction),'quote',correction.body_text);
+  BEGIN
+    PERFORM public.confirm_commitment_warehouse_correction(commitment,gen_random_uuid(),payload||'{"sourceFingerprint":"forged"}');
+    RAISE EXCEPTION 'forged correction approved';
+  EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL;
+  END;
+  UPDATE public.emails SET body_text='Phiếu gốc thay đổi' WHERE emails.id=partial.id;
+  BEGIN
+    PERFORM public.confirm_commitment_warehouse_correction(commitment,gen_random_uuid(),payload);
+    RAISE EXCEPTION 'correction with stale original approved';
+  EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL;
+  END;
+  UPDATE public.emails SET body_text=partial.body_text WHERE emails.id=partial.id;
+  result := public.confirm_commitment_warehouse_correction(commitment,correction_key,payload);
+  IF result->>'version' IS DISTINCT FROM '7' OR
+    (public.confirm_commitment_warehouse_correction(commitment,correction_key,payload)->>'replayed') IS DISTINCT FROM 'true'
+  THEN RAISE EXCEPTION 'correction receipt did not replay'; END IF;
+  BEGIN
+    PERFORM public.confirm_commitment_warehouse_correction(commitment,correction_key,payload||'{"expectedVersion":7}');
+    RAISE EXCEPTION 'changed correction replay accepted';
+  EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL;
+  END;
+
+  FOR changed_source IN
+    INSERT INTO public.emails(user_id,source_account_id,subject,from_address,body_text,received_at,direction)
+    VALUES
+      (actor,warehouse,'[PO-9653] Đính chính trùng',warehouse_sender,correction.body_text,'2026-11-14T01:00:00Z','inbound'),
+      (actor,warehouse,'[PO-9653] Đính chính cũ',warehouse_sender,'Đính chính DC-1002 cho PN-9002: kho thực nhận 175 bộ.','2026-11-12T01:00:00Z','inbound'),
+      (actor,buyer,'[PO-9653] Sai hộp thư',warehouse_sender,'Đính chính DC-1004 cho PN-9002: kho thực nhận 174 bộ.','2026-11-14T01:00:00Z','inbound'),
+      (actor,warehouse,'[PO-9653] Sai người gửi',supplier,'Đính chính DC-1005 cho PN-9002: kho thực nhận 174 bộ.','2026-11-14T01:00:00Z','inbound'),
+      (actor,warehouse,'[PO-9653] Trích lại',warehouse_sender,E'Chuyển kho\n---------- Forwarded message ---------\nĐính chính DC-1007 cho PN-9002: kho thực nhận 174 bộ.','2026-11-14T01:00:00Z','inbound')
+    RETURNING *
+  LOOP
+    BEGIN
+      PERFORM public.confirm_commitment_warehouse_correction(commitment,gen_random_uuid(),
+       jsonb_build_object('operation','correct','expectedVersion',7,'emailId',changed_source.id,
+       'sourceFingerprint',private.commitment_detection_fingerprint(changed_source),
+       'quote',regexp_replace(changed_source.body_text,E'^.*\n','','s')));
+      RAISE EXCEPTION 'invalid correction was accepted: %',changed_source.subject;
+    EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL;
+    END;
+  END LOOP;
+  result := public.ask_warehouse_reconciliation(case_ref,'{}');
+  IF result->>'status' IS DISTINCT FROM 'open' OR result->>'received' IS DISTINCT FROM '190'
+    OR result->>'reopenedBy' IS DISTINCT FROM correction.id::text OR jsonb_array_length(result->'corrections')<>1
+  THEN RAISE EXCEPTION 'warehouse answer lost correction or changed confirmed total'; END IF;
+  UPDATE public.emails SET body_text='Đính chính đã thay đổi' WHERE emails.id=correction.id;
+  IF public.ask_warehouse_reconciliation(case_ref,'{}') <> '{}' THEN RAISE EXCEPTION 'changed correction still supports an answer'; END IF;
+  UPDATE public.emails SET body_text=correction.body_text WHERE emails.id=correction.id;
+
+  INSERT INTO public.emails(user_id,source_account_id,subject,from_address,body_text,received_at,direction)
+    VALUES(actor,warehouse,'[PO-9653] Đính chính sau',warehouse_sender,'Đính chính DC-1008 cho PN-9002: kho thực nhận 180 bộ.',
+      '2026-11-15T01:00:00Z','inbound') RETURNING * INTO changed_source;
+  PERFORM public.confirm_commitment_warehouse_correction(commitment,gen_random_uuid(),
+    jsonb_build_object('operation','correct','expectedVersion',7,'emailId',changed_source.id,
+      'sourceFingerprint',private.commitment_detection_fingerprint(changed_source),'quote',changed_source.body_text));
+  result := public.ask_warehouse_reconciliation(case_ref,'{}');
+  IF result->>'received' IS DISTINCT FROM '200' OR result->>'status' IS DISTINCT FROM 'open'
+    OR jsonb_array_length(result->'corrections')<>2
+  THEN RAISE EXCEPTION 'latest absolute correction was not applied against the previous amount'; END IF;
+  UPDATE public.emails SET body_text='Một đính chính cũ thay đổi' WHERE emails.id=correction.id;
+  BEGIN
+    PERFORM public.confirm_commitment_receiving(commitment,gen_random_uuid(),'{"operation":"close","expectedVersion":8}');
+    RAISE EXCEPTION 'uncited historic correction allowed closing';
+  EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL;
+  END;
+  UPDATE public.emails SET body_text=correction.body_text WHERE emails.id=correction.id;
+  PERFORM public.confirm_commitment_receiving(commitment,gen_random_uuid(),'{"operation":"close","expectedVersion":8}');
   PERFORM set_config('request.jwt.claim.sub',outsider::text,true);
   IF public.ask_warehouse_reconciliation(case_ref,'{}') <> '{}' THEN RAISE EXCEPTION 'tenant leaked warehouse answer'; END IF;
   BEGIN
@@ -129,9 +204,16 @@ BEGIN
     RAISE EXCEPTION 'foreign tenant approved receiving';
   EXCEPTION WHEN SQLSTATE 'PT404' THEN NULL;
   END;
-  IF has_function_privilege('anon','public.confirm_commitment_receiving(uuid,uuid,jsonb)','EXECUTE')
+  BEGIN
+    PERFORM public.confirm_commitment_warehouse_correction(commitment,gen_random_uuid(),payload);
+    RAISE EXCEPTION 'foreign tenant approved correction';
+  EXCEPTION WHEN SQLSTATE 'PT404' THEN NULL;
+  END;
+  IF has_function_privilege('anon','public.confirm_commitment_warehouse_correction(uuid,uuid,jsonb)','EXECUTE')
+    OR has_table_privilege('authenticated','private.commitment_warehouse_corrections','INSERT')
+    OR has_function_privilege('anon','public.confirm_commitment_receiving(uuid,uuid,jsonb)','EXECUTE')
     OR has_table_privilege('authenticated','private.commitment_warehouse_receipts','INSERT')
   THEN RAISE EXCEPTION 'warehouse grants are too broad'; END IF;
 END $$;
 ROLLBACK;
-SELECT 'PASS: warehouse scope, late receipt, duplicate number, approval replay, stale evidence and tenant boundaries' AS result;
+SELECT 'PASS: warehouse scope, late receipt, duplicate number, approval replay, corrections, stale evidence and tenant boundaries' AS result;

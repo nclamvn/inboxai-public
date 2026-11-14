@@ -16,7 +16,7 @@ const command = (value, key = randomUUID()) => ({
 })
 const at = daysAgo => new Date(Date.now() - daysAgo * 86_400_000).toISOString()
 
-export async function rehearseWarehouseReconciliation({ app, base, email, previousEmail, password, userId, admin, appFetch, googleProvider, record, output }) {
+export async function rehearseWarehouseReconciliation({ app, base, email, previousEmail, password, userId, admin, appFetch, googleProvider, record, output, warehouseCorrection = false }) {
   const vault = new CredentialVault(admin, parseKeyring(vaultKeys, 'local1'))
   const accounts = {}
   for (const department of ['mua-hang', 'ky-thuat']) {
@@ -113,7 +113,7 @@ export async function rehearseWarehouseReconciliation({ app, base, email, previo
     const closeAttempts = []
     await page.route('**/receiving', async route => {
       const value = route.request().postDataJSON()
-      const attempts = value.operation === 'close' ? closeAttempts
+      const attempts = value.operation === 'close' && value.expectedVersion === 5 ? closeAttempts
         : value.operation === 'receive' && value.emailId === first ? receiveAttempts : null
       if (!attempts) return route.continue()
       const response = await route.fetch({ maxRetries: 0 })
@@ -209,6 +209,105 @@ export async function rehearseWarehouseReconciliation({ app, base, email, previo
     await capture('04-da-khep')
     record('an older, unique receipt is counted once, both totals must agree and Chrome closes with evidence and replays the lost close acknowledgement',true)
 
+    if (warehouseCorrection) {
+      await page.setViewportSize({ width: 1380, height: 920 })
+      const wrongQuote = 'Đính chính DC-6801 cho PN-4832: kho thực nhận 170 bộ.'
+      const wrong = await deliver('correction-wrong-sender', 'ky-thuat', 'nhan-vien-khac@example.test', 0.8, 'Thông báo từ người khác', wrongQuote)
+      const wrongAccount = await deliver('correction-wrong-account', 'mua-hang', warehouse, 0.8, 'Đính chính gửi sang hộp thư Mua hàng', wrongQuote)
+      for (const source of [wrong, wrongAccount]) {
+        const { proposals } = await request(ledger + '/catchup?source=' + source)
+        assert.equal(proposals[0].blocked, 'warehouse')
+        assert.equal(proposals[0].review, null)
+      }
+      const correctQuote = 'Đính chính DC-6842 cho PN-4832: kho thực nhận 170 bộ.'
+      const correction = await deliver('correction-approved', 'ky-thuat', warehouse, 0.7, 'Kho loại 10 bộ sau kiểm tra', 'Chào Mua hàng,\n' + correctQuote)
+      await page.goto(app + '/inbox')
+      const pending = page.getByRole('region', { name: 'Cam kết cần chú ý' }).getByRole('listitem').filter({ hasText: 'giao 200 bộ khớp nối' })
+      await pending.getByText('Đính chính kho chờ duyệt', { exact: true }).waitFor()
+      assert.deepEqual([(await detail()).version, (await detail()).state.status], [6, 'completed'])
+      await pending.getByRole('link', { name: 'Xem đính chính' }).click()
+      await page.getByText(correctQuote, { exact: true }).waitFor()
+      await button(page, 'Xem và xác nhận').click()
+      const correctionDialog = page.getByRole('dialog', { name: 'Xác nhận đề xuất' })
+      for (const quote of [correctQuote, sourceReceipt, 'Trước đây · 200 / 200 bộ', 'Đề xuất · 190 / 200 bộ']) {
+        await correctionDialog.getByText(quote, { exact: true }).waitFor()
+      }
+      await capture('05-duyet-dinh-chinh')
+
+      const correctionAttempts = []
+      await page.route('**/receiving', async route => {
+        if (route.request().postDataJSON().operation !== 'correct') return route.fallback()
+        const response = await route.fetch({ maxRetries: 0 })
+        correctionAttempts.push({ key: route.request().headers()['idempotency-key'], data: await response.json() })
+        if (correctionAttempts.length === 1 && response.ok()) return route.abort()
+        return route.fulfill({ response })
+      })
+      await button(correctionDialog, 'Duyệt đính chính').click()
+      await button(correctionDialog, 'Thử lưu lại').click()
+      await correctionDialog.waitFor({ state: 'hidden' })
+      assert.equal(correctionAttempts[0].key, correctionAttempts[1].key)
+      assert.deepEqual(correctionAttempts.map(attempt => [attempt.data.version, attempt.data.replayed]), [[7,false],[7,true]])
+      current = await detail()
+      assert.deepEqual([current.version,current.state.status,current.state.receiving.received,current.state.delivery.delivered],[7,'open',190,200])
+      assert.deepEqual(current.history[0].sources.map(source => source.emailId), [correction,first])
+      assert.equal(current.history[1].state.status, 'completed')
+      record('Action Inbox finds a correction for a closed purchase order; Chrome preview and lost-acknowledgement replay reopen it once', true)
+
+      const duplicateCorrection = await deliver('correction-duplicate', 'ky-thuat', warehouse, 0.5, 'Bản gửi lại đính chính', correctQuote)
+      const oldQuote = 'Đính chính DC-6830 cho PN-4832: kho thực nhận 175 bộ.'
+      const olderCorrection = await deliver('correction-younger-arrival', 'ky-thuat', warehouse, 1.5, 'Thư đính chính cũ đồng bộ muộn', oldQuote)
+      for (const [source, expected] of [[duplicateCorrection,'duplicate_receipt'], [olderCorrection,'chronology']]) {
+        const { proposals } = await request(ledger + '/catchup?source=' + source)
+        assert.equal(proposals[0].blocked, expected)
+        assert.equal(proposals[0].review, null)
+      }
+      await page.goto(app + '/commitments?group=waiting&view=catchup&source=' + olderCorrection)
+      await page.getByText('Chưa xác minh được thư này mới hơn bằng chứng đang có trong sổ.', { exact: true }).waitFor()
+      assert.equal(await button(page, 'Xem và xác nhận').count(), 0)
+      assert.equal((await detail()).version, 7)
+      record('duplicate, wrong sender, wrong mailbox and out-of-order stale correction never change the ledger', true)
+
+      await page.goto(app + '/search')
+      await page.getByLabel('Nội dung tìm kiếm', { exact: true }).fill('Vì sao cam kết ' + purchaseOrder + ' mở lại?')
+      await button(page, 'Hỏi email').click()
+      const explained = page.getByRole('region', { name: 'Đối soát nhập kho', exact: true })
+      await explained.getByText('Cam kết đã mở lại sau khi duyệt đính chính phiếu nhập.', { exact: true }).waitFor()
+      for (const quote of [correctQuote,sourceReceipt,'190 bộ','10 bộ']) await explained.getByText(quote, { exact: true }).waitFor()
+      await capture('06-ask-mo-lai')
+      await page.goto(app + '/inbox')
+      const shortage = page.getByRole('region', { name: 'Cam kết cần chú ý' }).getByRole('listitem').filter({ hasText: 'giao 200 bộ khớp nối' })
+      await shortage.getByText('10 bộ', { exact: true }).waitFor()
+      await button(shortage, 'Xem trước lời nhắc').click()
+      const chase = page.getByRole('dialog', { name: 'Xem trước lời nhắc' })
+      await chase.getByText(supplier, { exact: true }).waitFor()
+      await chase.getByText(/còn thiếu 10 bộ/).waitFor()
+      assert.equal(googleProvider.calls.sendAttempts, 1)
+      const followup = await request(reminderPath)
+      await button(chase, 'Xác nhận và gửi lời nhắc').click()
+      await chase.getByText('Đã gửi lời nhắc', { exact: true }).waitFor()
+      assert.equal((await request(reminderPath,command({ accountId:followup.accountId,version:followup.version,proof:followup.proof }))).state,'accepted')
+      assert.equal(googleProvider.calls.sendAttempts, 2)
+      assert.deepEqual([googleProvider.calls.sent[1].from, googleProvider.calls.sent[1].to], [accounts['mua-hang'].address,[supplier]])
+      record('Ask Inbox cites the original and correction, and the buyer approves one shortage reminder to the supplier', true)
+
+      const replacementQuote = 'Biên nhận PN-6871 – thực nhận 10 bộ.'
+      const replacement = await deliver('correction-replacement', 'ky-thuat', warehouse, 0.1, 'Kho nhận 10 bộ thay thế', replacementQuote)
+      await review(replacement,replacementQuote)
+      current = await detail()
+      assert.deepEqual([current.version,current.state.status,current.state.receiving.received],[8,'open',200])
+      await page.setViewportSize({ width:390,height:844 })
+      await page.goto(detailUrl)
+      await button(page,'Xem trước và khép cam kết').click()
+      const reclose = page.getByRole('dialog',{ name: 'Xác nhận khép đối soát' })
+      for (const quote of [shipped,sourceReceipt,correctQuote,replacementQuote]) await reclose.getByText(quote,{ exact: true }).waitFor()
+      await capture('07-khep-lai-mobile')
+      await button(reclose,'Xác nhận khép cam kết').click()
+      await reclose.waitFor({ state: 'hidden' })
+      current = await detail()
+      assert.deepEqual([current.version,current.state.status,current.state.receiving.received],[9,'completed',200])
+      assert.equal(current.history.find(item => item.version === 7).state.status,'open')
+      record('a new warehouse receipt offsets the correction and the buyer closes the order again with the full evidence trail', true)
+    }
     assert.equal((await fetch(app + receiving,command({ operation:'close',expectedVersion:6 }))).status,401)
     assert.equal((await admin.from('whitelist').upsert({ email: previousEmail, is_active: true }, { onConflict: 'email' })).error,null)
     const stranger = await login(previousEmail)

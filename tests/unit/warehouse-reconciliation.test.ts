@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { CommitmentState } from '@/lib/commitments/contracts'
 import { detectCommitments, proposedState } from '@/lib/commitments/detect'
-import { receivingTotals } from '@/lib/commitments/receiving'
+import { readWarehouseCorrection, receivingTotals } from '@/lib/commitments/receiving'
 import { planAskAnswer } from '@/lib/search/ask-answer'
 
 describe('warehouse reconciliation', () => {
@@ -35,6 +35,15 @@ describe('warehouse reconciliation', () => {
     const updated = proposedState(signal, 'supplier@example.test', null, prior)
     expect(updated).toMatchObject({ status: 'open', delivery: { delivered: 100 }, receiving: prior.receiving })
     expect(receivingTotals(updated!)).toMatchObject({ ordered: 100, reported: 100, received: 96, short: 4, discrepancy: 4 })
+  })
+
+  it('detects a correction with an absolute quantity and leaves ambiguous or quoted evidence alone', () => {
+    const correction = 'Đính chính dc-6802 cho pn-6801: kho thực nhận 0 hộp.'
+    expect(readWarehouseCorrection(correction)).toEqual({ number: 'DC-6802', receiptNumber: 'PN-6801', amount: 0, unit: 'hộp' })
+    expect(detect(correction)).toMatchObject([{ kind: 'correction', quote: correction }])
+    expect(detect(quote + '\n' + correction)).toEqual([])
+    expect(detect('---------- Forwarded message ---------\n' + correction)).toEqual([])
+    expect(detect('Vui lòng sửa 96 hộp trên PN-6801.')).toEqual([])
   })
 
   it('routes warehouse questions to approved ledger evidence and preserves ordinary delivery date questions', () => {

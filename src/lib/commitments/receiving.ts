@@ -1,6 +1,13 @@
 import type { CommitmentState } from './contracts'
 
 const receipt = /^(?:phiếu nhập|biên nhận) (PN-[0-9]{1,12})[ ]{0,3}[:–-] (?:kho (?:đã )?nhận|thực nhập|thực nhận) ([1-9][0-9]{0,6}) (bộ|chiếc|kiện|cuộn|hộp|cái)[.!]?$/iu
+const correction = /^đính chính (DC-[0-9]{1,12}) cho (PN-[0-9]{1,12})[ ]{0,3}[:–-] (?:kho thực nhận|thực nhận) (0|[1-9][0-9]{0,6}) (bộ|chiếc|kiện|cuộn|hộp|cái)[.!]?$/iu
+
+export function readWarehouseCorrection(quote: string) {
+  const match = correction.exec(quote)
+  if (!match) return null
+  return { number: match[1].toUpperCase(), receiptNumber: match[2].toUpperCase(), amount: Number(match[3]), unit: match[4].toLowerCase() }
+}
 
 export function readWarehouseReceipt(quote: string) {
   const match = receipt.exec(quote)

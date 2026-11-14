@@ -42,7 +42,7 @@ export function planAskAnswer(question: string): PlanResult {
   if (codes.length === 0) return { reason: 'reference_required' }
   if (codes.length > 1) return { reason: 'multiple_references' }
   const reference = codes[0]
-  if (reference.startsWith('PO-') && /(?:đối soát|nhập kho|thực nhận|kho (?:đã )?nhận|còn thiếu|thiếu bao nhiêu)/iu.test(question)) {
+  if (reference.startsWith('PO-') && /(?:đối soát|nhập kho|đính chính|mở lại|thực nhận|kho (?:đã )?nhận|còn thiếu|thiếu bao nhiêu)/iu.test(question)) {
     return { plan: { reference, fields: [], warehouse: true } }
   }
   const fields = fieldKeys.filter(key => questions[key].test(question))

@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
       const { proposals } = await scanCatchupProposals(client, accounts.data, null, null, true)
       for (const proposal of proposals) {
         if (!proposal.commitmentId || (!proposal.review && proposal.blocked !== 'uncertain' && proposal.blocked !== 'conflicting' && proposal.blocked !== 'quantity')) continue
+        if (proposal.kind === 'correction' && !proposal.review) continue
         if (accounts.data.length && (!proposal.accountId || !accounts.data.includes(proposal.accountId))) continue
         const previous = replies.get(proposal.commitmentId)
         if (!previous || Date.parse(proposal.at ?? '') > Date.parse(previous.at ?? '')) replies.set(proposal.commitmentId, proposal)
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
     return ledgerJson({ accounts: status, items: page.items.map(item => {
       const proposal = item.reason === 'reply' ? replies.get(item.id) : null
       return { ...item, reply: proposal ? {
-        emailId: proposal.emailId, subject: proposal.subject, quote: proposal.quote, needsReview: !proposal.review,
+        emailId: proposal.emailId, subject: proposal.subject, quote: proposal.quote, needsReview: !proposal.review, correction: proposal.kind === 'correction',
       } : null }
     }) })
   })

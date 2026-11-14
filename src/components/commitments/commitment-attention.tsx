@@ -230,10 +230,10 @@ export function CommitmentAttention({ userId, accounts, onSynced }: {
                   <div className="min-w-0 flex-[1_1_15rem]">
                     <p className="break-words text-sm font-semibold">{item.state.title}</p>
                     <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--foreground-secondary)]">
-                      <Badge variant={reasonTones[item.reason]} className="py-0.5">{reasons[item.reason]}</Badge>
+                      <Badge variant={item.reply?.correction ? 'warning' : reasonTones[item.reason]} className="py-0.5">{item.reply?.correction ? 'Đính chính kho chờ duyệt' : reasons[item.reason]}</Badge>
                       <span>{formatCommitmentDue(item.state)} · {item.responsibility === 'mine' ? 'Tôi phải làm' : ownerLabel(item.state)}</span>
                     </div>
-                    {item.state.receiving && <div className="mt-2"><WarehouseTotals state={item.state} /></div>}
+                    {item.state.receiving && <div className="mt-2"><WarehouseTotals state={item.state} hasReceipts={item.reason === 'receiving'} /></div>}
                     {item.state.delivery && !item.state.receiving && <p className="mt-1 text-sm tabular-nums">Nhà cung cấp báo đã giao {deliveryLabel(item.state.delivery)}</p>}
                     {item.reply && <blockquote className="mt-2 border-s-2 border-[var(--border)] ps-2 text-sm break-words">{item.reply.quote}</blockquote>}
                     <div className="flex flex-wrap items-center gap-x-4">
@@ -241,7 +241,7 @@ export function CommitmentAttention({ userId, accounts, onSynced }: {
                       <Link className={link} href={commitmentsHref(item.group, item.id)} prefetch={false}>{item.reason === 'receiving_ready' ? 'Xem và khép cam kết' : 'Xem lịch sử'}</Link>
                       {item.reply && (
                         <Link className={link} href={catchupHref(item.group, accounts, item.reply.emailId)} prefetch={false}>
-                          {item.reply.needsReview ? 'Kiểm tra phản hồi' : 'Xem đề xuất cập nhật'}
+                          {item.reply.correction ? 'Xem đính chính' : item.reply.needsReview ? 'Kiểm tra phản hồi' : 'Xem đề xuất cập nhật'}
                         </Link>
                       )}
                     </div>

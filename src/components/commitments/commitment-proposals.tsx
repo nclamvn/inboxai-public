@@ -17,7 +17,7 @@ import type { CommitmentProposal } from '@/lib/commitments/detection'
 const labels: Record<CommitmentProposal['kind'], string> = {
   create: 'Cam kết mới', deadline: 'Đổi hạn chót', owner: 'Đổi người phụ trách',
   progress: 'Giao một phần', completed: 'Hoàn tất', cancelled: 'Hủy cam kết',
-  review: 'Phản hồi cần kiểm tra', receipt: 'Phiếu nhập kho',
+  review: 'Phản hồi cần kiểm tra', receipt: 'Phiếu nhập kho', correction: 'Đính chính phiếu nhập',
 }
 
 const blockedReasons: Record<NonNullable<CommitmentProposal['blocked']>, string> = {
@@ -26,7 +26,8 @@ const blockedReasons: Record<NonNullable<CommitmentProposal['blocked']>, string>
   ambiguous: 'Có nhiều đầu việc có thể liên quan. Hãy kiểm tra email và sổ cam kết.',
   conflicting: 'Hạn cũ trong thư khác với hạn đã xác nhận trong sổ.',
   quantity: 'Số lượng hoặc đơn vị trong thư khác cam kết. Cần kiểm tra trước khi cập nhật.',
-  warehouse: 'Phiếu chưa khớp nguồn nhập kho đã thiết lập cho cam kết đang mở.',
+  warehouse: 'Phiếu chưa khớp nguồn nhập kho đã thiết lập hoặc trạng thái cam kết.',
+  receipt_unavailable: 'Chưa có phiếu gốc hoặc bằng chứng đã thay đổi. Kiểm tra lịch sử cam kết.',
   duplicate_receipt: 'Số phiếu này đã được ghi nhận. Tổng thực nhận giữ nguyên.',
   uncertain: 'Phản hồi chưa đủ bằng chứng để cập nhật. Sổ giữ nguyên nội dung đã xác nhận.',
 }
@@ -76,7 +77,7 @@ function ProposalReview({ proposal, close, refresh, saved }: {
     setFailure(null)
     try {
       const command = review.command
-      const result = command.operation === 'receive'
+      const result = command.operation === 'receive' || command.operation === 'correct'
         ? await confirmCommitmentReceiving(command.id, key, { operation: command.operation, expectedVersion: command.expectedVersion,
           emailId: command.emailId, sourceFingerprint: command.sourceFingerprint, quote: command.quote })
         : await confirmCommitmentDetection(key, command)
@@ -103,12 +104,25 @@ function ProposalReview({ proposal, close, refresh, saved }: {
         {failure?.retry === false
           ? <Button type="button" onClick={dismiss}>Tải lại đề xuất</Button>
           : <Button type="button" loading={busy} onClick={() => void approve()}>
-            {failure?.retry ? 'Thử lưu lại' : 'Xác nhận và ghi vào sổ'}
+            {failure?.retry ? 'Thử lưu lại' : review.command.operation === 'correct' ? 'Duyệt đính chính' : 'Xác nhận và ghi vào sổ'}
           </Button>}
       </>}>
       <div className="space-y-5">
         <Source proposal={proposal} />
-        {review.command.operation === 'receive' && <WarehouseTotals state={state} />}
+        {proposal.originalReceipt && (
+          <div className="space-y-3 border-y border-[var(--border)] py-3">
+            {[{ title: 'Phiếu nhập gốc', source: proposal.originalReceipt },
+              ...(proposal.priorCorrection ? [{ title: 'Đính chính đã duyệt trước đó', source: proposal.priorCorrection }] : [])].map(({ title, source }) => (
+              <section key={title} aria-label={title} className="space-y-1">
+                <h3 className="text-sm font-semibold">{title}</h3>
+                <blockquote className="break-words text-sm">{source.quote}</blockquote>
+                {source.href && <Link href={source.href} target="_blank" rel="noopener" prefetch={false}
+                  className="neo-target inline-flex min-h-8 items-center text-sm text-[var(--accent-foreground)] underline">Mở {title.toLowerCase()}</Link>}
+              </section>
+            ))}
+          </div>
+        )}
+        {(review.command.operation === 'receive' || review.command.operation === 'correct') && <WarehouseTotals state={state} hasReceipts />}
         <dl className="divide-y divide-[var(--border)] border-y border-[var(--border)] text-sm">
           {changes.length ? changes.map(change => (
             <div key={change.field} className="space-y-1 py-3">
