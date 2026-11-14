@@ -80,6 +80,7 @@ export function CommitmentConfirmationDialog({ detail, history, onClose, onReloa
       title: title.trim(), ownerName: ownerName.trim() || null, ownerEmail: ownerEmail.trim() || null,
       status, ...draftDeadline(dueKind, due, base.state),
       ...(base.state.delivery && { delivery: base.state.delivery }),
+      ...(base.state.receiving && { receiving: base.state.receiving }),
     }
     if (state.status === 'completed' && state.delivery && state.delivery.delivered < state.delivery.ordered) {
       return setFormError('Ghi nhận email giao đủ số lượng trước khi khép cam kết.')
@@ -201,11 +202,12 @@ export function CommitmentConfirmationDialog({ detail, history, onClose, onReloa
               <input className={control} value={ownerName} onChange={event => setOwnerName(event.target.value)} maxLength={120} />
             </label>
             <label className={labelStyle}>Email người phụ trách
-              <input className={control} type="email" value={ownerEmail} onChange={event => setOwnerEmail(event.target.value)} maxLength={254} />
+              <input className={control} type="email" value={ownerEmail} disabled={!!base.state.receiving} onChange={event => setOwnerEmail(event.target.value)} maxLength={254} />
             </label>
             <label className={labelStyle}>Trạng thái
               <select className={control} value={status} onChange={event => setStatus(event.target.value as CommitmentState['status'])}>
-                {Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                {Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value} disabled={!!base.state.receiving && (
+                  (value === 'completed' && base.state.status !== 'completed') || (value === 'open' && base.state.status === 'completed'))}>{label}</option>)}
               </select>
             </label>
             <label className={labelStyle}>Loại hạn

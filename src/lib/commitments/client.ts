@@ -1,6 +1,6 @@
 import type { DetectionCommand, DetectionPage } from './detection'
 import type { BoardPage, CommitmentGroup, LedgerDetail } from './view'
-import type { CommitmentEvidence, CommitmentState } from './contracts'
+import type { CommitmentEvidence, CommitmentState, ReceivingCommand } from './contracts'
 import type { CatchupAttention } from './catchup'
 import type { ReminderCommand, ReminderPreview, ReminderResult } from './attention'
 
@@ -86,5 +86,14 @@ export function dismissCommitmentCatchup(emailId: string, token: string, hash: s
   return ledgerRequest<{ dismissed: boolean }>('/catchup', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ emailId, token, hash }), signal: AbortSignal.timeout(15_000),
+  })
+}
+
+export function confirmCommitmentReceiving(id: string, key: string, command: ReceivingCommand) {
+  return ledgerRequest<{ id: string; version: number; replayed: boolean }>(`/${id}/receiving`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key },
+    body: JSON.stringify(command),
+    signal: AbortSignal.timeout(20_000),
   })
 }

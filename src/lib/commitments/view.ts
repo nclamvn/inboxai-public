@@ -1,3 +1,4 @@
+import { receivingValue } from './receiving'
 import { deliveryLabel } from './delivery'
 import type { CommitmentState, CommitmentEvidence } from './contracts'
 
@@ -65,6 +66,7 @@ export const fieldLabels: Record<keyof LedgerState, string> = {
   status: 'Trạng thái',
   review: 'Xem xét',
   delivery: 'Tiến độ giao hàng',
+  receiving: 'Kho thực nhận',
 }
 
 export function commitmentsHref(group: CommitmentGroup, id?: string) {
@@ -138,6 +140,9 @@ export function commitmentChanges(before: LedgerState, after: CommitmentState) {
   }
   if (after.delivery && (!before.delivery || before.delivery.delivered !== after.delivery.delivered)) {
     changes.push({ field: fieldLabels.delivery, from: before.delivery ? deliveryLabel(before.delivery) : 'Chưa ghi nhận', to: deliveryLabel(after.delivery) })
+  }
+  if (after.receiving && before.receiving?.received !== after.receiving.received) {
+    changes.push({ field: fieldLabels.receiving, from: receivingValue(before), to: receivingValue(after) })
   }
   if (before.status !== after.status) changes.push({ field: 'Trạng thái', from: statusLabels[before.status], to: statusLabels[after.status] })
   if (before.review) changes.push({

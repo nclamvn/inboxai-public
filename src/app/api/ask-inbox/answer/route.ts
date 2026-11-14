@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { createClientForRequest } from '@/lib/supabase/server'
 import { AskQueryError, parseAskQuery } from '@/lib/search/ask-query'
 import { askReply, readAskRequest } from '@/lib/search/ask-http'
+import type { WarehouseAnswer } from '@/lib/search/ask-answer-contracts'
 import { emptyAskAnswer, planAskAnswer, synthesizeAskAnswer, type AnswerEvidence } from '@/lib/search/ask-answer'
 
 export async function POST(request: NextRequest) {
@@ -15,6 +16,17 @@ export async function POST(request: NextRequest) {
     const { query, filters } = parseAskQuery(input)
     const plan = planAskAnswer(query)
     if ('reason' in plan) return askReply(emptyAskAnswer(plan.reason))
+
+    if (plan.plan.warehouse) {
+      const { data, error } = await client.rpc('ask_warehouse_reconciliation', {
+        p_reference: plan.plan.reference, p_filters: filters,
+      }).abortSignal(AbortSignal.any([request.signal, AbortSignal.timeout(10_000)]))
+      if (error?.code === 'PT404') return askReply({ error: 'Tài khoản email không khả dụng.' }, 404)
+      if (error) return askReply({ error: 'Chưa đối chiếu được sổ nhập kho. Hãy thử lại.' }, 503)
+      const warehouse = data?.supplier ? data as WarehouseAnswer : null
+      return askReply({ reference: plan.plan.reference, status: warehouse ? 'answered' : 'insufficient',
+        reason: null, examined: warehouse ? warehouse.receipts.length + 1 : 0, limited: false, claims: [], warehouse })
+    }
 
     const { data, error } = await client.rpc('ask_inbox_reference_evidence', {
       p_reference: plan.plan.reference, p_filters: filters,

@@ -17,6 +17,7 @@ import {
 } from '@/lib/commitments/view'
 import { CommitmentDetail } from './commitment-detail'
 import { CommitmentConfirmationDialog } from './commitment-confirmation'
+import { WarehouseReview, type WarehouseAccount } from './warehouse-reconciliation'
 import { CommitmentProposals } from './commitment-proposals'
 
 const groups = Object.entries(groupLabels) as [CommitmentGroup, string][]
@@ -57,7 +58,7 @@ function CommitmentRow({ item, group, active }: { item: BoardItem; group: Commit
   )
 }
 
-export function CommitmentLedger({ userId }: { userId: string }) {
+export function CommitmentLedger({ userId, accounts: warehouseAccounts }: { userId: string; accounts: WarehouseAccount[] }) {
   const params = useSearchParams()
   const groupParam = params.get('group')
   const group = isCommitmentGroup(groupParam) ? groupParam : 'mine'
@@ -69,6 +70,7 @@ export function CommitmentLedger({ userId }: { userId: string }) {
   const idParam = params.get('id')
   const id = !showProposals && validCommitmentId(idParam) ? idParam.toLowerCase() : null
   const cache = useQueryClient()
+  const [receivingReview, setReceivingReview] = useState<{ id: string; mode: 'configure' | 'close'; version: number } | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saved, setSaved] = useState<{ id: string; version: number } | null>(null)
   const listHeading = useRef<HTMLHeadingElement>(null)
@@ -210,6 +212,7 @@ export function CommitmentLedger({ userId }: { userId: string }) {
             <CommitmentDetail key={head.id} detail={head} history={history} group={group}
               savedVersion={saved?.id === id ? saved.version : null}
               onConfirm={() => setEditingId(head.id)}
+              onReceiving={mode => setReceivingReview({ id: head.id, version: head.version, mode })}
               hasMore={detail.hasNextPage} loadingMore={detail.isFetching}
               historyError={detail.isError}
               onLoadHistory={() => { if (detail.isFetchNextPageError || !detail.isError) void detail.fetchNextPage(); else void detail.refetch() }}
@@ -217,6 +220,11 @@ export function CommitmentLedger({ userId }: { userId: string }) {
           )}
         </div>
       </div>
+      {head && receivingReview?.id === head.id && (
+        <WarehouseReview id={head.id} version={receivingReview.version} state={head.state} mode={receivingReview.mode} accounts={warehouseAccounts} history={history}
+          close={() => { setReceivingReview(null); refresh() }}
+          saved={() => { setReceivingReview(null); setSaved({ id: head.id, version: receivingReview.version + 1 }); refresh() }} />
+      )}
       {editingId && editingId === id && head && (
         <CommitmentConfirmationDialog detail={head} history={history} onClose={() => setEditingId(null)} onReload={reloadDetail}
           onSaved={version => {

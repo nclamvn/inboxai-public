@@ -7,16 +7,17 @@ import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Modal } from '@/components/ui/modal'
 import { Alert } from '@/components/ui/alert'
-import { confirmCommitmentDetection, dismissCommitmentCatchup, LedgerApiError } from '@/lib/commitments/client'
+import { confirmCommitmentReceiving, confirmCommitmentDetection, dismissCommitmentCatchup, LedgerApiError } from '@/lib/commitments/client'
 import { commitmentChanges, commitmentsHref, formatCommitmentDue, formatCommitmentMoment, ownerLabel, statusLabels, type CommitmentGroup } from '@/lib/commitments/view'
 import { deliveryLabel } from '@/lib/commitments/delivery'
 import { catchupHref } from '@/lib/commitments/catchup'
+import { WarehouseTotals } from './warehouse-reconciliation'
 import type { CommitmentProposal } from '@/lib/commitments/detection'
 
 const labels: Record<CommitmentProposal['kind'], string> = {
   create: 'Cam kết mới', deadline: 'Đổi hạn chót', owner: 'Đổi người phụ trách',
   progress: 'Giao một phần', completed: 'Hoàn tất', cancelled: 'Hủy cam kết',
-  review: 'Phản hồi cần kiểm tra',
+  review: 'Phản hồi cần kiểm tra', receipt: 'Phiếu nhập kho',
 }
 
 const blockedReasons: Record<NonNullable<CommitmentProposal['blocked']>, string> = {
@@ -25,6 +26,8 @@ const blockedReasons: Record<NonNullable<CommitmentProposal['blocked']>, string>
   ambiguous: 'Có nhiều đầu việc có thể liên quan. Hãy kiểm tra email và sổ cam kết.',
   conflicting: 'Hạn cũ trong thư khác với hạn đã xác nhận trong sổ.',
   quantity: 'Số lượng hoặc đơn vị trong thư khác cam kết. Cần kiểm tra trước khi cập nhật.',
+  warehouse: 'Phiếu chưa khớp nguồn nhập kho đã thiết lập cho cam kết đang mở.',
+  duplicate_receipt: 'Số phiếu này đã được ghi nhận. Tổng thực nhận giữ nguyên.',
   uncertain: 'Phản hồi chưa đủ bằng chứng để cập nhật. Sổ giữ nguyên nội dung đã xác nhận.',
 }
 
@@ -72,7 +75,11 @@ function ProposalReview({ proposal, close, refresh, saved }: {
     setBusy(true)
     setFailure(null)
     try {
-      const result = await confirmCommitmentDetection(key, review.command)
+      const command = review.command
+      const result = command.operation === 'receive'
+        ? await confirmCommitmentReceiving(command.id, key, { operation: command.operation, expectedVersion: command.expectedVersion,
+          emailId: command.emailId, sourceFingerprint: command.sourceFingerprint, quote: command.quote })
+        : await confirmCommitmentDetection(key, command)
       if (!result.id || !Number.isInteger(result.version)) throw new Error('Invalid receipt')
       saved()
     } catch (error) {
@@ -101,6 +108,7 @@ function ProposalReview({ proposal, close, refresh, saved }: {
       </>}>
       <div className="space-y-5">
         <Source proposal={proposal} />
+        {review.command.operation === 'receive' && <WarehouseTotals state={state} />}
         <dl className="divide-y divide-[var(--border)] border-y border-[var(--border)] text-sm">
           {changes.length ? changes.map(change => (
             <div key={change.field} className="space-y-1 py-3">

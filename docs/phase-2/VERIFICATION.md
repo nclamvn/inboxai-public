@@ -1,5 +1,38 @@
 # Verification record
 
+## Đối soát giao hàng và xác nhận nhập kho
+
+Kiểm tra ngày 14/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,
+Chrome 157.0.8103.79 và PostgreSQL 16. Hai Gmail loopback tách riêng Mua hàng
+và Kỹ thuật. Kịch bản đóng vai người mua, nhà cung cấp và nhân viên kho.
+
+Nhà cung cấp báo đã giao 200 bộ và kho ghi nhận 180. Phiếu trùng, sai đơn vị
+và sai người gửi không thay đổi sổ. Chrome thử lại phê duyệt với đúng mã sau
+khi biên nhận HTTP bị mất ở cả lần ghi phiếu đầu và lần khép. Mỗi lần
+chỉ ghi một phiên bản. Action Inbox
+hiển thị thiếu 20 bộ, cho xem trước lời nhắc và chỉ gửi một lần qua Gmail
+giả lập. Ask Inbox dẫn cả hai nguồn và từ chối kết luận nếu bộ lọc ẩn một
+nguồn. Phiếu độc lập 20 bộ có thời điểm cũ hơn được duyệt sau, sau đó người
+mua xem bằng chứng và xác nhận khép. Phiên khác nhận 404 khi mở yêu cầu duyệt.
+
+| Kiểm tra | Kết quả local |
+| --- | --- |
+| `npm run lint` | Exit 0, 92 cảnh báo hiện có |
+| `npm run typecheck` | Exit 0 |
+| `npm run test:unit` và `npm run test:integration` | Exit 0, 250 và 200 test |
+| Build Next production | Exit 0 trong các lượt Chrome và staging, dùng cấu hình local giả lập |
+| `npm run test:db` | Exit 0, 35 nhóm, gồm sai nguồn, chống duyệt lặp và nguồn bị sửa |
+| `npm run test:warehouse-reconciliation` | Exit 0, 19 kiểm tra gồm 14 kiểm tra Auth chung. Bốn ảnh ở desktop và mobile có 0 vi phạm axe và không tràn ngang |
+| `npm run test:delivery-commitments` | Exit 0, 18 kiểm tra hồi quy milestone trước |
+| `npm run test:design -- --isolated` | Exit 0, 29 kiểm tra |
+| `npm run test:platform -- --isolated` | Exit 0, 19 kiểm tra. Inbox 600 thư, hàng đầu tiên 1,19–1,44 giây |
+| `npm run test:staging -- --isolated` | Exit 0, 31 kiểm tra nâng cấp, sao lưu và phục hồi local |
+
+Bộ nhận diện chỉ xử lý phiếu văn bản trong email cho một dòng hàng mỗi PO,
+với nguồn kho đã được cấu hình. Nghiệm thu dùng dữ liệu giả lập và không đo
+thời gian người dùng, xác thực vật lý hàng hóa hoặc khả năng đọc chứng từ
+đính kèm. [Phạm vi và cách chạy lại](WAREHOUSE_RECONCILIATION.md).
+
 ## Theo dõi cam kết giao hàng
 
 Nghiệm thu ngày 13/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,

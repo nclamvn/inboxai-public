@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { FileText } from 'lucide-react'
+import { commitmentsHref } from '@/lib/commitments/view'
 import { answerFields, formatAnswerValue, type AnswerCitation, type AskAnswer } from '@/lib/search/ask-answer-contracts'
 
 const reasonCopy: Record<NonNullable<AskAnswer['reason']>, string> = {
@@ -48,6 +49,26 @@ function Sources({ citations }: { citations: AnswerCitation[] }) {
 }
 
 export function AskAnswerPanel({ answer }: { answer: AskAnswer }) {
+  if (answer.warehouse !== undefined) {
+    const result = answer.warehouse
+    if (!result) return <p role="status" className="mt-4 text-sm">Chưa đủ chứng cứ đã duyệt cho {answer.reference} trong phạm vi tìm kiếm.</p>
+    const amount = (quantity: number) => quantity.toLocaleString('vi-VN') + ' ' + result.unit
+    return <section aria-label="Đối soát nhập kho" className="mt-4 space-y-4 border-y border-[var(--border)] bg-[var(--surface)] p-4">
+      <h3 className="text-sm font-semibold">Đối soát nhập kho · {answer.reference}</h3>
+      <dl className="grid grid-cols-3 gap-3 border-s-2 border-[var(--selection-line)] ps-3">
+        <div><dt className="text-xs">Nhà cung cấp báo giao</dt><dd className="font-semibold tabular-nums">{amount(result.reported)}</dd></div>
+        <div><dt className="text-xs">Kho thực nhận</dt><dd className="font-semibold tabular-nums">{result.receipts.length ? amount(result.received) : 'Chưa có phiếu'}</dd></div>
+        <div><dt className="text-xs">Còn thiếu theo đơn</dt><dd className="font-semibold tabular-nums">{amount(result.ordered - result.received)}</dd></div>
+      </dl>
+      <section aria-label="Nguồn nhà cung cấp"><p className="text-xs font-medium">Nguồn nhà cung cấp</p><Sources citations={[result.supplier]} /></section>
+      <section aria-label="Phiếu nhập đã duyệt">
+        <p className="text-xs font-medium">Phiếu nhập đã duyệt</p>
+        {result.receipts.length ? <Sources citations={result.receipts} /> : <p className="mt-1 text-sm">Sổ chưa ghi nhận phiếu nhập.</p>}
+      </section>
+      <Link href={commitmentsHref(result.status === 'open' ? 'waiting' : 'closed', result.commitmentId)} prefetch={false}
+        className="neo-target inline-flex min-h-11 items-center text-sm font-medium text-[var(--accent-foreground)] underline">Mở sổ cam kết</Link>
+    </section>
+  }
   return (
     <div className="mt-4 space-y-4">
       <div className="space-y-1 border-s-2 border-[var(--accent)] ps-3">

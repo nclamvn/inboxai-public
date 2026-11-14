@@ -7,6 +7,8 @@ import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { deliveryLabel } from '@/lib/commitments/delivery'
 import { subjectReference } from '@/lib/commitments/detect'
+import { receivingTotals, receivingValue } from '@/lib/commitments/receiving'
+import { WarehouseTotals } from './warehouse-reconciliation'
 import { cn } from '@/lib/utils'
 import {
   commitmentsHref, fieldLabels, formatCommitmentDue, formatCommitmentMoment, ownerLabel, revisionLabels,
@@ -15,6 +17,7 @@ import {
 
 function revisionValue(state: LedgerState, field: keyof LedgerState) {
   if (field === 'delivery') return state.delivery ? deliveryLabel(state.delivery) : 'Chưa ghi nhận'
+  if (field === 'receiving') return receivingValue(state)
   if (field === 'status') return statusLabels[state.status]
   if (field === 'dueOn' || field === 'dueAt') return formatCommitmentDue(state)
   if (field === 'review') return state.review?.note ?? 'Đã xác nhận'
@@ -81,6 +84,7 @@ interface Props {
   group: CommitmentGroup
   savedVersion: number | null
   onConfirm: () => void
+  onReceiving: (mode: 'configure' | 'close') => void
   hasMore: boolean
   loadingMore: boolean
   historyError: boolean
@@ -88,11 +92,12 @@ interface Props {
 }
 
 export function CommitmentDetail({
-  detail, history, group, savedVersion, onConfirm, hasMore, loadingMore, historyError, onLoadHistory,
+  detail, history, group, savedVersion, onConfirm, onReceiving, hasMore, loadingMore, historyError, onLoadHistory,
 }: Props) {
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => { heading.current?.focus() }, [])
   const { state } = detail
+  const totals = receivingTotals(state)
   const reference = state.delivery
     ? history.flatMap(revision => revision.sources).map(source => subjectReference(source.subject)).find(code => code?.startsWith('PO-'))
     : detail.referenceKey
@@ -133,10 +138,25 @@ export function CommitmentDetail({
             <dd className={cn('mt-1 text-sm font-medium', state.status === 'completed' && 'text-[var(--success)]')}>{statusLabels[state.status]}</dd>
           </div>
         </dl>
-        {state.delivery && <div className="mt-4 flex flex-wrap items-baseline justify-between gap-2 border-s-2 border-[var(--selection-line)] ps-3">
+        {state.delivery && !totals && <div className="mt-4 flex flex-wrap items-baseline justify-between gap-2 border-s-2 border-[var(--selection-line)] ps-3">
           <span className="text-sm text-[var(--foreground-secondary)]">Nhà cung cấp báo đã giao</span>
           <span className="font-semibold tabular-nums">{deliveryLabel(state.delivery)}</span>
         </div>}
+        {state.delivery && reference && state.status !== 'cancelled' && (
+          <div className="mt-4 space-y-3 border-t border-[var(--border)] pt-4">
+            <h3 className="text-sm font-semibold">Đối soát nhập kho</h3>
+            {totals ? <>
+              <WarehouseTotals state={state} />
+              <p className="break-all text-xs text-[var(--foreground-muted)]">Nguồn xác nhận kho {state.receiving?.sender}</p>
+              {totals.received > 0 && totals.discrepancy > 0 && <p className="text-sm font-medium text-[var(--warning)]">Kho ghi nhận ít hơn số nhà cung cấp báo giao.</p>}
+              {state.status === 'open' && totals.short === 0 && totals.reported === totals.ordered && !state.review &&
+                <Button type="button" loading={hasMore && loadingMore}
+                  onClick={hasMore ? onLoadHistory : () => onReceiving('close')}>
+                  {hasMore ? 'Tải thêm bằng chứng để khép' : 'Xem trước và khép cam kết'}
+                </Button>}
+            </> : <Button type="button" variant="outline" onClick={() => onReceiving('configure')}>Thiết lập nguồn nhập kho</Button>}
+          </div>
+        )}
         {state.review && (
           <Alert variant="warning" title={state.review.kind === 'conflicting' ? 'Có nguồn mâu thuẫn' : 'Còn điểm chưa rõ'} className="mt-4 break-words">
             {state.review.note}

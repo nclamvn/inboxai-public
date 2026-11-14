@@ -31,6 +31,17 @@ export type AnswerClaim = {
   unclear: AnswerCitation[]
 }
 
+export type WarehouseAnswer = {
+  commitmentId: string
+  status: 'open' | 'completed' | 'cancelled'
+  ordered: number
+  reported: number
+  received: number
+  unit: string
+  supplier: AnswerCitation
+  receipts: AnswerCitation[]
+}
+
 export type AskAnswer = {
   reference: string | null
   status: 'answered' | 'conflicting' | 'insufficient' | 'partial'
@@ -38,6 +49,7 @@ export type AskAnswer = {
   examined: number
   limited: boolean
   claims: AnswerClaim[]
+  warehouse?: WarehouseAnswer | null
 }
 
 export function formatAnswerValue(value: AnswerValue) {

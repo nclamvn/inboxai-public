@@ -17,6 +17,7 @@ type Signal = {
 }
 type Target = {
   reference: string; referenceKey: string; id: string; version: number; state: LedgerState; lastSourceAt: string | null
+  receiptNumbers?: string[]; originAt?: string | null; supplierAt?: string | null
   originId: string; originTitle: string; originSender: string | null; originAccountId: string | null; multiOrigin: boolean
 }
 
@@ -68,7 +69,10 @@ export function buildProposals(page: ScanPage, signals: Signal[], targets: Targe
     const open = (signal.delivery && signal.kind !== 'create' || (signal.kind === 'review' && reference?.startsWith('PO-'))
       ? related.filter(target => target.state.delivery)
       : matching).filter(target => target.state.status === 'open' && target.state.ownerEmail?.toLowerCase() === sender)
-    const current = signal.kind !== 'create' && open.length === 1 ? open[0] : null
+    const receiptTargets = signal.receipt ? related.filter(target => target.state.delivery && target.state.status === 'open' &&
+      target.state.receiving?.accountId === source.accountId && target.state.receiving?.sender === sender) : []
+    const candidates = signal.receipt ? receiptTargets : open
+    const current = signal.kind !== 'create' && candidates.length === 1 ? candidates[0] : null
     const at = source.at && Number.isFinite(Date.parse(source.at)) ? source.at : null
     const common = {
       proposalId: source.id + ':' + quoteHash,
@@ -78,7 +82,7 @@ export function buildProposals(page: ScanPage, signals: Signal[], targets: Targe
       proposedBatch: signal.proposedBatch ?? null, previous: current?.state ?? null,
       ...(source.catchupToken ? { catchupToken: source.catchupToken } : {}),
     }
-    if (related.length > 8 || (signal.kind !== 'create' && (open.length > 1 || current?.multiOrigin))) {
+    if (related.length > 8 || (signal.kind !== 'create' && (candidates.length > 1 || (signal.receipt && related.length > 1) || current?.multiOrigin))) {
       return [{ ...common, review: null, blocked: 'ambiguous' }]
     }
     if (signal.kind === 'create') {
@@ -86,11 +90,31 @@ export function buildProposals(page: ScanPage, signals: Signal[], targets: Targe
       if (matching.some(target => target.referenceKey === key || commitmentTitleKey(target.originTitle) === title)) return []
       if (matching.some(target => target.originId !== source.id)) return [{ ...common, review: null, blocked: 'ambiguous' }]
     }
+    if (signal.receipt) {
+      if (!current?.state.delivery || !current.state.receiving) return [{ ...common, review: null, blocked: 'warehouse' }]
+      if (current.state.review) return [{ ...common, review: null, blocked: 'conflicting' }]
+      const { delivery, receiving } = current.state
+      const { number, amount, unit } = signal.receipt
+      if (current.receiptNumbers?.includes(number)) return [{ ...common, review: null, blocked: 'duplicate_receipt' }]
+      if (unit !== delivery.unit || receiving.received + amount > delivery.ordered) return [{ ...common, review: null, blocked: 'quantity' }]
+      if (!source.receivedAt || !current.originAt || Date.parse(source.receivedAt) < Date.parse(current.originAt)) {
+        return [{ ...common, review: null, blocked: 'chronology' }]
+      }
+      const { title, ownerName, ownerEmail, dueOn, dueAt, status } = current.state
+      const state = { title, ownerName, ownerEmail, dueOn, dueAt, status, delivery }
+      return [{ ...common, blocked: null, review: { title: state.title, command: {
+        operation: 'receive', id: current.id, expectedVersion: current.version, emailId: source.id,
+        sourceFingerprint: source.fingerprint, quote: signal.quote,
+        state: { ...state, receiving: { ...receiving, received: receiving.received + amount } },
+      } } }]
+    }
     if (signal.kind !== 'create' && !current) return [{ ...common, review: null, blocked: 'unmatched' }]
-    if (current && !(source.receivedAt && current.lastSourceAt && Date.parse(source.receivedAt) > Date.parse(current.lastSourceAt))) {
+    const latest = current?.state.receiving ? current.supplierAt : current?.lastSourceAt
+    if (current && !(source.receivedAt && latest && Date.parse(source.receivedAt) > Date.parse(latest))) {
       return [{ ...common, review: null, blocked: 'chronology' }]
     }
-    if (signal.kind === 'review') return [{ ...common, review: null, blocked: 'uncertain' }]
+    if (signal.kind === 'review' || (signal.kind === 'owner' && current?.state.receiving))
+      return [{ ...common, review: null, blocked: 'uncertain' }]
     if (signal.kind === 'deadline' && current?.state.delivery && !signal.priorDueOn)
       return [{ ...common, review: null, blocked: 'uncertain' }]
     if (signal.priorDueOn && current?.state.dueOn !== signal.priorDueOn) {

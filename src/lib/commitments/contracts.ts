@@ -13,6 +13,14 @@ const delivery = z.strictObject({
   unit: z.enum(['bộ', 'chiếc', 'kiện', 'cuộn', 'hộp', 'cái']),
 })
 
+export const warehouseSender = z.string().trim().toLowerCase().max(254).pipe(z.email())
+
+const receiving = z.strictObject({
+  accountId: z.uuid(),
+  sender: warehouseSender,
+  received: z.number().int().min(0).max(9_999_999),
+})
+
 const state = z.strictObject({
   title: boundedText(200),
   ownerName: boundedText(120).nullable(),
@@ -21,10 +29,14 @@ const state = z.strictObject({
   dueAt: z.iso.datetime({ offset: true }).regex(/T\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|[+-]\d{2}:\d{2})$/).nullable(),
   status: z.enum(['open', 'completed', 'cancelled']),
   delivery: delivery.optional(),
+  receiving: receiving.optional(),
 }).refine(value => value.dueOn === null || value.dueAt === null)
-  .refine(value => !value.delivery || (value.delivery.delivered <= value.delivery.ordered &&
-    (value.status === 'completed' ? value.delivery.delivered === value.delivery.ordered :
-      value.status === 'cancelled' || value.delivery.delivered < value.delivery.ordered)))
+  .refine(({ delivery, receiving, status }) => {
+    if (!delivery) return !receiving
+    if (delivery.delivered > delivery.ordered || (receiving && receiving.received > delivery.ordered)) return false
+    if (status === 'completed') return delivery.delivered === delivery.ordered && (!receiving || receiving.received === delivery.ordered)
+    return !!receiving || status === 'cancelled' || delivery.delivered < delivery.ordered
+  })
 
 export type CommitmentState = z.infer<typeof state>
 export type CommitmentEvidence = z.infer<typeof evidence>[number]
@@ -52,3 +64,12 @@ export const commitmentReceipt = z.strictObject({
   version,
   replayed: z.boolean(),
 })
+
+const receivingVersion = { expectedVersion: version }
+export const receivingCommand = z.discriminatedUnion('operation', [
+  z.strictObject({ ...receivingVersion, operation: z.literal('configure'), accountId: z.uuid(), sender: warehouseSender }),
+  z.strictObject({ ...receivingVersion, operation: z.literal('receive'), emailId: z.uuid(),
+    sourceFingerprint: z.string().regex(/^[0-9a-f]{64}$/), quote: evidence.element.shape.quote }),
+  z.strictObject({ ...receivingVersion, operation: z.literal('close') }),
+])
+export type ReceivingCommand = z.infer<typeof receivingCommand>

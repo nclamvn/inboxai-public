@@ -24,6 +24,7 @@
     "test:commitment-ledger": "npm run test:local-auth -- --commitment-ledger",
     "test:commitment-ui": "npm run test:local-auth -- --commitment-ui",
     "test:commitment-detection": "npm run test:local-auth -- --commitment-detection",
+    "test:warehouse-reconciliation": "npm run test:local-auth -- --warehouse-reconciliation",
     "test:delivery-commitments": "npm run test:local-auth -- --delivery-commitments",
     "test:commitment-attention": "npm run test:local-auth -- --daily-commitments",
     "design:bundle": "node scripts/report-design-bundle.mjs",

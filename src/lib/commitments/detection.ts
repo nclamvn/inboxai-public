@@ -1,4 +1,4 @@
-import type { CommitmentEvidence, CommitmentState } from './contracts'
+import type { CommitmentEvidence, CommitmentState, ReceivingCommand } from './contracts'
 import type { DetectionSignal } from './detect'
 import type { LedgerState } from './view'
 
@@ -11,6 +11,8 @@ export type DetectionCommand = {
   { operation: 'create' } |
   { operation: 'revise'; id: string; expectedVersion: number }
 )
+
+export type ReceivingProposalCommand = Extract<ReceivingCommand, { operation: 'receive' }> & { id: string; state: CommitmentState }
 
 export type CommitmentProposal = {
   proposalId: string
@@ -27,8 +29,8 @@ export type CommitmentProposal = {
   proposedDueOn?: string | null
   proposedBatch?: DetectionSignal['proposedBatch'] | null
   previous: LedgerState | null
-  review: { command: DetectionCommand; title: string } | null
-  blocked: 'unmatched' | 'chronology' | 'ambiguous' | 'conflicting' | 'uncertain' | 'quantity' | null
+  review: { command: DetectionCommand | ReceivingProposalCommand; title: string } | null
+  blocked: 'unmatched' | 'chronology' | 'ambiguous' | 'conflicting' | 'uncertain' | 'quantity' | 'warehouse' | 'duplicate_receipt' | null
 }
 
 export type DetectionPage = { proposals: CommitmentProposal[]; nextBeforeId: string | null }

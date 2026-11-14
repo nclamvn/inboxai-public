@@ -3,7 +3,7 @@ import { isQuotedMailBoundary } from '@/lib/email/plain-text'
 import { answerFields, type AnswerCitation, type AnswerClaim, type AnswerField, type AnswerObservation, type AskAnswer } from './ask-answer-contracts'
 import { readAnswerDate, readAnswerMoney } from './ask-answer-values'
 
-type Plan = { reference: string; fields: AnswerField[] | null }
+type Plan = { reference: string; fields: AnswerField[] | null; warehouse?: true }
 type PlanResult = { plan: Plan } | { reason: NonNullable<AskAnswer['reason']> }
 
 export type AnswerSource = {
@@ -42,6 +42,9 @@ export function planAskAnswer(question: string): PlanResult {
   if (codes.length === 0) return { reason: 'reference_required' }
   if (codes.length > 1) return { reason: 'multiple_references' }
   const reference = codes[0]
+  if (reference.startsWith('PO-') && /(?:đối soát|nhập kho|thực nhận|kho (?:đã )?nhận|còn thiếu|thiếu bao nhiêu)/iu.test(question)) {
+    return { plan: { reference, fields: [], warehouse: true } }
+  }
   const fields = fieldKeys.filter(key => questions[key].test(question))
   if (fields.length && !fields.some(field => moneyFields.has(field)) && /(?:số tiền|bao nhiêu tiền|how much)/iu.test(question)) {
     fields.push(...moneyFields)

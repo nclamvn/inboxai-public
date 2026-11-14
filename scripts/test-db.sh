@@ -84,3 +84,4 @@ psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/compose-recipient-hi
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/draft-continuity.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/offline-compose.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/delivery-commitments.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/warehouse-reconciliation.sql

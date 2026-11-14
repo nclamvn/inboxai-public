@@ -12,6 +12,7 @@ import { GmailReconnectButton, GmailReconnectNotice } from '@/components/gmail/g
 import { catchupHref, type CatchupAccount } from '@/lib/commitments/catchup'
 import type { AttentionItem } from '@/lib/commitments/attention'
 import { approveCommitmentReminder, LedgerApiError, loadCommitmentAttention, loadCommitmentReminder } from '@/lib/commitments/client'
+import { WarehouseTotals } from './warehouse-reconciliation'
 import { deliveryLabel } from '@/lib/commitments/delivery'
 import { commitmentsHref, formatCommitmentDue, formatCommitmentMoment, ownerLabel } from '@/lib/commitments/view'
 
@@ -19,11 +20,13 @@ const link = 'neo-target inline-flex min-h-11 min-w-0 items-center text-sm font-
 const reasons = {
   today: 'Đến hạn hôm nay',
   overdue: 'Quá hạn',
+  receiving: 'Chênh lệch nhập kho',
+  receiving_ready: 'Đủ hàng · Chờ khép',
   review: 'Bằng chứng cần kiểm tra',
   reply: 'Có phản hồi mới',
 }
 const reasonTones: Record<AttentionItem['reason'], BadgeProps['variant']> = {
-  today: 'warning', overdue: 'error', review: 'warning', reply: 'info',
+  today: 'warning', overdue: 'error', review: 'warning', receiving: 'warning', receiving_ready: 'success', reply: 'info',
 }
 const reminderLabels = {
   accepted: 'Đã gửi lời nhắc',
@@ -220,7 +223,7 @@ export function CommitmentAttention({ userId, accounts, onSynced }: {
           {query.isError && <p role="status" className="px-4 pb-3 text-sm text-[var(--error)]">Chưa cập nhật được cam kết. Thử làm mới.</p>}
           <ul className="divide-y divide-[var(--border)] border-t border-[var(--border)]">
             {items.map(item => {
-              const eligible = (item.reason === 'today' || item.reason === 'overdue') && item.responsibility === 'waiting'
+              const eligible = (item.reason === 'today' || item.reason === 'overdue' || item.reason === 'receiving') && item.responsibility === 'waiting'
               const unresolved = item.reminderState === 'unknown' || item.reminderState === 'dispatching'
               return (
                 <li key={item.id} className="flex min-w-0 flex-wrap items-start justify-between gap-x-5 px-4 pt-3 sm:px-5">
@@ -230,11 +233,12 @@ export function CommitmentAttention({ userId, accounts, onSynced }: {
                       <Badge variant={reasonTones[item.reason]} className="py-0.5">{reasons[item.reason]}</Badge>
                       <span>{formatCommitmentDue(item.state)} · {item.responsibility === 'mine' ? 'Tôi phải làm' : ownerLabel(item.state)}</span>
                     </div>
-                    {item.state.delivery && <p className="mt-1 text-sm tabular-nums">Nhà cung cấp báo đã giao {deliveryLabel(item.state.delivery)}</p>}
+                    {item.state.receiving && <div className="mt-2"><WarehouseTotals state={item.state} /></div>}
+                    {item.state.delivery && !item.state.receiving && <p className="mt-1 text-sm tabular-nums">Nhà cung cấp báo đã giao {deliveryLabel(item.state.delivery)}</p>}
                     {item.reply && <blockquote className="mt-2 border-s-2 border-[var(--border)] ps-2 text-sm break-words">{item.reply.quote}</blockquote>}
                     <div className="flex flex-wrap items-center gap-x-4">
                       {item.source.href && <Link className={link} href={item.source.href} prefetch={false}>Mở email nguồn</Link>}
-                      <Link className={link} href={commitmentsHref(item.group, item.id)} prefetch={false}>Xem lịch sử</Link>
+                      <Link className={link} href={commitmentsHref(item.group, item.id)} prefetch={false}>{item.reason === 'receiving_ready' ? 'Xem và khép cam kết' : 'Xem lịch sử'}</Link>
                       {item.reply && (
                         <Link className={link} href={catchupHref(item.group, accounts, item.reply.emailId)} prefetch={false}>
                           {item.reply.needsReview ? 'Kiểm tra phản hồi' : 'Xem đề xuất cập nhật'}

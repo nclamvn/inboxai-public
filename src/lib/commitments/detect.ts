@@ -1,16 +1,18 @@
 import { z } from 'zod'
 import { isQuotedMailBoundary } from '@/lib/email/plain-text'
 import { detectDeliveryLine, type DeliveryProgress } from './delivery'
+import { readWarehouseReceipt } from './receiving'
 import type { CommitmentState } from './contracts'
 
 export type DetectionSignal = {
-  kind: 'create' | 'deadline' | 'owner' | 'progress' | 'completed' | 'cancelled' | 'review'
+  kind: 'create' | 'deadline' | 'owner' | 'progress' | 'completed' | 'cancelled' | 'review' | 'receipt'
   quote: string
   title: string | null
   dueOn: string | null
   ownerEmail?: string
   priorDueOn?: string
   delivery?: DeliveryProgress
+  receipt?: NonNullable<ReturnType<typeof readWarehouseReceipt>>
   proposedBatch?: { quantity: number; unit: DeliveryProgress['unit'] }
 }
 
@@ -68,6 +70,11 @@ export function detectCommitments(body: string | null, receivedAt: string | null
       continue
     }
     if (uncertain.test(line)) continue
+    const receipt = reference?.startsWith('PO-') && readWarehouseReceipt(quote)
+    if (receipt) {
+      signals.push({ kind: 'receipt', quote, title: null, dueOn: null, receipt })
+      continue
+    }
     const deliveryEvent = reference?.startsWith('PO-') && detectDeliveryLine(line, quote, value => calendarDate(value, receivedAt))
     if (deliveryEvent) {
       signals.push(deliveryEvent)
@@ -125,7 +132,7 @@ export function senderIdentity(sender: string) {
 }
 
 export function proposedState(signal: DetectionSignal, sender: string, name: string | null, prior: CommitmentState | null): CommitmentState | null {
-  if (signal.kind === 'review') return null
+  if (signal.kind === 'review' || signal.kind === 'receipt') return null
   if (signal.kind === 'create') {
     if (prior || !signal.title) return null
     return {
@@ -135,12 +142,12 @@ export function proposedState(signal: DetectionSignal, sender: string, name: str
     }
   }
   if (prior?.status !== 'open') return null
-  const { title, ownerName, ownerEmail, dueOn, dueAt, status, delivery } = prior
-  const quantities = delivery ? { delivery } : {}
+  const { title, ownerName, ownerEmail, dueOn, dueAt, status, delivery, receiving } = prior
+  const quantities = { ...(delivery && { delivery }), ...(receiving && { receiving }) }
   if (signal.delivery) {
     if (!delivery || signal.delivery.delivered <= delivery.delivered || signal.delivery.ordered !== delivery.ordered ||
         signal.delivery.unit !== delivery.unit) return null
-    return { title, ownerName, ownerEmail, dueOn, dueAt, status: signal.kind === 'completed' ? 'completed' : 'open', delivery: signal.delivery }
+    return { title, ownerName, ownerEmail, dueOn, dueAt, status: signal.kind === 'completed' && !receiving ? 'completed' : 'open', ...quantities, delivery: signal.delivery }
   }
   if (signal.kind === 'progress' || (signal.kind === 'completed' && delivery)) return null
   if (signal.kind === 'deadline') {
