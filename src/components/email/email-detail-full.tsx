@@ -602,7 +602,8 @@ export function EmailDetailFull({
 
         {/* Attachments */}
         {attachments.length > 0 && (
-          <AttachmentList attachments={attachments} />
+          <AttachmentList attachments={attachments}
+              purchaseEmailId={/\bPO-[0-9]{1,12}\b/i.test(email.subject ?? '') && email.direction !== 'outbound' ? email.id : undefined} />
         )}
       </div>
 

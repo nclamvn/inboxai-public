@@ -6,8 +6,11 @@ import type { FormEvent } from 'react'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
-import { confirmCommitmentReceiving, LedgerApiError } from '@/lib/commitments/client'
+import { confirmCommitmentReceiving, confirmPurchaseOrder, LedgerApiError } from '@/lib/commitments/client'
 import { warehouseSender, type CommitmentState, type ReceivingCommand } from '@/lib/commitments/contracts'
+import { allPurchaseLinesMatch, type PurchaseCommand } from '@/lib/commitments/purchase-order'
+import { PurchaseCsvSource } from './purchase-csv-source'
+import { PurchaseLines } from './purchase-lines'
 import type { LedgerRevision } from '@/lib/commitments/view'
 import { readWarehouseCorrection, readWarehouseReceipt, receivingTotals } from '@/lib/commitments/receiving'
 
@@ -39,7 +42,7 @@ export function WarehouseReview({ id, version, state, mode, accounts, history, c
 }) {
   const [accountId, setAccountId] = useState('')
   const [sender, setSender] = useState('')
-  const [pending, setPending] = useState<{ key: string; command: ReceivingCommand } | null>(null)
+  const [pending, setPending] = useState<{ key: string; command: ReceivingCommand | PurchaseCommand } | null>(null)
   const [busy, setBusy] = useState(false)
   const [failure, setFailure] = useState<{ text: string; retry: boolean } | null>(null)
   const sending = useRef(false)
@@ -48,19 +51,27 @@ export function WarehouseReview({ id, version, state, mode, accounts, history, c
   const receipts = history.filter((item, index) => item.changedFields.includes('receiving') &&
       item.state.receiving && item.state.receiving.received !== (history[index + 1]?.state.receiving?.received ?? 0))
     .map(item => item.sources[0]).filter(Boolean)
-  const evidenceReady = !!supplier && supplier.availability === 'available' &&
+  const legacyEvidenceReady = !!supplier && supplier.availability === 'available' &&
     receipts.length > 0 && receipts.every(source => source.availability === 'available' && source.quote && (readWarehouseReceipt(source.quote) || readWarehouseCorrection(source.quote)))
-  const sources = supplier ? [supplier, ...receipts] : receipts
+  const purchase = state.purchaseOrder
+  const purchaseSources = purchase ? [...new Map(history.flatMap(item => item.sources)
+    .map(source => [source.emailId + ':' + source.quote, source])).values()] : []
+  const sources = purchase ? purchaseSources : supplier ? [supplier, ...receipts] : receipts
+  const evidenceReady = purchase ? allPurchaseLinesMatch(purchase) && sources.length > 0 &&
+    sources.every(source => source.availability === 'available' && !!source.href && !!source.quote) : legacyEvidenceReady
 
   async function approve(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (sending.current || failure?.retry === false) return
+    if (sending.current || failure?.retry === false || (mode === 'close' && !evidenceReady)) return
     const address = warehouseSender.safeParse(sender)
     if (!pending && mode === 'configure' && (!accountId || !address.success)) {
       setFailure({ text: 'Chọn hộp thư và nhập địa chỉ email kho hợp lệ.', retry: true })
       return
     }
-    const command: ReceivingCommand = mode === 'close' ? { operation: 'close', expectedVersion: version } : {
+    const command: ReceivingCommand | PurchaseCommand = purchase
+      ? mode === 'close' ? { operation: 'close', id, version } :
+        { operation: 'configure', id, version, accountId, sender: address.data ?? '' }
+      : mode === 'close' ? { operation: 'close', expectedVersion: version } : {
       operation: 'configure', expectedVersion: version, accountId, sender: address.data ?? '',
     }
     const request = pending ?? { key: crypto.randomUUID(), command }
@@ -69,7 +80,9 @@ export function WarehouseReview({ id, version, state, mode, accounts, history, c
     setBusy(true)
     sending.current = true
     try {
-      const result = await confirmCommitmentReceiving(id, request.key, request.command)
+      const result = 'expectedVersion' in request.command
+        ? await confirmCommitmentReceiving(id, request.key, request.command)
+        : await confirmPurchaseOrder(request.key, request.command)
       if (result.id !== id || result.version !== version + 1) throw new Error('Invalid receiving receipt')
       saved()
     } catch (error) {
@@ -105,16 +118,21 @@ export function WarehouseReview({ id, version, state, mode, accounts, history, c
         </label>
         {state.status === 'completed' && <p className="text-sm">Cam kết sẽ mở lại để ghi nhận các phiếu nhập.</p>}
       </> : <>
-        <WarehouseTotals state={state} />
-        <ul aria-label="Email dùng để khép cam kết" className="divide-y divide-[var(--border)] border-y border-[var(--border)] text-sm">
+        {purchase ? <PurchaseLines lines={purchase.lines} /> : <WarehouseTotals state={state} />}
+        {purchase && <p className="text-xs font-medium text-[var(--foreground-secondary)]">Email đã duyệt · {sources.length} trích đoạn</p>}
+        <ul aria-label="Email dùng để khép cam kết" className={purchase
+          ? 'max-h-[35dvh] divide-y divide-[var(--border)] overflow-y-auto overscroll-contain border-y border-[var(--border)] pe-2 text-sm'
+          : 'divide-y divide-[var(--border)] border-y border-[var(--border)] text-sm'}>
           {sources.map(source => <li key={source.emailId + source.quote} className="py-2">
             {source.availability === 'available' && source.href
-              ? <Link href={source.href} target="_blank" rel="noopener" prefetch={false} className="neo-target inline-flex text-[var(--accent-foreground)] underline">{source.subject || 'Mở email nguồn'}</Link>
+              ? <Link href={source.href} target="_blank" rel="noopener" prefetch={false} className="neo-target inline-flex min-h-11 items-center text-[var(--accent-foreground)] underline">{source.subject || 'Mở email nguồn'}</Link>
               : <p>Nguồn không còn khả dụng</p>}
+            {source.attachment && source.availability === 'available' && <p><PurchaseCsvSource source={source.attachment} /></p>}
             {source.quote && <blockquote className="break-words">{source.quote}</blockquote>}
           </li>)}
         </ul>
-        <p className="text-sm">Xác nhận số báo giao và số thực nhận đã khớp số đặt. Sổ sẽ lưu chứng cứ và chuyển cam kết sang Đã khép.</p>
+        <p className="text-sm">{purchase ? 'Xác nhận từng dòng khớp số đặt. Sổ sẽ lưu chứng cứ và chuyển cam kết sang Đã khép.' :
+          'Xác nhận số báo giao và số thực nhận đã khớp số đặt. Sổ sẽ lưu chứng cứ và chuyển cam kết sang Đã khép.'}</p>
       </>}
       {failure && <Alert variant="error">{failure.text}</Alert>}
     </form>

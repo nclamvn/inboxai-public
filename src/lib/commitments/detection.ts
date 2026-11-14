@@ -1,4 +1,5 @@
 import type { CommitmentEvidence, CommitmentState, ReceivingCommand } from './contracts'
+import type { PurchaseMailCommand } from './purchase-order'
 import type { DetectionSignal } from './detect'
 import type { LedgerState, SourceEvidence } from './view'
 
@@ -14,6 +15,7 @@ export type DetectionCommand = {
 
 export type ReceivingProposalCommand = Extract<ReceivingCommand, { operation: 'receive' | 'correct' }> & { id: string; state: CommitmentState }
 
+export type PurchaseProposalCommand = { operation: 'purchase'; command: PurchaseMailCommand; state: CommitmentState }
 export type CommitmentProposal = {
   proposalId: string
   catchupToken?: string
@@ -31,8 +33,8 @@ export type CommitmentProposal = {
   originalReceipt?: SourceEvidence
   priorCorrection?: SourceEvidence
   previous: LedgerState | null
-  review: { command: DetectionCommand | ReceivingProposalCommand; title: string } | null
-  blocked: 'unmatched' | 'chronology' | 'ambiguous' | 'conflicting' | 'uncertain' | 'quantity' | 'warehouse' | 'duplicate_receipt' | 'receipt_unavailable' | null
+  review: { command: DetectionCommand | ReceivingProposalCommand | PurchaseProposalCommand; title: string } | null
+  blocked: 'unmatched' | 'chronology' | 'ambiguous' | 'conflicting' | 'uncertain' | 'quantity' | 'warehouse' | 'duplicate_receipt' | 'receipt_unavailable' | 'purchase_line' | null
 }
 
 export type DetectionPage = { proposals: CommitmentProposal[]; nextBeforeId: string | null }

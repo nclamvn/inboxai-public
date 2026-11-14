@@ -1,10 +1,12 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import {
   Paperclip, FileText, Image, FileSpreadsheet,
   File, Download, Eye, X
 } from 'lucide-react'
+import { isPurchaseCsv } from '@/lib/commitments/purchase-csv'
 import { cn } from '@/lib/utils'
 import { isRasterPreviewType } from '@/lib/email/attachment-preview'
 
@@ -18,6 +20,7 @@ export interface Attachment {
 
 interface AttachmentListProps {
   attachments: Attachment[]
+  purchaseEmailId?: string
 }
 
 // Get icon based on content type
@@ -45,7 +48,7 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-export function AttachmentList({ attachments }: AttachmentListProps) {
+export function AttachmentList({ attachments, purchaseEmailId }: AttachmentListProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewName, setPreviewName] = useState<string>('')
 
@@ -92,7 +95,7 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
             return (
               <div
                 key={att.id}
-                className="flex items-center gap-2 px-3 py-2 bg-[var(--secondary)] rounded-lg hover:bg-[var(--border)] transition-colors group"
+                className="group flex max-w-full flex-wrap items-center gap-2 rounded-lg bg-[var(--secondary)] px-3 py-2 transition-colors hover:bg-[var(--border)]"
               >
                 {/* Icon */}
                 <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', colorClass)}>
@@ -110,7 +113,21 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-1 ml-2 sm:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+                <div className={cn('flex items-center gap-1 ml-2', !(purchaseEmailId && isPurchaseCsv(att.filename, type)) &&
+                  'sm:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity')}>
+                  {purchaseEmailId && isPurchaseCsv(att.filename, type) && (
+                    <div className="flex flex-wrap items-center">
+                      <Link href={'/commitments/purchase-csv?' + new URLSearchParams({ email: purchaseEmailId, file: att.id })}
+                        prefetch={false} aria-label={'Đối soát CSV · ' + att.filename} className="neo-target inline-flex min-h-11 items-center px-2 text-xs font-medium text-[var(--accent-foreground)] underline">
+                        Đối soát CSV
+                      </Link>
+                      <Link href={'/commitments/payment?' + new URLSearchParams({ email: purchaseEmailId, file: att.id })}
+                        prefetch={false} aria-label={'Bảng giá hoặc hóa đơn · ' + att.filename}
+                        className="neo-target inline-flex min-h-11 items-center px-2 text-xs font-medium text-[var(--accent-foreground)] underline">
+                        Bảng giá / hóa đơn
+                      </Link>
+                    </div>
+                  )}
                   {isPreviewable && (
                     <button
                       onClick={() => handlePreview(att)}

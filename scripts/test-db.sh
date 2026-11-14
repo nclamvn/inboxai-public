@@ -43,6 +43,9 @@ for task_migration in supabase/migrations/*.sql; do
   if [[ "$task_migration" == "supabase/migrations/20261112020000_commitment_lifecycle.sql" ]]; then
     psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -v seed_commitment_legacy=true -f tests/db/commitment-lifecycle-upgrade.sql
   fi
+  if [[ "$task_migration" == "supabase/migrations/20261114060000_purchase_installments.sql" ]]; then
+    psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -v seed_installments=true -f tests/db/purchase-installments-upgrade.sql
+  fi
   echo "Applying $task_migration"
   psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f "$task_migration"
   if [[ "$task_migration" == "supabase/migrations/20261111090000_ask_inbox.sql" ]]; then
@@ -53,6 +56,9 @@ for task_migration in supabase/migrations/*.sql; do
   fi
   if [[ "$task_migration" == "supabase/migrations/20261112020000_commitment_lifecycle.sql" ]]; then
     psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -v seed_commitment_legacy=false -f tests/db/commitment-lifecycle-upgrade.sql
+  fi
+  if [[ "$task_migration" == "supabase/migrations/20261114060000_purchase_installments.sql" ]]; then
+    psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -v seed_installments=false -f tests/db/purchase-installments-upgrade.sql
   fi
 done
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/tenant-isolation.sql
@@ -85,3 +91,6 @@ psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/draft-continuity.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/offline-compose.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/delivery-commitments.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/warehouse-reconciliation.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/multiline-purchase.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/purchase-csv.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/purchase-payment.sql

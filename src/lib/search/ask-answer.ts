@@ -3,7 +3,7 @@ import { isQuotedMailBoundary } from '@/lib/email/plain-text'
 import { answerFields, type AnswerCitation, type AnswerClaim, type AnswerField, type AnswerObservation, type AskAnswer } from './ask-answer-contracts'
 import { readAnswerDate, readAnswerMoney } from './ask-answer-values'
 
-type Plan = { reference: string; fields: AnswerField[] | null; warehouse?: true }
+type Plan = { reference: string; fields: AnswerField[] | null; warehouse?: true; payment?: true }
 type PlanResult = { plan: Plan } | { reason: NonNullable<AskAnswer['reason']> }
 
 export type AnswerSource = {
@@ -42,7 +42,11 @@ export function planAskAnswer(question: string): PlanResult {
   if (codes.length === 0) return { reason: 'reference_required' }
   if (codes.length > 1) return { reason: 'multiple_references' }
   const reference = codes[0]
-  if (reference.startsWith('PO-') && /(?:đối soát|nhập kho|đính chính|mở lại|thực nhận|kho (?:đã )?nhận|còn thiếu|thiếu bao nhiêu)/iu.test(question)) {
+  const asksPaymentMatch = /(?:ba bên|đơn giá|đủ (?:căn cứ |điều kiện )?thanh toán|trước thanh toán|đối (?:soát|chiếu).*(?:hóa đơn|hoá đơn)|(?:hóa đơn|hoá đơn).*(?:chênh lệch|sai|khớp|thiếu))/iu.test(question)
+  if (reference.startsWith('PO-') && asksPaymentMatch) {
+    return { plan: { reference, fields: fieldKeys.filter(key => questions[key].test(question)), payment: true } }
+  }
+  if (reference.startsWith('PO-') && /(?:đối soát|nhập kho|đính chính|mở lại|thực nhận|kho (?:đã )?nhận|còn thiếu|thiếu bao nhiêu|từng dòng|dòng nào|thừa bao nhiêu)/iu.test(question)) {
     return { plan: { reference, fields: [], warehouse: true } }
   }
   const fields = fieldKeys.filter(key => questions[key].test(question))

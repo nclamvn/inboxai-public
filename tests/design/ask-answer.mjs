@@ -5,13 +5,12 @@ import { chromium } from 'playwright-core'
 import { audit } from './browser.mjs'
 import { planAskAnswer, synthesizeAskAnswer } from '../../src/lib/search/ask-answer.ts'
 
-const output = 'docs/phase-2/evidence/m4b'
 const endpoint = '/api/ask-inbox/answer'
 const payload = (input, headers = {}) => ({
   method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(input),
 })
 
-export async function rehearseAskAnswer({ app, appFetch, cookies, admin, login, userId, foreignId, foreignToken, loopbackFetch, record }) {
+export async function rehearseAskAnswer({ app, appFetch, cookies, admin, login, userId, foreignId, foreignToken, loopbackFetch, record, output = 'docs/phase-2/evidence/m4b' }) {
   const work = randomUUID(), finance = randomUUID(), other = randomUUID()
   assert.equal((await admin.from('source_accounts').insert([
     { id: work, user_id: userId, email_address: 'operations@example.test', provider: 'custom' },

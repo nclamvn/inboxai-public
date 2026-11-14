@@ -1,3 +1,7 @@
+import type { PaymentSnapshot } from '@/lib/commitments/purchase-payment'
+import type { CsvSourceReference } from '@/lib/commitments/purchase-csv'
+import type { PurchaseLine, PurchaseOperation } from '@/lib/commitments/purchase-order'
+
 export const answerFields = {
   issueDate: 'Ngày phát hành hóa đơn',
   paymentDue: 'Hạn thanh toán',
@@ -18,7 +22,8 @@ export type AnswerCitation = {
   sender: string
   account: string | null
   at: string | null
-  field: 'subject' | 'body_text'
+  field: 'subject' | 'body_text' | 'attachment'
+  attachment?: CsvSourceReference
   quote: string
 }
 
@@ -44,6 +49,13 @@ export type WarehouseAnswer = {
   reopenedBy: string | null
 }
 
+export type PurchaseOrderAnswer = {
+  commitmentId: string
+  status: 'open' | 'completed' | 'cancelled'
+  lines: PurchaseLine[]
+  sources: (AnswerCitation & { operation: PurchaseOperation; line: string | null })[]
+}
+
 export type AskAnswer = {
   reference: string | null
   status: 'answered' | 'conflicting' | 'insufficient' | 'partial'
@@ -51,6 +63,8 @@ export type AskAnswer = {
   examined: number
   limited: boolean
   claims: AnswerClaim[]
+  payment?: PaymentSnapshot
+  purchase?: PurchaseOrderAnswer | null
   warehouse?: WarehouseAnswer | null
 }
 

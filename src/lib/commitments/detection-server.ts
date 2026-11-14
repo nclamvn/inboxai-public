@@ -3,6 +3,8 @@ import { createHash } from 'node:crypto'
 import { z } from 'zod'
 import { createCommitment, reviseCommitment } from './contracts'
 import { commitmentTitleKey, detectCommitments, proposedState, senderIdentity, subjectReference, type DetectionSignal } from './detect'
+import type { PurchaseMailCommand } from './purchase-order'
+import type { CommitmentState } from './contracts'
 import type { LedgerState, SourceEvidence } from './view'
 import type { CommitmentProposal, DetectionCommand, DetectionPage } from './detection'
 import { ledgerRpc, type LedgerSession } from './http'
@@ -27,6 +29,11 @@ type CorrectionEvidence = {
   effectiveAt: string | null; duplicate: boolean
 }
 
+type PurchasePreview = {
+  id: string | null; version: number | null; emailId: string; quote: string; line: string | null
+  state?: CommitmentState; previous?: LedgerState | null; original?: SourceEvidence | null
+  blocked?: 'purchase_line' | 'duplicate_receipt' | 'uncertain'
+}
 export type ScanPage = { messages: Source[]; nextBeforeId: string | null }
 
 const referenceKey = z.string().regex(/^mail:[0-9a-f]{64}$/)
@@ -59,8 +66,9 @@ export function interpretScan(page: ScanPage): Signal[] {
   })
 }
 
-export function buildProposals(page: ScanPage, signals: Signal[], targets: Target[], corrections: CorrectionEvidence[] = []): DetectionPage {
+export function buildProposals(page: ScanPage, signals: Signal[], targets: Target[], corrections: CorrectionEvidence[] = [], purchases: PurchasePreview[] = []): DetectionPage {
   const byReference = Map.groupBy(targets, target => target.reference)
+  const purchaseByQuote = new Map(purchases.map(purchase => [JSON.stringify([purchase.emailId, purchase.quote]), purchase]))
   const correctionProof = new Map(corrections.map(proof => [JSON.stringify([proof.id, proof.receiptNumber, proof.correctionNumber]), proof]))
   const proposals = signals.flatMap((item): CommitmentProposal[] => {
     const { source, sender, signal, reference, key, quoteHash } = item
@@ -90,6 +98,18 @@ export function buildProposals(page: ScanPage, signals: Signal[], targets: Targe
       proposedBatch: signal.proposedBatch ?? null, previous: current?.state ?? null,
       ...(source.catchupToken ? { catchupToken: source.catchupToken } : {}),
     }
+    const purchaseOperation = signal.purchaseOperation ?? (related.some(target => target.state.purchaseOrder) && signal.receipt ? 'receive' : null)
+    if (purchaseOperation) {
+      const preview = purchaseByQuote.get(JSON.stringify([source.id, signal.quote]))
+      const scope = { ...common, kind: 'purchase' as const, commitmentId: preview?.id ?? null, previous: preview?.previous ?? null }
+      const evidence = { emailId: source.id, fingerprint: source.fingerprint, quote: signal.quote }
+      const command: PurchaseMailCommand | null = purchaseOperation === 'create' ? { operation: 'create', ...evidence }
+        : preview?.id && preview.version ? { operation: purchaseOperation, id: preview.id, version: preview.version, ...evidence } : null
+      if (!preview?.state || !command) return [{ ...scope, review: null, blocked: preview?.blocked ?? 'uncertain' }]
+      return [{ ...scope, ...(preview.original && { originalReceipt: preview.original }), blocked: null,
+        review: { title: preview.state.title, command: { operation: 'purchase', command, state: preview.state } } }]
+    }
+    if (related.some(target => target.state.purchaseOrder)) return [{ ...common, review: null, blocked: 'uncertain' }]
     if (related.length > 8 || (signal.kind !== 'create' && (candidates.length > 1 || (warehouse && related.length > 1) || current?.multiOrigin))) {
       return [{ ...common, review: null, blocked: 'ambiguous' }]
     }
@@ -196,5 +216,11 @@ async function proposalsForPage(client: LedgerSession, page: ScanPage) {
     references.length ? ledgerRpc(client, 'read_commitment_lifecycle_targets', { p_references: references }) : [],
     correctionSignals.length ? ledgerRpc(client, 'read_warehouse_correction_evidence', { p_signals: correctionSignals }) : [],
   ])
-  return buildProposals(page, signals, targets, corrections)
+  const purchaseReferences = new Set((targets as Target[]).filter(t => t.state.purchaseOrder).map(t => t.reference))
+  const purchaseCommands = signals.flatMap(({ reference, source, signal }) => {
+    const operation = signal.purchaseOperation ?? (signal.receipt && reference && purchaseReferences.has(reference) ? 'receive' : null)
+    return operation ? [{ operation, emailId: source.id, quote: signal.quote, fingerprint: source.fingerprint }] : []
+  })
+  const purchases = purchaseCommands.length ? await ledgerRpc(client, 'preview_purchase_orders', { p_commands: purchaseCommands }) : []
+  return buildProposals(page, signals, targets, corrections, purchases)
 }

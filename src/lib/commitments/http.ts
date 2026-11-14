@@ -56,13 +56,21 @@ export async function readCommitmentJson(request: NextRequest): Promise<unknown>
 
 export async function ledgerRpc(client: LedgerSession, name: 'save_commitment' | 'list_commitments' | 'list_commitment_board' | 'read_commitment'
   | 'scan_commitment_mail' | 'read_commitment_lifecycle_targets' | 'confirm_commitment_detection'
-  | 'confirm_commitment_receiving' | 'confirm_commitment_warehouse_correction' | 'read_warehouse_correction_evidence' | 'list_commitment_attention' | 'read_commitment_reminder'
+  | 'read_purchase_payment' | 'list_purchase_payment_attention' | 'read_purchase_payment_receipt' | 'preview_purchase_payment' | 'confirm_purchase_payment'
+  | 'read_purchase_csv_proof' | 'check_purchase_csv_source' | 'preview_purchase_csv' | 'read_purchase_csv_receipt' | 'confirm_purchase_csv'
+  | 'preview_purchase_orders' | 'confirm_purchase_order' | 'confirm_commitment_receiving' | 'confirm_commitment_warehouse_correction' | 'read_warehouse_correction_evidence' | 'list_commitment_attention' | 'read_commitment_reminder'
   | 'read_commitment_catchup' | 'read_commitment_catchup_status' | 'dismiss_commitment_catchup', args: Record<string, unknown>) {
   const { data, error } = await client.rpc(name, args).abortSignal(AbortSignal.timeout(10_000))
   if (!error && data != null) return data
   switch (error?.code) {
     case '42501':
       throw new CommitmentRequestError(401, 'Yêu cầu đăng nhập.')
+    case 'PT413':
+      throw new CommitmentRequestError(413, 'Tệp CSV vượt giới hạn dung lượng.')
+    case 'PT431':
+      throw new CommitmentRequestError(422, error.message)
+    case 'PT432':
+      throw new CommitmentRequestError(409, error.message)
     case 'PT404':
       throw new CommitmentRequestError(404, 'Không tìm thấy cam kết, trang hoặc email nguồn.')
     case 'PT409':

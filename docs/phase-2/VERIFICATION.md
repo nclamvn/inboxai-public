@@ -1,5 +1,112 @@
 # Verification record
 
+## Đối soát nhiều hóa đơn theo đợt trên cùng một PO
+
+Nghiệm thu ngày 14/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,
+PostgreSQL 16 và Chrome 157.0.8103.79 với hai Gmail loopback. Kịch bản
+giả lập nhà cung cấp, kho, Mua hàng và kế toán dưới quyền chủ hồ sơ.
+
+Kho nhận 90 bộ B. Duyệt đợt 60 để lại 30. Đợt 50 bị chặn dù bản
+xem trước cũ còn hiển thị đủ hàng. Ask Inbox dẫn về phiếu kho và
+đợt đã duyệt. Kho bổ sung 10 và hóa đơn đính chính còn 40. Gửi lại
+dưới tên khác bị từ chối. Mất phản hồi sau khi duyệt và thử lại
+trả cùng ID, tổng 100. Kho đính chính thực nhận xuống 99 tạo cảnh
+báo vượt 1. Bản thay thế của đợt đầu giữ 60 đến khi duyệt số mới 59.
+Hai yêu cầu duyệt đồng thời cùng dựa vào 90 bộ ở dòng A cho kết
+quả một thành công và một xung đột. Kịch bản ghi nhận 0 email gửi.
+
+| Lệnh | Kết quả local |
+| --- | --- |
+| `npm run test:purchase-installments` và build Next production | Exit 0. 22 kiểm tra. Bốn ảnh Chrome qua axe và không tràn ngang |
+| Lint và TypeScript | Exit 0. Lint có 92 cảnh báo hiện có |
+| Unit và integration | Exit 0. 252 và 200 test |
+| `npm run test:db` | Exit 0. 39 nhóm, gồm nâng cấp chuỗi hóa đơn cũ và giữ số đã duyệt |
+| Hồi quy đối soát một hóa đơn và phiếu nhập CSV | Exit 0. 20 và 20 kiểm tra |
+| Design và platform biệt lập | Exit 0. 29 và 19 kiểm tra |
+| Staging biệt lập | Exit 0. 31 kiểm tra nâng cấp, sao lưu và khôi phục |
+
+[Phạm vi và cách chạy lại](PURCHASE_INSTALLMENTS.md) · [Báo cáo Chrome](../../test-results/purchase-installments/report.json).
+
+## Đối soát ba bên trước thanh toán
+
+Nghiệm thu ngày 14/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,
+PostgreSQL 16 và Chrome 157.0.8103.79. Hai Gmail loopback cho Mua hàng và
+Kho. Các vai nhà cung cấp, kho, người mua và kế toán đều giả lập.
+
+Dòng A báo sai đơn giá và dòng B tính tiền 100 bộ khi mới nhận 90.
+Action Inbox dẫn đến hóa đơn bị giữ. Ask Inbox dẫn đúng dòng và tệp của
+ba nguồn. Bản gửi lại dưới tên khác không ghi thêm chứng từ. Phiếu bổ
+sung đồng bộ muộn giải quyết thiếu hàng. Sau khi hóa đơn đính chính đúng
+giá, kế toán duyệt tổng trước thuế 2.000.000 đồng. Tệp thay đổi sau xem
+trước bị từ chối. Mất phản hồi sau ghi và thử lại trả cùng một biên
+nhận. Đính chính kho sau duyệt làm bộ chứng từ lệch và gỡ trạng thái
+đủ căn cứ. Kịch bản ghi nhận 0 lần gửi email.
+
+| Lệnh | Kết quả local |
+| --- | --- |
+| `npm run test:purchase-payment` và build Next production | Exit 0. 20 kiểm tra. Bốn ảnh Chrome qua axe và kiểm tra không tràn ngang |
+| Lint và TypeScript | Exit 0. Lint có 92 cảnh báo hiện có |
+| Unit và integration | Exit 0. 252 và 200 test |
+| `npm run test:db` | Exit 0. 38 nhóm, gồm chặn duyệt khi thiếu kho, khóa yêu cầu, cách ly RPC và vô hiệu chứng cứ đã đổi |
+| Hồi quy phiếu nhập CSV và Ask Inbox biệt lập | Exit 0. 20 và 25 kiểm tra |
+| Design và platform biệt lập | Exit 0. 29 và 19 kiểm tra |
+| Staging biệt lập | Exit 0. 31 kiểm tra nâng cấp, sao lưu và phục hồi |
+
+[Phạm vi và cách chạy lại](PURCHASE_PAYMENT.md) · [Báo cáo Chrome](../../test-results/purchase-payment/report.json).
+
+## Đối soát phiếu nhập từ tệp CSV đính kèm
+
+Ngày 14/11/2026. macOS arm64, Node 24.14.1, Next.js 16.4.6,
+PostgreSQL 16 và Chrome 157.0.8103.79. Hai Gmail loopback và ba vai
+giả lập gồm Mua hàng, nhà cung cấp và Kho.
+
+Chrome mở tệp đúng hộp thư dù trùng tên, chặn ghi nếu byte trên Gmail
+thay đổi sau khi xem trước, đối chiếu A 110 và B 90,
+sau đó ghi cả phiếu bằng một phiên bản. Khi mất phản hồi sau ghi,
+thử lại trả cùng biên nhận. Tệp thiếu mã dòng và bản gửi lại dưới
+tên mới đều giữ nguyên số liệu. Ask Inbox dẫn đúng tệp và hàng
+chứng từ. Sau khi duyệt đính chính A và phiếu bổ sung B đến muộn,
+người mua xem bằng chứng rồi khép đơn trên Chrome mobile.
+
+| Lệnh | Kết quả local |
+| --- | --- |
+| `npm run lint` và `npm run typecheck` | Exit 0. Lint có 92 cảnh báo, không có lỗi |
+| `npm run test:unit` và `npm run test:integration` | Exit 0. 251 và 200 test |
+| `npm run test:db` | Exit 0. 37 nhóm, gồm giao dịch ghi cùng lúc bốn dòng, quyền RPC, thay đổi chứng cứ và thử lại |
+| `npm run test:purchase-csv` và build Next production | Exit 0. 20 kiểm tra và bốn màn hình Chrome qua axe, không tràn ngang |
+| `npm run test:multiline-purchase` | Exit 0. 20 kiểm tra hồi quy Cam kết theo nội dung email |
+| `npm run test:mail-lookup` | Exit 0. 22 kiểm tra tìm thư và tải đúng tệp |
+| `npm run test:design -- --isolated` | Exit 0. 29 kiểm tra |
+| `npm run test:platform -- --isolated` | Exit 0. 19 kiểm tra trình duyệt |
+| `npm run test:staging -- --isolated` | Exit 0. 31 kiểm tra nâng cấp, sao lưu và phục hồi local |
+
+[Phạm vi và cách chạy lại](PURCHASE_CSV.md) · [Báo cáo Chrome](../../test-results/purchase-csv/report.json).
+
+## Đối soát đơn mua hàng nhiều dòng
+
+Nghiệm thu ngày 14/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,
+PostgreSQL 16 và Chrome 157.0.8103.79. Hai Gmail loopback tách vai Mua hàng
+và Kỹ thuật. PO giả lập có A và B cùng đặt 100 bộ. Cùng một phiếu báo thực nhận
+A 110 và B 90. Sổ giữ riêng chênh lệch, từ chối khép theo tổng, và giữ nguyên
+số lượng khi phiếu thiếu mã, ghi mã mơ hồ hoặc gửi lại. Action Inbox chỉ gửi
+một lời nhắc dòng B sau khi duyệt. Ask Inbox mở đúng email nguồn và báo thiếu
+bằng chứng nếu giới hạn hộp thư. Sau khi duyệt đính chính A và phiếu B đến
+muộn, đơn khép ở phiên bản 9. Hai lần mất phản hồi HTTP sau lưu (phiếu và
+khép) đều trả về bản ghi đã lưu khi người mua thử lại cùng khóa.
+
+| Kiểm tra | Kết quả local |
+| --- | --- |
+| Lint, TypeScript | Exit 0, lint có 92 cảnh báo hiện có |
+| Unit và integration | Exit 0, 251 và 200 test |
+| PostgreSQL `npm run test:db` | Exit 0, 36 nhóm. Có kiểm tra quyền RPC, bằng chứng đã thay đổi, chặn đường ghi chung và chống lặp |
+| Build Next production và `npm run test:multiline-purchase` | Exit 0, 20 kiểm tra. Bốn ảnh qua axe và không tràn ngang. Nút duyệt khép thấy ngay ở 390 × 844 |
+| `npm run test:warehouse-correction` | Exit 0, 23 kiểm tra hồi quy luồng một dòng |
+| `npm run test:design -- --isolated` | Exit 0, 29 kiểm tra |
+| `npm run test:platform -- --isolated` | Exit 0, 19 kiểm tra trình duyệt |
+| `npm run test:staging -- --isolated` | Exit 0, 31 kiểm tra nâng cấp, sao lưu, khôi phục và cảnh báo local |
+
+[Phạm vi và cách chạy lại](MULTILINE_PURCHASE.md) · [Báo cáo Chrome](../../test-results/multiline-purchase/report.json).
+
 ## Điều chỉnh phiếu nhập và mở lại cam kết
 
 Nghiệm thu ngày 14/11/2026 trên macOS arm64, Node 24.14.1, Chrome

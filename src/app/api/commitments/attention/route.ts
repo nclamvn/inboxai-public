@@ -15,8 +15,9 @@ export async function GET(request: NextRequest) {
     const read = async (ids: string[]): Promise<AttentionPage> =>
       ledgerRpc(client, 'list_commitment_attention', { p_accounts: accounts.data, p_reply_ids: ids })
 
-    const [initial, status] = await Promise.all([read([]),
+    const [initial, status, invoices] = await Promise.all([read([]),
       ledgerRpc(client, 'read_commitment_catchup_status', { p_accounts: accounts.data }),
+      ledgerRpc(client, 'list_purchase_payment_attention', { p_accounts: accounts.data }),
     ])
     const replies = new Map<string, CommitmentProposal>()
     if (initial.tracking) {
@@ -30,10 +31,11 @@ export async function GET(request: NextRequest) {
       }
     }
     const page = replies.size ? await read([...replies.keys()]) : initial
-    return ledgerJson({ accounts: status, items: page.items.map(item => {
+    return ledgerJson({ accounts: status, invoices, items: page.items.map(item => {
       const proposal = item.reason === 'reply' ? replies.get(item.id) : null
       return { ...item, reply: proposal ? {
-        emailId: proposal.emailId, subject: proposal.subject, quote: proposal.quote, needsReview: !proposal.review, correction: proposal.kind === 'correction',
+        emailId: proposal.emailId, subject: proposal.subject, quote: proposal.quote, needsReview: !proposal.review, correction: proposal.kind === 'correction' ||
+          (proposal.review?.command.operation === 'purchase' && proposal.review.command.command.operation === 'correct'),
       } : null }
     }) })
   })

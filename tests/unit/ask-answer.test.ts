@@ -166,6 +166,15 @@ describe('cited multi-email synthesis', () => {
     expect(result.claims.map(claim => claim.status)).toEqual(['unclear', 'unclear'])
   })
 
+  it('routes PO reconciliation separately from payment dates and amounts', () => {
+    expect(planAskAnswer('Đối soát hóa đơn trước thanh toán PO-4400')).toMatchObject({
+      plan: { reference: 'PO-4400', payment: true },
+    })
+    expect(planAskAnswer('Hạn thanh toán và tổng tiền hóa đơn PO-4400?')).toEqual({
+      plan: { reference: 'PO-4400', fields: ['paymentDue', 'invoiceTotal'] },
+    })
+  })
+
   it('asks for a specific reference or supported question when scope is ambiguous', () => {
     expect(planAskAnswer('Hạn thanh toán là ngày nào?')).toEqual({ reason: 'reference_required' })
     expect(planAskAnswer('So INV-112 và INV-113')).toEqual({ reason: 'multiple_references' })

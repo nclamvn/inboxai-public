@@ -8,6 +8,9 @@ import { Button } from '@/components/ui/button'
 import { deliveryLabel } from '@/lib/commitments/delivery'
 import { subjectReference } from '@/lib/commitments/detect'
 import { readWarehouseCorrection, receivingTotals, receivingValue } from '@/lib/commitments/receiving'
+import { allPurchaseLinesMatch, purchaseMailKind } from '@/lib/commitments/purchase-order'
+import { PurchaseCsvSource } from './purchase-csv-source'
+import { PurchaseLines } from './purchase-lines'
 import { WarehouseTotals } from './warehouse-reconciliation'
 import { cn } from '@/lib/utils'
 import {
@@ -16,6 +19,8 @@ import {
 } from '@/lib/commitments/view'
 
 function revisionValue(state: LedgerState, field: keyof LedgerState) {
+  if (field === 'purchaseOrder') return state.purchaseOrder?.lines
+    .map(line => `${line.code}: báo ${line.reported}, nhận ${line.received} ${line.unit}`).join(' · ') ?? 'Chưa ghi nhận'
   if (field === 'delivery') return state.delivery ? deliveryLabel(state.delivery) : 'Chưa ghi nhận'
   if (field === 'receiving') return receivingValue(state)
   if (field === 'status') return statusLabels[state.status]
@@ -30,7 +35,7 @@ function Revision({ item, previous }: { item: LedgerRevision; previous?: LedgerR
     <li className="relative border-s border-[var(--border-strong)] pb-5 ps-4 last:border-transparent last:pb-0">
       <span aria-hidden="true" className="absolute start-[-4px] top-2 size-2 rounded-full bg-[var(--selection-line)]" />
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <h3 className="text-sm font-semibold">{item.changedFields.includes('receiving') && readWarehouseCorrection(item.sources[0]?.quote ?? '') ? 'Duyệt đính chính phiếu nhập' : revisionLabels[item.kind]}</h3>
+        <h3 className="text-sm font-semibold">{(item.changedFields.includes('receiving') && readWarehouseCorrection(item.sources[0]?.quote ?? '')) || (item.changedFields.includes('purchaseOrder') && purchaseMailKind(item.sources[0]?.quote ?? '') === 'correct') ? 'Duyệt đính chính phiếu nhập' : revisionLabels[item.kind]}</h3>
         <span className="text-xs text-[var(--foreground-muted)]">Phiên bản {item.version}</span>
         <time dateTime={item.recordedAt} className="text-xs tabular-nums text-[var(--foreground-muted)]">
           {formatCommitmentMoment(item.recordedAt)}
@@ -70,6 +75,7 @@ function Revision({ item, previous }: { item: LedgerRevision; previous?: LedgerR
               </p>
             )}
             {source.availability === 'changed' && <p className="text-xs text-[var(--warning)]">Nội dung email đã thay đổi.</p>}
+            {source.attachment && source.availability === 'available' && <p><PurchaseCsvSource source={source.attachment} /></p>}
             {source.quote && <blockquote className="mt-1 whitespace-pre-wrap break-words text-sm text-[var(--foreground-secondary)]">{source.quote}</blockquote>}
           </li>
         ))}
@@ -99,9 +105,9 @@ export function CommitmentDetail({
   const { state } = detail
   const hasCorrections = history.some(item => item.sources.some(source => readWarehouseCorrection(source.quote ?? '')))
   const totals = receivingTotals(state)
-  const reference = state.delivery
+  const reference = state.purchaseOrder?.reference ?? (state.delivery
     ? history.flatMap(revision => revision.sources).map(source => subjectReference(source.subject)).find(code => code?.startsWith('PO-'))
-    : detail.referenceKey
+    : detail.referenceKey)
   return (
     <section aria-labelledby="commitment-heading" className="min-h-full min-w-0 bg-[var(--surface)]">
       <header className="border-b border-[var(--border)] px-4 pb-5 pt-3 sm:px-6">
@@ -116,10 +122,10 @@ export function CommitmentDetail({
               {state.title}
             </h2>
           </div>
-          <Button type="button" variant="outline" onClick={onConfirm} disabled={savedVersion !== null && savedVersion > detail.version}
+          {!state.purchaseOrder && <Button type="button" variant="outline" onClick={onConfirm} disabled={savedVersion !== null && savedVersion > detail.version}
             leftIcon={<Pencil size={16} aria-hidden="true" />}>
             Xác nhận thay đổi
-          </Button>
+          </Button>}
         </div>
         {savedVersion !== null && (
           <p role="status" className="mt-3 text-sm font-medium text-[var(--success)]">Đã xác nhận phiên bản {savedVersion}.</p>
@@ -139,6 +145,22 @@ export function CommitmentDetail({
             <dd className={cn('mt-1 text-sm font-medium', state.status === 'completed' && 'text-[var(--success)]')}>{statusLabels[state.status]}</dd>
           </div>
         </dl>
+        {state.purchaseOrder && <div className="mt-4 space-y-3 border-t border-[var(--border)] pt-4">
+          <h3 className="text-sm font-semibold">Đối soát đơn mua hàng nhiều dòng</h3>
+          <PurchaseLines lines={state.purchaseOrder.lines} />
+          <Link href={'/commitments/payment?id=' + detail.id} prefetch={false}
+            className="neo-target inline-flex min-h-11 items-center text-sm font-medium text-[var(--accent-foreground)] underline">
+            Đối soát trước thanh toán
+          </Link>
+          {state.purchaseOrder.warehouse
+            ? <p className="break-all text-xs text-[var(--foreground-muted)]">Nguồn xác nhận kho {state.purchaseOrder.warehouse.sender}</p>
+            : state.status === 'open' && <Button type="button" variant="outline" onClick={() => onReceiving('configure')}>Thiết lập nguồn nhập kho</Button>}
+          {state.status === 'open' && state.purchaseOrder.warehouse && (allPurchaseLinesMatch(state.purchaseOrder)
+            ? <Button type="button" loading={hasMore && loadingMore} onClick={hasMore ? onLoadHistory : () => onReceiving('close')}>
+                {hasMore ? 'Tải thêm bằng chứng để khép' : 'Xem trước và khép cam kết'}
+              </Button>
+            : <p className="text-sm text-[var(--foreground-secondary)]">Từng dòng phải khớp số đặt, số báo giao và số thực nhận trước khi khép.</p>)}
+        </div>}
         {state.delivery && !totals && <div className="mt-4 flex flex-wrap items-baseline justify-between gap-2 border-s-2 border-[var(--selection-line)] ps-3">
           <span className="text-sm text-[var(--foreground-secondary)]">Nhà cung cấp báo đã giao</span>
           <span className="font-semibold tabular-nums">{deliveryLabel(state.delivery)}</span>

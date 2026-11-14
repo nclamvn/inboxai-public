@@ -16,7 +16,7 @@ const command = (value, key = randomUUID()) => ({
 })
 const at = daysAgo => new Date(Date.now() - daysAgo * 86_400_000).toISOString()
 
-export async function rehearseWarehouseReconciliation({ app, base, email, previousEmail, password, userId, admin, appFetch, googleProvider, record, output, warehouseCorrection = false }) {
+export async function rehearseWarehouseReconciliation({ app, base, email, previousEmail, password, userId, admin, appFetch, googleProvider, record, output, warehouseCorrection = false, multilinePurchase = false, purchaseCsv = false, purchasePayment = false, purchaseInstallments = false }) {
   const vault = new CredentialVault(admin, parseKeyring(vaultKeys, 'local1'))
   const accounts = {}
   for (const department of ['mua-hang', 'ky-thuat']) {
@@ -38,10 +38,10 @@ export async function rehearseWarehouseReconciliation({ app, base, email, previo
     return result
   }
 
-  async function deliver(uid, department, from, age, subject, body) {
+  async function deliver(uid, department, from, age, subject, body, attachments = []) {
     const account = accounts[department]
     account.deliver([{ id: uid, threadId: department + '-' + purchaseOrder, messageId: '<' + uid + '@example.test>',
-      from, at: at(age), subject: '[' + purchaseOrder + '] ' + subject, body }])
+      from, at: at(age), subject: '[' + purchaseOrder + '] ' + subject, body, attachments }])
     await request('/api/source-accounts/sync', command({ refresh: true }))
     const result = await admin.from('emails').select('id').eq('user_id', userId)
       .eq('source_account_id', account.id).eq('original_uid', uid).single()
@@ -86,6 +86,30 @@ export async function rehearseWarehouseReconciliation({ app, base, email, previo
 
   try {
     page = await login(email)
+    if (purchaseInstallments) {
+      const { rehearsePurchaseInstallments } = await import('./purchase-installments.mjs')
+      await rehearsePurchaseInstallments({ app, page, deliver, request, accounts, capture, login, previousEmail, admin,
+        googleProvider, record, runtimeErrors, orderCode: purchaseOrder, supplier, warehouse })
+      return
+    }
+    if (purchasePayment) {
+      const { rehearsePurchasePayment } = await import('./purchase-payment.mjs')
+      await rehearsePurchasePayment({ app, page, deliver, request, accounts, capture, login, previousEmail, admin,
+        googleProvider, record, runtimeErrors, orderCode: purchaseOrder, supplier, warehouse })
+      return
+    }
+    if (purchaseCsv) {
+      const { rehearsePurchaseCsv } = await import('./purchase-csv.mjs')
+      await rehearsePurchaseCsv({ app, page, deliver, request, accounts, capture, login, previousEmail, admin,
+        record, runtimeErrors, orderCode: purchaseOrder, supplier, warehouse })
+      return
+    }
+    if (multilinePurchase) {
+      const { rehearseMultilinePurchase } = await import('./multiline-purchase.mjs')
+      await rehearseMultilinePurchase({ app, page, deliver, request, accounts, capture, login, previousEmail, admin,
+        googleProvider, record, runtimeErrors, orderCode: purchaseOrder, supplier, warehouse })
+      return
+    }
     const due = at(-5).slice(0, 10)
     const initial = 'Bên em xác nhận giao 200 bộ khớp nối chậm nhất ngày ' + due + '.'
     const order = await deliver('warehouse-order', 'mua-hang', supplier, 9, 'Xác nhận đơn khớp nối', initial)

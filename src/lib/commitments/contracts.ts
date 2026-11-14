@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { purchaseOrder, allPurchaseLinesMatch } from './purchase-order'
 
 const boundedText = (max: number) => z.string().trim().min(1).max(max).refine(value => !value.includes('\0'))
 const evidence = z.array(z.strictObject({
@@ -30,8 +31,10 @@ const state = z.strictObject({
   status: z.enum(['open', 'completed', 'cancelled']),
   delivery: delivery.optional(),
   receiving: receiving.optional(),
+  purchaseOrder: purchaseOrder.optional(),
 }).refine(value => value.dueOn === null || value.dueAt === null)
-  .refine(({ delivery, receiving, status }) => {
+  .refine(({ delivery, receiving, purchaseOrder, status }) => {
+    if (purchaseOrder) return !delivery && !receiving && (status !== 'completed' || allPurchaseLinesMatch(purchaseOrder))
     if (!delivery) return !receiving
     if (delivery.delivered > delivery.ordered || (receiving && receiving.received > delivery.ordered)) return false
     if (status === 'completed') return delivery.delivered === delivery.ordered && (!receiving || receiving.received === delivery.ordered)

@@ -33,7 +33,11 @@ const dayTest = process.argv.includes('--day-test')
 const day = dayPreview || dayTest
 const interactivePreview = journeyPreview || dayPreview
 const warehouseCorrection = process.argv.includes('--warehouse-correction')
-const warehouseReconciliation = warehouseCorrection || process.argv.includes('--warehouse-reconciliation')
+const purchaseInstallments = process.argv.includes('--purchase-installments')
+const purchasePayment = process.argv.includes('--purchase-payment')
+const purchaseCsv = process.argv.includes('--purchase-csv')
+const multilinePurchase = process.argv.includes('--multiline-purchase')
+const warehouseReconciliation = purchaseInstallments || purchasePayment || purchaseCsv || multilinePurchase || warehouseCorrection || process.argv.includes('--warehouse-reconciliation')
 const deliveryCommitments = process.argv.includes('--delivery-commitments')
 const dailyCommitments = process.argv.includes('--daily-commitments')
 const catchup = process.argv.includes('--catchup')
@@ -57,16 +61,17 @@ const journeyE2E = warehouseReconciliation || deliveryCommitments || offlineComp
 const journey = interactivePreview || journeyE2E
 const commitmentBenchmark = process.argv.includes('--m6g')
 const isolatedCommitment = commitmentDetection && process.argv.includes('--isolated')
+const isolatedAskAnswer = askAnswer && process.argv.includes('--isolated')
 const commitmentOutput = commitmentBenchmark ? (await import('../tests/eval/commitments/benchmark.mjs')).output : null
 const isolatedDesign = design && process.argv.includes('--isolated')
 const isolatedPlatform = m6 && !m6Native && process.argv.includes('--isolated')
 const isolatedStaging = staging && process.argv.includes('--isolated')
 const isolatedAuth = process.argv.includes('--isolated-auth')
 const platformOutput = isolatedPlatform ? 'test-results/commitment-attention/platform' : undefined
-const isolated = journeyE2E || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedPlatform || isolatedAuth
+const isolated = journeyE2E || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedAskAnswer || isolatedPlatform || isolatedAuth
 const isolatedBuild = isolated || isolatedStaging
 const productionMode = m6 || staging || journey || isolated
-const journeyOutput = warehouseCorrection ? 'test-results/warehouse-correction' : warehouseReconciliation ? 'test-results/warehouse-reconciliation' : deliveryCommitments ? 'test-results/delivery-commitments' : offlineCompose ? 'test-results/offline-compose' : draftContinuity ? 'test-results/draft-continuity' : composeRecipients ? 'test-results/compose-recipients' : actionNotifications ? 'test-results/action-notifications' : offlineReply ? 'test-results/offline-reply' : mailLookup ? 'test-results/mail-lookup' : personalMailRules ? 'test-results/personal-mail-rules' : conversation ? 'test-results/inbox-conversation' : gmailReconnect ? 'test-results/gmail-reconnect' : scheduledSend ? 'test-results/scheduled-send' : emailSnoozes ? 'test-results/email-snoozes' : gmailTriage ? 'test-results/gmail-triage' : composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
+const journeyOutput = purchaseInstallments ? 'test-results/purchase-installments' : purchasePayment ? 'test-results/purchase-payment' : purchaseCsv ? 'test-results/purchase-csv' : multilinePurchase ? 'test-results/multiline-purchase' : warehouseCorrection ? 'test-results/warehouse-correction' : warehouseReconciliation ? 'test-results/warehouse-reconciliation' : deliveryCommitments ? 'test-results/delivery-commitments' : offlineCompose ? 'test-results/offline-compose' : draftContinuity ? 'test-results/draft-continuity' : composeRecipients ? 'test-results/compose-recipients' : actionNotifications ? 'test-results/action-notifications' : offlineReply ? 'test-results/offline-reply' : mailLookup ? 'test-results/mail-lookup' : personalMailRules ? 'test-results/personal-mail-rules' : conversation ? 'test-results/inbox-conversation' : gmailReconnect ? 'test-results/gmail-reconnect' : scheduledSend ? 'test-results/scheduled-send' : emailSnoozes ? 'test-results/email-snoozes' : gmailTriage ? 'test-results/gmail-triage' : composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
 const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.test'
 const evidenceFile = journey ? `${journeyOutput}/report.json`
   : isolatedAuth ? 'test-results/local-auth/report.json'
@@ -78,7 +83,7 @@ const evidenceFile = journey ? `${journeyOutput}/report.json`
   : m6 ? `docs/phase-2/evidence/m6a-${m6Baseline ? 'baseline' : m6Native ? 'native-run' : 'browser-run'}.json`
   : operatorOutcomes ? 'docs/phase-2/evidence/m5b-browser-run.json'
   : operator ? 'docs/phase-2/evidence/m5a-browser-run.json'
-  : askAnswer ? 'docs/phase-2/evidence/m4b-browser-run.json'
+  : askAnswer ? (isolatedAskAnswer ? 'test-results/purchase-payment/ask-answer-report.json' : 'docs/phase-2/evidence/m4b-browser-run.json')
   : askInbox ? 'docs/phase-2/evidence/m4a-browser-run.json'
   : commitmentDetection ? (isolatedCommitment ? 'test-results/commitment-lifecycle/browser-run.json' : 'docs/phase-2/evidence/m3c-browser-run.json')
   : commitmentUi ? 'docs/phase-2/evidence/m3b-browser-run.json'
@@ -151,6 +156,7 @@ try {
     mkdirSync(commitmentOutput, { recursive: true })
     rmSync(commitmentOutput + '/product.json', { force: true })
   }
+  if (isolatedAskAnswer) mkdirSync('test-results/purchase-payment', { recursive: true })
   if (isolatedCommitment) mkdirSync('test-results/commitment-lifecycle', { recursive: true })
   if (isolatedAuth) mkdirSync('test-results/local-auth', { recursive: true })
   if (platformOutput) mkdirSync(platformOutput, { recursive: true })
@@ -443,7 +449,7 @@ try {
       previousEmail, previousId, anon, anonymousClient, restartNext, smtpWire, record, output: journeyOutput })
   } else if (warehouseReconciliation) {
     const { rehearseWarehouseReconciliation } = await import('../tests/design/warehouse-reconciliation.mjs')
-    await rehearseWarehouseReconciliation({ app, base, email, previousEmail, password, userId, admin, appFetch, googleProvider, record, output: journeyOutput, warehouseCorrection })
+    await rehearseWarehouseReconciliation({ app, base, email, previousEmail, password, userId, admin, appFetch, googleProvider, record, output: journeyOutput, warehouseCorrection, multilinePurchase, purchaseCsv, purchasePayment, purchaseInstallments })
   } else if (deliveryCommitments) {
     const { rehearseDeliveryCommitments } = await import('../tests/design/delivery-commitments.mjs')
     await rehearseDeliveryCommitments({ app, base, email, previousEmail, password, userId, admin, appFetch, googleProvider, record, output: journeyOutput })
@@ -507,7 +513,7 @@ try {
     assert.equal(foreignSession.error, null)
     const { rehearseAskAnswer } = await import('../tests/design/ask-answer.mjs')
     await rehearseAskAnswer({ app, appFetch, cookies, admin, login, userId, foreignId: previousId,
-      foreignToken: foreignSession.data.session.access_token, loopbackFetch, record })
+      foreignToken: foreignSession.data.session.access_token, loopbackFetch, record, output: isolatedAskAnswer ? 'test-results/purchase-payment/ask-answer' : undefined })
   } else if (askInbox) {
     const foreignLogin = createClient(base, anon, { auth: { persistSession: false, autoRefreshToken: false } })
     const foreignSession = await foreignLogin.auth.signInWithPassword({ email: 'preupgrade@example.test', password })
@@ -549,7 +555,15 @@ try {
     await rehearseSync({sql,admin,login:legacyLogin,anonymous:createClient(base,anon),userId:previousId,otherUserId:userId,record})
     await rehearseMailSend({ sql, admin, login, anonymous:createClient(base,anon), userId, otherUserId:previousId, record, appFetch, fixture:mailProvider, smtpWire })
   }
-  const provenance = warehouseCorrection
+  const provenance = purchaseInstallments
+    ? 'Production-mode Next, Chrome and two loopback Gmail accounts. Cumulative invoice approvals, corrections and lost response replay.'
+    : purchasePayment
+    ? 'Production-mode Next, Chrome, PostgreSQL and two loopback Gmail accounts. Three-way invoice reconciliation and local approval.'
+    : purchaseCsv
+    ? 'Production-mode Next and installed Chrome, two loopback Gmail accounts, CSV reconciliation and atomic approval replay'
+    : multilinePurchase
+    ? 'Production-mode Next and installed Chrome, two loopback Gmail accounts, per-line purchase reconciliation and approval replay'
+    : warehouseCorrection
     ? 'Production-mode Next and Chrome with two loopback Gmail accounts, loss of write acknowledgement and approved warehouse correction after close'
     : warehouseReconciliation
     ? 'Production-mode Next and Chrome with two loopback Gmail accounts, role simulation, transactional warehouse receipt deduplication and lost approval acknowledgements'

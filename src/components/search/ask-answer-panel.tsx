@@ -1,4 +1,7 @@
 import Link from 'next/link'
+import { PaymentComparison } from '@/components/commitments/purchase-payment'
+import { PurchaseCsvSource } from '@/components/commitments/purchase-csv-source'
+import { PurchaseLines } from '@/components/commitments/purchase-lines'
 import { FileText } from 'lucide-react'
 import { commitmentsHref } from '@/lib/commitments/view'
 import { answerFields, formatAnswerValue, type AnswerCitation, type AskAnswer } from '@/lib/search/ask-answer-contracts'
@@ -37,6 +40,7 @@ function Sources({ citations }: { citations: AnswerCitation[] }) {
             <FileText size={16} className="shrink-0" aria-hidden="true" />
             <span className="min-w-0 break-words [overflow-wrap:anywhere]">Mở nguồn · {source.subject?.trim() || 'Email không có tiêu đề'}</span>
           </Link>
+          {source.attachment && <p><PurchaseCsvSource source={source.attachment} /></p>}
           <p className="break-words text-xs text-[var(--foreground-muted)] [overflow-wrap:anywhere]">
             {source.sender}{source.account ? ' · ' + source.account : ''}
             {source.at && Number.isFinite(Date.parse(source.at)) &&
@@ -49,6 +53,29 @@ function Sources({ citations }: { citations: AnswerCitation[] }) {
 }
 
 export function AskAnswerPanel({ answer }: { answer: AskAnswer }) {
+  if (answer.payment) return <div className="mt-4 p-4"><PaymentComparison snapshot={answer.payment} detailsLink /></div>
+  if (answer.purchase !== undefined) {
+    const result = answer.purchase
+    if (!result) return <p role="status" className="mt-4 text-sm">Chưa đủ chứng cứ đã duyệt cho {answer.reference} trong phạm vi tìm kiếm.</p>
+    return <section aria-label="Đối soát theo dòng đơn mua hàng" className="mt-4 space-y-4 border-y border-[var(--border)] bg-[var(--surface)] p-4">
+      <h3 className="text-sm font-semibold">Đối soát theo dòng · {answer.reference}</h3>
+      <PurchaseLines lines={result.lines} />
+      <section aria-label="Nguồn đơn mua hàng">
+        <h4 className="text-xs font-semibold">Nguồn số lượng đặt</h4>
+        <Sources citations={result.sources.filter(source => source.operation === 'create')} />
+      </section>
+      {result.lines.map(line => {
+        const citations = result.sources.filter(source => source.line === line.code)
+        return <section key={line.code} aria-label={'Nguồn dòng ' + line.code}>
+          <h4 className="text-xs font-semibold">Nguồn dòng {line.code}</h4>
+          {citations.length ? <Sources citations={citations} /> :
+            <p className="mt-1 text-sm">Chưa có báo giao hoặc phiếu nhập đã duyệt cho dòng này.</p>}
+        </section>
+      })}
+      <Link href={commitmentsHref(result.status === 'open' ? 'waiting' : 'closed', result.commitmentId)} prefetch={false}
+        className="neo-target inline-flex min-h-11 items-center text-sm font-medium text-[var(--accent-foreground)] underline">Mở sổ cam kết</Link>
+    </section>
+  }
   if (answer.warehouse !== undefined) {
     const result = answer.warehouse
     if (!result) return <p role="status" className="mt-4 text-sm">Chưa đủ chứng cứ đã duyệt cho {answer.reference} trong phạm vi tìm kiếm.</p>

@@ -12,6 +12,7 @@ import { GmailReconnectButton, GmailReconnectNotice } from '@/components/gmail/g
 import { catchupHref, type CatchupAccount } from '@/lib/commitments/catchup'
 import type { AttentionItem } from '@/lib/commitments/attention'
 import { approveCommitmentReminder, LedgerApiError, loadCommitmentAttention, loadCommitmentReminder } from '@/lib/commitments/client'
+import { PurchaseLines } from './purchase-lines'
 import { WarehouseTotals } from './warehouse-reconciliation'
 import { deliveryLabel } from '@/lib/commitments/delivery'
 import { commitmentsHref, formatCommitmentDue, formatCommitmentMoment, ownerLabel } from '@/lib/commitments/view'
@@ -21,12 +22,13 @@ const reasons = {
   today: 'Đến hạn hôm nay',
   overdue: 'Quá hạn',
   receiving: 'Chênh lệch nhập kho',
+  purchase_discrepancy: 'Chênh lệch theo dòng',
   receiving_ready: 'Đủ hàng · Chờ khép',
   review: 'Bằng chứng cần kiểm tra',
   reply: 'Có phản hồi mới',
 }
 const reasonTones: Record<AttentionItem['reason'], BadgeProps['variant']> = {
-  today: 'warning', overdue: 'error', review: 'warning', receiving: 'warning', receiving_ready: 'success', reply: 'info',
+  today: 'warning', overdue: 'error', review: 'warning', receiving: 'warning', purchase_discrepancy: 'warning', receiving_ready: 'success', reply: 'info',
 }
 const reminderLabels = {
   accepted: 'Đã gửi lời nhắc',
@@ -206,12 +208,13 @@ export function CommitmentAttention({ userId, accounts, onSynced }: {
   })
   const items = query.data?.items ?? []
   const status = query.data?.accounts ?? []
+  const invoices = query.data?.invoices ?? []
   const refresh = () => void query.refetch()
 
-  if (!items.length && !status.length && !query.isError && !review) return null
+  if (!items.length && !invoices.length && !status.length && !query.isError && !review) return null
   return (
     <>
-      {(items.length > 0 || status.length > 0 || query.isError) && (
+      {(items.length > 0 || invoices.length > 0 || status.length > 0 || query.isError) && (
         <section aria-labelledby={title} className="border-b border-[var(--border)] bg-[var(--surface)]">
           <div className="neo-section-accent flex min-w-0 items-center justify-between gap-3 px-4 sm:px-5">
             <h2 id={title} ref={heading} tabIndex={-1} className="py-3 text-sm font-semibold">Cam kết cần chú ý</h2>
@@ -221,9 +224,18 @@ export function CommitmentAttention({ userId, accounts, onSynced }: {
             </button>
           </div>
           {query.isError && <p role="status" className="px-4 pb-3 text-sm text-[var(--error)]">Chưa cập nhật được cam kết. Thử làm mới.</p>}
+          {invoices.length > 0 && <ul aria-label="Hóa đơn cần đối soát" className="divide-y divide-[var(--border)] border-t border-[var(--border)]">
+            {invoices.map(invoice => <li key={invoice.invoiceId} className="flex flex-wrap items-center gap-x-4 px-4 sm:px-5">
+              <Badge variant={invoice.status === 'ready' ? 'info' : 'warning'}>{invoice.status === 'ready' ? 'Hóa đơn chờ duyệt' :
+                invoice.status === 'missing_price' ? 'Hóa đơn chờ đơn giá PO' : 'Cần kiểm tra hóa đơn'}</Badge>
+              <Link href={'/commitments/payment?' + new URLSearchParams({ id: invoice.id, invoice: invoice.invoiceId })} prefetch={false} className={link}>{invoice.invoice} · {invoice.reference}</Link>
+            </li>)}
+          </ul>}
           <ul className="divide-y divide-[var(--border)] border-t border-[var(--border)]">
             {items.map(item => {
-              const eligible = (item.reason === 'today' || item.reason === 'overdue' || item.reason === 'receiving') && item.responsibility === 'waiting'
+              const purchaseDeficit = item.state.purchaseOrder?.lines.some(line => line.received < line.ordered && line.received < line.reported)
+              const eligible = (item.state.purchaseOrder ? purchaseDeficit :
+                item.reason === 'today' || item.reason === 'overdue' || item.reason === 'receiving') && item.responsibility === 'waiting'
               const unresolved = item.reminderState === 'unknown' || item.reminderState === 'dispatching'
               return (
                 <li key={item.id} className="flex min-w-0 flex-wrap items-start justify-between gap-x-5 px-4 pt-3 sm:px-5">
@@ -233,6 +245,7 @@ export function CommitmentAttention({ userId, accounts, onSynced }: {
                       <Badge variant={item.reply?.correction ? 'warning' : reasonTones[item.reason]} className="py-0.5">{item.reply?.correction ? 'Đính chính kho chờ duyệt' : reasons[item.reason]}</Badge>
                       <span>{formatCommitmentDue(item.state)} · {item.responsibility === 'mine' ? 'Tôi phải làm' : ownerLabel(item.state)}</span>
                     </div>
+                    {item.state.purchaseOrder && <div className="mt-2"><PurchaseLines lines={item.state.purchaseOrder.lines} /></div>}
                     {item.state.receiving && <div className="mt-2"><WarehouseTotals state={item.state} hasReceipts={item.reason === 'receiving'} /></div>}
                     {item.state.delivery && !item.state.receiving && <p className="mt-1 text-sm tabular-nums">Nhà cung cấp báo đã giao {deliveryLabel(item.state.delivery)}</p>}
                     {item.reply && <blockquote className="mt-2 border-s-2 border-[var(--border)] ps-2 text-sm break-words">{item.reply.quote}</blockquote>}

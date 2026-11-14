@@ -8,7 +8,11 @@ export type CatchupAccount = {
   waitingAnalysis: number
 }
 
-export type CatchupAttention = { items: AttentionItem[]; accounts: CatchupAccount[] }
+export type CatchupAttention = {
+  items: AttentionItem[]
+  invoices?: import('./purchase-payment').PaymentAttention[]
+  accounts: CatchupAccount[]
+}
 
 export function catchupHref(group: string, accounts: string[], source?: string) {
   const params = new URLSearchParams({ group, view: 'catchup' })

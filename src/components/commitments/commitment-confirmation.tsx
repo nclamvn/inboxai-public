@@ -57,7 +57,7 @@ export function CommitmentConfirmationDialog({ detail, history, onClose, onReloa
     const unique = new Map<string, EvidenceChoice>()
     for (const revision of history) {
       for (const source of revision.sources) {
-        if (source.availability !== 'available' || !source.quote) continue
+        if (source.availability !== 'available' || !source.quote || source.field === 'attachment') continue
         const choice: EvidenceChoice = {
           emailId: source.emailId, field: source.field, quote: source.quote,
           subject: source.subject || 'Email nguồn', verified: true,

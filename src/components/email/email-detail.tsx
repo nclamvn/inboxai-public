@@ -411,7 +411,8 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
         )}
       </div>
 
-      {attachments && <AttachmentList attachments={attachments} />}
+      {attachments && <AttachmentList attachments={attachments}
+              purchaseEmailId={/\bPO-[0-9]{1,12}\b/i.test(email.subject ?? '') && email.direction !== 'outbound' ? email.id : undefined} />}
       {attachmentError && <p role="alert" className="px-4 py-2 text-sm">Chưa thể tải danh sách tệp.</p>}
       {/* Actions Footer */}
       <div className="p-4 border-t border-[var(--border)] bg-[var(--background)]">

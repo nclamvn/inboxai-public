@@ -7,20 +7,22 @@ import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Modal } from '@/components/ui/modal'
 import { Alert } from '@/components/ui/alert'
-import { confirmCommitmentReceiving, confirmCommitmentDetection, dismissCommitmentCatchup, LedgerApiError } from '@/lib/commitments/client'
+import { confirmCommitmentReceiving, confirmCommitmentDetection, confirmPurchaseOrder, dismissCommitmentCatchup, LedgerApiError } from '@/lib/commitments/client'
 import { commitmentChanges, commitmentsHref, formatCommitmentDue, formatCommitmentMoment, ownerLabel, statusLabels, type CommitmentGroup } from '@/lib/commitments/view'
 import { deliveryLabel } from '@/lib/commitments/delivery'
 import { catchupHref } from '@/lib/commitments/catchup'
+import { PurchaseLines } from './purchase-lines'
 import { WarehouseTotals } from './warehouse-reconciliation'
 import type { CommitmentProposal } from '@/lib/commitments/detection'
 
 const labels: Record<CommitmentProposal['kind'], string> = {
   create: 'Cam kết mới', deadline: 'Đổi hạn chót', owner: 'Đổi người phụ trách',
   progress: 'Giao một phần', completed: 'Hoàn tất', cancelled: 'Hủy cam kết',
-  review: 'Phản hồi cần kiểm tra', receipt: 'Phiếu nhập kho', correction: 'Đính chính phiếu nhập',
+  review: 'Phản hồi cần kiểm tra', receipt: 'Phiếu nhập kho', correction: 'Đính chính phiếu nhập', purchase: 'Đối soát theo dòng',
 }
 
 const blockedReasons: Record<NonNullable<CommitmentProposal['blocked']>, string> = {
+  purchase_line: 'Chưa xác định được mã dòng và đơn vị khớp. Sổ giữ nguyên số lượng.',
   unmatched: 'Chưa xác định được cam kết tương ứng do người gửi phụ trách.',
   chronology: 'Chưa xác minh được thư này mới hơn bằng chứng đang có trong sổ.',
   ambiguous: 'Có nhiều đầu việc có thể liên quan. Hãy kiểm tra email và sổ cam kết.',
@@ -77,7 +79,9 @@ function ProposalReview({ proposal, close, refresh, saved }: {
     setFailure(null)
     try {
       const command = review.command
-      const result = command.operation === 'receive' || command.operation === 'correct'
+      const result = command.operation === 'purchase'
+        ? await confirmPurchaseOrder(key, command.command)
+        : command.operation === 'receive' || command.operation === 'correct'
         ? await confirmCommitmentReceiving(command.id, key, { operation: command.operation, expectedVersion: command.expectedVersion,
           emailId: command.emailId, sourceFingerprint: command.sourceFingerprint, quote: command.quote })
         : await confirmCommitmentDetection(key, command)
@@ -104,7 +108,7 @@ function ProposalReview({ proposal, close, refresh, saved }: {
         {failure?.retry === false
           ? <Button type="button" onClick={dismiss}>Tải lại đề xuất</Button>
           : <Button type="button" loading={busy} onClick={() => void approve()}>
-            {failure?.retry ? 'Thử lưu lại' : review.command.operation === 'correct' ? 'Duyệt đính chính' : 'Xác nhận và ghi vào sổ'}
+            {failure?.retry ? 'Thử lưu lại' : (review.command.operation === 'correct' || (review.command.operation === 'purchase' && review.command.command.operation === 'correct')) ? 'Duyệt đính chính' : 'Xác nhận và ghi vào sổ'}
           </Button>}
       </>}>
       <div className="space-y-5">
@@ -123,6 +127,16 @@ function ProposalReview({ proposal, close, refresh, saved }: {
           </div>
         )}
         {(review.command.operation === 'receive' || review.command.operation === 'correct') && <WarehouseTotals state={state} hasReceipts />}
+        {state.purchaseOrder && <div className="space-y-3">
+          {proposal.previous?.purchaseOrder && <section aria-label="Trước khi duyệt">
+            <h3 className="text-sm font-semibold">Trước khi duyệt</h3>
+            <PurchaseLines lines={proposal.previous.purchaseOrder.lines} />
+          </section>}
+          <section aria-label="Số lượng sau khi duyệt">
+            <h3 className="text-sm font-semibold">Số lượng sau khi duyệt</h3>
+            <PurchaseLines lines={state.purchaseOrder.lines} />
+          </section>
+        </div>}
         <dl className="divide-y divide-[var(--border)] border-y border-[var(--border)] text-sm">
           {changes.length ? changes.map(change => (
             <div key={change.field} className="space-y-1 py-3">

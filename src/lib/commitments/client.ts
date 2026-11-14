@@ -97,3 +97,10 @@ export function confirmCommitmentReceiving(id: string, key: string, command: Rec
     signal: AbortSignal.timeout(20_000),
   })
 }
+
+export function confirmPurchaseOrder(key: string, command: import('./purchase-order').PurchaseCommand) {
+  return ledgerRequest<{ id: string; version: number; replayed: boolean }>('/purchase', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key },
+    body: JSON.stringify(command), signal: AbortSignal.timeout(20_000),
+  })
+}

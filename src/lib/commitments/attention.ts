@@ -7,7 +7,7 @@ export type AttentionItem = {
   state: LedgerState
   group: CommitmentGroup
   responsibility: Responsibility
-  reason: 'reply' | 'receiving' | 'receiving_ready' | 'review' | 'overdue' | 'today'
+  reason: 'reply' | 'purchase_discrepancy' | 'receiving' | 'receiving_ready' | 'review' | 'overdue' | 'today'
   source: SourceEvidence
   reminderState: SendReceipt['state'] | null
   reply: { emailId: string; subject: string | null; quote: string; needsReview: boolean; correction?: boolean } | null

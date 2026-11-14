@@ -2,10 +2,11 @@ import { z } from 'zod'
 import { isQuotedMailBoundary } from '@/lib/email/plain-text'
 import { detectDeliveryLine, type DeliveryProgress } from './delivery'
 import { readWarehouseCorrection, readWarehouseReceipt } from './receiving'
+import { purchaseMailKind, type PurchaseOperation } from './purchase-order'
 import type { CommitmentState } from './contracts'
 
 export type DetectionSignal = {
-  kind: 'create' | 'deadline' | 'owner' | 'progress' | 'completed' | 'cancelled' | 'review' | 'receipt' | 'correction'
+  kind: 'create' | 'deadline' | 'owner' | 'progress' | 'completed' | 'cancelled' | 'review' | 'receipt' | 'correction' | 'purchase'
   quote: string
   title: string | null
   dueOn: string | null
@@ -13,6 +14,7 @@ export type DetectionSignal = {
   priorDueOn?: string
   delivery?: DeliveryProgress
   receipt?: NonNullable<ReturnType<typeof readWarehouseReceipt>>
+  purchaseOperation?: PurchaseOperation
   correction?: NonNullable<ReturnType<typeof readWarehouseCorrection>>
   proposedBatch?: { quantity: number; unit: DeliveryProgress['unit'] }
 }
@@ -71,6 +73,11 @@ export function detectCommitments(body: string | null, receivedAt: string | null
       continue
     }
     if (uncertain.test(line)) continue
+    const purchaseOperation = reference?.startsWith('PO-') && purchaseMailKind(quote)
+    if (purchaseOperation) {
+      signals.push({ kind: 'purchase', quote, title: null, dueOn: null, purchaseOperation })
+      continue
+    }
     const correction = reference?.startsWith('PO-') && readWarehouseCorrection(quote)
     if (correction) {
       signals.push({ kind: 'correction', quote, title: null, dueOn: null, correction })
@@ -79,6 +86,10 @@ export function detectCommitments(body: string | null, receivedAt: string | null
     const receipt = reference?.startsWith('PO-') && readWarehouseReceipt(quote)
     if (receipt) {
       signals.push({ kind: 'receipt', quote, title: null, dueOn: null, receipt })
+      continue
+    }
+    if (reference?.startsWith('PO-') && /^phiếu nhập PN-[0-9]{1,12}: kho thực nhận /iu.test(quote)) {
+      signals.push({ kind: 'purchase', quote, title: null, dueOn: null, purchaseOperation: 'receive' })
       continue
     }
     const deliveryEvent = reference?.startsWith('PO-') && detectDeliveryLine(line, quote, value => calendarDate(value, receivedAt))
@@ -121,6 +132,8 @@ export function detectCommitments(body: string | null, receivedAt: string | null
     if (title.length <= 200) signals.push({ kind: 'create', quote, title, dueOn })
   }
   if (signals.length <= 1) return signals
+  if (signals.every(signal => signal.kind === 'purchase' && signal.purchaseOperation !== 'create'))
+    return signals.slice(0, 6)
   if (signals.some(signal => signal.kind !== 'create')) return []
   const distinct = new Map<string, DetectionSignal>()
   for (const signal of signals) {
@@ -138,7 +151,7 @@ export function senderIdentity(sender: string) {
 }
 
 export function proposedState(signal: DetectionSignal, sender: string, name: string | null, prior: CommitmentState | null): CommitmentState | null {
-  if (signal.kind === 'review' || signal.kind === 'receipt' || signal.kind === 'correction') return null
+  if (signal.kind === 'review' || signal.kind === 'receipt' || signal.kind === 'correction' || signal.kind === 'purchase') return null
   if (signal.kind === 'create') {
     if (prior || !signal.title) return null
     return {

@@ -1,5 +1,6 @@
 import { receivingValue } from './receiving'
 import { deliveryLabel } from './delivery'
+import type { CsvSourceReference } from './purchase-csv'
 import type { CommitmentState, CommitmentEvidence } from './contracts'
 
 export const groupLabels = {
@@ -28,7 +29,9 @@ export type BoardItem = {
   responsibility: Responsibility
 }
 export type BoardPage = { items: BoardItem[]; totals: Record<CommitmentGroup, number>; nextBeforeId: string | null }
-export type SourceEvidence = Omit<CommitmentEvidence, 'quote'> & {
+export type SourceEvidence = Omit<CommitmentEvidence, 'quote' | 'field'> & {
+  field: CommitmentEvidence['field'] | 'attachment'
+  attachment?: CsvSourceReference
   quote: string | null
   subject: string | null
   receivedAt: string | null
@@ -67,6 +70,7 @@ export const fieldLabels: Record<keyof LedgerState, string> = {
   review: 'Xem xét',
   delivery: 'Tiến độ giao hàng',
   receiving: 'Kho thực nhận',
+  purchaseOrder: 'Dòng hàng',
 }
 
 export function commitmentsHref(group: CommitmentGroup, id?: string) {

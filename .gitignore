@@ -22,6 +22,10 @@
 /test-results/delivery-commitments/
 /test-results/warehouse-reconciliation/
 /test-results/warehouse-correction/
+/test-results/multiline-purchase/
+/test-results/purchase-csv/
+/test-results/purchase-payment/
+/test-results/purchase-installments/
 /test-results/day-preview/
 /test-results/inbox-catchup/
 /test-results/reply-workflow/

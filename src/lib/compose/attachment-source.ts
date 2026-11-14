@@ -4,7 +4,7 @@ import type { createClient } from '@/lib/supabase/server'
 import { getImapPassword } from '@/lib/credential-vault/vault'
 import { connectImap } from '@/lib/email/imap-connection'
 import { getValidAccessToken } from '@/lib/gmail/sync'
-import type { GmailMessage, GmailMessagePart } from '@/lib/gmail/api'
+import { parseHeaders, type GmailMessage, type GmailMessagePart } from '@/lib/gmail/api'
 import { matchesImapNamespace } from '@/lib/sync/imap-identity'
 import { SendError } from '@/lib/mail-send/contracts'
 import { z } from 'zod'
@@ -51,11 +51,12 @@ function gmailPart(root: GmailMessagePart, partKey: string) {
 
 const maxDownload = 25 * 1024 * 1024
 
-export async function readMailAttachment(client: Client, actor: string, id: string, source?: string, limit = maxDownload) {
+export async function readMailAttachment(client: Client, actor: string, id: string, source?: string, limit = maxDownload, verifyGmailSource = false) {
   const { data: attachment, error } = await client.from('attachments')
-    .select('email_id, size, sync_part_key, emails!inner(original_uid, user_id, sync_namespace, source_account_id, provider_deleted, is_deleted)')
+    .select('email_id, filename, size, sync_part_key, emails!inner(original_uid, user_id, sync_namespace, source_account_id, provider_deleted, is_deleted, subject, from_address, received_at)')
     .eq('id', id).single()
   if (error || !attachment) {
+    if (verifyGmailSource) throw new SendError(404, 'Không tìm thấy tệp trong email.')
     const { data, error: storedError } = await client.rpc('read_sent_mail_file', { p_id: id })
       .abortSignal(AbortSignal.timeout(10_000))
     const stored = sentFile.safeParse(data)
@@ -73,6 +74,7 @@ export async function readMailAttachment(client: Client, actor: string, id: stri
   const email = attachment.emails as unknown as {
     user_id: string; original_uid: string; sync_namespace: string; source_account_id: string | null
     provider_deleted?: boolean; is_deleted?: boolean
+    subject: string; from_address: string; received_at: string
   }
   if (email.user_id !== actor) throw new SendError(403, 'Không có quyền truy cập tệp.')
   if ((source && source !== attachment.email_id) || email.provider_deleted || email.is_deleted) {
@@ -90,6 +92,18 @@ export async function readMailAttachment(client: Client, actor: string, id: stri
     const part = message.id === email.original_uid && message.payload && typeof partKey === 'string'
       ? gmailPart(message.payload, partKey) : undefined
     if (!part?.filename) throw new SendError(404, 'Không tìm thấy tệp trong email.')
+    if (verifyGmailSource) {
+      const headers = parseHeaders(message.payload.headers)
+      const rawFrom = headers.from || ''
+      const address = rawFrom.match(/^(.*?)\s*<([^>]+)>$/)?.[2] ?? rawFrom
+      const labels = message.labelIds || []
+      if (headers.subject !== email.subject || address !== email.from_address ||
+        Number(message.internalDate) !== Date.parse(email.received_at) ||
+        labels.includes('SENT') || labels.includes('TRASH') || part.filename !== attachment.filename ||
+        part.body?.size !== attachment.size) {
+        throw new SendError(409, 'Email hoặc tệp trên Gmail đã thay đổi. Hãy đồng bộ và xem lại phiếu.')
+      }
+    }
     if ((part.body?.size ?? 0) > limit) throw new SendError(413, 'Tệp vượt giới hạn dung lượng.')
     const data = part.body?.attachmentId
       ? z.object({ data: z.string() }).parse(await gmailJson(token,
@@ -106,6 +120,7 @@ export async function readMailAttachment(client: Client, actor: string, id: stri
     return { filename: part.filename, contentType: part.mimeType || 'application/octet-stream', content }
   }
 
+  if (verifyGmailSource) throw new SendError(404, 'Nguồn phiếu CSV phải là email Gmail đã đồng bộ.')
   if (!email.sync_namespace?.startsWith('INBOX:') || !/^\d+$/.test(email.original_uid)) {
     throw new SendError(409, 'Cần đồng bộ email trước khi lấy tệp.')
   }
