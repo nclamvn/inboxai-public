@@ -17,6 +17,21 @@ export const cases = readLocked('cases.json')
 export const loadLabels = () => readLocked('labels.json')
 export const hold = { decision:'hold',source:null,part:null,invoice:null,due:null }
 
+export function assertBrowserDecisions(product, manual, labels = loadLabels()) {
+  const expectedOrders = cases.map(row=>row.po)
+  for (const [path, observations] of Object.entries({product,manual})) {
+    assert.deepEqual(observations.map(row=>row.po),expectedOrders,path+' did not cover the locked orders')
+    for (const {po,result} of observations) {
+      assert.deepEqual(result,labels[po],path+' decision differs from the locked label for '+po)
+    }
+  }
+  for (const {po,writeMs} of product) {
+    if (labels[po].decision==='hold') assert.equal(writeMs,null,'Unexpected approval write for '+po)
+    else assert.ok(Number.isFinite(writeMs) && writeMs>=0,'Missing approval write for '+po)
+  }
+  assert.ok(product.some(row=>row.replay),'Missing Chrome approval replay evidence')
+}
+
 export function materialize(row) {
   return row.mails.map(mail => ({
     id:mail.id, age:mail.age, from:mail.outsider?'kho@ngoai.example.test':row.supplier,

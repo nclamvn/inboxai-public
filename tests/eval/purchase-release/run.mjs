@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { z } from 'zod'
 import { chat } from '../commitments/model.mjs'
-import { cases, corpusId, loadLabels, materialize } from './corpus.mjs'
+import { assertBrowserDecisions, cases, corpusId, loadLabels, materialize } from './corpus.mjs'
 
 const output = 'test-results/purchase-release'
 const readReport = name => JSON.parse(readFileSync(output+'/'+name+'.json','utf8'))
@@ -94,11 +94,7 @@ function compare() {
   }))
   writeReport('comparison',{cases:cases.length,chrome:browser.chrome,scores})
   for (const [method,{summary}] of Object.entries(scores)) console.log(method,JSON.stringify(summary))
-  assert.equal(scores.product.summary.exact,cases.length,'InboxAI did not clear the locked decision labels')
-  assert.equal(scores.product.cases.filter(row=>row.writeMs!==null).length,
-    Object.values(labels).filter(label=>label.decision==='approve').length,'Missing Chrome write evidence')
-  assert.ok(scores.product.cases.some(row=>row.replay),'Missing lost response evidence')
-  assert.equal(scores.manual.summary.exact,cases.length,'Scripted document reading did not reproduce the locked labels')
+  assertBrowserDecisions(browser.product,browser.manual,labels)
   assert.equal(scores.direct.summary.outputFailures+scores.agent.summary.outputFailures,0,'A model run failed to produce a structured result')
 }
 

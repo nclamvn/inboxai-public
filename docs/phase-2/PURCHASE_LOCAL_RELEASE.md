@@ -105,3 +105,13 @@ Bộ chấm chỉ đọc nhãn sau các lượt chạy. Nó từ chối report C
 sai bộ hồ sơ hoặc digest, thiếu lượt duyệt/thử lại, không đạt nhãn
 InboxAI hoặc có nhánh model thiếu đầu ra. Kết quả chi tiết, ảnh và log
 nằm tại `test-results/purchase-release/`.
+
+## Kiểm tra hồi quy trong GitHub Actions
+
+Job `purchase-release-chrome` chạy cùng lệnh `npm run test:purchase-release`
+trên Ubuntu 24.04 với Google Chrome. Job tải đúng các image đã khóa rồi
+chạy với dữ liệu giả lập và các dịch vụ loopback trên runner. Kết quả
+Chrome được đối chiếu trực tiếp với nhãn đã khóa, gồm đúng phần tệp
+đính kèm, hồ sơ phải giữ chờ và bằng chứng thử lại lúc duyệt. Job lưu
+JSON và ảnh nghiệm thu trong bảy ngày. Nó chạy trên pull request và
+các nhánh được khai báo ở bộ lọc push của workflow.

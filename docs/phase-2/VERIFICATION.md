@@ -1,5 +1,20 @@
 # Verification record
 
+## Kiểm tra luồng bổ sung chứng từ trong CI
+
+Ngày 15/11/2026 trên macOS arm64, Node 24.14.1 và Chrome 157.0.8103.79.
+Đã tải image fixture theo digest và chạy `npm run test:purchase-release`
+với build production local, hai Gmail giả lập và PostgreSQL. Exit 0,
+19 kiểm tra, gồm đối chiếu cả bốn quyết định Chrome với nhãn đã khóa.
+Kiểm tra bộ chấm với kết quả bị thay đổi xác nhận nó từ chối phần MIME
+sai, thiếu lượt ghi hợp lệ, ghi vào hồ sơ giữ chờ và thiếu thử lại.
+
+`npm run lint`, `npm run typecheck`, `npm run test:unit`,
+`npm run test:integration` và `npm run test:db` exit 0 ở local.
+Lint có 92 cảnh báo cũ. Unit có 252 test, integration có 200 test và
+database có 47 nhóm. Workflow YAML đã được parse và kiểm tra nhánh
+kích hoạt cùng lệnh Chrome. [Luồng CI và bằng chứng](PURCHASE_LOCAL_RELEASE.md#kiểm-tra-hồi-quy-trong-github-actions).
+
 ## Chốt bản local cho luồng bổ sung và duyệt lại chứng từ
 
 Ngày 15/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,
