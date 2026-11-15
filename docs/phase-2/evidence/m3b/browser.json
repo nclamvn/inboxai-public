@@ -1,0 +1,62 @@
+{
+  "engine": "157.0.8103.51",
+  "outcomes": [
+    {
+      "name": "desktop-history",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "axe": []
+    },
+    {
+      "name": "desktop-preview",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "axe": []
+    },
+    {
+      "name": "tablet-history",
+      "viewport": {
+        "width": 834,
+        "height": 1112
+      },
+      "axe": []
+    },
+    {
+      "name": "mobile-groups",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "axe": []
+    },
+    {
+      "name": "mobile-history",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "axe": []
+    },
+    {
+      "name": "mobile-edit",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "axe": []
+    },
+    {
+      "name": "dark-history",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "axe": []
+    }
+  ],
+  "runtimeErrors": []
+}

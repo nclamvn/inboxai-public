@@ -1,0 +1,12 @@
+
+> ai-mailbox@0.1.0 test:unit
+> vitest run tests/unit
+
+
+ RUN  v4.1.12 /Users/os/Documents/ChatGPT/InboxAI2.0
+
+
+ Test Files  17 passed (17)
+      Tests  174 passed (174)
+   Start at  23:57:18
+   Duration  1.30s (transform 607ms, setup 217ms, import 1.60s, tests 867ms, environment 2.08s)

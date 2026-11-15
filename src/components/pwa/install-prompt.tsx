@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Download, X, Smartphone } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useHydrated } from '@/hooks/use-hydrated'
+import { useMediaQuery } from '@/hooks/use-media-query'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
@@ -12,8 +14,9 @@ interface BeforeInstallPromptEvent extends Event {
 export function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showPrompt, setShowPrompt] = useState(false)
-  const [isIOS, setIsIOS] = useState(false)
-  const [isStandalone, setIsStandalone] = useState(false)
+  const hydrated = useHydrated()
+  const isIOS = hydrated && /iPad|iPhone|iPod/.test(navigator.userAgent)
+  const isStandalone = useMediaQuery('(display-mode: standalone)')
 
   useEffect(() => {
     // Check if already installed
@@ -21,10 +24,6 @@ export function InstallPrompt() {
 
     // Check for iOS
     const ios = /iPad|iPhone|iPod/.test(navigator.userAgent)
-
-    // Batch state updates
-    setIsStandalone(standalone)
-    setIsIOS(ios)
 
     // Check if prompt was dismissed recently
     const dismissed = localStorage.getItem('pwa-prompt-dismissed')
@@ -36,22 +35,25 @@ export function InstallPrompt() {
       }
     }
 
+    let promptTimer: ReturnType<typeof setTimeout> | undefined
     // Listen for install prompt
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
       // Show prompt after a delay
-      setTimeout(() => setShowPrompt(true), 3000)
+      clearTimeout(promptTimer)
+      promptTimer = setTimeout(() => setShowPrompt(true), 3000)
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall)
 
     // For iOS, show custom prompt after delay
     if (ios && !standalone) {
-      setTimeout(() => setShowPrompt(true), 5000)
+      promptTimer = setTimeout(() => setShowPrompt(true), 5000)
     }
 
     return () => {
+      clearTimeout(promptTimer)
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
     }
   }, [])

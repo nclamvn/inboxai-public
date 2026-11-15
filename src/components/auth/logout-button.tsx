@@ -1,5 +1,6 @@
 'use client'
 
+import { clearOfflineVault } from '../../../public/offline-workspace/storage.mjs'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { LogOut, Loader2 } from 'lucide-react'
@@ -20,6 +21,7 @@ export function LogoutButton({ className, showIcon = true, children }: LogoutBut
 
     try {
       const supabase = createClient()
+      await clearOfflineVault().catch(() => {})
       await supabase.auth.signOut()
       router.push('/login')
       router.refresh()

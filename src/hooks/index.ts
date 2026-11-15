@@ -7,8 +7,6 @@
 export {
   useTheme,
   useIsDark,
-  useThemeColors,
-  useThemeShadows,
 } from './use-theme';
 export type { ThemeMode, ResolvedTheme } from './use-theme';
 

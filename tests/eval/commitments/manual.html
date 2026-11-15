@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Đọc thư thủ công | InboxAI</title>
+<style>
+  body{margin:0;background:#F7F9FA;color:#192532;font:16px/1.5 system-ui,sans-serif}
+  main{max-width:880px;margin:40px auto;padding:0 20px} h1,h2{line-height:1.2}
+  details,fieldset{margin:12px 0;padding:12px 16px;background:#fff;border:1px solid #E1E7EB;border-radius:4px}
+  summary{cursor:pointer;font-weight:600} p{margin:8px 0} pre{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}
+  label{display:flex;flex-direction:column;gap:4px} input,select,textarea,button{font:inherit;min-height:40px}
+  input,select,textarea{padding:4px 8px;border:1px solid #8494a2;border-radius:4px;box-sizing:border-box;max-width:100%}
+  textarea{width:100%;min-height:72px} button{margin:8px 8px 8px 0;padding:4px 12px;border:1px solid #174A72;border-radius:4px;background:white;color:#174A72;cursor:pointer}
+  button[type=submit]{background:#174A72;color:#fff} .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}
+  .confirmation:not([hidden]){display:flex;flex-direction:row;align-items:center;gap:8px;width:fit-content}
+  .confirmation[hidden]{display:none}
+  :focus-visible{outline:2px solid #174A72;outline-offset:2px}
+</style>
+</head>
+<body><main>
+  <h1>Đọc thư thủ công</h1>
+  <div id="welcome">
+    <p>Đọc chuỗi thư giả lập và ghi từng cam kết mới, thay đổi hạn, chuyển trách nhiệm, hoàn tất hoặc hủy.</p>
+    <p>Bỏ qua thư hỏi, phương án chưa chốt, thư trích lại và thay đổi của người không có thẩm quyền. Ngày tương đối rõ ràng tính theo ngày gửi tại UTC+7. Thư đến muộn có ngày gửi cũ hơn không thay thế một thay đổi mới hơn đã ghi nhận.</p>
+    <p>Mỗi mục cần ID thư nguồn, ID thư tạo cam kết và một câu nguyên văn làm bằng chứng. Cam kết mới dùng cùng ID cho cả hai trường. Chỉ điền người phụ trách khi tạo hoặc chuyển trách nhiệm. Chỉ điền hạn khi tạo hoặc đổi hạn, để trống nếu chưa rõ.</p>
+    <p>Đồng hồ bắt đầu khi mở hồ sơ và kết thúc khi bấm ghi nhận. Kết quả chỉ lưu vào tệp bạn tải xuống.</p>
+    <button id="short">Bắt đầu 3 hồ sơ</button><button id="full">Bắt đầu 10 hồ sơ</button>
+  </div>
+  <section id="work" hidden>
+    <h2 id="title" tabindex="-1"></h2>
+    <div id="messages"></div>
+    <form id="review">
+      <div id="events"></div>
+      <button id="add" type="button">Thêm mục</button>
+      <label id="empty-confirmation" class="confirmation">
+        <input id="no-events" type="checkbox" required> Không có sự kiện
+      </label>
+      <button type="submit">Ghi nhận và tiếp tục</button>
+    </form>
+  </section>
+  <section id="done" hidden><h2>Đã ghi kết quả</h2><button id="download">Tải kết quả JSON</button></section>
+</main>
+<script type="application/json" id="fixture">__INBOXAI_FIXTURE__</script>
+<script>
+  const fixture = JSON.parse(document.querySelector('#fixture').textContent)
+  const get = id => document.getElementById(id)
+  const kinds = { create: 'Cam kết mới', deadline: 'Đổi hạn', owner: 'Chuyển trách nhiệm', completed: 'Hoàn tất', cancelled: 'Hủy' }
+  const retake = location.pathname === '/retake'
+  const noEvents = get('no-events')
+  let selected, cursor = 0, start, opened, changes, added, removed, attempt
+  const results = []
+  const element = (tag, text) => { const node = document.createElement(tag); node.textContent = text ?? ''; return node }
+
+  function begin(quick) {
+    selected = quick ? fixture.cases.filter(row => ['QA-6329', 'WO-8531', 'RT-5248'].includes(row.id)) : fixture.cases
+    attempt = new Date().toISOString().replace(/[:.]/g, '-')
+    get('welcome').hidden = true
+    get('work').hidden = false
+    next()
+  }
+
+  function next() {
+    if (cursor === selected.length) {
+      get('work').hidden = true
+      get('done').hidden = false
+      get('download').focus()
+      return
+    }
+    const row = selected[cursor]
+    opened = new Set()
+    changes = added = removed = 0
+    get('title').textContent = `Hồ sơ ${cursor + 1}/${selected.length} · ${row.id}`
+    get('messages').replaceChildren(...row.emails.map(mail => {
+      const details = element('details')
+      details.append(element('summary', `${mail.id} · ${mail.subject}`),
+        element('p', `${mail.sender} · ${mail.at} · ${mail.account}`), element('pre', mail.body))
+      details.addEventListener('toggle', () => { if (details.open) opened.add(mail.id) })
+      return details
+    }))
+    get('events').replaceChildren()
+    syncEmptyConfirmation()
+    start = performance.now()
+    get('title').focus()
+  }
+
+  function syncEmptyConfirmation() {
+    const hasEvents = get('events').children.length > 0
+    noEvents.checked = false
+    noEvents.disabled = hasEvents
+    noEvents.required = !hasEvents
+    get('empty-confirmation').hidden = hasEvents
+  }
+
+  function field(name, title, control) {
+    control.name = name
+    const label = element('label', title)
+    label.append(control)
+    return label
+  }
+
+  function select(entries) {
+    const input = element('select')
+    for (const [value, title] of entries) input.add(new Option(title, value))
+    input.required = true
+    return input
+  }
+
+  function add() {
+    const ids = [['', 'Chọn thư'], ...selected[cursor].emails.map(mail => [mail.id, mail.id])]
+    const owner = element('input'); owner.type = 'email'
+    const due = element('input'); due.type = 'date'
+    const quote = element('textarea'); quote.required = true; quote.maxLength = 480
+    const row = element('fieldset')
+    const controls = element('div'); controls.className = 'grid'
+    controls.append(field('source', 'Thư nguồn', select(ids)), field('target', 'Thư tạo cam kết', select(ids)),
+      field('kind', 'Loại', select(Object.entries(kinds))), field('owner', 'Người phụ trách', owner), field('due', 'Hạn', due))
+    const remove = element('button', 'Bỏ mục'); remove.type = 'button'
+    remove.onclick = () => { removed++; row.remove(); syncEmptyConfirmation(); get('add').focus() }
+    row.append(element('legend', 'Sự kiện cam kết'), controls, field('quote', 'Câu nguyên văn', quote), remove)
+    get('events').append(row)
+    syncEmptyConfirmation()
+    controls.querySelector('select').focus()
+    added++
+  }
+
+  get('short').onclick = () => begin(true)
+  get('full').hidden = retake
+  get('full').onclick = () => begin(false)
+  get('add').onclick = add
+  get('events').addEventListener('change', () => changes++)
+  get('review').onsubmit = event => {
+    event.preventDefault()
+    const events = Array.from(get('events').children, row => Object.fromEntries(Array.from(row.querySelectorAll('[name]'),
+      control => [control.name, control.value.trim() || null])))
+    results.push({ id: selected[cursor].id, events, confirmedNoEvents: noEvents.checked, elapsedMs: Math.round(performance.now() - start),
+      openedEmails: opened.size, fieldChanges: changes, rowsAdded: added, rowsRemoved: removed })
+    cursor++
+    next()
+  }
+  get('download').onclick = () => {
+    const data = { method: 'manual', corpusDigest: fixture.corpusDigest, cases: results }
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }))
+    const link = element('a'); link.href = url; link.download = retake ? `m6g-manual-retake-${attempt}.json` : 'm6g-manual.json'; link.click()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
+</script>
+</body>
+</html>

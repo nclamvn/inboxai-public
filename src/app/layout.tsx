@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
 import { QueryProvider } from '@/providers/query-provider'
 import { ThemeProvider } from '@/contexts/theme-context'
@@ -7,23 +6,15 @@ import { ToastProvider } from '@/components/ui/toast'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { OfflineBanner } from '@/components/offline-banner'
 import { WebVitalsReporter } from '@/components/web-vitals-reporter'
-
-const inter = Inter({
-  subsets: ['latin', 'vietnamese'],
-  display: 'swap',
-  variable: '--font-inter',
-  weight: ['400', '500', '600', '700'],
-})
+import { CapacitorInit } from '@/components/capacitor-init'
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: 'cover',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
+    { media: '(prefers-color-scheme: light)', color: '#F7F9FA' },
+    { media: '(prefers-color-scheme: dark)', color: '#111C25' },
   ],
 }
 
@@ -88,6 +79,7 @@ const themeScript = `
         theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
 
+      if (theme !== 'dark' && theme !== 'light') theme = 'light';
       document.documentElement.classList.add(theme);
       document.documentElement.style.colorScheme = theme;
     } catch (e) {}
@@ -100,14 +92,15 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="vi" className={`${inter.variable} scroll-smooth`} suppressHydrationWarning>
+    <html lang="vi" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body className={`${inter.className} antialiased bg-[var(--background)] text-[var(--foreground)]`}>
+      <body className="antialiased">
         <ThemeProvider>
+          <CapacitorInit />
           <ToastProvider position="bottom-right">
             <ErrorBoundary>
               <OfflineBanner />

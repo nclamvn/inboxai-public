@@ -33,6 +33,7 @@ export function useNetworkStatus(options?: UseNetworkStatusOptions): NetworkStat
   const [status, setStatus] = useState<NetworkStatus>(() => ({
     isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
     wasOffline: false,
+    ...readConnectionInfo(),
   }))
 
   const updateNetworkInfo = useCallback(() => {
@@ -74,9 +75,6 @@ export function useNetworkStatus(options?: UseNetworkStatusOptions): NetworkStat
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-
-    // Initial network info
-    updateNetworkInfo()
 
     // Listen for online/offline events
     window.addEventListener('online', handleOnline)
@@ -131,6 +129,18 @@ interface NavigatorWithConnection extends Navigator {
   connection?: NetworkInformation
   mozConnection?: NetworkInformation
   webkitConnection?: NetworkInformation
+}
+
+function readConnectionInfo() {
+  if (typeof navigator === 'undefined') return {}
+  const nav = navigator as NavigatorWithConnection
+  const connection = nav.connection || nav.mozConnection || nav.webkitConnection
+  return {
+    effectiveType: connection?.effectiveType,
+    downlink: connection?.downlink,
+    rtt: connection?.rtt,
+    saveData: connection?.saveData,
+  }
 }
 
 // =============================================================================

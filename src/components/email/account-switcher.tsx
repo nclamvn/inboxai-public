@@ -92,11 +92,6 @@ export function AccountSwitcher({
     return `${selectedAccountIds.length} tài khoản`
   }
 
-  // Get selected accounts for avatar display
-  const selectedAccounts = selectedAccountIds.length > 0
-    ? accounts.filter(a => selectedAccountIds.includes(a.id))
-    : []
-
   if (loading) {
     return (
       <div className={cn("h-9 w-40 bg-[var(--secondary)] rounded-lg animate-pulse", className)} />
@@ -111,41 +106,16 @@ export function AccountSwitcher({
   return (
     <div className={cn("relative", className)} ref={dropdownRef}>
       <button
+        type="button"
+        aria-expanded={isOpen}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--hover)] transition-colors",
+          "neo-target flex max-w-56 items-center gap-2 px-3 py-2 rounded-[var(--radius-control)] border border-[var(--input-border)] bg-[var(--card)] hover:bg-[var(--hover)] transition-colors",
           isOpen && "bg-[var(--hover)]"
         )}
       >
-        {/* Avatar stack */}
-        <div className="flex -space-x-2">
-          {selectedAccounts.length > 0 ? (
-            selectedAccounts.slice(0, 3).map((account, index) => (
-              <div
-                key={account.id}
-                className="w-6 h-6 rounded-full border-2 border-[var(--card)] flex items-center justify-center text-white text-[10px] font-medium"
-                style={{ backgroundColor: account.color, zIndex: 3 - index }}
-              >
-                {account.avatar_url ? (
-                  <img src={account.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  account.email_address[0].toUpperCase()
-                )}
-              </div>
-            ))
-          ) : (
-            <div className="w-6 h-6 rounded-full bg-[var(--primary)] flex items-center justify-center">
-              <Mail className="w-3 h-3 text-white" />
-            </div>
-          )}
-          {selectedAccounts.length > 3 && (
-            <div className="w-6 h-6 rounded-full bg-[var(--muted)] border-2 border-[var(--card)] flex items-center justify-center text-[10px] font-medium text-[var(--muted-foreground)]">
-              +{selectedAccounts.length - 3}
-            </div>
-          )}
-        </div>
-
-        <span className="text-[13px] text-[var(--foreground)] font-medium">
+        <Mail size={16} strokeWidth={1.5} aria-hidden="true" className="shrink-0 text-[var(--accent-foreground)]" />
+        <span className="truncate text-[13px] text-[var(--foreground)] font-medium">
           {getDisplayLabel()}
         </span>
 
@@ -154,7 +124,7 @@ export function AccountSwitcher({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute left-0 top-full mt-1 w-64 bg-[var(--card)] border border-[var(--border)] rounded-lg shadow-lg py-1 z-50">
+        <div className="absolute right-0 top-full mt-1 w-64 bg-[var(--card)] border border-[var(--border)] rounded-[var(--radius-panel)] py-1 z-50">
           {/* All accounts option */}
           <button
             onClick={() => {
@@ -197,17 +167,13 @@ export function AccountSwitcher({
                     />
                   ) : (
                     <div
-                      className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-medium"
-                      style={{ backgroundColor: account.color }}
+                      className="w-6 h-6 rounded-[var(--radius-control)] flex items-center justify-center bg-[var(--secondary)] text-[var(--foreground-muted)] text-[10px] font-medium"
+
                     >
                       {account.email_address[0].toUpperCase()}
                     </div>
                   )}
-                  {/* Color indicator */}
-                  <div
-                    className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border border-[var(--card)]"
-                    style={{ backgroundColor: account.color }}
-                  />
+
                 </div>
 
                 <div className="flex-1 text-left min-w-0">

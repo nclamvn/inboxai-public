@@ -6,8 +6,6 @@
 export {
   useTheme,
   useIsDark,
-  useThemeColors,
-  useThemeShadows,
 } from '@/contexts/theme-context';
 
 export type {

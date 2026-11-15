@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Sparkles, Mail, Tag, Zap, ArrowRight } from 'lucide-react'
+import { X, Mail, Tag, MessageSquare, ArrowRight } from 'lucide-react'
 
 const STORAGE_KEY = 'inboxai_onboarding_seen'
 
@@ -23,7 +23,7 @@ const aiFeatures: Feature[] = [
     description: 'Xem nhanh nội dung chính của email dài'
   },
   {
-    icon: Zap,
+    icon: MessageSquare,
     title: 'Gợi ý phản hồi',
     description: 'AI gợi ý các câu trả lời phù hợp cho từng email'
   }
@@ -63,17 +63,17 @@ export function AIIntroTooltip() {
   const currentFeature = aiFeatures[step]
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <div className="bg-[var(--card)] rounded-2xl shadow-xl border border-[var(--border)] w-[340px] overflow-hidden">
-        {/* Header with gradient */}
-        <div className="bg-gradient-to-r from-blue-500 to-purple-500 px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-white">
-            <Sparkles className="w-5 h-5" />
+    <div className="fixed right-4 bottom-[calc(var(--mobile-nav-height)+env(safe-area-inset-bottom)+16px)] z-50 md:bottom-4">
+      <div className="w-[min(340px,calc(100vw-32px))] overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-strong)] bg-[var(--surface)]">
+
+        <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-2">
+          <div className="flex items-center gap-2">
+
             <span className="font-semibold">InboxAI</span>
           </div>
           <button
             onClick={dismiss}
-            className="text-white/80 hover:text-white transition-colors p-1"
+            className="neo-icon-button"
             aria-label="Đóng"
           >
             <X className="w-4 h-4" />
@@ -83,8 +83,8 @@ export function AIIntroTooltip() {
         {/* Content */}
         <div className="p-4">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 flex items-center justify-center flex-shrink-0">
-              <currentFeature.icon className="w-5 h-5 text-blue-500" />
+            <div className="w-10 h-10 rounded-[var(--radius-control)] bg-[var(--secondary)] flex items-center justify-center flex-shrink-0">
+              <currentFeature.icon className="w-5 h-5 text-[var(--accent-foreground)]" />
             </div>
             <div>
               <h4 className="font-semibold text-[var(--foreground)] text-[15px]">
@@ -103,9 +103,9 @@ export function AIIntroTooltip() {
                 key={index}
                 className={`w-1.5 h-1.5 rounded-full transition-colors ${
                   index === step
-                    ? 'bg-blue-500'
+                    ? 'bg-[var(--selection-line)]'
                     : index < step
-                    ? 'bg-blue-300'
+                    ? 'bg-[var(--border-strong)]'
                     : 'bg-[var(--border)]'
                 }`}
               />

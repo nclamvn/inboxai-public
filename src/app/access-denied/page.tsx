@@ -1,5 +1,6 @@
 'use client'
 
+import { clearOfflineVault } from '../../../public/offline-workspace/storage.mjs'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Lock, Send, CheckCircle, LogOut, User, MessageSquare } from 'lucide-react'
@@ -57,6 +58,7 @@ export default function AccessDeniedPage() {
   }
 
   const handleLogout = async () => {
+    await clearOfflineVault().catch(() => {})
     await supabase.auth.signOut()
     router.push('/login')
   }

@@ -1,8 +1,11 @@
 'use client'
 
+import { useCallback } from 'react'
 import { useAutoSync } from '@/hooks/use-auto-sync'
-import { toastSuccess, toastInfo } from '@/lib/toast'
+import { gmailTriageRefresh } from '@/components/email/gmail-triage'
+import { toastInfo } from '@/lib/toast'
 import { useQueryClient } from '@tanstack/react-query'
+import { actionNotificationsKey } from '@/lib/notifications/action-contracts'
 
 interface AutoSyncProviderProps {
   children: React.ReactNode
@@ -25,36 +28,31 @@ export function AutoSyncProvider({
   interval = 30000
 }: AutoSyncProviderProps) {
   const queryClient = useQueryClient()
+  const onEmailsSynced = useCallback((count: number) => {
+    toastInfo('Đồng bộ hộp thư', `Đã đồng bộ ${count} email`)
 
-  useAutoSync({
-    enabled,
-    interval,
-    onNewEmails: (count) => {
-      // Show notification
-      if (count === 1) {
-        toastInfo('Email mới', 'Bạn có 1 email mới')
-      } else if (count > 1) {
-        toastSuccess('Email mới', `Bạn có ${count} email mới`)
-      }
-
-      // Invalidate email queries to trigger refetch
-      queryClient.invalidateQueries({ queryKey: ['emails'] })
-      queryClient.invalidateQueries({ queryKey: ['email-counts'] })
-      queryClient.invalidateQueries({ queryKey: ['unread-count'] })
-    },
-    onSync: (result) => {
-      // Log sync result for debugging (only in development)
-      if (process.env.NODE_ENV === 'development' && result.synced > 0) {
-        console.log(`[AutoSync] Synced ${result.synced} emails`)
-      }
-    },
-    onError: (error) => {
-      // Only log errors, don't show toast to avoid spamming user
-      if (process.env.NODE_ENV === 'development') {
-        console.error('[AutoSync] Error:', error.message)
-      }
+    queryClient.invalidateQueries({ queryKey: ['emails'] })
+    queryClient.invalidateQueries({ queryKey: ['email-counts'] })
+    queryClient.invalidateQueries({ queryKey: ['unread-count'] })
+    queryClient.invalidateQueries({ queryKey: ['reply-work'] })
+  }, [queryClient])
+  const onSync = useCallback((result: { synced: number }) => {
+    if (result.synced > 0) window.dispatchEvent(new Event(gmailTriageRefresh))
+    void queryClient.invalidateQueries({ queryKey: actionNotificationsKey })
+    void queryClient.invalidateQueries({ predicate: ({ queryKey }) =>
+      queryKey[0] === 'commitments' && (queryKey[2] === 'attention' || queryKey[2] === 'catchup'),
+    })
+    if (process.env.NODE_ENV === 'development' && result.synced > 0) {
+      console.log(`[AutoSync] Synced ${result.synced} emails`)
     }
-  })
+  }, [queryClient])
+  const onError = useCallback((error: Error) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[AutoSync] Error:', error.message)
+    }
+  }, [])
+
+  useAutoSync({ enabled, interval, onEmailsSynced, onSync, onError })
 
   return <>{children}</>
 }

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
-import { headers } from 'next/headers'
-import crypto from 'crypto'
+import { Resend } from 'resend'
 
 let supabaseInstance: SupabaseClient | null = null
 
@@ -13,25 +12,6 @@ function getSupabase(): SupabaseClient {
     )
   }
   return supabaseInstance
-}
-
-// Verify Resend webhook signature
-function verifyWebhookSignature(payload: string, signature: string): boolean {
-  const webhookSecret = process.env.RESEND_WEBHOOK_SECRET
-  if (!webhookSecret) {
-    console.warn('RESEND_WEBHOOK_SECRET not set, skipping verification')
-    return true // Skip verification in development
-  }
-
-  const expectedSignature = crypto
-    .createHmac('sha256', webhookSecret)
-    .update(payload)
-    .digest('hex')
-
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expectedSignature)
-  )
 }
 
 interface InboundEmailData {
@@ -58,18 +38,28 @@ interface WebhookPayload {
 
 export async function POST(request: NextRequest) {
   try {
-    const headersList = await headers()
-    const signature = headersList.get('svix-signature') || ''
-    const rawBody = await request.text()
-
-    // Verify signature in production
-    if (process.env.NODE_ENV === 'production') {
-      if (!verifyWebhookSignature(rawBody, signature)) {
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
-      }
+    const webhookSecret = process.env.RESEND_WEBHOOK_SECRET
+    if (!webhookSecret?.trim()) {
+      return NextResponse.json({ error: 'Webhook is not configured' }, { status: 503 })
     }
-
-    const payload: WebhookPayload = JSON.parse(rawBody)
+    const rawBody = await request.text()
+    let payload: WebhookPayload
+    try {
+      // Verification is local; no API call or email is sent. The SDK validates
+      // Svix id + timestamp + raw body and rejects stale/future signatures.
+      const verifier = new Resend('re_local_verification_only')
+      payload = verifier.webhooks.verify({
+        payload: rawBody,
+        headers: {
+          id: request.headers.get('svix-id') || '',
+          timestamp: request.headers.get('svix-timestamp') || '',
+          signature: request.headers.get('svix-signature') || '',
+        },
+        webhookSecret,
+      }) as unknown as WebhookPayload
+    } catch {
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+    }
     const { type, data } = payload
 
     console.log('Resend webhook received:', type)

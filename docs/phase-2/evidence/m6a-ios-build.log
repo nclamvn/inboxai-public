@@ -1,0 +1,159 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator -configuration Debug -destination "generic/platform=iOS Simulator" -derivedDataPath ios/DerivedData -disableAutomaticPackageResolution CODE_SIGNING_ALLOWED=NO build
+
+Build settings from command line:
+    CODE_SIGNING_ALLOWED = NO
+    SDKROOT = iphonesimulator27.2
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  CapacitorSplashScreen: /Users/os/Documents/ChatGPT/InboxAI2.0/node_modules/@capacitor/splash-screen @ local
+  CapacitorKeyboard: /Users/os/Documents/ChatGPT/InboxAI2.0/node_modules/@capacitor/keyboard @ local
+  CapacitorStatusBar: /Users/os/Documents/ChatGPT/InboxAI2.0/node_modules/@capacitor/status-bar @ local
+  CapacitorHaptics: /Users/os/Documents/ChatGPT/InboxAI2.0/node_modules/@capacitor/haptics @ local
+  capacitor-swift-pm: https://github.com/ionic-team/capacitor-swift-pm.git @ 8.0.0
+  CapacitorPushNotifications: /Users/os/Documents/ChatGPT/InboxAI2.0/node_modules/@capacitor/push-notifications @ local
+  CapacitorApp: /Users/os/Documents/ChatGPT/InboxAI2.0/node_modules/@capacitor/app @ local
+  CapApp-SPM: /Users/os/Documents/ChatGPT/InboxAI2.0/ios/App/CapApp-SPM @ local
+
+2026-11-12 04:59:29.482 xcodebuild[83356:20582003] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+2026-11-12 04:59:29.497 xcodebuild[83356:20582003] [MT] IDESchemeActionsInvocationRecord: Device <DVTiOSDeviceSimulatorPlaceholder: 0x747fd05f40 (Any iOS Simulator Device | undefined_arch)> is missing operatingSystemVersion, operatingSystemVersionWithBuildNumber.
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (17 targets)
+    Target 'App' in project 'App'
+        ➜ Explicit dependency on target 'CapApp-SPM-product' in project 'CapApp-SPM'
+    Target 'CapApp-SPM-product' in project 'CapApp-SPM'
+        ➜ Explicit dependency on target 'CapApp-SPM' in project 'CapApp-SPM'
+        ➜ Explicit dependency on target 'Capacitor-product' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'Cordova-product' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'CapacitorApp-product' in project 'CapacitorApp'
+        ➜ Explicit dependency on target 'CapacitorHaptics-product' in project 'CapacitorHaptics'
+        ➜ Explicit dependency on target 'CapacitorKeyboard-product' in project 'CapacitorKeyboard'
+        ➜ Explicit dependency on target 'CapacitorPushNotifications-product' in project 'CapacitorPushNotifications'
+        ➜ Explicit dependency on target 'CapacitorSplashScreen-product' in project 'CapacitorSplashScreen'
+        ➜ Explicit dependency on target 'CapacitorStatusBar-product' in project 'CapacitorStatusBar'
+    Target 'CapApp-SPM' in project 'CapApp-SPM'
+        ➜ Explicit dependency on target 'Capacitor-product' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'Cordova-product' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'CapacitorApp-product' in project 'CapacitorApp'
+        ➜ Explicit dependency on target 'CapacitorHaptics-product' in project 'CapacitorHaptics'
+        ➜ Explicit dependency on target 'CapacitorKeyboard-product' in project 'CapacitorKeyboard'
+        ➜ Explicit dependency on target 'CapacitorPushNotifications-product' in project 'CapacitorPushNotifications'
+        ➜ Explicit dependency on target 'CapacitorSplashScreen-product' in project 'CapacitorSplashScreen'
+        ➜ Explicit dependency on target 'CapacitorStatusBar-product' in project 'CapacitorStatusBar'
+    Target 'CapacitorStatusBar-product' in project 'CapacitorStatusBar'
+        ➜ Explicit dependency on target 'StatusBarPlugin' in project 'CapacitorStatusBar'
+        ➜ Explicit dependency on target 'Capacitor-product' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'Cordova-product' in project 'capacitor-swift-pm'
+    Target 'StatusBarPlugin' in project 'CapacitorStatusBar'
+        ➜ Explicit dependency on target 'Capacitor-product' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'Cordova-product' in project 'capacitor-swift-pm'
+    Target 'CapacitorSplashScreen-product' in project 'CapacitorSplashScreen'
+        ➜ Explicit dependency on target 'SplashScreenPlugin' in project 'CapacitorSplashScreen'
+        ➜ Explicit dependency on target 'Capacitor-product' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'Cordova-product' in project 'capacitor-swift-pm'
+    Target 'SplashScreenPlugin' in project 'CapacitorSplashScreen'
+        ➜ Explicit dependency on target 'Capacitor-product' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'Cordova-product' in project 'capacitor-swift-pm'
+    Target 'CapacitorPushNotifications-product' in project 'CapacitorPushNotifications'
+        ➜ Explicit dependency on target 'PushNotificationsPlugin' in project 'CapacitorPushNotifications'
+        ➜ Explicit dependency on target 'Capacitor-product' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'Cordova-product' in project 'capacitor-swift-pm'
+    Target 'PushNotificationsPlugin' in project 'CapacitorPushNotifications'
+        ➜ Explicit dependency on target 'Capacitor-product' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'Cordova-product' in project 'capacitor-swift-pm'
+    Target 'CapacitorKeyboard-product' in project 'CapacitorKeyboard'
+        ➜ Explicit dependency on target 'KeyboardPlugin' in project 'CapacitorKeyboard'
+        ➜ Explicit dependency on target 'Capacitor-product' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'Cordova-product' in project 'capacitor-swift-pm'
+    Target 'KeyboardPlugin' in project 'CapacitorKeyboard'
+        ➜ Explicit dependency on target 'Capacitor-product' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'Cordova-product' in project 'capacitor-swift-pm'
+    Target 'CapacitorHaptics-product' in project 'CapacitorHaptics'
+        ➜ Explicit dependency on target 'HapticsPlugin' in project 'CapacitorHaptics'
+        ➜ Explicit dependency on target 'Capacitor-product' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'Cordova-product' in project 'capacitor-swift-pm'
+    Target 'HapticsPlugin' in project 'CapacitorHaptics'
+        ➜ Explicit dependency on target 'Capacitor-product' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'Cordova-product' in project 'capacitor-swift-pm'
+    Target 'CapacitorApp-product' in project 'CapacitorApp'
+        ➜ Explicit dependency on target 'AppPlugin' in project 'CapacitorApp'
+        ➜ Explicit dependency on target 'Capacitor-product' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'Cordova-product' in project 'capacitor-swift-pm'
+    Target 'AppPlugin' in project 'CapacitorApp'
+        ➜ Explicit dependency on target 'Capacitor-product' in project 'capacitor-swift-pm'
+        ➜ Explicit dependency on target 'Cordova-product' in project 'capacitor-swift-pm'
+    Target 'Cordova-product' in project 'capacitor-swift-pm' (no dependencies)
+    Target 'Capacitor-product' in project 'capacitor-swift-pm' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -x objective-c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/os/Documents/ChatGPT/InboxAI2.0/ios/App/App/Assets.xcassets
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/ibtool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -x objective-c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+Build description signature: 0604d69f5e945921720532ed5af3cccb
+Build description path: /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Intermediates.noindex/XCBuildData/0604d69f5e945921720532ed5af3cccb.xcbuilddata
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache
+    cd /Users/os/Documents/ChatGPT/InboxAI2.0/ios/App/App.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -o /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache
+
+CpResource /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app/capacitor.config.json /Users/os/Documents/ChatGPT/InboxAI2.0/ios/App/App/capacitor.config.json (in target 'App' from project 'App')
+    cd /Users/os/Documents/ChatGPT/InboxAI2.0/ios/App
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks /Users/os/Documents/ChatGPT/InboxAI2.0/ios/App/App/capacitor.config.json /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app
+
+CpResource /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app/config.xml /Users/os/Documents/ChatGPT/InboxAI2.0/ios/App/App/config.xml (in target 'App' from project 'App')
+    cd /Users/os/Documents/ChatGPT/InboxAI2.0/ios/App
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks /Users/os/Documents/ChatGPT/InboxAI2.0/ios/App/App/config.xml /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app
+
+CpResource /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app/public /Users/os/Documents/ChatGPT/InboxAI2.0/ios/App/App/public (in target 'App' from project 'App')
+    cd /Users/os/Documents/ChatGPT/InboxAI2.0/ios/App
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks /Users/os/Documents/ChatGPT/InboxAI2.0/ios/App/App/public /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app
+
+ProcessInfoPlistFile /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app/Info.plist /Users/os/Documents/ChatGPT/InboxAI2.0/ios/App/App/Info.plist (in target 'App' from project 'App')
+    cd /Users/os/Documents/ChatGPT/InboxAI2.0/ios/App
+    builtin-infoPlistUtility /Users/os/Documents/ChatGPT/InboxAI2.0/ios/App/App/Info.plist -producttype com.apple.product-type.application -genpkginfo /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app/PkgInfo -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Base.lproj/LaunchScreen-SBPartialInfo.plist -additionalcontentfile /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Base.lproj/Main-SBPartialInfo.plist -additionalcontentfile /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/assetcatalog_generated_info.plist -scanforprivacyfile /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app/Frameworks/Capacitor.framework -scanforprivacyfile /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app/Frameworks/Cordova.framework -o /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app/Info.plist
+
+CopySwiftLibs /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app (in target 'App' from project 'App')
+    cd /Users/os/Documents/ChatGPT/InboxAI2.0/ios/App
+    builtin-swiftStdLibTool --copy --verbose --scan-executable /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app/App.debug.dylib --scan-folder /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app/Frameworks --scan-folder /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app/PlugIns --scan-folder /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app/SystemExtensions --scan-folder /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app/Extensions --platform iphonesimulator --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os --back-deploy-swift-span
+Ignoring --strip-bitcode because --sign was not passed
+
+PruneExplicitPrecompiledModules /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+
+PruneExplicitPrecompiledModules /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/Build/Intermediates.noindex/ExplicitPrecompiledModules
+
+PruneExplicitPrecompiledModules /Users/os/Documents/ChatGPT/InboxAI2.0/ios/DerivedData/SDKExplicitPrecompiledModules
+
+** BUILD SUCCEEDED **

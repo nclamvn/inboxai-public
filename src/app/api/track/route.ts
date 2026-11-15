@@ -1,77 +1,36 @@
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { trackBehavior, BehaviorAction } from '@/lib/ai/behavior-tracker'
+import { trackBehavior, type BehaviorAction } from '@/lib/ai/behavior-tracker'
 import { logEmailAction, type ActionType } from '@/lib/ai/domain-reputation'
+import { privateJson, readPrivateJson } from '@/lib/http/private-json'
 
-const supabaseAdmin = createAdminClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
-// Map behavior actions to domain reputation actions
-const actionMap: Record<string, ActionType | null> = {
-  open: 'open',
-  reply: 'reply',
-  archive: 'archive',
-  delete: 'delete',
-  read: null, // Don't track read separately
-  star: null, // Don't track star
-  unstar: null // Don't track unstar
+const actionMap: Record<BehaviorAction, ActionType | null> = {
+  open: 'open', reply: 'reply', archive: 'archive', delete: 'delete', read: null, star: null, unstar: null,
 }
+const trackingInput = z.object({
+  emailId: z.uuid(),
+  action: z.enum(['open', 'read', 'reply', 'archive', 'delete', 'star', 'unstar']),
+  readDuration: z.number().int().min(0).max(2_147_483_647).optional(),
+})
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return privateJson({ error: 'Unauthorized' }, 401)
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { emailId, action, readDuration } = await request.json()
-
-  if (!emailId || !action) {
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
-  }
-
-  // Validate action
-  const validActions: BehaviorAction[] = ['open', 'read', 'reply', 'archive', 'delete', 'star', 'unstar']
-  if (!validActions.includes(action)) {
-    return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
-  }
+  const body = await readPrivateJson(request)
+  if (body instanceof Response) return body
+  const input = trackingInput.safeParse(body.body)
+  if (!input.success) return privateJson({ error: 'Invalid tracking request' }, 400)
 
   try {
-    // Track behavior for ML
-    await trackBehavior({
-      userId: user.id,
-      emailId,
-      action,
-      readDuration
-    })
-
-    // Log action for domain reputation (async, don't block)
-    const domainAction = actionMap[action]
-    if (domainAction) {
-      // Get sender email from the email record
-      ;(async () => {
-        try {
-          const { data: email } = await supabaseAdmin
-            .from('emails')
-            .select('from_address')
-            .eq('id', emailId)
-            .single()
-          if (email?.from_address) {
-            await logEmailAction(user.id, emailId, email.from_address, domainAction)
-          }
-        } catch (err) {
-          console.error('Failed to log domain action:', err)
-        }
-      })()
-    }
-
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Track behavior error:', error)
-    return NextResponse.json({ error: 'Tracking failed' }, { status: 500 })
+    const result = await trackBehavior({ userId: user.id, ...input.data })
+    if (!result) return privateJson({ error: 'Email not found' }, 404)
+    const domainAction = actionMap[input.data.action]
+    if (domainAction && result.sender) await logEmailAction(user.id, input.data.emailId, result.sender, domainAction)
+    return privateJson({ success: true })
+  } catch {
+    return privateJson({ error: 'Tracking failed' }, 500)
   }
 }

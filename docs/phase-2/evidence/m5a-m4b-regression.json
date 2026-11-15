@@ -1,0 +1,112 @@
+{
+  "date": "2026-11-11T17:18:21.257Z",
+  "provenance": "Local Chromium and authenticated Next/PostgREST/PostgreSQL with deterministic synthesis of synthetic mail",
+  "images": {
+    "auth": "supabase/gotrue:v2.197.0",
+    "rest": "postgrest/postgrest:v14.18",
+    "mail": "axllent/mailpit:v1.28.1",
+    "db": "postgres:16"
+  },
+  "outcomes": [
+    {
+      "name": "upgrade preserves existing profile",
+      "status": "PASS"
+    },
+    {
+      "name": "direct Auth API cannot bypass closed registration policy",
+      "status": "PASS"
+    },
+    {
+      "name": "Next signup requires email verification",
+      "status": "PASS"
+    },
+    {
+      "name": "signup sets no authenticated access-token cookie",
+      "status": "PASS"
+    },
+    {
+      "name": "unverified signup has no admin access",
+      "status": "PASS"
+    },
+    {
+      "name": "password login rejected before verification",
+      "status": "PASS"
+    },
+    {
+      "name": "PKCE email callback creates a verified session",
+      "status": "PASS"
+    },
+    {
+      "name": "verified admitted user can open the inbox page",
+      "status": "PASS"
+    },
+    {
+      "name": "non-admin verified user cannot access global whitelist",
+      "status": "PASS"
+    },
+    {
+      "name": "real PostgREST JWT/RLS returns only own email",
+      "status": "PASS"
+    },
+    {
+      "name": "anonymous PostgREST cannot read tenant email",
+      "status": "PASS"
+    },
+    {
+      "name": "server-provisioned admin role grants whitelist access",
+      "status": "PASS"
+    },
+    {
+      "name": "admin revocation is enforced on the next request",
+      "status": "PASS"
+    },
+    {
+      "name": "closed policy rejects subsequent Next signups",
+      "status": "PASS"
+    },
+    {
+      "name": "three requested facts are supported across two accounts and equal VND amounts are consolidated",
+      "status": "PASS"
+    },
+    {
+      "name": "filtered answer stays partial when the confirming payment email is outside scope",
+      "status": "PASS"
+    },
+    {
+      "name": "disagreement preserves both dates, exact USD cents and both citations",
+      "status": "PASS"
+    },
+    {
+      "name": "ambiguous date and currency are cited as unclear with no asserted business values",
+      "status": "PASS"
+    },
+    {
+      "name": "a prompt injection and quoted prior text produce no business claim",
+      "status": "PASS"
+    },
+    {
+      "name": "empty scope, no reference and multiple references get distinct abstention reasons",
+      "status": "PASS"
+    },
+    {
+      "name": "anonymous and forged scope are denied while the second tenant sees only its own citation",
+      "status": "PASS"
+    },
+    {
+      "name": "all returned claims carry owned literal evidence and a version digest",
+      "status": "PASS"
+    },
+    {
+      "name": "same-rule newest-email baseline misses complementary facts and the known conflict",
+      "status": "PASS"
+    },
+    {
+      "name": "versioned source opens the real email, back restores the answer, and a stale link requests a new check",
+      "status": "PASS"
+    },
+    {
+      "name": "desktop, tablet and mobile states render literal evidence without overflow or sampled axe violations",
+      "status": "PASS"
+    }
+  ]
+}

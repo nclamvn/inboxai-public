@@ -1,0 +1,145 @@
+{
+  "provenance": "24 author-labelled synthetic cases, no independent review, provider, LLM or agent run",
+  "cases": 24,
+  "baseline": {
+    "truePositive": 2,
+    "falsePositive": 10,
+    "trueNegative": 2,
+    "falseNegative": 10,
+    "precision": 0.16666666666666666,
+    "recall": 0.16666666666666666,
+    "misses": [
+      {
+        "case": "factory-stop",
+        "expectedAction": true,
+        "action": false
+      },
+      {
+        "case": "new-sender-security",
+        "expectedAction": true,
+        "action": false
+      },
+      {
+        "case": "receipt-overclassified",
+        "expectedAction": false,
+        "action": true
+      },
+      {
+        "case": "transfer-success",
+        "expectedAction": false,
+        "action": true
+      },
+      {
+        "case": "invoice-not-receipt",
+        "expectedAction": true,
+        "action": false
+      },
+      {
+        "case": "explicit-approval",
+        "expectedAction": true,
+        "action": false
+      },
+      {
+        "case": "source-body",
+        "expectedAction": true,
+        "action": false
+      },
+      {
+        "case": "implicit-vietnamese",
+        "expectedAction": true,
+        "action": false
+      },
+      {
+        "case": "recent-overdue",
+        "expectedAction": true,
+        "action": false
+      },
+      {
+        "case": "distant-deadline",
+        "expectedAction": false,
+        "action": true
+      },
+      {
+        "case": "old-deadline",
+        "expectedAction": false,
+        "action": true
+      },
+      {
+        "case": "alert-resolved",
+        "expectedAction": false,
+        "action": true
+      },
+      {
+        "case": "incident-drill",
+        "expectedAction": false,
+        "action": true
+      },
+      {
+        "case": "automated-reply",
+        "expectedAction": false,
+        "action": true
+      },
+      {
+        "case": "newsletter",
+        "expectedAction": false,
+        "action": true
+      },
+      {
+        "case": "user-star",
+        "expectedAction": true,
+        "action": false
+      },
+      {
+        "case": "vip-without-request",
+        "expectedAction": false,
+        "action": true
+      },
+      {
+        "case": "plain-fraud",
+        "expectedAction": true,
+        "action": false
+      },
+      {
+        "case": "far-body",
+        "expectedAction": true,
+        "action": false
+      },
+      {
+        "case": "spam-spoof",
+        "expectedAction": false,
+        "action": true
+      }
+    ]
+  },
+  "actionInbox": {
+    "truePositive": 9,
+    "falsePositive": 1,
+    "trueNegative": 11,
+    "falseNegative": 3,
+    "precision": 0.9,
+    "recall": 0.75,
+    "misses": [
+      {
+        "case": "spanish-incident",
+        "expectedAction": true,
+        "action": false
+      },
+      {
+        "case": "implicit-vietnamese",
+        "expectedAction": true,
+        "action": false
+      },
+      {
+        "case": "planned-stop",
+        "expectedAction": false,
+        "action": true
+      },
+      {
+        "case": "far-body",
+        "expectedAction": true,
+        "action": false
+      }
+    ]
+  },
+  "allReasonsReferenceFixtureEmail": true
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Email } from '@/types'
 
 /**
@@ -8,23 +8,20 @@ import type { Email } from '@/types'
  * Uses API route to enable lazy body loading from IMAP
  */
 export function useEmail(emailId: string | null) {
-  const [email, setEmail] = useState<Email | null>(null)
+  const [result, setResult] = useState<{ id: string; email: Email | null; error: string | null } | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const request = useRef<AbortController | null>(null)
 
   const fetchEmail = useCallback(async () => {
-    if (!emailId) {
-      setEmail(null)
-      return
-    }
+    request.current?.abort()
+    if (!emailId) return
+    const controller = new AbortController()
+    request.current = controller
 
     setLoading(true)
-    setError(null)
 
     try {
-      // CRITICAL: Use API route instead of direct Supabase query
-      // This enables lazy body loading from IMAP for emails without body_fetched
-      const res = await fetch(`/api/emails/${emailId}`)
+      const res = await fetch(`/api/emails/${encodeURIComponent(emailId)}`, { signal: controller.signal })
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}))
@@ -32,23 +29,26 @@ export function useEmail(emailId: string | null) {
       }
 
       const data = await res.json()
-      setEmail(data.email as Email)
+      if (!controller.signal.aborted) setResult({ id: emailId, email: data.email as Email, error: null })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch email')
-      setEmail(null)
+      if (!controller.signal.aborted) {
+        setResult({ id: emailId, email: null, error: err instanceof Error ? err.message : 'Failed to fetch email' })
+      }
     } finally {
-      setLoading(false)
+      if (!controller.signal.aborted) setLoading(false)
     }
   }, [emailId])
 
   useEffect(() => {
-    fetchEmail()
+    void fetchEmail()
+    return () => request.current?.abort()
   }, [fetchEmail])
 
+  const current = result?.id === emailId ? result : null
   return {
-    email,
-    loading,
-    error,
+    email: current?.email ?? null,
+    loading: Boolean(emailId && (loading || !current)),
+    error: current?.error ?? null,
     refetch: fetchEmail,
   }
 }

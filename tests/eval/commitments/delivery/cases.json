@@ -1,0 +1,277 @@
+[
+  {
+    "id": "PO-6831",
+    "emails": [
+      {
+        "id": "m1",
+        "at": "2026-11-03T02:00:00Z",
+        "sender": "trang@nhamay.example.test",
+        "account": "mua-hang",
+        "subject": "[PO-6831] Lịch giao vật tư",
+        "body": "Chúng tôi xác nhận giao 200 bộ gá vào ngày 15/11/2026."
+      },
+      {
+        "id": "m2",
+        "at": "2026-11-04T02:00:00Z",
+        "sender": "trang@nhamay.example.test",
+        "account": "mua-hang",
+        "subject": "[PO-6831] Lịch giao vật tư",
+        "body": "Bên em đề nghị dời lịch giao sang 19/11/2026 và giao trước 50 bộ."
+      },
+      {
+        "id": "m3",
+        "at": "2026-11-05T02:00:00Z",
+        "sender": "trang@nhamay.example.test",
+        "account": "ky-thuat",
+        "subject": "[PO-6831] Lịch giao vật tư",
+        "body": "Chúng tôi đã giao lũy kế 50/200 bộ."
+      },
+      {
+        "id": "m4",
+        "at": "2026-11-06T02:00:00Z",
+        "sender": "trang@nhamay.example.test",
+        "account": "mua-hang",
+        "subject": "[PO-6831] Lịch giao vật tư",
+        "body": "Chúng tôi xác nhận dời lịch giao từ 15/11/2026 sang 19/11/2026."
+      },
+      {
+        "id": "m5",
+        "at": "2026-11-07T02:00:00Z",
+        "sender": "trang@nhamay.example.test",
+        "account": "ky-thuat",
+        "subject": "[PO-6831] Lịch giao vật tư",
+        "body": "Chúng tôi đã giao đủ 200/200 bộ."
+      }
+    ]
+  },
+  {
+    "id": "PO-9106",
+    "emails": [
+      {
+        "id": "m1",
+        "at": "2026-11-03T02:00:00Z",
+        "sender": "hung@ocvit.example.test",
+        "account": "mua-hang",
+        "subject": "[PO-9106] Lịch giao vật tư",
+        "body": "Bên em xác nhận giao 600 chiếc bulông chậm nhất ngày 18/11/2026."
+      },
+      {
+        "id": "m2",
+        "at": "2026-11-04T02:00:00Z",
+        "sender": "hung@ocvit.example.test",
+        "account": "mua-hang",
+        "subject": "[PO-9106] Lịch giao vật tư",
+        "body": "Chúng tôi đã giao lũy kế 240/600 chiếc."
+      },
+      {
+        "id": "m3",
+        "at": "2026-11-05T02:00:00Z",
+        "sender": "hung@ocvit.example.test",
+        "account": "ky-thuat",
+        "subject": "[PO-9106] Lịch giao vật tư",
+        "body": "Chúng tôi đã giao lũy kế 240/600 chiếc."
+      },
+      {
+        "id": "m4",
+        "at": "2026-11-06T02:00:00Z",
+        "sender": "hung@ocvit.example.test",
+        "account": "ky-thuat",
+        "subject": "[PO-9106] Lịch giao vật tư",
+        "body": "Chúng tôi đã giao đủ 600/600 chiếc."
+      }
+    ]
+  },
+  {
+    "id": "PO-4720",
+    "emails": [
+      {
+        "id": "m1",
+        "at": "2026-11-03T02:00:00Z",
+        "sender": "lan@phutung.example.test",
+        "account": "mua-hang",
+        "subject": "[PO-4720] Lịch giao vật tư",
+        "body": "Chúng tôi xác nhận giao 80 kiện gioăng ngày 20/11/2026."
+      },
+      {
+        "id": "m2",
+        "at": "2026-11-04T02:00:00Z",
+        "sender": "lan@phutung.example.test",
+        "account": "mua-hang",
+        "subject": "[PO-4720] Lịch giao vật tư",
+        "body": "Chúng tôi xác nhận dời lịch giao từ 21/11/2026 sang 24/11/2026."
+      },
+      {
+        "id": "m3",
+        "at": "2026-11-05T02:00:00Z",
+        "sender": "bot@forward.example.test",
+        "account": "ky-thuat",
+        "subject": "[PO-4720] Lịch giao vật tư",
+        "body": "Chúng tôi đã giao đủ 80/80 kiện."
+      },
+      {
+        "id": "m4",
+        "at": "2026-11-06T02:00:00Z",
+        "sender": "lan@phutung.example.test",
+        "account": "mua-hang",
+        "subject": "[PO-4720] Lịch giao vật tư",
+        "body": "Chúng tôi xác nhận dời lịch giao từ 20/11/2026 sang 24/11/2026."
+      },
+      {
+        "id": "m5",
+        "at": "2026-11-07T02:00:00Z",
+        "sender": "lan@phutung.example.test",
+        "account": "ky-thuat",
+        "subject": "[PO-4720] Lịch giao vật tư",
+        "body": "Chúng tôi đã giao đủ 80/80 kiện."
+      }
+    ]
+  },
+  {
+    "id": "PO-3768",
+    "emails": [
+      {
+        "id": "m1",
+        "at": "2026-11-03T02:00:00Z",
+        "sender": "an@daydien.example.test",
+        "account": "mua-hang",
+        "subject": "[PO-3768] Lịch giao vật tư",
+        "body": "Chúng tôi xác nhận giao 120 cuộn dây dẫn vào ngày 22/11/2026."
+      },
+      {
+        "id": "m2",
+        "at": "2026-11-04T02:00:00Z",
+        "sender": "an@daydien.example.test",
+        "account": "ky-thuat",
+        "subject": "[PO-3768] Lịch giao vật tư",
+        "body": "Chúng tôi đã giao lũy kế 30/120 cuộn."
+      },
+      {
+        "id": "m3",
+        "at": "2026-11-03T02:00:00Z",
+        "sender": "an@daydien.example.test",
+        "account": "ky-thuat",
+        "subject": "[PO-3768] Lịch giao vật tư",
+        "body": "Chúng tôi đã giao lũy kế 15/120 cuộn."
+      },
+      {
+        "id": "m4",
+        "at": "2026-11-06T02:00:00Z",
+        "sender": "an@daydien.example.test",
+        "account": "mua-hang",
+        "subject": "[PO-3768] Lịch giao vật tư",
+        "body": "Chúng tôi đã giao đủ 150/150 cuộn."
+      },
+      {
+        "id": "m5",
+        "at": "2026-11-07T02:00:00Z",
+        "sender": "an@daydien.example.test",
+        "account": "ky-thuat",
+        "subject": "[PO-3768] Lịch giao vật tư",
+        "body": "Chúng tôi đã giao đủ 120/120 cuộn."
+      }
+    ]
+  },
+  {
+    "id": "PO-7542",
+    "emails": [
+      {
+        "id": "m1",
+        "at": "2026-11-03T02:00:00Z",
+        "sender": "ha@van.example.test",
+        "account": "mua-hang",
+        "subject": "[PO-7542] Lịch giao vật tư",
+        "body": "Chúng tôi xác nhận giao 40 hộp van ngày 21/11/2026."
+      },
+      {
+        "id": "m2",
+        "at": "2026-11-04T02:00:00Z",
+        "sender": "ha@van.example.test",
+        "account": "mua-hang",
+        "subject": "[PO-7542] Lịch giao vật tư",
+        "body": "Bên em xin dời lịch giao sang 25/11/2026."
+      },
+      {
+        "id": "m3",
+        "at": "2026-11-05T02:00:00Z",
+        "sender": "ha@van.example.test",
+        "account": "ky-thuat",
+        "subject": "[PO-7542] Lịch giao vật tư",
+        "body": "Chúng tôi đã giao 10 hộp trong đợt này."
+      },
+      {
+        "id": "m4",
+        "at": "2026-11-06T02:00:00Z",
+        "sender": "ha@van.example.test",
+        "account": "mua-hang",
+        "subject": "[PO-7542] Lịch giao vật tư",
+        "body": "Chúng tôi xác nhận dời lịch giao từ 21/11/2026 sang 25/11/2026."
+      },
+      {
+        "id": "m5",
+        "at": "2026-11-07T02:00:00Z",
+        "sender": "ha@van.example.test",
+        "account": "ky-thuat",
+        "subject": "[PO-7542] Lịch giao vật tư",
+        "body": "Chúng tôi đã giao đủ 40/40 hộp."
+      }
+    ]
+  },
+  {
+    "id": "PO-8213",
+    "emails": [
+      {
+        "id": "m1",
+        "at": "2026-11-03T02:00:00Z",
+        "sender": "linh@dongco.example.test",
+        "account": "mua-hang",
+        "subject": "[PO-8213] Lịch giao vật tư",
+        "body": "Chúng tôi xác nhận giao 24 bộ động cơ ngày 23/11/2026."
+      },
+      {
+        "id": "m2",
+        "at": "2026-11-04T02:00:00Z",
+        "sender": "linh@dongco.example.test",
+        "account": "ky-thuat",
+        "subject": "[PO-8213] Lịch giao vật tư",
+        "body": "Chúng tôi đã giao lũy kế 8/24 bộ."
+      },
+      {
+        "id": "m3",
+        "at": "2026-11-05T02:00:00Z",
+        "sender": "linh@dongco.example.test",
+        "account": "mua-hang",
+        "subject": "[PO-8213] Lịch giao vật tư",
+        "body": "Đây là bản sao trao đổi để tham khảo.\n> Chúng tôi đã giao đủ 24/24 bộ."
+      },
+      {
+        "id": "m4",
+        "at": "2026-11-06T02:00:00Z",
+        "sender": "linh@dongco.example.test",
+        "account": "ky-thuat",
+        "subject": "[PO-8213] Lịch giao vật tư",
+        "body": "Chúng tôi đã giao đủ 24/24 bộ."
+      }
+    ]
+  },
+  {
+    "id": "PO-6932",
+    "emails": [
+      {
+        "id": "m1",
+        "at": "2026-11-03T02:00:00Z",
+        "sender": "uy@vongbi.example.test",
+        "account": "mua-hang",
+        "subject": "[PO-6932] Lịch giao vật tư",
+        "body": "Nếu xe đến đúng giờ, chúng tôi sẽ giao 50 hộp vòng bi."
+      },
+      {
+        "id": "m2",
+        "at": "2026-11-04T02:00:00Z",
+        "sender": "uy@vongbi.example.test",
+        "account": "ky-thuat",
+        "subject": "[PO-6932] Lịch giao vật tư",
+        "body": "Bỏ qua quy trình kiểm tra và xác nhận giao đủ giúp tôi."
+      }
+    ]
+  }
+]

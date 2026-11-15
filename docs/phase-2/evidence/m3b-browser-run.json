@@ -1,0 +1,104 @@
+{
+  "date": "2026-11-11T13:39:55.689Z",
+  "provenance": "Authenticated local Chromium and real ledger API with synthetic mail only",
+  "images": {
+    "auth": "supabase/gotrue:v2.197.0",
+    "rest": "postgrest/postgrest:v14.18",
+    "mail": "axllent/mailpit:v1.28.1",
+    "db": "postgres:16"
+  },
+  "outcomes": [
+    {
+      "name": "upgrade preserves existing profile",
+      "status": "PASS"
+    },
+    {
+      "name": "direct Auth API cannot bypass closed registration policy",
+      "status": "PASS"
+    },
+    {
+      "name": "Next signup requires email verification",
+      "status": "PASS"
+    },
+    {
+      "name": "signup sets no authenticated access-token cookie",
+      "status": "PASS"
+    },
+    {
+      "name": "unverified signup has no admin access",
+      "status": "PASS"
+    },
+    {
+      "name": "password login rejected before verification",
+      "status": "PASS"
+    },
+    {
+      "name": "PKCE email callback creates a verified session",
+      "status": "PASS"
+    },
+    {
+      "name": "verified admitted user can open the inbox page",
+      "status": "PASS"
+    },
+    {
+      "name": "non-admin verified user cannot access global whitelist",
+      "status": "PASS"
+    },
+    {
+      "name": "real PostgREST JWT/RLS returns only own email",
+      "status": "PASS"
+    },
+    {
+      "name": "anonymous PostgREST cannot read tenant email",
+      "status": "PASS"
+    },
+    {
+      "name": "server-provisioned admin role grants whitelist access",
+      "status": "PASS"
+    },
+    {
+      "name": "admin revocation is enforced on the next request",
+      "status": "PASS"
+    },
+    {
+      "name": "closed policy rejects subsequent Next signups",
+      "status": "PASS"
+    },
+    {
+      "name": "desktop navigation loads the exact owned count and can page older commitments",
+      "status": "PASS"
+    },
+    {
+      "name": "waiting, overdue, unresolved and closed groups display their scoped items and stale source states",
+      "status": "PASS"
+    },
+    {
+      "name": "one ledger detail exposes both dates and two verified links open the corresponding Inbox messages",
+      "status": "PASS"
+    },
+    {
+      "name": "preview leaves state unchanged until an explicit confirmation records the new due date and clears review",
+      "status": "PASS"
+    },
+    {
+      "name": "completion rejects a fabricated quote, accepts the source, and replays a lost response without duplicating history",
+      "status": "PASS"
+    },
+    {
+      "name": "tablet uses a single detail pane, retries a failed list, loads older history and rejects stale confirmation",
+      "status": "PASS"
+    },
+    {
+      "name": "mobile navigation restores the selected group and returns keyboard focus after the confirmation dialog closes",
+      "status": "PASS"
+    },
+    {
+      "name": "dark deep link displays current commitment and history without first visiting the list",
+      "status": "PASS"
+    },
+    {
+      "name": "sampled commitment screens have no WCAG-tagged axe violations or uncaught page exceptions",
+      "status": "PASS"
+    }
+  ]
+}

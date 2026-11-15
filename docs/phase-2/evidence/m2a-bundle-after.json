@@ -1,0 +1,13 @@
+{
+  "scope": "Production Inbox route bootstrap and manifest entry assets. Excludes lazy chunks, fonts and network timing.",
+  "js": {
+    "files": 12,
+    "bytes": 1364873,
+    "gzipBytes": 413758
+  },
+  "css": {
+    "files": 1,
+    "bytes": 138677,
+    "gzipBytes": 20910
+  }
+}

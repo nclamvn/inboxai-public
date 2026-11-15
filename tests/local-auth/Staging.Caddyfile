@@ -1,0 +1,19 @@
+{
+  auto_https off
+  admin off
+}
+:9999 {
+  reverse_proxy auth:9999
+}
+:3000 {
+  reverse_proxy rest:3000
+}
+:8025 {
+  reverse_proxy mail:8025
+}
+:19999 {
+  reverse_proxy recovery-auth:9999
+}
+:13000 {
+  reverse_proxy recovery-rest:3000
+}

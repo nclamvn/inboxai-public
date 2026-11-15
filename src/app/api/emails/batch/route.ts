@@ -215,11 +215,9 @@ export async function POST(request: NextRequest) {
             break;
 
           case 'categorize':
-            result = await supabase
-              .from('emails')
-              .update({ category: op.category, updated_at: now })
-              .eq('user_id', user.id)
-              .in('id', op.emailIds);
+            result = await supabase.rpc('set_personal_mail_category', {
+              p_emails: op.emailIds, p_category: op.category,
+            });
             break;
 
           case 'set_priority':

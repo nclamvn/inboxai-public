@@ -5,10 +5,15 @@ import { useRouter } from 'next/navigation'
 import { Star, Archive, Trash2, Reply, Forward, MoreHorizontal, X, AlertCircle, Clock, Sparkles, Loader2, MessageSquarePlus, Printer, Download, AlertTriangle } from 'lucide-react'
 import { cn, formatDate } from '@/lib/utils'
 import { useBehaviorTracker } from '@/hooks/use-behavior-tracker'
+import { useQuery } from '@tanstack/react-query'
+import { AttachmentList, type Attachment } from './attachment-list'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
 import { AIFeaturesPanel } from '@/components/ai'
+import { EmailConversation } from './email-conversation'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import { PhishingWarning } from '@/components/email/phishing-warning'
+import { offerReplyText } from '@/lib/replies/client'
+import { replyHref } from '@/lib/replies/contracts'
 import type { Email } from '@/types'
 
 interface EmailDetailProps {
@@ -16,6 +21,8 @@ interface EmailDetailProps {
   onClose: () => void
   onStar: () => void
   onArchive: () => void
+  archiveLabel?: string
+  conversationFolder?: 'sent'
   onDelete: () => void
   onReply?: () => void
   onRefresh?: () => void
@@ -38,12 +45,23 @@ const categoryLabels: Record<string, string> = {
   social: 'Mạng xã hội',
 }
 
-export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onReply, onRefresh }: EmailDetailProps) {
+export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onReply, onRefresh, archiveLabel = 'Lưu trữ', conversationFolder }: EmailDetailProps) {
   const router = useRouter()
   const [classifying, setClassifying] = useState(false)
   const [showReplyAssistant, setShowReplyAssistant] = useState(false)
   const [showMoreMenu, setShowMoreMenu] = useState(false)
   const moreMenuRef = useRef<HTMLDivElement>(null)
+  const { data: attachments, isError: attachmentError } = useQuery({
+    queryKey: ['email-attachments', email.id],
+    enabled: !!email.attachment_count,
+    queryFn: async ({ signal }) => {
+      const response = await fetch('/api/emails/' + encodeURIComponent(email.id) + '/attachments', { signal, cache: 'no-store' })
+      if (!response.ok) throw new Error('Chưa thể tải danh sách tệp.')
+      return (await response.json()).attachments as Attachment[]
+    },
+  })
+  const recipients = email.to_addresses?.map(address => typeof address === 'string' ? address : address?.email)
+    .filter(Boolean).join(', ')
   const priorityInfo = priorityLabels[email.priority || 3]
 
   // Behavior tracking
@@ -127,17 +145,13 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
 
   const handleReply = () => {
     trackReply(email.id)
-    onReply?.()
+    if (onReply) onReply()
+    else router.push(replyHref(email.id))
   }
 
-  const handleUseDraft = (subject: string, body: string) => {
-    // Navigate to compose with pre-filled draft
-    const params = new URLSearchParams({
-      replyTo: email.from_address || '',
-      subject,
-      body,
-    })
-    router.push(`/compose?${params.toString()}`)
+  const handleUseDraft = (_subject: string, body: string) => {
+    offerReplyText(email.id, body)
+    router.push(replyHref(email.id))
   }
 
 
@@ -145,8 +159,10 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
     <div className="h-full flex flex-col bg-[var(--card)]">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           <button
+            type="button"
+            aria-label="Đóng thư"
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
@@ -158,7 +174,7 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
           </button>
           <h2 className="font-semibold text-[var(--foreground)] truncate">{email.subject || '(Không có tiêu đề)'}</h2>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           <button
             onClick={handleStar}
             className="p-2 text-[var(--muted)] hover:text-amber-500 hover:bg-[var(--hover)] rounded-lg transition-colors"
@@ -169,7 +185,7 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
           <button
             onClick={handleArchive}
             className="p-2 text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] rounded-lg transition-colors"
-            title="Lưu trữ"
+            title={archiveLabel}
           >
             <Archive className="w-5 h-5" strokeWidth={1.5} />
           </button>
@@ -192,7 +208,7 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
               <Sparkles className="w-5 h-5" strokeWidth={1.5} />
             )}
           </button>
-          <button
+          {email.direction !== 'outbound' && <button
             onClick={() => setShowReplyAssistant(!showReplyAssistant)}
             className={cn(
               'p-2 rounded-lg transition-colors',
@@ -203,10 +219,13 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
             title="Trợ lý phản hồi AI"
           >
             <MessageSquarePlus className="w-5 h-5" strokeWidth={1.5} />
-          </button>
+          </button>}
           {/* More Menu Dropdown */}
           <div className="relative" ref={moreMenuRef}>
             <button
+              type="button"
+              aria-label="Thao tác với thư"
+              aria-expanded={showMoreMenu}
               onClick={() => setShowMoreMenu(!showMoreMenu)}
               className="p-2 text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] rounded-lg transition-colors"
             >
@@ -233,7 +252,7 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
                   type="button"
                   onClick={() => {
                     setShowMoreMenu(false)
-                    const content = `From: ${email.from_name} <${email.from_address}>\nTo: ${email.to_addresses?.join(', ') || ''}\nDate: ${email.received_at}\nSubject: ${email.subject}\n\n${email.body_text || ''}`
+                    const content = `From: ${email.from_name} <${email.from_address}>\nTo: ${recipients || ''}\nDate: ${email.received_at}\nSubject: ${email.subject}\n\n${email.body_text || ''}`
                     const blob = new Blob([content], { type: 'text/plain' })
                     const url = URL.createObjectURL(blob)
                     const a = document.createElement('a')
@@ -295,7 +314,7 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
                 <span className="text-[13px] text-[var(--muted)]">&lt;{email.from_address}&gt;</span>
               </div>
               <p className="text-[13px] text-[var(--muted)]">
-                Đến: tôi • {email.received_at ? formatDate(email.received_at) : ''}
+                Đến: {recipients || (email.direction === 'outbound' ? 'Chưa có thông tin' : 'tôi')} • {email.received_at ? formatDate(email.received_at) : ''}
               </p>
             </div>
           </div>
@@ -360,6 +379,8 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
           </div>
         )}
 
+        {conversationFolder && <EmailConversation key={email.id} email={email} folder={conversationFolder} className="mx-4 mt-4" />}
+
         {/* AI Features Panel - Unified with fallback */}
         <div className="p-4">
           <AIFeaturesPanel emailId={email.id} />
@@ -379,7 +400,7 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
         </div>
 
         {/* Reply Assistant */}
-        {showReplyAssistant && (
+        {showReplyAssistant && email.direction !== 'outbound' && (
           <div className="p-4 border-t border-[var(--border)]">
             <ReplyAssistant
               email={email}
@@ -390,17 +411,20 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
         )}
       </div>
 
+      {attachments && <AttachmentList attachments={attachments}
+              purchaseEmailId={/\bPO-[0-9]{1,12}\b/i.test(email.subject ?? '') && email.direction !== 'outbound' ? email.id : undefined} />}
+      {attachmentError && <p role="alert" className="px-4 py-2 text-sm">Chưa thể tải danh sách tệp.</p>}
       {/* Actions Footer */}
       <div className="p-4 border-t border-[var(--border)] bg-[var(--background)]">
         <div className="flex items-center gap-2">
-          <button
+          {email.direction !== 'outbound' && <button
             onClick={handleReply}
             className="flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg font-medium hover:opacity-90 transition-colors"
           >
             <Reply className="w-4 h-4" strokeWidth={1.5} />
             Trả lời
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 border border-[var(--border)] rounded-lg text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors">
+          </button>}
+          <button onClick={() => router.push('/compose?forward=' + encodeURIComponent(email.id))} className="flex items-center gap-2 px-4 py-2 border border-[var(--border)] rounded-lg text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors">
             <Forward className="w-4 h-4" strokeWidth={1.5} />
             Chuyển tiếp
           </button>

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
-import { syncEmails } from '@/lib/email/imap-client'
+import { syncAccount } from '@/lib/sync/account'
+import { processCommitmentCatchup } from '@/lib/commitments/catchup-worker'
 import { classifyEmail } from '@/lib/ai/classifier'
 import { notifySyncComplete } from '@/lib/notifications/create'
 
@@ -55,6 +56,7 @@ async function classifyNewEmails(userId: string, limit: number = 10) {
             }
           })
           .eq('id', email.id)
+          .eq('user_id',userId)
 
         classified++
       } catch {
@@ -81,65 +83,52 @@ export async function POST(request: NextRequest) {
   // Parse options
   let limit = 30
   let fullSync = false
+  let refresh = false
   try {
     const body = await request.json()
     if (body.limit) limit = Math.min(body.limit, 50)
     if (body.fullSync) fullSync = true
+    refresh = body.refresh === true
   } catch {
     // No body
   }
 
-  // Get all active accounts
-  const { data: accounts, error } = await supabase
-    .from('source_accounts')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('is_active', true)
+  // The authenticated owner constrains this service-only fair due-work query.
+  const service=createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.SUPABASE_SERVICE_ROLE_KEY!)
+  const {data:accounts,error}=await service.rpc('list_due_sync_accounts',{p_limit:50,p_user_id:user.id,p_force:fullSync || refresh})
 
   if (error) {
     return NextResponse.json({ error: 'Failed to fetch accounts' }, { status: 500 })
   }
 
   if (!accounts || accounts.length === 0) {
+    await processCommitmentCatchup(user.id).catch(() => {})
     return NextResponse.json({
       success: true,
       synced: 0,
-      message: 'No active accounts'
-    })
-  }
-
-  // Check rate limit - don't sync too often
-  const recentlySynced = accounts.every(acc => {
-    if (!acc.last_sync_at) return false
-    const lastSync = new Date(acc.last_sync_at)
-    const thirtySecondsAgo = new Date(Date.now() - 30 * 1000)
-    return lastSync > thirtySecondsAgo
-  })
-
-  if (recentlySynced && !fullSync) {
-    return NextResponse.json({
-      success: true,
-      synced: 0,
-      skipped: true,
-      message: 'Synced recently'
+      pending:false,
+      message: 'No accounts pending sync'
     })
   }
 
   let totalSynced = 0
+  let pendingAccounts=accounts.length+(accounts.length===50?1:0)
   const errors: string[] = []
 
   // Sync each account
   for (const account of accounts) {
+    if(Date.now()-startTime>5000)break // Reserve the remaining route budget for one bounded worker.
     try {
-      const result = await syncEmails(account, { limit, fullSync })
+      const result = await syncAccount(account, { limit, fullSync })
 
+      if(!result.pending)pendingAccounts--
       if (result.success) {
         totalSynced += result.synced
       } else {
         errors.push(...result.errors.slice(0, 2))
       }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unknown error'
+    } catch {
+      const msg = 'Sync failed'
       errors.push(`${account.email_address}: ${msg}`)
     }
 
@@ -149,6 +138,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  if (Date.now() - startTime < 52_000) await processCommitmentCatchup(user.id).catch(() => {})
   const duration = Date.now() - startTime
 
   // Trigger classification for newly synced emails (fire-and-forget)
@@ -163,14 +153,15 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({
-    success: true,
+    success: errors.length===0,
     synced: totalSynced,
+    pending:pendingAccounts>0,
     accounts: accounts.length,
     duration: `${duration}ms`,
     errors: errors.slice(0, 3),
     message: totalSynced > 0
-      ? `Đã đồng bộ ${totalSynced} email mới`
-      : 'Không có email mới'
+      ? `Đã đồng bộ ${totalSynced} email`
+      : 'Chưa có cập nhật email'
   })
 }
 

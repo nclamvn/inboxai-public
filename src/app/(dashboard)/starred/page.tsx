@@ -5,10 +5,18 @@ import { Star } from 'lucide-react'
 import { useEmails } from '@/hooks/use-emails'
 import { EmailList } from '@/components/email/email-list'
 import { EmailDetail } from '@/components/email/email-detail'
+import { SelectionProvider } from '@/contexts/email-selection-context'
+import { SelectionToolbar } from '@/components/email/selection-toolbar'
+import { triageActions, useGmailTriage } from '@/components/email/gmail-triage'
 import type { Email } from '@/types'
 
 export default function StarredPage() {
-  const { emails, loading, toggleStar, archiveEmail, deleteEmail, markAsRead } = useEmails({ folder: 'starred' })
+  return <SelectionProvider><StarredContent /></SelectionProvider>
+}
+
+function StarredContent() {
+  const { enabled: triageEnabled } = useGmailTriage()
+  const { emails, loading, toggleStar, archiveEmail, deleteEmail, markAsRead, changeFlags } = useEmails({ folder: 'starred' })
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null)
 
   const handleSelectEmail = (email: Email) => {
@@ -72,7 +80,13 @@ export default function StarredPage() {
           <h1 className="text-[18px] font-semibold text-[var(--foreground)]">Gắn sao</h1>
           <p className="text-[14px] text-[var(--muted-foreground)]">{emails.length} email</p>
         </div>
+        {triageEnabled && <SelectionToolbar triageFolder="starred" onAction={(action, ids) => {
+          const change = triageActions[action]
+          const targets = emails.filter(email => ids.includes(email.id))
+          if (change && targets.length === ids.length) void changeFlags(targets, change.flag, change.desired)
+        }} />}
         <EmailList
+          selectable={triageEnabled}
           emails={emails}
           selectedId={selectedEmail?.id}
           onSelect={handleSelectEmail}

@@ -40,10 +40,10 @@ export async function GET(request: NextRequest) {
   const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000)
   const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
 
-  // Fetch all relevant emails
+  // Briefing groups and counts use metadata only.
   const { data: emails } = await supabase
     .from('emails')
-    .select('*')
+    .select('id,category,detected_deadline,direction,from_address,is_read,needs_reply,priority,received_at')
     .eq('user_id', user.id)
     .eq('is_deleted', false)
     .eq('is_archived', false)
@@ -117,12 +117,8 @@ export async function GET(request: NextRequest) {
     .eq('user_id', user.id)
     .eq('is_vip', true)
 
-  const vipEmails = vipSenders
-    ? emails.filter(e =>
-      !e.is_read &&
-      vipSenders.some(v => v.sender_email === e.from_address)
-    )
-    : []
+  const vipAddresses = new Set(vipSenders?.map(sender => sender.sender_email))
+  const vipEmails = emails.filter(e => !e.is_read && vipAddresses.has(e.from_address))
 
   // === GENERATE BRIEFING ===
   const greeting = getGreeting()

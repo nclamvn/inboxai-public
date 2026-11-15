@@ -5,14 +5,14 @@
  * Single bar with search + filter dropdown
  */
 
+import { mailCategoryLabels } from '@/components/email/mail-category-label';
 import { memo, useState, useCallback, useRef, useEffect } from 'react';
 import {
   Search,
-  Menu,
   ChevronDown,
   Check,
   Inbox,
-  Zap,
+  ListTodo,
   Briefcase,
   User,
   CreditCard,
@@ -21,26 +21,24 @@ import {
   Users,
   AlertOctagon,
   X,
-  Sparkles,
-  Sun,
-  Moon,
+  ClipboardList,
+  Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
-import { NotificationDropdown } from '@/components/notifications/notification-dropdown';
-import { useTheme } from '@/contexts/theme-context';
+import { ThemeToggle } from '@/components/theme/theme-toggle';
 
 // Category definitions
 const CATEGORIES = [
-  { id: 'all', label: 'Tất cả', icon: Inbox, color: 'text-gray-600 dark:text-gray-400' },
-  { id: 'needs_action', label: 'Cần xử lý', icon: Zap, color: 'text-red-500', dividerAfter: true },
-  { id: 'work', label: 'Công việc', icon: Briefcase, color: 'text-blue-500' },
-  { id: 'personal', label: 'Cá nhân', icon: User, color: 'text-purple-500' },
-  { id: 'transaction', label: 'Giao dịch', icon: CreditCard, color: 'text-green-500' },
-  { id: 'newsletter', label: 'Newsletter', icon: Newspaper, color: 'text-gray-500' },
-  { id: 'promotion', label: 'Khuyến mãi', icon: Gift, color: 'text-orange-500' },
-  { id: 'social', label: 'Mạng XH', icon: Users, color: 'text-cyan-500', dividerAfter: true },
-  { id: 'spam', label: 'Spam', icon: AlertOctagon, color: 'text-red-400' },
+  { id: 'all', label: 'Tất cả', icon: Inbox },
+  { id: 'needs_action', label: 'Cần xử lý', icon: ListTodo, dividerAfter: true },
+  { id: 'work', label: mailCategoryLabels.work, icon: Briefcase },
+  { id: 'personal', label: mailCategoryLabels.personal, icon: User },
+  { id: 'transaction', label: mailCategoryLabels.transaction, icon: CreditCard },
+  { id: 'newsletter', label: mailCategoryLabels.newsletter, icon: Newspaper },
+  { id: 'promotion', label: mailCategoryLabels.promotion, icon: Gift },
+  { id: 'social', label: mailCategoryLabels.social, icon: Users, dividerAfter: true },
+  { id: 'spam', label: mailCategoryLabels.spam, icon: AlertOctagon },
 ];
 
 interface BriefingItem {
@@ -60,9 +58,7 @@ interface UnifiedTopBarProps {
   currentFilter: string;
   onFilterChange: (filter: string) => void;
   emailCounts: Record<string, number>;
-  totalEmails: number;
   onSearch: (query: string) => void;
-  onMenuClick?: () => void;
   onProfileClick?: () => void;
   className?: string;
   noBorder?: boolean;
@@ -72,15 +68,12 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
   currentFilter,
   onFilterChange,
   emailCounts,
-  totalEmails,
   onSearch,
-  onMenuClick,
   onProfileClick,
   className,
   noBorder,
 }: UnifiedTopBarProps) {
   const router = useRouter();
-  const { theme, toggleTheme } = useTheme();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -163,9 +156,8 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
 
   const handleSearchClear = useCallback(() => {
     setSearchQuery('');
-    onSearch('');
     searchInputRef.current?.focus();
-  }, [onSearch]);
+  }, []);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -191,42 +183,38 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
 
   return (
     <div className={cn(
-      'flex items-center gap-3 px-4 py-2.5 bg-[var(--card)]',
+      'flex min-w-0 items-center gap-2 px-4 py-2 bg-[var(--surface)]',
       !noBorder && 'border-b border-[var(--border)]',
       className
     )}>
-      {/* Menu Button */}
-      <button
-        onClick={onMenuClick}
-        className="p-2 hover:bg-[var(--hover)] rounded-lg transition-colors lg:hidden"
-      >
-        <Menu className="w-5 h-5 text-[var(--foreground-muted)]" />
-      </button>
-
       {/* Search Bar */}
       <form
-        onSubmit={handleSearchSubmit}
+        onSubmit={handleSearchSubmit} role="search"
         className={cn(
-          'flex-1 flex items-center gap-2 px-3 py-2 rounded-xl transition-all',
-          'bg-[var(--secondary)]',
-          isSearchFocused && 'ring-2 ring-blue-500 bg-[var(--card)]'
+          'flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-[var(--radius-control)] border border-[var(--input-border)] bg-[var(--input)] px-3',
+          'focus-within:outline-2 focus-within:outline-[var(--focus-ring)]'
         )}
       >
-        <Search className="w-4 h-4 text-[var(--foreground-muted)] flex-shrink-0" />
+        <button type="submit" aria-label="Tìm trong hộp thư" className="neo-target shrink-0 py-2 text-[var(--accent-foreground)]">
+          <Search size={16} aria-hidden="true" />
+        </button>
         <input
           ref={searchInputRef}
-          type="text"
+          type="search"
+          aria-label="Tìm kiếm email"
           value={searchQuery}
           onChange={handleSearchChange}
           onFocus={() => setIsSearchFocused(true)}
           onBlur={() => setIsSearchFocused(false)}
-          placeholder="Tìm kiếm email... (⌘K)"
-          className="flex-1 bg-transparent text-sm text-[var(--foreground)] placeholder-[var(--foreground-muted)] outline-none"
+          placeholder="Tìm thư hoặc tên tệp"
+          maxLength={200}
+          className="min-w-0 flex-1 bg-transparent text-sm text-[var(--foreground)] placeholder-[var(--foreground-muted)] outline-none"
         />
         {searchQuery && (
           <button
             type="button"
             onClick={handleSearchClear}
+            aria-label="Xóa tìm kiếm"
             className="p-1 hover:bg-[var(--hover)] rounded-full transition-colors"
           >
             <X className="w-3.5 h-3.5 text-[var(--foreground-muted)]" />
@@ -237,14 +225,17 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
       {/* Filter Dropdown */}
       <div className="relative" ref={dropdownRef}>
         <button
+          type="button"
+          aria-label="Lọc danh mục"
+          aria-expanded={isDropdownOpen}
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className={cn(
-            'flex items-center gap-2 px-3 py-2 rounded-xl transition-all',
+            'neo-target flex h-10 items-center gap-2 rounded-[var(--radius-control)] px-3',
             'hover:bg-[var(--hover)]',
             isDropdownOpen && 'bg-[var(--hover)]'
           )}
         >
-          <currentCategory.icon className={cn('w-4 h-4', currentCategory.color)} />
+          <currentCategory.icon className="size-4 text-[var(--accent-foreground)]" />
           <span className="text-sm font-semibold text-[var(--foreground)] hidden sm:inline">
             {currentCategory.label}
           </span>
@@ -258,21 +249,23 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
         {isDropdownOpen && (
           <div className={cn(
             'absolute right-0 top-full mt-2 w-56 py-2 z-50',
-            'bg-[var(--card)] rounded-xl shadow-xl',
+            'bg-[var(--card)] rounded-[var(--radius-panel)]',
             'border border-[var(--border)]',
             'animate-in fade-in slide-in-from-top-2 duration-200'
           )}>
             {CATEGORIES.map((category) => (
               <div key={category.id}>
                 <button
+                  type="button"
+                  aria-pressed={currentFilter === category.id}
                   onClick={() => handleFilterSelect(category.id)}
                   className={cn(
-                    'w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors',
+                    'neo-nav-item neo-target w-full px-4 py-2 text-left',
                     'hover:bg-[var(--hover)]',
                     currentFilter === category.id && 'bg-[var(--accent)]'
                   )}
                 >
-                  <category.icon className={cn('w-4 h-4', category.color)} />
+                  <category.icon className="size-4 text-[var(--foreground-muted)]" />
                   <span className="flex-1 text-sm font-medium text-[var(--foreground)]">
                     {category.label}
                   </span>
@@ -282,7 +275,7 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
                     </span>
                   )}
                   {currentFilter === category.id && (
-                    <Check className="w-4 h-4 text-blue-500" />
+                    <Check className="w-4 h-4 text-[var(--accent-foreground)]" />
                   )}
                 </button>
                 {category.dividerAfter && (
@@ -294,30 +287,20 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
         )}
       </div>
 
-      {/* Theme Toggle - Show current theme icon */}
-      <button
-        type="button"
-        onClick={toggleTheme}
-        className="p-2 text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors"
-        title={theme === 'dark' ? 'Chuyển sang sáng' : 'Chuyển sang tối'}
-      >
-        {theme === 'dark' ? (
-          <Moon className="w-5 h-5" />
-        ) : (
-          <Sun className="w-5 h-5" />
-        )}
-      </button>
+      <ThemeToggle />
 
       {/* AI Assistant Button */}
       <div className="relative" ref={aiPopoverRef}>
         <button
           type="button"
+          aria-label="Bản tin hộp thư"
+          aria-expanded={showAIPopover}
           onClick={() => setShowAIPopover(!showAIPopover)}
-          className="relative p-2 text-gray-500 dark:text-gray-400 hover:text-[var(--foreground)] transition-colors"
+          className="neo-icon-button relative"
         >
-          <Sparkles className="w-5 h-5" strokeWidth={1.5} />
+          <ClipboardList className="w-5 h-5" strokeWidth={1.5} />
           {briefing && briefing.needsAttention > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
+            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold text-[var(--primary-foreground)] bg-[var(--primary)] rounded-full">
               {briefing.needsAttention}
             </span>
           )}
@@ -325,17 +308,18 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
 
         {/* AI Popover */}
         {showAIPopover && (
-          <div className="absolute right-0 top-full mt-2 w-80 bg-[var(--card)] rounded-xl border border-[var(--border)] shadow-lg z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute right-0 top-full mt-2 w-80 bg-[var(--card)] rounded-[var(--radius-panel)] border border-[var(--border-strong)] z-50 overflow-hidden">
             <div className="p-4 border-b border-[var(--border)] bg-[var(--secondary)]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-[var(--foreground)]" strokeWidth={1.5} />
+                  <ClipboardList className="w-4 h-4 text-[var(--foreground)]" strokeWidth={1.5} />
                   <span className="text-[14px] font-medium text-[var(--foreground)]">
-                    AI Thư Ký
+                    Bản tin hộp thư
                   </span>
                 </div>
                 <button
                   type="button"
+                  aria-label="Đóng bản tin"
                   onClick={() => setShowAIPopover(false)}
                   className="p-1 rounded text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
                 >
@@ -360,10 +344,10 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
                     >
                       <span className={cn(
                         'text-[14px] font-bold',
-                        item.type === 'urgent' && 'text-red-500 dark:text-red-400',
-                        item.type === 'deadline' && 'text-amber-500 dark:text-amber-400',
-                        item.type === 'waiting' && 'text-blue-500 dark:text-blue-400',
-                        item.type === 'vip' && 'text-violet-500 dark:text-violet-400',
+                        item.type === 'urgent' && 'text-[var(--error)]',
+                        item.type === 'deadline' && 'text-[var(--warning)]',
+                        item.type === 'waiting' && 'text-[var(--accent-foreground)] dark:text-blue-400',
+                        item.type === 'vip' && 'text-[var(--accent-foreground)]',
                         !['urgent', 'deadline', 'waiting', 'vip'].includes(item.type) && 'text-gray-500 dark:text-gray-400'
                       )}>
                         {item.count}
@@ -389,22 +373,15 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
                 }}
                 className="block w-full text-center py-2 text-[13px] text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors"
               >
-                Xem Insights →
+                Xem phân tích
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Notification Dropdown */}
-      <NotificationDropdown />
-
-      {/* Profile */}
-      <button
-        onClick={onProfileClick}
-        className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center"
-      >
-        <span className="text-xs font-semibold text-white">U</span>
+      <button type="button" aria-label="Cài đặt" onClick={onProfileClick} className="neo-icon-button">
+        <Settings size={20} strokeWidth={1.5} aria-hidden="true" />
       </button>
     </div>
   );

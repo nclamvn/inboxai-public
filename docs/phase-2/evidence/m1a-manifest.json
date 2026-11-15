@@ -1,0 +1,27 @@
+{
+  "sourceCommit": "656cb5292b275a6f30f5562de3bceddaee262a6b",
+  "provenance": "Local synthetic checks only; file hashes bind retained source/evidence; not a production attestation",
+  "sha256": {
+    "docs/phase-2/evidence/m1a-audit.log": "9d9105ba4aefb1f257209bd779a1caeb3c01a5e5adef8e6261abd60f00600763",
+    "docs/phase-2/evidence/m1a-build.log": "67cd77ceca0ba5ab2ced85da0e0e22d30d258d8594a14bc1b38340651fb14531",
+    "docs/phase-2/evidence/m1a-db.log": "1b3768dd1f88263181b36347025e7fa5dfcb63915296c00a11ca6539a307d2d2",
+    "docs/phase-2/evidence/m1a-integration.log": "9eeeb4702b8370727a723edd8afbe91478405bf66e3d5f191005167fbd1b528b",
+    "docs/phase-2/evidence/m1a-lint.log": "30d8cb294529fdee953715c5cd1b7253b88e425f1229ddf210e37de0b0009b55",
+    "docs/phase-2/evidence/m1a-local-auth.json": "3d5d1a6f82c3953a3898acdbe0273ba1cf2f40eb35583f3c66c2fbb9df6feeb2",
+    "docs/phase-2/evidence/m1a-local-auth.log": "77fcf9e585790e050eda5d0a0d19dd8659233482b5947368d651322bfb5a456b",
+    "docs/phase-2/evidence/m1a-typecheck.log": "bf01d2860d576eb10c8bf7049c59902ca618a7ba612d0c8790b37f43ba079e19",
+    "docs/phase-2/evidence/m1a-unit.log": "6c181e3e6497e1d3cba9955dbede0b10cb2abf4735cca4ddce0e2b17e51e3169",
+    "package-lock.json": "1efcbd6cfb8425685bb79e4d9ef52690272612bf928e6d836ba5732f86a6f36b",
+    "scripts/credential-vault.ts": "b274a85d45f6ea23f932f25238712e80eaf572cb1810426c390c97c30503e505",
+    "scripts/test-db.sh": "284a089ed33848aa65fbae39d2ea5819d6925696427930b345690a1a14d72171",
+    "scripts/test-local-auth.mjs": "3619935650f69b3918e9df02147a88d43def360cc9753371241453a4c2d79fe3",
+    "src/lib/credential-vault/accounts.ts": "ace669a94643fe32c85d313f0a86d00b25a591b6381b93499fc4cf4ec0b59fed",
+    "src/lib/credential-vault/crypto.ts": "298026fbb07ccf1d6d10f24a9f82e615664b8f79c8112cf715bfd96be13cb616",
+    "src/lib/credential-vault/vault.ts": "c2fe3e3e2bf44a1c30a64d308de6f54728a3c2cd457def1b7fc75d24132103c7",
+    "supabase/migrations/20261111020000_credential_vault.sql": "5da0b0fe71e196b6d45a4621b0fbdd5ab041ac9eff7f559fcbd5cd13389313ac",
+    "tests/local-auth/Caddyfile": "c5d84887c0c560961ee88820dad51413da18933dae66fd721e0529e0bc729cbf",
+    "tests/local-auth/bootstrap.sql": "26f22051125d7666c27dc0a3c7e758b7e94cedfc832eca5830349b5f2e7b9781",
+    "tests/local-auth/compose.yml": "5c8292ff19c88668a545dd7fc2636b92a2894879e3f866bb816c4f34f1e0e509",
+    "tests/local-auth/vault.mjs": "8198b8b34f99b7d73a9a72768c4d56bd09d7ad2077deaaa1dff25d8feb427e1c"
+  }
+}

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+  <title>InboxAI · Ngoại tuyến</title>
+  <link rel="stylesheet" href="./workspace.css">
+  <script type="module" src="./workspace.mjs"></script>
+</head>
+<body>
+  <header><a href="/inbox">InboxAI</a><p id="connection" role="status"></p></header>
+  <main>
+    <div class="heading"><h1>Đọc thư và soạn ngoại tuyến</h1><button id="lock" type="button" hidden>Khóa</button></div>
+    <section id="unlock" hidden>
+      <form id="unlock-form">
+        <label>Mật khẩu ngoại tuyến<input id="password" type="password" required minlength="12" maxlength="128" autocomplete="current-password"></label>
+        <button type="submit">Mở khóa</button>
+      </form>
+    </section>
+    <p id="notice" role="alert"></p>
+    <section id="work" hidden></section>
+  </main>
+</body>
+</html>

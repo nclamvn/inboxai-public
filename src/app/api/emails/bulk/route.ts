@@ -15,6 +15,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
 
+  if (action === 'change-category' || action === 'mark-spam') {
+    const category = action === 'mark-spam' ? 'spam' : data?.category
+    if (typeof category !== 'string') return NextResponse.json({ error: 'Category required' }, { status: 400 })
+    const { data: count, error } = await supabase.rpc('set_personal_mail_category', { p_emails: emailIds, p_category: category })
+    if (error) {
+      const status = error.code === 'PT404' ? 404 : ['22023', '22P02'].includes(error.code) ? 400 : 503
+      return NextResponse.json({ error: 'Không đổi được nhãn thư.' }, { status })
+    }
+    return NextResponse.json({ success: true, action, count })
+  }
+
   console.log(`[BULK] Action: ${action} on ${emailIds.length} emails`)
 
   try {
@@ -51,17 +62,6 @@ export async function POST(request: NextRequest) {
 
       case 'unstar':
         updateData = { is_starred: false }
-        break
-
-      case 'mark-spam':
-        updateData = { category: 'spam' }
-        break
-
-      case 'change-category':
-        if (!data?.category) {
-          return NextResponse.json({ error: 'Category required' }, { status: 400 })
-        }
-        updateData = { category: data.category }
         break
 
       case 'update':

@@ -1,6 +1,8 @@
+import { requireCronAuthorization } from '@/lib/security/cron'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { syncEmails } from '@/lib/email/imap-client'
+import { syncAccount } from '@/lib/sync/account'
+import { processCommitmentCatchup } from '@/lib/commitments/catchup-worker'
 import { getUnsubscribeService } from '@/lib/email/unsubscribe-service'
 import { classifyEmail } from '@/lib/ai/classifier'
 import { notifySyncComplete, notifyAiClassified } from '@/lib/notifications/create'
@@ -11,6 +13,11 @@ export const dynamic = 'force-dynamic'
 // OPTIMIZED CRON SETTINGS
 const CRON_EMAILS_PER_ACCOUNT = 100 // Increased from 30
 const CLASSIFY_BATCH_SIZE = 5 // Emails to classify per account
+
+function syncFailure(code: 'account_lookup_failed' | 'sync_failed', message: string) {
+  console.error(JSON.stringify({ level: 'error', component: 'cron.sync', code }))
+  return NextResponse.json({ error: message }, { status: 500 })
+}
 
 // Classify newly synced emails for a user
 async function classifyUserEmails(
@@ -62,6 +69,7 @@ async function classifyUserEmails(
             }
           })
           .eq('id', email.id)
+          .eq('user_id',userId)
 
         classified++
       } catch {
@@ -76,13 +84,8 @@ async function classifyUserEmails(
 }
 
 export async function GET(request: NextRequest) {
-  // Verify cron secret
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const denied = requireCronAuthorization(request)
+  if (denied) return denied
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -101,6 +104,7 @@ export async function GET(request: NextRequest) {
         email: string
         synced: number
         classified: number
+        pending:boolean
         errors: string[]
       }>
     } = {
@@ -113,19 +117,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all active source accounts
-    const { data: accounts, error: accountsError } = await supabase
-      .from('source_accounts')
-      .select('*')
-      .eq('is_active', true)
-      .order('last_sync_at', { ascending: true, nullsFirst: true })
-      .limit(10) // Process max 10 accounts per run
+    const { data: accounts, error: accountsError } = await supabase.rpc('list_due_sync_accounts',{p_limit:10})
 
     if (accountsError) {
-      console.error('[CRON] Error fetching accounts:', accountsError)
-      return NextResponse.json({
-        error: 'Failed to fetch accounts',
-        details: accountsError.message
-      }, { status: 500 })
+      return syncFailure('account_lookup_failed', 'Failed to fetch accounts')
     }
 
     if (!accounts || accounts.length === 0) {
@@ -141,37 +136,41 @@ export async function GET(request: NextRequest) {
 
     // Process each account
     for (const account of accounts) {
+      if(Date.now()-startTime>230000)break
       results.processed++
       const accountResult = {
         email: account.email_address,
         synced: 0,
+        pending:true,
         classified: 0,
         errors: [] as string[]
       }
 
       try {
         // Check if account was synced recently (within 1 minute)
-        if (account.last_sync_at) {
+        if (account.sync_status==='idle' && account.last_sync_at) {
           const lastSync = new Date(account.last_sync_at)
           const oneMinuteAgo = new Date(Date.now() - 60 * 1000)
           if (lastSync > oneMinuteAgo) {
-            console.log(`[CRON] Skipping ${account.email_address} - synced recently`)
             continue
           }
         }
 
-        console.log(`[CRON] Syncing: ${account.email_address}`)
-
         // Perform OPTIMIZED IMAP sync
-        const syncResult = await syncEmails(account, {
+        const syncResult = await syncAccount(account, {
           limit: CRON_EMAILS_PER_ACCOUNT,
           fullSync: false
         })
 
+        if (Date.now() - startTime < 270000) {
+          await processCommitmentCatchup(account.user_id).catch(() => {})
+        }
+
+        accountResult.pending=syncResult.pending
         if (syncResult.success) {
           accountResult.synced = syncResult.synced
           results.synced += syncResult.synced
-          console.log(`[CRON] Synced ${syncResult.synced} emails for ${account.email_address}`)
+          console.log(`[CRON] Synced ${syncResult.synced} emails`)
 
           // Classify newly synced emails for this user
           if (syncResult.synced > 0) {
@@ -181,7 +180,7 @@ export async function GET(request: NextRequest) {
             )
             accountResult.classified = classified
             results.classified += classified
-            console.log(`[CRON] Classified ${classified} emails for ${account.email_address}`)
+            console.log(`[CRON] Classified ${classified} emails`)
 
             // Send notifications
             if (syncResult.synced > 0) {
@@ -196,8 +195,8 @@ export async function GET(request: NextRequest) {
           results.errors.push(`${account.email_address}: ${syncResult.errors.join(', ')}`)
         }
 
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+      } catch {
+        const errorMsg = 'Sync failed'
         accountResult.errors.push(errorMsg)
         results.errors.push(`${account.email_address}: ${errorMsg}`)
 
@@ -208,6 +207,7 @@ export async function GET(request: NextRequest) {
             sync_error: errorMsg
           })
           .eq('id', account.id)
+          .eq('user_id',account.user_id)
       }
 
       results.accounts.push(accountResult)
@@ -234,13 +234,8 @@ export async function GET(request: NextRequest) {
       duration: `${duration}ms`,
       timestamp: new Date().toISOString()
     })
-  } catch (error) {
-    console.error('[CRON] Sync error:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    return NextResponse.json({
-      error: 'Sync failed',
-      details: errorMessage
-    }, { status: 500 })
+  } catch {
+    return syncFailure('sync_failed', 'Sync failed')
   }
 }
 

@@ -12,9 +12,53 @@
 
 # testing
 /coverage
+/test-results/local-auth/
+/test-results/m6d/
+/test-results/m6f/
+/test-results/m6g/
+/test-results/commitment-lifecycle/
+/test-results/commitment-regression/
+/test-results/commitment-attention/
+/test-results/delivery-commitments/
+/test-results/warehouse-reconciliation/
+/test-results/warehouse-correction/
+/test-results/multiline-purchase/
+/test-results/purchase-csv/
+/test-results/purchase-payment/
+/test-results/purchase-installments/
+/test-results/purchase-handoff/
+/test-results/purchase-settlement/
+/test-results/purchase-return/
+/test-results/purchase-dues/
+/test-results/purchase-exceptions/
+/test-results/purchase-batches/
+/test-results/purchase-focus/
+/test-results/purchase-supplements/
+/test-results/purchase-release/
+/test-results/day-preview/
+/test-results/inbox-catchup/
+/test-results/reply-workflow/
+/test-results/inbox-conversation/
+/test-results/reply-followup/
+/test-results/email-snoozes/
+/test-results/scheduled-send/
+/test-results/gmail-reconnect/
+/test-results/gmail-triage/
+/test-results/personal-mail-rules/
+/test-results/mail-lookup/
+/test-results/offline-reply/
+/test-results/offline-compose/
+/test-results/action-notifications/
+/test-results/compose-recipients/
+/test-results/draft-continuity/
+/.codex-offline-browser-*/
+/test-results/compose-attachments/
+/test-results/staging/
+/.codex-db-test-*/
 
 # next.js
 /.next/
+/.next-build/
 /out/
 
 # production

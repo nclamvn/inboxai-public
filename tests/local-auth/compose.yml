@@ -1,0 +1,69 @@
+name: inboxai-m0e-local
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: synthetic-local-password
+      POSTGRES_DB: inboxai_security_test
+    tmpfs: [/var/lib/postgresql/data]
+    volumes:
+      - ./bootstrap.sql:/docker-entrypoint-initdb.d/01-bootstrap.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U postgres -d inboxai_security_test']
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    networks: [isolated]
+  auth:
+    image: supabase/gotrue:v2.197.0
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: '9999'
+      API_EXTERNAL_URL: http://127.0.0.1:55321
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:synthetic-local-password@db:5432/inboxai_security_test
+      GOTRUE_SITE_URL: http://127.0.0.1:55300
+      GOTRUE_URI_ALLOW_LIST: http://127.0.0.1:55300/**
+      GOTRUE_DISABLE_SIGNUP: 'false'
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: 'true'
+      GOTRUE_MAILER_AUTOCONFIRM: 'false'
+      GOTRUE_PASSWORD_MIN_LENGTH: '12'
+      GOTRUE_JWT_SECRET: synthetic-local-jwt-secret-at-least-32-characters
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_EXP: '3600'
+      GOTRUE_SMTP_HOST: mail
+      GOTRUE_SMTP_PORT: '1025'
+      GOTRUE_SMTP_ADMIN_EMAIL: noreply@example.test
+      GOTRUE_SMTP_SENDER_NAME: InboxAI Local Test
+      GOTRUE_SMTP_MAX_FREQUENCY: 1s
+      GOTRUE_RATE_LIMIT_EMAIL_SENT: '1000'
+      GOTRUE_MAILER_URLPATHS_CONFIRMATION: /auth/v1/verify
+    networks: [isolated]
+  rest:
+    image: postgrest/postgrest:v14.18
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      PGRST_DB_URI: postgres://authenticator:synthetic-local-password@db:5432/inboxai_security_test
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: synthetic-local-jwt-secret-at-least-32-characters
+    networks: [isolated]
+  mail:
+    image: axllent/mailpit:v1.28.1
+    networks: [isolated]
+  gateway:
+    image: caddy:2-alpine
+    tmpfs: [/data, /config]
+    ports: ['127.0.0.1:55999:9999', '127.0.0.1:55400:3000', '127.0.0.1:55825:8025']
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    networks: [isolated, host_access]
+networks:
+  isolated:
+    internal: true
+  host_access: {}

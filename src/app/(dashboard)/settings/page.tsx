@@ -5,8 +5,26 @@ import { AIFeaturesSettings } from '@/components/ai'
 import { MailboxSection } from '@/components/settings/mailbox-section'
 import { RulesList } from '@/components/automation/rules-list'
 import { SourceAccountsSection } from '@/components/settings/source-accounts-section'
+import { Alert } from '@/components/ui/alert'
 
-export default async function SettingsPage() {
+const grantMessages: Record<string, string> = {
+  enabled: 'Đã cấp quyền gửi Gmail.',
+  denied: 'Bạn đã hủy cấp quyền gửi Gmail.',
+  scope_missing: 'Google chưa cấp đủ quyền đọc và gửi. Hãy cấp lại quyền gửi cho hộp thư này.',
+  account_mismatch: 'Bạn đã chọn một hộp thư khác. Hãy chọn đúng hộp thư khi cấp quyền gửi.',
+  offline_missing: 'Google chưa cấp quyền truy cập lâu dài. Hãy thử cấp quyền lại.',
+  stale: 'Kết nối Gmail đã thay đổi. Hãy mở lại màn hình cấp quyền gửi.',
+}
+
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const query = await searchParams
+  const sendResult = typeof query.gmail_send === 'string' ? query.gmail_send : undefined
+  const googleMessage = sendResult
+    ? (Object.hasOwn(grantMessages, sendResult) ? grantMessages[sendResult] : 'Chưa thể cấp quyền gửi Gmail. Hãy thử lại.')
+    : query.success === 'gmail_connected' ? 'Đã kết nối Gmail để đọc và đồng bộ.'
+    : query.error === 'scope_missing' ? 'Google chưa cấp quyền đọc Gmail. Hãy kết nối lại.'
+    : typeof query.error === 'string' && ['oauth_denied', 'oauth_failed', 'offline_missing', 'callback_failed', 'account_mismatch', 'invalid_state', 'no_code'].includes(query.error)
+      ? 'Chưa thể kết nối Gmail. Hãy thử lại.' : undefined
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -70,7 +88,7 @@ export default async function SettingsPage() {
         </section>
 
         {/* Source Email Accounts Section */}
-        <section className="mb-6">
+        <section id="email-accounts" className="mb-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
               <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400" strokeWidth={1.5} />
@@ -80,6 +98,7 @@ export default async function SettingsPage() {
               <p className="text-[14px] text-[var(--muted-foreground)]">Kết nối Gmail, Outlook để đồng bộ email</p>
             </div>
           </div>
+          {googleMessage && <div className="mb-3"><Alert variant={sendResult === 'enabled' || query.success === 'gmail_connected' ? 'success' : 'warning'}>{googleMessage}</Alert></div>}
           <SourceAccountsSection />
         </section>
 

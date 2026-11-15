@@ -21,6 +21,7 @@ import {
 import { formatValidationErrors } from '@/lib/validation'
 import { captureException } from '@/lib/sentry'
 import { ApiError } from './errors'
+import { hasAdminRole } from '@/lib/security/admin'
 
 // CSRF Token header name
 const CSRF_HEADER = 'x-csrf-token'
@@ -72,7 +73,7 @@ export function protectedRoute<T extends z.ZodSchema | undefined = undefined>(
 
     try {
       // 1. Check HTTP method
-      if (options.methods && !options.methods.includes(request.method as any)) {
+      if (options.methods && !options.methods.includes(request.method as NonNullable<ProtectedRouteOptions<T>['methods']>[number])) {
         return NextResponse.json(
           { error: 'Method not allowed' },
           { status: 405, headers: { Allow: options.methods.join(', ') } }
@@ -129,8 +130,7 @@ export function protectedRoute<T extends z.ZodSchema | undefined = undefined>(
 
         // Admin check
         if (options.requireAdmin) {
-          const isAdmin = authUser.email?.endsWith('@admin.inboxai.com') ||
-            authUser.app_metadata?.role === 'admin'
+          const isAdmin = hasAdminRole(authUser)
 
           if (!isAdmin) {
             return NextResponse.json(
@@ -142,7 +142,7 @@ export function protectedRoute<T extends z.ZodSchema | undefined = undefined>(
       }
 
       // 5. Body validation
-      let body: any = undefined
+      let body: unknown = undefined
 
       if (options.bodySchema && ['POST', 'PUT', 'PATCH'].includes(request.method)) {
         try {
@@ -169,8 +169,8 @@ export function protectedRoute<T extends z.ZodSchema | undefined = undefined>(
       }
 
       // 6. Execute handler
-      const context: ProtectedContext<any> = {
-        body,
+      const context: ProtectedContext<T extends z.ZodSchema ? z.infer<T> : undefined> = {
+        body: body as T extends z.ZodSchema ? z.infer<T> : undefined,
         user,
         clientIP,
         request,

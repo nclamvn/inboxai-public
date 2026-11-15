@@ -87,8 +87,10 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
   )
 }
 
+export const useOptionalSelection = () => useContext(SelectionContext)
+
 export function useSelection() {
-  const context = useContext(SelectionContext)
+  const context = useOptionalSelection()
   if (!context) {
     throw new Error('useSelection must be used within SelectionProvider')
   }

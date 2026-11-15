@@ -5,7 +5,10 @@ import { Header } from '@/components/layout/header'
 import { MobileNav } from '@/components/layout/mobile-nav'
 import { UrgentAlertWrapper } from '@/components/ai/urgent-alert-wrapper'
 import { AutoSyncProvider } from '@/providers/auto-sync-provider'
+import { gmailTriageEnabled } from '@/lib/gmail-triage/server'
+import { GmailTriageProvider, GmailTriageStatus } from '@/components/email/gmail-triage'
 import { AIIntroTooltip } from '@/components/onboarding/ai-intro-tooltip'
+import { OfflineWorkspaceProvider } from '@/components/offline/offline-provider'
 
 export default async function DashboardLayout({
   children,
@@ -20,15 +23,19 @@ export default async function DashboardLayout({
   }
 
   return (
+    <OfflineWorkspaceProvider key={user.id} owner={user.id}>
     <AutoSyncProvider enabled={true} interval={30000}>
-      <div className="h-screen flex bg-[var(--background)]">
+      <GmailTriageProvider enabled={gmailTriageEnabled()}>
+      <div className="h-dvh flex bg-[var(--background)] safe-area-top">
         {/* Sidebar - Hidden on mobile */}
-        <Sidebar defaultCollapsed={true} />
+        <a className="skip-link" href="#main-content">Đến nội dung chính</a>
+        <Sidebar />
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <Header />
-          <main className="flex-1 overflow-auto pb-16 md:pb-0">
+          <Header owner={user.id} />
+          <GmailTriageStatus />
+          <main id="main-content" tabIndex={-1} className="min-h-0 flex-1 overflow-auto pb-[calc(var(--mobile-nav-height)+env(safe-area-inset-bottom))] md:pb-0">
             {children}
           </main>
         </div>
@@ -39,6 +46,8 @@ export default async function DashboardLayout({
         <UrgentAlertWrapper />
         <AIIntroTooltip />
       </div>
+      </GmailTriageProvider>
     </AutoSyncProvider>
+    </OfflineWorkspaceProvider>
   )
 }

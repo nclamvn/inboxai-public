@@ -4,184 +4,107 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Menu, Pencil, Inbox, Send, Star, Archive, Trash2,
-  BarChart3, Settings, ChevronLeft, Newspaper, ListTodo, Bell, Sparkles
+  PanelLeft, Pencil, Inbox, Send, CalendarClock, FileText, Star, Archive, Trash2, Clock,
+  BarChart3, Settings, Newspaper, ListTodo, Bell, Mail, ClipboardCheck, Search, ListChecks, MessageSquare,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useBreakpoint } from '@/hooks/use-media-query'
 import { FollowUpInlineBadge } from '@/components/follow-up/follow-up-badge'
-import { AIQuickActions } from '@/components/ai/ai-quick-actions'
 
-const navItems = [
-  { href: '/inbox', icon: Inbox, label: 'Hộp thư đến' },
-  { href: '/sent', icon: Send, label: 'Đã gửi' },
-  { href: '/starred', icon: Star, label: 'Gắn sao' },
-  { href: '/archive', icon: Archive, label: 'Lưu trữ' },
-  { href: '/trash', icon: Trash2, label: 'Thùng rác' },
+const groups = [
+  { label: 'Thư mục', items: [
+    { href: '/inbox', icon: Inbox, label: 'Hộp thư đến' },
+    { href: '/snoozed', icon: Clock, label: 'Đã hẹn' },
+    { href: '/drafts', icon: FileText, label: 'Bản nháp' },
+    { href: '/outbox', icon: CalendarClock, label: 'Chờ gửi' },
+    { href: '/sent', icon: Send, label: 'Đã gửi' },
+    { href: '/starred', icon: Star, label: 'Gắn sao' },
+    { href: '/archive', icon: Archive, label: 'Lưu trữ' },
+    { href: '/trash', icon: Trash2, label: 'Thùng rác' },
+  ] },
+  { label: 'Công cụ', items: [
+    { href: '/search/mail', icon: Search, label: 'Tìm thư và tệp' },
+    { href: '/search', icon: MessageSquare, label: 'Ask Inbox' },
+    { href: '/operator', icon: ListChecks, label: 'AI Operator' },
+    { href: '/commitments', icon: ClipboardCheck, label: 'Cam kết' },
+    { href: '/follow-ups', icon: Bell, label: 'Theo dõi' },
+    { href: '/subscriptions', icon: Newspaper, label: 'Bản tin' },
+    { href: '/actions', icon: ListTodo, label: 'Việc cần làm' },
+    { href: '/insights', icon: BarChart3, label: 'Phân tích' },
+    { href: '/settings', icon: Settings, label: 'Cài đặt' },
+  ] },
 ]
 
-const bottomItems = [
-  { href: '/follow-ups', icon: Bell, label: 'Follow-ups', hasBadge: true, isAI: true, aiTooltip: 'AI theo dõi email cần phản hồi' },
-  { href: '/subscriptions', icon: Newspaper, label: 'Newsletters' },
-  { href: '/actions', icon: ListTodo, label: 'Actions', isAI: true, aiTooltip: 'AI trích xuất hành động từ email' },
-  { href: '/insights', icon: BarChart3, label: 'Insights', isAI: true, aiTooltip: 'AI phân tích và thống kê email' },
-  { href: '/settings', icon: Settings, label: 'Cài đặt' },
-]
-
-interface SidebarProps {
-  defaultCollapsed?: boolean
-}
-
-export function Sidebar({ defaultCollapsed = true }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(defaultCollapsed)
+export function Sidebar() {
+  const [preference, setPreference] = useState<boolean | null>(null)
+  const wide = useBreakpoint('xl')
+  const expanded = preference ?? wide
+  const labelVisibility = preference === null ? 'hidden xl:block' : preference ? 'block' : 'hidden'
+  const width = preference === null ? 'w-16 xl:w-52' : preference ? 'w-52' : 'w-16'
   const pathname = usePathname()
 
   return (
     <aside
-      className={cn(
-        'h-full border-r border-[var(--border)] bg-[var(--card)] flex-col transition-all duration-200',
-        'hidden md:flex', // Hidden on mobile, visible on tablet and up
-        collapsed ? 'w-[56px]' : 'w-[200px]'
-      )}
+      aria-label="Thanh điều hướng"
+      className={cn('hidden h-full shrink-0 flex-col border-e border-[var(--border)] bg-[var(--canvas)] md:flex', width)}
     >
-      {/* Header */}
-      <div className={cn(
-        'h-14 flex items-center border-b border-[var(--border)]',
-        collapsed ? 'justify-center px-0' : 'justify-between px-3'
-      )}>
-        {!collapsed && (
-          <Link href="/" className="text-[16px] font-semibold text-[var(--foreground)]">
+      <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-[var(--border)] px-3">
+        <Link href="/inbox" aria-label="InboxAI" className={cn('min-w-0 rounded-[var(--radius-control)]', labelVisibility)}>
+          <span className="flex items-center gap-2 text-sm font-semibold tracking-tight text-[var(--accent-foreground)]">
+            <span className="grid size-8 shrink-0 place-items-center rounded-[var(--radius-control)] bg-[var(--primary)] text-[var(--primary-foreground)]">
+              <Mail size={18} strokeWidth={1.75} aria-hidden="true" />
+            </span>
             InboxAI
-          </Link>
-        )}
+          </span>
+        </Link>
         <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="p-2 rounded-lg text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors"
+          type="button"
+          aria-label={expanded ? 'Thu gọn thanh điều hướng' : 'Mở rộng thanh điều hướng'}
+          aria-expanded={expanded}
+          aria-controls="desktop-navigation"
+          onClick={() => setPreference(!expanded)}
+          className="neo-icon-button"
         >
-          {collapsed ? (
-            <Menu className="w-5 h-5" strokeWidth={1.5} />
-          ) : (
-            <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
-          )}
+          <PanelLeft size={18} strokeWidth={1.5} aria-hidden="true" />
         </button>
       </div>
-
-      {/* Compose Button */}
-      <div className={cn('p-2', collapsed ? 'px-1.5' : 'px-3')}>
+      <div className="px-3 py-4">
         <Link
           href="/compose"
-          className={cn(
-            'flex items-center gap-2 rounded-xl font-semibold transition-all duration-150',
-            'bg-[var(--primary)] text-[var(--primary-foreground)]',
-            'shadow-sm hover:shadow-md hover:bg-[var(--primary-hover)] active:scale-[0.98]',
-            collapsed
-              ? 'w-10 h-10 justify-center'
-              : 'w-full h-10 px-4'
-          )}
+          aria-current={pathname === '/compose' ? 'page' : undefined}
+          aria-label="Soạn thư"
+          title="Soạn thư"
+          className="neo-target flex h-10 items-center gap-2 rounded-[var(--radius-control)] bg-[var(--primary)] px-3 text-sm font-semibold text-[var(--primary-foreground)] hover:bg-[var(--primary-hover)]"
         >
-          <Pencil className="w-4 h-4" strokeWidth={1.5} />
-          {!collapsed && <span className="text-[14px]">Soạn thư</span>}
+          <Pencil size={16} strokeWidth={1.5} className="shrink-0" aria-hidden="true" />
+          <span className={cn('truncate', labelVisibility)}>Soạn thư</span>
         </Link>
       </div>
 
-      {/* Nav Items */}
-      <nav className="flex-1 py-2">
-        <ul className="space-y-0.5">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href
-            return (
-              <li key={item.href} className={collapsed ? 'px-1.5' : 'px-2'}>
-                <Link
-                  href={item.href}
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg transition-all duration-150',
-                    collapsed
-                      ? 'w-10 h-10 justify-center'
-                      : 'h-10 px-3',
-                    isActive
-                      ? 'bg-[var(--secondary)] text-[var(--foreground)] font-medium'
-                      : 'text-[var(--foreground-muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'
-                  )}
-                  title={collapsed ? item.label : undefined}
-                >
-                  <item.icon
-                    className={cn(
-                      'w-5 h-5 flex-shrink-0',
-                      isActive ? 'text-[var(--foreground)]' : ''
-                    )}
-                    strokeWidth={1.5}
-                  />
-                  {!collapsed && (
-                    <span className="text-[14px] truncate">{item.label}</span>
-                  )}
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
+      <nav id="desktop-navigation" aria-label="Hộp thư và công cụ" className="min-h-0 flex-1 overflow-y-auto">
+        {groups.map(group => (
+          <div key={group.label} className="border-b border-[var(--border)] py-3 last:border-b-0">
+            <p className={cn('px-4 pb-2 text-xs font-medium text-[var(--foreground-muted)]', labelVisibility)}>{group.label}</p>
+            <ul>
+              {group.items.map(({ href, icon: Icon, label }) => (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    aria-current={pathname === href ? 'page' : undefined}
+                    aria-label={label}
+                    title={label}
+                    className="neo-nav-item neo-destination neo-target px-5 text-sm"
+                  >
+                    <Icon size={20} strokeWidth={1.5} className="shrink-0" aria-hidden="true" />
+                    <span className={cn('flex-1 truncate', labelVisibility)}>{label}</span>
+                    {href === '/follow-ups' && <span className={labelVisibility}><FollowUpInlineBadge /></span>}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </nav>
-
-      {/* AI Quick Actions */}
-      <AIQuickActions collapsed={collapsed} />
-
-      {/* Divider */}
-      <div className={cn('border-t border-[var(--border)]', collapsed ? 'mx-2' : 'mx-3')} />
-
-      {/* Bottom Items */}
-      <div className="py-2">
-        <ul className="space-y-0.5">
-          {bottomItems.map((item) => {
-            const isActive = pathname === item.href
-            return (
-              <li key={item.href} className={collapsed ? 'px-1.5' : 'px-2'}>
-                <Link
-                  href={item.href}
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg transition-all duration-150',
-                    collapsed
-                      ? 'w-10 h-10 justify-center relative'
-                      : 'h-10 px-3',
-                    isActive
-                      ? 'bg-[var(--secondary)] text-[var(--foreground)] font-medium'
-                      : 'text-[var(--foreground-muted)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'
-                  )}
-                  title={collapsed ? (item.isAI ? `✨ ${item.label} - ${item.aiTooltip}` : item.label) : undefined}
-                >
-                  <div className="relative flex-shrink-0">
-                    <item.icon
-                      className={cn(
-                        'w-5 h-5',
-                        isActive ? 'text-[var(--foreground)]' : ''
-                      )}
-                      strokeWidth={1.5}
-                    />
-                    {/* AI sparkle indicator on icon */}
-                    {item.isAI && collapsed && (
-                      <Sparkles className="absolute -top-1 -right-1 w-2.5 h-2.5 text-yellow-500" />
-                    )}
-                  </div>
-                  {!collapsed && (
-                    <>
-                      <span className="text-[14px] truncate flex-1">{item.label}</span>
-                      {/* AI sparkle indicator */}
-                      {item.isAI && (
-                        <span title={item.aiTooltip} className="flex-shrink-0">
-                          <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
-                        </span>
-                      )}
-                      {item.hasBadge && <FollowUpInlineBadge />}
-                    </>
-                  )}
-                  {collapsed && item.hasBadge && (
-                    <div className="absolute -top-0.5 -right-0.5">
-                      <FollowUpInlineBadge />
-                    </div>
-                  )}
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-      </div>
     </aside>
   )
 }

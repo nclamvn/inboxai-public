@@ -105,6 +105,7 @@ export function getPerformanceSummary(): Record<string, number> {
   if (typeof window === 'undefined') return {}
 
   const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
+  const memory = (performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number } }).memory
 
   return {
     // Page load timing
@@ -115,9 +116,9 @@ export function getPerformanceSummary(): Record<string, number> {
     resourceCount: performance.getEntriesByType('resource').length,
 
     // Memory (if available)
-    ...(typeof (performance as any).memory !== 'undefined' && {
-      usedJSHeapSize: (performance as any).memory.usedJSHeapSize,
-      totalJSHeapSize: (performance as any).memory.totalJSHeapSize,
+    ...(memory && {
+      usedJSHeapSize: memory.usedJSHeapSize,
+      totalJSHeapSize: memory.totalJSHeapSize,
     }),
   }
 }

@@ -3,10 +3,11 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'vn.inboxai.app',
   appName: 'InboxAI',
-  webDir: 'out',
+  webDir: 'native-web',
   server: {
     // Production: load từ hosted URL (không dùng static export)
     url: 'https://inboxai.vn',
+    errorPath: 'index.html',
     androidScheme: 'https',
     iosScheme: 'https',
   },

@@ -14,7 +14,7 @@ interface UseAutoSyncOptions {
   enabled?: boolean
   onSync?: (result: SyncResult) => void
   onError?: (error: Error) => void
-  onNewEmails?: (count: number) => void
+  onEmailsSynced?: (count: number) => void
 }
 
 export function useAutoSync({
@@ -22,9 +22,9 @@ export function useAutoSync({
   enabled = true,
   onSync,
   onError,
-  onNewEmails
+  onEmailsSynced
 }: UseAutoSyncOptions = {}) {
-  const lastSyncRef = useRef<number>(0)
+  const lastAttemptRef = useRef<number>(0)
   const syncingRef = useRef<boolean>(false)
   const [isSyncing, setIsSyncing] = useState(false)
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null)
@@ -32,15 +32,16 @@ export function useAutoSync({
 
   const sync = useCallback(async (force: boolean = false): Promise<SyncResult | null> => {
     // Skip if already syncing
-    if (syncingRef.current) return null
+    if (syncingRef.current || !navigator.onLine) return null
 
-    // Skip if synced recently (unless forced)
+    // Throttle automatic attempts even when the request failed.
     const now = Date.now()
-    if (!force && now - lastSyncRef.current < interval) {
+    if (!force && now - lastAttemptRef.current < interval) {
       return { success: true, synced: 0, skipped: true }
     }
 
     syncingRef.current = true
+    lastAttemptRef.current = now
     setIsSyncing(true)
     setSyncError(null)
 
@@ -56,11 +57,10 @@ export function useAutoSync({
       }
 
       const result = await res.json() as SyncResult
-      lastSyncRef.current = now
       setLastSyncTime(new Date())
 
       if (result.synced > 0) {
-        onNewEmails?.(result.synced)
+        onEmailsSynced?.(result.synced)
       }
 
       onSync?.(result)
@@ -74,7 +74,7 @@ export function useAutoSync({
       syncingRef.current = false
       setIsSyncing(false)
     }
-  }, [interval, onSync, onError, onNewEmails])
+  }, [interval, onSync, onError, onEmailsSynced])
 
   useEffect(() => {
     if (!enabled) return
@@ -88,8 +88,7 @@ export function useAutoSync({
     // Sync on visibility change (when user comes back to tab)
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        // Only sync if last sync was more than 10 seconds ago
-        if (Date.now() - lastSyncRef.current > 10000) {
+        if (Date.now() - lastAttemptRef.current > 10000) {
           sync(true)
         }
       }
@@ -98,16 +97,19 @@ export function useAutoSync({
 
     // Sync on window focus
     const handleFocus = () => {
-      if (Date.now() - lastSyncRef.current > 10000) {
+      if (Date.now() - lastAttemptRef.current > 10000) {
         sync()
       }
     }
+    const handleOnline = () => { void sync(true) }
+    window.addEventListener('online', handleOnline)
     window.addEventListener('focus', handleFocus)
 
     return () => {
       clearTimeout(initialTimeout)
       clearInterval(intervalId)
       document.removeEventListener('visibilitychange', handleVisibility)
+      window.removeEventListener('online', handleOnline)
       window.removeEventListener('focus', handleFocus)
     }
   }, [enabled, interval, sync])

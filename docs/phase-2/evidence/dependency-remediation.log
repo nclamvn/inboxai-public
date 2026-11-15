@@ -1,0 +1,122 @@
+
+added 41 packages, removed 176 packages, changed 144 packages, and audited 770 packages in 1m
+
+213 packages are looking for funding
+  run `npm fund` for details
+
+# npm audit report
+
+brace-expansion  <=1.1.20
+Severity: high
+brace-expansion: Zero-step sequence causes process hang and memory exhaustion - https://github.com/advisories/GHSA-f886-m6hf-6m8v
+brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups - https://github.com/advisories/GHSA-3jxr-9vmj-r5cp
+brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash - https://github.com/advisories/GHSA-mh99-v99m-4gvg
+brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation - https://github.com/advisories/GHSA-rgw5-rvv9-x895
+brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service - https://github.com/advisories/GHSA-q2hr-2g5m-vwhr
+brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion - https://github.com/advisories/GHSA-qhr7-859c-m2p7
+brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion - https://github.com/advisories/GHSA-6j4f-fj2g-mc7p
+fix available via `npm audit fix`
+node_modules/brace-expansion
+
+glob  9.0.0 - 14.0.1
+Severity: moderate
+Glob: AbortSignal cancellation bypass allows post-timeout filesystem traversal - https://github.com/advisories/GHSA-3g3m-2fjr-6pw4
+Depends on vulnerable versions of minimatch
+fix available via `npm audit fix`
+node_modules/glob
+  @sentry/bundler-plugins  <=11.10.0
+  Depends on vulnerable versions of glob
+  node_modules/@sentry/bundler-plugins
+    @sentry/nextjs  10.76.2 - 11.10.0
+    Depends on vulnerable versions of @sentry/bundler-plugins
+    Depends on vulnerable versions of @sentry/webpack-plugin
+    node_modules/@sentry/nextjs
+    @sentry/webpack-plugin  5.4.0 - 11.10.0
+    Depends on vulnerable versions of @sentry/bundler-plugins
+    node_modules/@sentry/webpack-plugin
+
+minimatch  7.0.0 - 11.0.0
+Severity: moderate
+minimatch has potential denial of service via globparts amplification - https://github.com/advisories/GHSA-g3hv-75wg-m249
+fix available via `npm audit fix`
+node_modules/@typescript-eslint/typescript-estree/node_modules/minimatch
+node_modules/glob/node_modules/minimatch
+  @typescript-eslint/typescript-estree  6.16.0 - 8.72.2
+  Depends on vulnerable versions of minimatch
+  node_modules/@typescript-eslint/typescript-estree
+    @typescript-eslint/parser  6.16.0 - 8.72.2
+    Depends on vulnerable versions of @typescript-eslint/typescript-estree
+    node_modules/@typescript-eslint/parser
+      typescript-eslint  <=8.72.2
+      Depends on vulnerable versions of @typescript-eslint/eslint-plugin
+      Depends on vulnerable versions of @typescript-eslint/parser
+      Depends on vulnerable versions of @typescript-eslint/typescript-estree
+      Depends on vulnerable versions of @typescript-eslint/utils
+      node_modules/typescript-eslint
+    @typescript-eslint/type-utils  6.16.0 - 8.72.2
+    Depends on vulnerable versions of @typescript-eslint/typescript-estree
+    Depends on vulnerable versions of @typescript-eslint/utils
+    node_modules/@typescript-eslint/type-utils
+    @typescript-eslint/utils  6.16.0 - 8.72.2
+    Depends on vulnerable versions of @typescript-eslint/typescript-estree
+    node_modules/@typescript-eslint/utils
+      @typescript-eslint/eslint-plugin  6.16.0 - 8.72.2
+      Depends on vulnerable versions of @typescript-eslint/type-utils
+      Depends on vulnerable versions of @typescript-eslint/utils
+      node_modules/@typescript-eslint/eslint-plugin
+
+nodemailer  <=10.1.3
+Severity: high
+Nodemailer has SMTP command injection due to unsanitized `envelope.size` parameter - https://github.com/advisories/GHSA-c7w3-x93f-qmm8
+Nodemailer Vulnerable to SMTP Command Injection via CRLF in Transport name Option (EHLO/HELO)  - https://github.com/advisories/GHSA-vvjj-xcjg-gr5g
+Nodemailer: CRLF injection in Nodemailer List-* header comments allows arbitrary message header injection - https://github.com/advisories/GHSA-268h-hp4c-crq3
+Nodemailer jsonTransport bypasses disableFileAccess and disableUrlAccess during message normalization - https://github.com/advisories/GHSA-wqvq-jvpq-h66f
+Nodemailer: Message-level raw option bypasses disableFileAccess/disableUrlAccess, enabling arbitrary file read and full-response SSRF in the delivered message - https://github.com/advisories/GHSA-p6gq-j5cr-w38f
+Nodemailer: resolveContent() on a MailMessage bypasses disableFileAccess/disableUrlAccess when called with the legacy signature - https://github.com/advisories/GHSA-8m3c-c648-2xjj
+Nodemailer: IDN/Punycode domain allow-list bypass leads to email delivery to an attacker-controlled domain - https://github.com/advisories/GHSA-wmmp-3585-3rmp
+Nodemailer: Quadratic (O(n²)) time complexity in addressparser allows remote denial of service via a crafted address list - https://github.com/advisories/GHSA-2x7j-588g-ccc2
+Nodemailer: Recipient-domain validation bypass via RFC 5322 comment mis-parsing leads to email delivery to an attacker-controlled domain - https://github.com/advisories/GHSA-cc9r-2j5m-2m83
+Nodemailer: Process-global DNS cache reuses TLS `servername` across transports, enabling cross-tenant SMTP credential disclosure - https://github.com/advisories/GHSA-6vj9-mwq6-2f5v
+Nodemailer: Nested structured recipient arrays bypass the parser depth limit and cause stack exhaustion DoS - https://github.com/advisories/GHSA-8vvx-rff5-p5rq
+Nodemailer: Quadratic backtracking in the addressparser free-text fallback allows remote denial of service - https://github.com/advisories/GHSA-v53p-9fqp-m79j
+Nodemailer: Improper TLS Certificate Validation in OAuth2 Token Fetch Enables Credential Interception - https://github.com/advisories/GHSA-r7g4-qg5f-qqm2
+Nodemailer: Quadratic (O(n^2)) DKIM header unfolding lets a large folded header cause remote denial of service during signing - https://github.com/advisories/GHSA-39m8-27wv-hr27
+Nodemailer: A nested comment ends early in addressparser, releasing the rest of the comment as a recipient - https://github.com/advisories/GHSA-8c8m-p3m8-cjg8
+Nodemailer: A ";" inside a quoted string or comment ends an address group early in addressparser, turning display text into a recipient - https://github.com/advisories/GHSA-m943-m63m-w62w
+Nodemailer: A ">" inside a quoted local part ends an angle-addr early in addressparser, delivering to a domain the header does not name - https://github.com/advisories/GHSA-85x2-q946-cp5h
+Nodemailer: Quadratic backtracking in SMTP AUTH mechanism detection regexes allows pre-auth remote denial of service - https://github.com/advisories/GHSA-4ffr-jq9g-5ffx
+Nodemailer: RFC 5322 comment inside an angle-bracket address is never stripped - https://github.com/advisories/GHSA-g73g-hqqh-jr95
+Nodemailer: Quadratic (O(n^2)) SMTP client reply parsing lets a malicious server or MITM cause a pre-auth remote denial of service - https://github.com/advisories/GHSA-4g23-2xm8-66gc
+fix available via `npm audit fix --force`
+Will install nodemailer@10.5.0, which is a breaking change
+node_modules/nodemailer
+
+semver  2.0.0-alpha - 5.7.1
+Severity: high
+semver vulnerable to Regular Expression Denial of Service - https://github.com/advisories/GHSA-c2qf-rxjj-qqgw
+fix available via `npm audit fix --force`
+Will install imap@0.8.17, which is a breaking change
+node_modules/utf7/node_modules/semver
+  utf7  >=1.0.2
+  Depends on vulnerable versions of semver
+  node_modules/utf7
+    imap  >=0.8.18
+    Depends on vulnerable versions of utf7
+    node_modules/imap
+
+sharp  <=0.35.5-rc.1
+Severity: high
+sharp inherited vulnerabilities in libvips: CVE-2026-33327, CVE-2026-33328, CVE-2026-35590, CVE-2026-35591 - https://github.com/advisories/GHSA-f88m-g3jw-g9cj
+sharp: Vulnerabilities in libheif: GHSA-g89c-p67h-r497 and GHSA-2jg2-4ch7-h545 - https://github.com/advisories/GHSA-rgj7-g3m4-5g8c
+sharp : Vulnerability in librsvg dependency CVE-2026-96889 - https://github.com/advisories/GHSA-wq5f-xc86-pv6w
+fix available via `npm audit fix --force`
+Will install sharp@0.35.5, which is a breaking change
+node_modules/sharp
+
+17 vulnerabilities (11 moderate, 6 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force

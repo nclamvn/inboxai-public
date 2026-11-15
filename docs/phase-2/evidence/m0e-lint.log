@@ -1,0 +1,245 @@
+
+> ai-mailbox@0.1.0 lint
+> eslint
+
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/scripts/cron-sync.js
+  51:18  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/(auth)/login/page.tsx
+  36:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/(auth)/signup/page.tsx
+   60:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+  100:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+  128:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/(dashboard)/actions/page.tsx
+   83:6  warning  React Hook useEffect has a missing dependency: 'fetchActions'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  333:3  warning  'iconBg' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/(dashboard)/inbox/page.tsx
+   85:10  warning  'classifying' is assigned a value but never used                                                                                                   @typescript-eslint/no-unused-vars
+   86:10  warning  'reclassifying' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  118:9   warning  'handleClassify' is assigned a value but never used                                                                                                @typescript-eslint/no-unused-vars
+  141:9   warning  'handleReclassify' is assigned a value but never used                                                                                              @typescript-eslint/no-unused-vars
+  232:9   warning  'handleDeleteAllInCategory' is assigned a value but never used                                                                                     @typescript-eslint/no-unused-vars
+  282:6   warning  React Hook useCallback has missing dependencies: 'CATEGORY_LABELS' and 'IMPORTANT_CATEGORIES'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  363:9   warning  'handleMaximize' is assigned a value but never used                                                                                                @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/(dashboard)/trash/page.tsx
+  4:32  warning  'AlertTriangle' is defined but never used  @typescript-eslint/no-unused-vars
+  7:10  warning  'EmailDetail' is defined but never used    @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/ai/briefing/route.ts
+  59:9  warning  'needsReply' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/ai/classify-all/route.ts
+  11:28  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/ai/features/[emailId]/auto/route.ts
+   17:3   warning  'FEATURE_COSTS' is defined but never used     @typescript-eslint/no-unused-vars
+  230:13  warning  'service' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/ai/sender-insights/route.ts
+  21:27  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/attachments/[attachmentId]/route.ts
+  68:12  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/cron/sync-emails/route.ts
+  136:11  warning  'unsubscribeService' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/dashboard/stats/route.ts
+  10:27  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/debug/gmail-sync/route.ts
+  27:27  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/email-providers/route.ts
+  9:27  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/emails/refetch-bodies/route.ts
+  4:26  warning  'decryptPassword' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/emails/smart-views/route.ts
+  4:27  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/page.tsx
+  7:17  warning  'Check' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/ai/ai-feature-button.tsx
+  26:3  warning  'emailId' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/ai/assistant-panel.tsx
+  9:10  warning  'IconBox' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/ai/reply-assistant.tsx
+    9:3   warning  'ChevronDown' is defined but never used                                                                          @typescript-eslint/no-unused-vars
+   53:6   warning  React Hook useEffect has a missing dependency: 'analyzeEmail'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   70:14  warning  'err' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+   99:14  warning  'err' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+  121:14  warning  'err' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/ai/urgent-alert.tsx
+  6:10  warning  'IconBox' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/account-switcher.tsx
+  130:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  193:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/action-items-card.tsx
+  73:6  warning  React Hook useEffect has a missing dependency: 'fetchActions'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/ai-bottom-bar.tsx
+  21:3  warning  'AlertCircle' is defined but never used       @typescript-eslint/no-unused-vars
+  51:5  warning  'refresh' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/attachment-list.tsx
+  190:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-detail-full.tsx
+  182:9  warning  'handleBlockSender' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-detail-mobile.tsx
+   6:26  warning  'AlertCircle' is defined but never used                                                         @typescript-eslint/no-unused-vars
+   7:29  warning  'Check' is defined but never used                                                               @typescript-eslint/no-unused-vars
+  37:3   warning  'onRefresh' is defined but never used                                                           @typescript-eslint/no-unused-vars
+  73:3   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-detail.tsx
+  68:6  warning  React Hook useEffect has a missing dependency: 'email'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list-compact.tsx
+  26:11  warning  'EmailSection' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list-item.tsx
+  41:3  warning  'id' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list-virtual.tsx
+    5:16  warning  'Zap' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+  176:23  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list-virtual.tsx:176:23
+  174 |   const parentRef = useRef<HTMLDivElement>(null)
+  175 |
+> 176 |   const virtualizer = useVirtualizer({
+      |                       ^^^^^^^^^^^^^^ TanStack Virtual's `useVirtualizer()` API returns functions that cannot be memoized safely
+  177 |     count: emails.length,
+  178 |     getScrollElement: () => parentRef.current,
+  179 |     estimateSize: () => 76, // Estimated row height  react-hooks/incompatible-library
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list.tsx
+  3:16  warning  'Paperclip' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/smart-reply.tsx
+  71:6  warning  React Hook useEffect has a missing dependency: 'fetchSuggestions'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/insights/weekly-report.tsx
+   12:10  warning  'IconBox' is defined but never used              @typescript-eslint/no-unused-vars
+  235:21  warning  'getVariant' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/layout/mobile-nav.tsx
+  5:29  warning  'Archive' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/layout/unified-top-bar.tsx
+  75:3  warning  'totalEmails' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/settings/add-account-modal.tsx
+  4:67  warning  'Server' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/settings/source-accounts-section.tsx
+    4:105  warning  'Edit2' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  258:19   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/hooks/use-emails-query.ts
+  244:9  warning  'queryClient' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/classifier-updated.ts
+  15:8  warning  'VietnameseClassificationResult' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/classifier.ts
+   12:3  warning  'getEmailPatternHint' is defined but never used        @typescript-eslint/no-unused-vars
+   13:3  warning  'VIETNAMESE_DOMAINS' is defined but never used         @typescript-eslint/no-unused-vars
+   30:3  warning  'resolveCategory' is defined but never used            @typescript-eslint/no-unused-vars
+   35:3  warning  'updateEmailPhishingStatus' is defined but never used  @typescript-eslint/no-unused-vars
+   36:8  warning  'PhishingResult' is defined but never used             @typescript-eslint/no-unused-vars
+  110:9  warning  'fromLower' is assigned a value but never used         @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/feature-allocation.ts
+  844:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/feature-executors.ts
+  276:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/feature-runner.ts
+    9:3  warning  'TriggerType' is defined but never used                         @typescript-eslint/no-unused-vars
+  252:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/insights-service.ts
+  98:11  warning  'SenderScore' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/priority-rules.ts
+  24:30  warning  'fromAddress' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/prompts/vietnamese-classifier.ts
+  848:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/sender-trust.ts
+  54:3  warning  'senderName' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/setup.ts
+  68:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/smart-reply.ts
+  52:9  warning  'from' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/vietnamese-classifier-integration.ts
+    8:3  warning  'VIETNAMESE_EXAMPLES' is defined but never used                 @typescript-eslint/no-unused-vars
+   11:8  warning  'ClassificationExample' is defined but never used               @typescript-eslint/no-unused-vars
+   16:3  warning  'expandAbbreviations' is defined but never used                 @typescript-eslint/no-unused-vars
+   17:3  warning  'isVietnamese' is defined but never used                        @typescript-eslint/no-unused-vars
+   20:3  warning  'cleanEmailBody' is defined but never used                      @typescript-eslint/no-unused-vars
+   26:3  warning  'detectBanks' is defined but never used                         @typescript-eslint/no-unused-vars
+   27:3  warning  'detectEWallets' is defined but never used                      @typescript-eslint/no-unused-vars
+   28:3  warning  'detectECommerce' is defined but never used                     @typescript-eslint/no-unused-vars
+   30:3  warning  'detectMoneyAmounts' is defined but never used                  @typescript-eslint/no-unused-vars
+   32:8  warning  'DetectedEntity' is defined but never used                      @typescript-eslint/no-unused-vars
+  586:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/vietnamese-entities.ts
+  1025:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/vietnamese-utils.ts
+  712:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/api/fetch-client.ts
+  227:22  warning  '_timeout' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  227:41  warning  '_retries' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  227:59  warning  '_params' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/email/imap-client.ts
+   94:7   warning  'DB_BATCH_SIZE' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  229:12  warning  'e' is defined but never used                        @typescript-eslint/no-unused-vars
+  257:13  warning  'totalMessages' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  302:15  warning  'batchStartTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  342:17  warning  'parseStartTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  383:17  warning  'dbStartTime' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/gmail/sync.ts
+  270:35  warning  'count' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/resend/templates.tsx
+  64:41  warning  'email' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/supabase/server.ts
+  1:35  warning  'CookieOptions' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/toast.ts
+  7:10  warning  'ApiError' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 106 problems (0 errors, 106 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+

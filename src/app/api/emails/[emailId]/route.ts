@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createSupabaseAdmin, createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { gmailTriageEnabled } from '@/lib/gmail-triage/server'
 import { fetchEmailBody } from '@/lib/email/imap-client'
 
 // Allow up to 30 seconds for IMAP fetch
@@ -54,7 +55,7 @@ export async function GET(
   // Fetch email with source account info
   const { data: email, error } = await supabase
     .from('emails')
-    .select('*')
+    .select('*,effective_category:mail_category')
     .eq('id', emailId)
     .eq('user_id', user.id)
     .single()
@@ -76,11 +77,12 @@ export async function GET(
       .from('source_accounts')
       .select('*')
       .eq('id', email.source_account_id)
+      .eq('user_id',user.id)
       .single()
 
     if (account) {
       try {
-        const body = await fetchEmailBody(account, email.original_uid)
+        const body = await fetchEmailBody(account, email.original_uid,email.sync_namespace)
 
         if (body) {
           // Update database with fetched body
@@ -92,6 +94,7 @@ export async function GET(
               body_fetched: true
             })
             .eq('id', email.id)
+            .eq('user_id',user.id)
 
           // Update response
           email.body_text = body.body_text
@@ -105,6 +108,7 @@ export async function GET(
             .from('emails')
             .update({ body_fetched: true })
             .eq('id', email.id)
+            .eq('user_id',user.id)
           email.body_fetched = true
           console.log(`[API] No body found for email ${email.id}, marked as fetched`)
         }
@@ -119,7 +123,7 @@ export async function GET(
   }
 
   // Mark as read if unread
-  if (!email.is_read) {
+  if (!email.is_read && !(gmailTriageEnabled() && email.sync_namespace === 'gmail')) {
     await supabase
       .from('emails')
       .update({ is_read: true })
@@ -127,13 +131,8 @@ export async function GET(
     email.is_read = true
   }
 
-  // Add cache headers - cache for 30s, stale-while-revalidate for 60s
-  const response = NextResponse.json({ email })
-  response.headers.set(
-    'Cache-Control',
-    'private, s-maxage=30, stale-while-revalidate=60'
-  )
-  return response
+  const { effective_category, ...message } = email
+  return NextResponse.json({ email: { ...message, category: effective_category } }, { headers: { 'Cache-Control': 'private, no-store' } })
 }
 
 export async function PATCH(

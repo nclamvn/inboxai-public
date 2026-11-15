@@ -1,17 +1,22 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   ChevronLeft, Star, MoreVertical, Reply, Forward,
-  Archive, Trash2, Mail, AlertCircle, Loader2,
-  Tag, Flag, MailOpen, Ban, Check
+  Archive, Clock, Trash2, Mail, AlertCircle, Loader2,
+  Tag, Flag, MailOpen, Ban, Check, ListTodo
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { EmailConversation } from './email-conversation'
+import { SaveOfflineEmail } from '@/components/offline/save-offline-email'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import { AttachmentList } from './attachment-list'
 import { AISummary } from './ai-summary'
 import { SmartReply } from './smart-reply'
 import { ActionItemsCard } from './action-items-card'
+import { offerReplyText } from '@/lib/replies/client'
+import { replyHref } from '@/lib/replies/contracts'
 import type { Email } from '@/types'
 
 interface Attachment {
@@ -25,25 +30,39 @@ interface Attachment {
 interface EmailDetailMobileProps {
   email: Email
   onBack: () => void
+  closeLabel?: string
   onRefresh?: () => void
   onStar?: (id: string) => void
   onArchive?: (id: string) => void
+  onSnooze?: () => void
   onDelete?: (id: string) => void
+  onExplainPriority?: () => void
+  onEditCategory?: () => void
+  categoryNotice?: string
 }
 
 export function EmailDetailMobile({
   email,
   onBack,
+  closeLabel = 'Về hộp thư',
   onRefresh,
   onStar,
   onArchive,
-  onDelete
+  onSnooze,
+  onDelete,
+  onExplainPriority,
+  onEditCategory,
+  categoryNotice
 }: EmailDetailMobileProps) {
+  const router = useRouter()
   const [showActions, setShowActions] = useState(false)
   const [isStarred, setIsStarred] = useState(email.is_starred)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const previousId = useRef<string | null>(null)
+  const heading = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => { heading.current?.focus({ preventScroll: true }) }, [email.id])
 
   // Fetch attachments - defined before useEffect to fix variable access order
   const fetchAttachments = async (emailId: string) => {
@@ -117,24 +136,27 @@ export function EmailDetailMobile({
   return (
     <div className="fixed inset-0 z-50 bg-[var(--card)] flex flex-col">
       {/* COMPACT HEADER - single row */}
-      <header className="flex items-center h-12 px-2 border-b border-[var(--border)] bg-[var(--card)] safe-area-top flex-shrink-0">
+      <header className="flex items-center min-h-12 px-2 border-b border-[var(--border)] bg-[var(--card)] safe-area-top flex-shrink-0">
         {/* Back */}
         <button
           onClick={onBack}
-          className="p-2 -ml-1 rounded-full active:bg-[var(--hover)]"
+          aria-label={closeLabel}
+          className="neo-icon-button"
         >
           <ChevronLeft className="w-6 h-6 text-[var(--foreground)]" />
         </button>
 
         {/* Subject - truncate */}
-        <h1 className="flex-1 text-[15px] font-medium text-[var(--foreground)] truncate mx-2">
+        <h1 ref={heading} tabIndex={-1} className="flex-1 text-[15px] font-medium text-[var(--foreground)] truncate mx-2">
           {email.subject || '(Không có tiêu đề)'}
         </h1>
 
         {/* Star */}
         <button
           onClick={toggleStar}
-          className="p-2 rounded-full active:bg-[var(--hover)]"
+          aria-label="Gắn sao"
+          aria-pressed={isStarred}
+          className="neo-icon-button"
         >
           <Star
             className={cn(
@@ -147,18 +169,21 @@ export function EmailDetailMobile({
         {/* More actions */}
         <button
           onClick={() => setShowActions(true)}
-          className="p-2 rounded-full active:bg-[var(--hover)]"
+          aria-label="Thêm thao tác"
+          aria-expanded={showActions}
+          className="neo-icon-button"
         >
           <MoreVertical className="w-5 h-5 text-[var(--muted)]" />
         </button>
       </header>
+      {categoryNotice && <p role="status" className="border-b border-[var(--border)] px-4 py-2 text-sm">{categoryNotice}</p>}
 
       {/* CONTENT - maximum space */}
-      <div className="flex-1 overflow-y-auto overscroll-contain">
+      <div role="region" aria-label="Nội dung thư" tabIndex={0} className="flex-1 overflow-y-auto overscroll-contain">
         {/* Sender info - compact 2 lines max */}
         <div className="flex items-start gap-3 px-4 py-3 border-b border-[var(--border)]">
           {/* Avatar */}
-          <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-[15px] font-medium text-blue-600 dark:text-blue-400 flex-shrink-0">
+          <div className="w-10 h-10 rounded-[var(--radius-control)] bg-[var(--secondary)] flex items-center justify-center text-[15px] font-medium text-[var(--accent-foreground)] flex-shrink-0">
             {(email.from_name || email.from_address || 'U')[0].toUpperCase()}
           </div>
 
@@ -178,6 +203,18 @@ export function EmailDetailMobile({
           </div>
         </div>
 
+        {onExplainPriority && (
+          <button type="button" onClick={onExplainPriority}
+            className="neo-target mx-4 mt-3 inline-flex items-center gap-2 border-s-2 border-[var(--selection-line)] px-2 py-2 text-sm font-medium text-[var(--accent-foreground)] hover:bg-[var(--hover)]"
+          >
+            <ListTodo size={16} strokeWidth={1.5} aria-hidden="true" />
+            Ưu tiên và nguồn
+          </button>
+        )}
+
+        <div className="px-4"><SaveOfflineEmail key={email.id} email={email} /></div>
+        <EmailConversation key={email.id} email={email} className="mx-4 mt-3" />
+
         {/* AI Summary - Smart Allocation */}
         <div className="px-4 pt-3">
           <AISummary
@@ -190,19 +227,15 @@ export function EmailDetailMobile({
         </div>
 
         {/* Smart Reply */}
-        <div className="px-4">
+        {email.direction !== 'outbound' && <div className="px-4">
           <SmartReply
             emailId={email.id}
-            onReply={(content, subject) => {
-              const params = new URLSearchParams({
-                to: email.from_address || '',
-                subject,
-                body: content,
-              })
-              window.location.href = `/compose?${params.toString()}`
+            onReply={content => {
+              offerReplyText(email.id, content)
+              router.push(replyHref(email.id))
             }}
           />
-        </div>
+        </div>}
 
         {/* Action Items */}
         <div className="px-4">
@@ -222,32 +255,33 @@ export function EmailDetailMobile({
           ) : email.body_html ? (
             <div
               dangerouslySetInnerHTML={{ __html: sanitizeEmailHtml(email.body_html) }}
-              className="prose prose-sm dark:prose-invert max-w-none text-[14px] leading-relaxed email-content animate-fadeIn"
+              className="prose prose-sm dark:prose-invert max-w-none text-[14px] leading-relaxed email-content"
             />
           ) : email.body_text ? (
-            <pre className="whitespace-pre-wrap font-sans text-[14px] text-[var(--foreground)] leading-relaxed animate-fadeIn">
+            <pre className="whitespace-pre-wrap [overflow-wrap:anywhere] font-sans text-[14px] text-[var(--foreground)] leading-relaxed">
               {email.body_text}
             </pre>
           ) : null}
 
           {/* Attachments */}
           {attachments.length > 0 && (
-            <AttachmentList attachments={attachments} />
+            <AttachmentList attachments={attachments}
+              purchaseEmailId={/\bPO-[0-9]{1,12}\b/i.test(email.subject ?? '') && email.direction !== 'outbound' ? email.id : undefined} />
           )}
         </div>
       </div>
 
       {/* Footer wrapper với spacing từ đáy màn hình */}
-      <div className="pb-6 bg-[var(--card)] flex-shrink-0">
+      <div className="pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-[var(--card)] flex-shrink-0">
         {/* FLOATING ACTION BUTTONS - pill design */}
         <div className="flex items-center justify-center gap-4 px-6 py-3 border-t border-[var(--border)]">
-          <button
-            onClick={() => window.location.href = `/compose?replyTo=${email.id}`}
-            className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-full active:opacity-80 max-w-[160px]"
+          {email.direction !== 'outbound' && <button
+            onClick={() => router.push(replyHref(email.id))}
+            className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-[var(--radius-control)] active:opacity-80 max-w-[160px]"
           >
             <Reply className="w-4 h-4" />
             <span className="text-[14px] font-medium">Trả lời</span>
-          </button>
+          </button>}
           <button
             onClick={() => window.location.href = `/compose?forward=${email.id}`}
             className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--secondary)] text-[var(--foreground)] rounded-full active:bg-[var(--hover)] max-w-[160px]"
@@ -272,6 +306,7 @@ export function EmailDetailMobile({
             <div className="w-10 h-1 bg-[var(--border)] rounded-full mx-auto mt-3 mb-2" />
 
             <div className="px-2 pb-4">
+              {onSnooze && <ActionItem icon={Clock} label="Hẹn xử lý" onClick={() => { setShowActions(false); onSnooze() }} />}
               <ActionItem
                 icon={Archive}
                 label="Lưu trữ"
@@ -285,11 +320,10 @@ export function EmailDetailMobile({
                 danger
                 loading={actionLoading === 'delete'}
               />
-              <ActionItem
-                icon={Tag}
-                label="Đổi nhãn"
-                onClick={() => setShowActions(false)}
-              />
+              {onEditCategory && <ActionItem icon={Tag} label="Đổi nhãn" onClick={() => {
+                setShowActions(false)
+                onEditCategory()
+              }} />}
               <ActionItem
                 icon={Flag}
                 label="Đánh dấu quan trọng"

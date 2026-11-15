@@ -7,7 +7,8 @@ import { isNative, getPlatform } from './index';
 export const setupAndroidBackButton = () => {
   if (!isNative() || getPlatform() !== 'android') return;
 
-  App.addListener('backButton', ({ canGoBack }) => {
+  return App.addListener('backButton', ({ canGoBack }) => {
+    if (!window.dispatchEvent(new Event('inboxai:native-back', { cancelable: true }))) return;
     // If we can go back in history, do so
     if (canGoBack) {
       window.history.back();

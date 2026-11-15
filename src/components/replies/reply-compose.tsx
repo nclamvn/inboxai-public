@@ -1,0 +1,444 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { ScheduleSendDialog } from '@/components/email/schedule-send-dialog'
+import { ArrowLeft, Check, FileText, Send } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
+import { ComposeFiles, ComposeFileList } from '@/components/email/compose-files'
+import { DraftVersion } from '@/components/email/draft-version'
+import { useDraftExitWarning } from '@/lib/compose/use-draft-exit-warning'
+import { useDraftAutosave } from '@/lib/compose/use-draft-autosave'
+import type { ComposeFile } from '@/lib/compose/contracts'
+import { Alert } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Modal } from '@/components/ui/modal'
+import { formatCommitmentMoment } from '@/lib/commitments/view'
+import { gmailSendPermissionRequired } from '@/lib/gmail/scopes'
+import { readReply, replyRequest, ReplyError, takeReplyText } from '@/lib/replies/client'
+import type { ReplyDraft, ReplyFields, ReplyWorkbench } from '@/lib/replies/contracts'
+import { useHydrated } from '@/hooks/use-hydrated'
+import { useNetworkStatus } from '@/hooks/use-network-status'
+import { offlineHome, useOfflineWorkspace } from '@/components/offline/offline-provider'
+import { RecipientField } from '@/components/email/recipient-field'
+import { useOfflineReply } from '@/components/offline/use-offline-reply'
+import { sameReply } from '@/lib/offline/contracts'
+
+const inputClass = 'w-full min-w-0 rounded-[var(--radius-control)] border border-[var(--input-border)] bg-[var(--surface)] px-3 py-2 text-sm focus-ring'
+const messageLink = 'neo-target inline-flex min-h-11 items-center gap-2 text-sm font-medium text-[var(--accent-foreground)] underline underline-offset-4'
+const fieldsFor = (context: ReplyWorkbench): ReplyFields => ({
+  to: context.draft?.to ?? context.to ?? '', cc: context.draft?.cc ?? '', body: context.draft?.body ?? '',
+})
+
+export function ReplyCompose({ source }: { source: string }) {
+  const router = useRouter()
+  const owner = useOfflineWorkspace()?.owner
+  const cache = useQueryClient()
+  const [context, setContext] = useState<ReplyWorkbench | null>(null)
+  const [draft, setDraft] = useState<ReplyDraft | null>(null)
+  const [fields, setFields] = useState<ReplyFields>({ to: '', cc: '', body: '' })
+  const [saved, setSaved] = useState<ReplyFields>(fields)
+  const [files, setFiles] = useState<ComposeFile[]>([])
+  const [savedFiles, setSavedFiles] = useState<ComposeFile[]>([])
+  const [fileBusy, setFileBusy] = useState(false)
+  const [suggestion, setSuggestion] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [permission, setPermission] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [preview, setPreview] = useState<'send' | 'schedule' | null>(null)
+  const [latestDraft, setLatestDraft] = useState<ReplyWorkbench | null>(null)
+  const [saveUnconfirmed, setSaveUnconfirmed] = useState(false)
+  const [saveFailed, setSaveFailed] = useState(false)
+  const [conflict, setConflict] = useState(false)
+  const [readVersion, setReadVersion] = useState(0)
+  const [confirmDiscard, setConfirmDiscard] = useState(false)
+  const [followupOn, setFollowupOn] = useState('')
+  const busyRef = useRef(false)
+  const saveRef = useRef<Promise<ReplyDraft> | null>(null)
+  const filesChanged = files.length !== savedFiles.length || files.some((file, index) => file.id !== savedFiles[index]?.id)
+  const dirty = saveUnconfirmed || !sameReply(fields, saved) || filesChanged
+  const device = useOfflineReply(source, context, draft, fields, saved, setFields)
+  const network = useNetworkStatus()
+  const isOnline = !useHydrated() || network.isOnline
+  const needsDeviceReview = device.lockedDraft || Boolean(device.pending)
+  const lossRisk = filesChanged || (dirty && !device.savedLocally)
+  const editable = !draft || draft.state === 'draft'
+  const stale = context?.stale && editable
+  const invalidate = () => void cache.invalidateQueries({ queryKey: ['reply-work'] })
+
+  function acceptContext(result: ReplyWorkbench, replaceFields: boolean) {
+    setContext(result)
+    setDraft(result.draft)
+    if (replaceFields) {
+      const next = fieldsFor(result)
+      setFields(next)
+      setSaved(next)
+      setFiles(result.draft?.files ?? [])
+      setSavedFiles(result.draft?.files ?? [])
+    }
+  }
+
+  useEffect(() => {
+    const controller = new AbortController()
+    void readReply(source, controller.signal).then(result => {
+      if (controller.signal.aborted) return
+      acceptContext(result, true)
+      setSaveUnconfirmed(false)
+      const pending = takeReplyText(source)
+      if (pending) setSuggestion(pending)
+    }).catch(reason => {
+      if (!controller.signal.aborted) setError(reason instanceof ReplyError ? reason.message : 'Chưa thể mở email nguồn.')
+    })
+    return () => controller.abort()
+  }, [source, readVersion])
+
+  useDraftExitWarning(lossRisk || saving)
+
+  useEffect(() => {
+    function resume() { setSaveFailed(false) }
+    window.addEventListener('online', resume)
+    return () => window.removeEventListener('online', resume)
+  }, [])
+
+  async function save() {
+    if (saveRef.current) return saveRef.current
+    if (!context) throw new Error('Missing source')
+    if (draft && !dirty) return draft
+    setSaving(true)
+    setError(null)
+    const pending = replyRequest<ReplyDraft>({
+      action: 'save', source, id: draft?.id ?? null, revision: draft?.revision ?? null,
+      fingerprint: context.fingerprint, ...fields,
+      fileIds: files.map(file => file.id),
+    })
+    saveRef.current = pending
+    try {
+      const result = await pending
+      setDraft(result)
+      setSaveFailed(false)
+      setSaveUnconfirmed(false)
+      setSaved(fields)
+      setSavedFiles(files)
+      invalidate()
+      return result
+    } catch (reason) {
+      if (reason instanceof ReplyError && reason.status === 409) {
+        setConflict(true)
+        const latest = await readReply(source, AbortSignal.timeout(8_000)).catch(() => null)
+        if (latest) {
+          const serverFiles = latest.draft?.files ?? []
+          if (!latest.stale && latest.draft?.state === 'draft' && (!draft || latest.draft.id === draft.id) &&
+              sameReply(fields, fieldsFor(latest)) && files.length === serverFiles.length &&
+              files.every((file, index) => file.id === serverFiles[index]?.id)) {
+            setContext(latest)
+            setDraft(latest.draft)
+            setSaved(fields)
+            setSavedFiles(files)
+            setConflict(false)
+            setSaveFailed(false)
+            setSaveUnconfirmed(false)
+            invalidate()
+            return latest.draft
+          }
+          setLatestDraft(latest)
+        }
+      }
+      setSaveFailed(true)
+      setSaveUnconfirmed(!(reason instanceof ReplyError) || reason.status >= 500 || reason.status === 409 || saveUnconfirmed)
+      setError(reason instanceof ReplyError ? reason.message : 'Bản nháp chưa được lưu. Hãy thử lại khi có mạng.')
+      throw reason
+    } finally {
+      saveRef.current = null
+      setSaving(false)
+    }
+  }
+
+  useDraftAutosave(Boolean(context && editable && !stale && dirty && !saving && !busy && !fileBusy &&
+    !conflict && isOnline && !needsDeviceReview && !preview && !confirmDiscard && !saveFailed),
+  JSON.stringify([fields, files.map(file => file.id)]), () => void save().catch(() => {}))
+
+  async function chooseDeviceVersion(choice: 'device' | 'server') {
+    if (!await device.choose(choice)) return
+    setConflict(false)
+    setSaveFailed(false)
+    setSaveUnconfirmed(false)
+  }
+
+  function resolveDraft(keepLocal: boolean) {
+    if (!latestDraft || (keepLocal && (latestDraft.stale || latestDraft.draft?.state !== 'draft' ||
+      latestDraft.fingerprint !== context?.fingerprint))) return
+    acceptContext(latestDraft, !keepLocal)
+    if (keepLocal) {
+      setSaved(fieldsFor(latestDraft))
+      setSavedFiles(latestDraft.draft?.files ?? [])
+    }
+    setLatestDraft(null)
+    setConflict(false)
+    setSaveFailed(false)
+    setSaveUnconfirmed(false)
+    setError(null)
+  }
+
+  async function refresh() {
+    acceptContext(await readReply(source, AbortSignal.timeout(10_000)), false)
+    invalidate()
+  }
+
+  async function send(action: 'send' | 'check', current: ReplyDraft) {
+    setPermission(false)
+    const result = await replyRequest<{ state: ReplyDraft['state']; error?: string }>({ action, id: current.id })
+    setError(result.error ?? null)
+    // A second GET can fail after a successful send. The known receipt still
+    // locks the draft immediately, and a reload restores the authoritative view.
+    setDraft({ ...current, state: result.state })
+    await refresh()
+  }
+
+  async function run(task: () => Promise<void>, recoverReceipt = true) {
+    if (busyRef.current) return
+    busyRef.current = true
+    setBusy(true)
+    setError(null)
+    try {
+      await task()
+    } catch (reason) {
+      setPermission(reason instanceof ReplyError && reason.code === gmailSendPermissionRequired)
+      setError(reason instanceof ReplyError ? reason.message : 'Mất kết nối. Mở lại bản nháp để kiểm tra trạng thái.')
+      if (recoverReceipt) await refresh().catch(() => {})
+    } finally {
+      busyRef.current = false
+      setBusy(false)
+    }
+  }
+
+  async function approve() {
+    if (!draft || !isOnline || needsDeviceReview) return
+    await run(async () => {
+      const prepared = await replyRequest<ReplyDraft>({ action: 'prepare', id: draft.id, source, revision: draft.revision }).catch(reason => {
+        if (reason instanceof ReplyError && reason.status === 409) {
+          setPreview(null)
+          setConflict(true)
+        }
+        throw reason
+      })
+      setDraft(prepared)
+      setPreview(null)
+      await send('send', prepared)
+    })
+  }
+
+  function change(action: 'edit' | 'discard' | 'finish' | 'track') {
+    if (!draft || !context) return
+    void run(async () => {
+      await replyRequest(action === 'track' && followupOn
+        ? { action: 'schedule-followup', id: draft.id, on: followupOn, expected: null }
+        : { action, id: draft.id, ...(action === 'edit' && { fingerprint: context.fingerprint }) })
+      if (action === 'finish' || action === 'discard') {
+        const next = await readReply(source)
+        acceptContext({ ...next, draft: null, stale: false }, true)
+        await device.clear()
+      } else {
+        acceptContext(await readReply(source), action === 'edit')
+      }
+      setConflict(false)
+      setSaveFailed(false)
+      setSaveUnconfirmed(false)
+      invalidate()
+    })
+  }
+
+  function review(event: React.FormEvent) {
+    event.preventDefault()
+    if (!editable || fileBusy || !fields.body.trim() || !isOnline || needsDeviceReview || saving || conflict) return
+    void run(async () => {
+      await save()
+      setPreview('send')
+    }, false)
+  }
+
+  const back = '/inbox?email=' + encodeURIComponent(source)
+  const state = draft?.state ?? 'draft'
+  const status = draft?.scheduledId ? 'Thư đã lên lịch' : state === 'accepted' ? 'Đã gửi' : state === 'partial' ? 'Chấp nhận một phần'
+    : state === 'rejected' ? 'Yêu cầu bị từ chối' : state === 'unknown' || state === 'dispatching' ? 'Đang chờ xác minh'
+    : state === 'prepared' ? 'Đã lưu yêu cầu gửi' : saving ? 'Đang lưu bản nháp…'
+    : latestDraft ? 'Cần đối chiếu bản nháp'
+    : dirty ? device.savedLocally && !filesChanged ? 'Đã lưu trên thiết bị' :
+      isOnline ? 'Có thay đổi chưa lưu' : 'Chưa đồng bộ · Mất kết nối' : draft ? 'Bản nháp đã lưu' : null
+  const scopePreview = context && draft && <>
+    <dl className="space-y-2 break-words text-sm">
+      <div><dt className="font-semibold">Gửi từ</dt><dd>{context.account}</dd></div>
+      <div><dt className="font-semibold">Người nhận</dt><dd>{draft.to}</dd></div>
+      {draft.cc && <div><dt className="font-semibold">Cc</dt><dd>{draft.cc}</dd></div>}
+    </dl>
+    <div className="mt-4"><ComposeFileList files={draft.files ?? []} /></div>
+    <p className="mt-4 whitespace-pre-wrap break-words border-t border-[var(--border)] pt-4 text-sm">{draft.body}</p>
+  </>
+
+  return (
+    <div className="mx-auto min-h-full max-w-6xl bg-[var(--surface)]">
+      <header className="border-b border-[var(--border)] px-4 py-4 sm:px-6">
+        <Link href={back} className={messageLink}><ArrowLeft size={16} aria-hidden="true" /> Về email nguồn</Link>
+        <Link href="/drafts" className={messageLink + ' ms-4'}>Bản nháp</Link>
+        <h1 className="neo-title mt-1 break-words">Trả lời hội thoại</h1>
+        {context?.subject && <p className="mt-1 break-words text-sm text-[var(--foreground-secondary)]">{context.subject}</p>}
+      </header>
+      <div className="grid min-w-0 lg:grid-cols-[minmax(240px,1fr)_minmax(0,2fr)]">
+
+        <div className="min-w-0 space-y-4 p-4 sm:p-6 lg:col-start-2 lg:row-start-1">
+          {error && <Alert variant="error" title="Chưa hoàn tất thao tác">{error}</Alert>}
+          {!context && !error && <p role="status">Đang mở hội thoại…</p>}
+          {!isOnline && <a href={offlineHome + '?' + new URLSearchParams({ reply: source })}
+            className={messageLink}>Mở trên thiết bị</a>}
+          {context && <>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] pb-3 text-sm">
+              <p className="min-w-0 break-all"><span className="font-semibold">Gửi từ</span> {context.account}</p>
+              {status && <p role="status" className="text-[var(--foreground-secondary)]">{status}</p>}
+            </div>
+            {device.showUnlock && (editable || device.lockedDraft) && (
+              <Button type="button" variant="outline" onClick={() => void device.recover?.()}>
+                {device.enrolled ? 'Mở bản nháp trên thiết bị' : 'Bật lưu bản nháp trên thiết bị'}
+              </Button>
+            )}
+            {device.error && <p role="alert" className="text-sm text-[var(--error)]">{device.error}</p>}
+            {device.pending && <section aria-labelledby="offline-reply-compare" className="space-y-3 border border-[var(--border)] p-3">
+              <h2 id="offline-reply-compare" className="text-sm font-semibold">
+                {device.comparison === 'conflict' ? 'Bản nháp đã thay đổi ở hai nơi' : 'Đối chiếu bản nháp trên thiết bị'}
+              </h2>
+              {device.comparison === 'source' && <p className="text-sm">Email nguồn đã thay đổi. Hãy kiểm tra nguồn trước khi chọn bản nháp.</p>}
+              {device.comparison === 'blocked' && <p className="text-sm">Máy chủ đã chuyển bản nháp sang bước gửi hoặc đổi tài khoản. Kiểm tra trạng thái gửi hiện tại.</p>}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <DraftVersion label="Bản trên thiết bị" fields={device.pending.fields} />
+                <DraftVersion label="Bản trên máy chủ" fields={fieldsFor({ ...context, draft })} />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" variant="outline" disabled={device.busy || device.comparison === 'blocked' || !!stale}
+                  onClick={() => void chooseDeviceVersion('device')}>Giữ bản trên thiết bị</Button>
+                <Button type="button" variant="outline" disabled={device.busy}
+                  onClick={() => void chooseDeviceVersion('server')}>Giữ bản trên máy chủ</Button>
+              </div>
+            </section>}
+            {latestDraft && !device.pending && <section aria-labelledby="reply-draft-conflict" className="space-y-3 border-s-2 border-[var(--accent)] ps-3">
+              <h2 id="reply-draft-conflict" className="text-sm font-semibold">Bản nháp đã thay đổi ở hai nơi</h2>
+              {latestDraft.fingerprint !== context.fingerprint && <p className="text-sm">Email nguồn đã thay đổi. Hãy kiểm tra lại nguồn.</p>}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <DraftVersion label="Bản đang soạn" fields={fields} files={files} />
+                <DraftVersion label="Bản trên máy chủ" fields={fieldsFor(latestDraft)} files={latestDraft.draft?.files ?? []} />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" variant="outline" disabled={latestDraft.stale || latestDraft.draft?.state !== 'draft' || latestDraft.fingerprint !== context.fingerprint}
+                  onClick={() => resolveDraft(true)}>Giữ bản đang soạn</Button>
+                <Button type="button" variant="outline" onClick={() => resolveDraft(false)}>Dùng bản trên máy chủ</Button>
+              </div>
+            </section>}
+            {(stale || (conflict && !device.pending && !latestDraft)) && <Alert variant="warning" title="Bản nháp cần đối chiếu">
+              Hãy kiểm tra lại email nguồn và bản nháp đã lưu trước khi tiếp tục.
+              <div className="mt-2 flex flex-wrap gap-2">
+                {conflict && <Button type="button" variant="outline" onClick={() => {
+                  if (!dirty || window.confirm('Mở bản nháp đã lưu và bỏ thay đổi chưa lưu?')) {
+                    setConflict(false)
+                    setSaveFailed(false)
+                    setError(null)
+                    setReadVersion(version => version + 1)
+                  }
+                }}>Mở bản nháp đã lưu</Button>}
+                {stale && draft && <Button type="button" variant="outline" disabled={busy} onClick={() => change('edit')}>
+                  Dùng phiên bản email nguồn hiện tại
+                </Button>}
+              </div>
+            </Alert>}
+            <form onSubmit={review} className="space-y-4">
+              <fieldset disabled={busy || !editable || needsDeviceReview || !!latestDraft} className="space-y-4">
+                <div className="space-y-1 text-sm"><label htmlFor="reply-to">Người nhận</label>
+                  <RecipientField id="reply-to" className={inputClass} value={fields.to} owner={owner} accountId={context.accountId}
+                    onChange={to => setFields({ ...fields, to })} required />
+                </div>
+                <div className="space-y-1 text-sm"><label htmlFor="reply-cc">Cc</label>
+                  <RecipientField id="reply-cc" className={inputClass} value={fields.cc} owner={owner} accountId={context.accountId}
+                    onChange={cc => setFields({ ...fields, cc })} />
+                </div>
+                {suggestion && editable && <div className="border-s-2 border-[var(--accent)] ps-3">
+                  <p className="whitespace-pre-wrap break-words text-sm">{suggestion}</p>
+                  <Button type="button" variant="outline" className="mt-2" onClick={() => {
+                    setFields({ ...fields, body: fields.body ? fields.body + '\n\n' + suggestion : suggestion })
+                    setSuggestion(null)
+                  }}>Chèn gợi ý vào bản nháp</Button>
+                </div>}
+                <div className="space-y-1 text-sm">
+                  <label htmlFor="reply-body">Nội dung thư</label>
+                  <textarea id="reply-body" className={inputClass + ' min-h-48 resize-y'} value={fields.body} maxLength={100000}
+                    onChange={event => setFields({ ...fields, body: event.target.value })} />
+                </div>
+              </fieldset>
+              <ComposeFiles files={files} onChange={setFiles} onBusy={setFileBusy}
+                disabled={!editable || busy || saving || !!stale || conflict || !isOnline || needsDeviceReview} />
+              {draft && state === 'accepted' && !draft.tracking && <label className="block max-w-64 space-y-1 text-sm">
+                <span>Ngày kiểm tra lại (giờ Việt Nam)</span>
+                <input type="date" value={followupOn} onChange={event => setFollowupOn(event.target.value)}
+                  disabled={busy} className={inputClass} />
+              </label>}
+              <div className="flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
+                {editable && <>
+                  <Button type="button" variant="outline" disabled={busy || saving || fileBusy || !!stale || conflict || (!dirty && !draft) || !isOnline || needsDeviceReview}
+                    onClick={() => void save().catch(() => {})}>Lưu bản nháp</Button>
+                  <Button type="submit" disabled={busy || saving || fileBusy || !!stale || conflict || !fields.body.trim() || !isOnline || needsDeviceReview} leftIcon={<Send size={16} aria-hidden="true" />}>
+                    Xem trước thư gửi
+                  </Button>
+                  {draft && <Button type="button" variant="ghost" disabled={busy || saving || fileBusy || !isOnline || needsDeviceReview} onClick={() => setConfirmDiscard(true)}>Xóa bản nháp</Button>}
+                </>}
+                {draft?.scheduledId && <Link href="/outbox" className={messageLink}>Mở mục Chờ gửi</Link>}
+                {draft && !draft.scheduledId && (state === 'prepared' || state === 'unknown' || state === 'dispatching') && <>
+                  <Button type="button" loading={busy} disabled={!isOnline} onClick={() => void run(() => send('check', draft))}>Kiểm tra trạng thái gửi</Button>
+                  {state === 'prepared' && <Button type="button" variant="outline" disabled={busy || !isOnline || needsDeviceReview}
+                    onClick={() => void run(() => send('send', draft))}>Tiếp tục gửi thư đã duyệt</Button>}
+                </>}
+                {draft && !draft.scheduledId && (state === 'rejected' || state === 'prepared') && <Button type="button" variant="ghost" disabled={busy}
+                  onClick={() => change('edit')}>Mở lại bản nháp để chỉnh sửa</Button>}
+                {permission && <Link href="/settings" className={messageLink}>Cài đặt quyền gửi</Link>}
+                {draft && state === 'accepted' && !draft.tracking && <Button type="button" loading={busy}
+                  onClick={() => change('track')} leftIcon={<Check size={16} aria-hidden="true" />}>Theo dõi hồi đáp</Button>}
+                {draft?.tracking && <p role="status" className="py-2 text-sm">Đang theo dõi hồi đáp</p>}
+                {draft?.sentId && <Link href={'/inbox?email=' + draft.sentId} className={messageLink}>Mở thư đã gửi</Link>}
+                {draft && (state === 'accepted' || state === 'partial') && <Button type="button" variant="outline" disabled={busy}
+                  onClick={() => change('finish')}>Soạn phản hồi mới</Button>}
+              </div>
+            </form>
+          </>}
+        </div>
+        {context && <section aria-label="Hội thoại" className="border-t border-[var(--border)] lg:col-start-1 lg:row-start-1 lg:border-e lg:border-t-0">
+          <h2 className="px-4 pt-4 text-sm font-semibold sm:px-6">Hội thoại</h2>
+          <ol className="divide-y divide-[var(--border)]">
+            {context.thread.map(message => <li key={message.id} className="px-4 py-3 sm:px-6">
+              <Link href={'/inbox?email=' + message.id} className={messageLink}><FileText size={15} aria-hidden="true" className="shrink-0" /><span className="break-all">{message.sender}</span></Link>
+              <p className="break-words text-xs text-[var(--foreground-secondary)]">
+                {message.source ? 'Email đang trả lời' : message.subject}{message.at ? ' · ' + formatCommitmentMoment(message.at) : ''}
+              </p>
+              {message.snippet && <p className="mt-2 break-words text-sm">{message.snippet}</p>}
+            </li>)}
+          </ol>
+        </section>}
+      </div>
+      {preview === 'schedule' && context && draft && <ScheduleSendDialog mode="schedule" subject={draft.subject}
+        onClose={() => setPreview('send')} onSave={async (at, requestId) => {
+          await replyRequest({ action: 'schedule', source, id: draft.id, revision: draft.revision, at, requestId })
+          invalidate()
+          setPreview(null)
+          router.push('/outbox')
+        }}>{scopePreview}</ScheduleSendDialog>}
+      {preview === 'send' && context && draft && <Modal open title="Xem trước thư gửi" description={draft.subject}
+        onClose={() => { if (!busy) setPreview(null) }} showCloseButton={!busy} closeOnEscape={!busy}
+        footer={<><Button type="button" variant="outline" disabled={busy} onClick={() => setPreview(null)}>Quay lại</Button>
+          <Button type="button" variant="outline" disabled={busy || !isOnline || needsDeviceReview} onClick={() => setPreview('schedule')}>Lên lịch gửi</Button>
+          <Button type="button" loading={busy} disabled={!isOnline || needsDeviceReview} onClick={() => void approve()}>Xác nhận gửi</Button></>}>
+        {scopePreview}
+        {error && <div className="mt-4"><Alert variant="error" title="Chưa xác nhận được thao tác">{error}</Alert></div>}
+      </Modal>}
+      {confirmDiscard && <Modal open title="Xóa bản nháp?" description="Bản nháp đã lưu và thay đổi đang soạn sẽ bị xóa."
+        onClose={() => setConfirmDiscard(false)} footer={<>
+          <Button type="button" variant="outline" onClick={() => setConfirmDiscard(false)}>Giữ bản nháp</Button>
+          <Button type="button" variant="danger" onClick={() => { setConfirmDiscard(false); change('discard') }}>Xóa bản nháp</Button>
+        </>} />}
+    </div>
+  )
+}

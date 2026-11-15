@@ -1,290 +1,124 @@
-/**
- * Modal Component
- * Accessible modal with animations, sizes
- */
+'use client'
 
-'use client';
+import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
+import { X } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { useHydrated } from '@/hooks/use-hydrated'
+import { Button } from './button'
 
-import React, { useEffect, useRef, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from './button';
-
-// Modal sizes
 const modalSizes = {
-  xs: 'max-w-xs',
-  sm: 'max-w-sm',
-  md: 'max-w-md',
-  lg: 'max-w-lg',
-  xl: 'max-w-xl',
-  '2xl': 'max-w-2xl',
-  '3xl': 'max-w-3xl',
-  '4xl': 'max-w-4xl',
-  full: 'max-w-full mx-4',
-};
+  xs: 'max-w-xs', sm: 'max-w-sm', md: 'max-w-md', lg: 'max-w-lg', xl: 'max-w-xl',
+  '2xl': 'max-w-2xl', '3xl': 'max-w-3xl', '4xl': 'max-w-4xl', full: 'max-w-none',
+}
 
 export interface ModalProps {
-  /** Open state */
-  open: boolean;
-  /** Close handler */
-  onClose: () => void;
-  /** Modal size */
-  size?: keyof typeof modalSizes;
-  /** Modal title */
-  title?: React.ReactNode;
-  /** Modal description */
-  description?: React.ReactNode;
-  /** Footer content */
-  footer?: React.ReactNode;
-  /** Content */
-  children?: React.ReactNode;
-  /** Show close button */
-  showCloseButton?: boolean;
-  /** Close on overlay click */
-  closeOnOverlayClick?: boolean;
-  /** Close on escape key */
-  closeOnEscape?: boolean;
-  /** Additional class names */
-  className?: string;
-  /** Overlay class names */
-  overlayClassName?: string;
+  open: boolean
+  onClose: () => void
+  size?: keyof typeof modalSizes
+  title?: ReactNode
+  description?: ReactNode
+  footer?: ReactNode
+  children?: ReactNode
+  showCloseButton?: boolean
+  closeOnOverlayClick?: boolean
+  closeOnEscape?: boolean
+  className?: string
 }
 
 export function Modal({
-  open,
-  onClose,
-  size = 'md',
-  title,
-  description,
-  footer,
-  children,
-  showCloseButton = true,
-  closeOnOverlayClick = true,
-  closeOnEscape = true,
-  className,
-  overlayClassName,
+  open, onClose, size = 'md', title, description, footer, children,
+  showCloseButton = true, closeOnOverlayClick = true, closeOnEscape = true, className,
 }: ModalProps) {
-  const modalRef = useRef<HTMLDivElement>(null);
-  const previousActiveElement = useRef<HTMLElement | null>(null);
-  const [mounted, setMounted] = React.useState(false);
+  const mounted = useHydrated()
+  const id = useId()
+  const dialog = useRef<HTMLDialogElement>(null)
+  const startedOnBackdrop = useRef(false)
 
-  // Mount check for SSR
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Handle escape key
-  useEffect(() => {
-    if (!open || !closeOnEscape) return;
-
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [open, closeOnEscape, onClose]);
-
-  // Focus management
-  useEffect(() => {
-    if (open) {
-      previousActiveElement.current = document.activeElement as HTMLElement;
-
-      // Focus first focusable element
-      const focusableElements = modalRef.current?.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusableElements?.length) {
-        (focusableElements[0] as HTMLElement).focus();
-      }
-
-      // Prevent body scroll
-      document.body.style.overflow = 'hidden';
-    } else {
-      // Restore focus
-      previousActiveElement.current?.focus();
-      document.body.style.overflow = '';
-    }
-
+    const element = dialog.current
+    if (!open || !mounted || !element) return
+    const opener = document.activeElement
+    element.showModal()
     return () => {
-      document.body.style.overflow = '';
-    };
-  }, [open]);
+      element.close()
+      if (opener instanceof HTMLElement && opener.isConnected) opener.focus()
+    }
+  }, [open, mounted])
 
-  // Handle overlay click
-  const handleOverlayClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (closeOnOverlayClick && e.target === e.currentTarget) {
-        onClose();
-      }
-    },
-    [closeOnOverlayClick, onClose]
-  );
+  if (!open || !mounted) return null
 
-  // Don't render if not open or not mounted (for SSR)
-  if (!open || !mounted) return null;
-
-  // Portal to body
   return createPortal(
-    <div
-      className={cn(
-        'fixed inset-0 z-50 flex items-center justify-center p-4',
-        'animate-in fade-in-0 duration-150'
-      )}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={title ? 'modal-title' : undefined}
-      aria-describedby={description ? 'modal-description' : undefined}
+    <dialog
+      ref={dialog}
+      className={cn('neo-dialog', modalSizes[size], className)}
+      aria-labelledby={title ? id + '-title' : undefined}
+      aria-label={!title ? 'Hộp thoại' : undefined}
+      aria-describedby={description ? id + '-description' : undefined}
+      onCancel={event => {
+        event.preventDefault()
+        if (closeOnEscape) onClose()
+      }}
+      onPointerDown={event => { startedOnBackdrop.current = event.target === event.currentTarget }}
+      onClick={event => {
+        if (closeOnOverlayClick && startedOnBackdrop.current && event.target === event.currentTarget) onClose()
+      }}
     >
-      {/* Overlay */}
-      <div
-        className={cn(
-          'absolute inset-0 bg-black/50 backdrop-blur-sm',
-          'transition-opacity duration-150',
-          overlayClassName
-        )}
-        onClick={handleOverlayClick}
-        aria-hidden="true"
-      />
-
-      {/* Modal content */}
-      <div
-        ref={modalRef}
-        className={cn(
-          'relative w-full',
-          'bg-[var(--card)] rounded-xl shadow-xl border border-[var(--border)]',
-          'animate-in zoom-in-95 duration-150',
-          modalSizes[size],
-          className
-        )}
-      >
-        {/* Header */}
-        {(title || showCloseButton) && (
-          <div className="flex items-start justify-between gap-4 p-6 pb-0">
-            <div>
-              {title && (
-                <h2
-                  id="modal-title"
-                  className="text-lg font-semibold text-[var(--foreground)]"
-                >
-                  {title}
-                </h2>
-              )}
-              {description && (
-                <p
-                  id="modal-description"
-                  className="text-sm text-[var(--foreground-secondary)] mt-1"
-                >
-                  {description}
-                </p>
-              )}
+      <div className="p-4 sm:p-6">
+        {(title || description || showCloseButton) && (
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              {title && <h2 id={id + '-title'} className="text-lg font-semibold leading-6">{title}</h2>}
+              {description && <p id={id + '-description'} className="mt-2 text-sm text-[var(--foreground-muted)]">{description}</p>}
             </div>
-
             {showCloseButton && (
-              <button
-                onClick={onClose}
-                className={cn(
-                  'shrink-0 p-2 -m-2 rounded-lg',
-                  'text-[var(--foreground-muted)] hover:text-[var(--foreground)]',
-                  'hover:bg-[var(--hover)]',
-                  'transition-colors',
-                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]'
-                )}
-                aria-label="Close"
-              >
-                <X className="h-5 w-5" />
+              <button type="button" onClick={onClose} aria-label="Đóng hộp thoại" className="neo-icon-button -my-2 -me-2">
+                <X size={20} strokeWidth={1.5} aria-hidden="true" />
               </button>
             )}
           </div>
         )}
-
-        {/* Body */}
-        <div className="p-6">
-          {children}
-        </div>
-
-        {/* Footer */}
-        {footer && (
-          <div className="flex items-center justify-end gap-3 px-6 pb-6">
-            {footer}
-          </div>
-        )}
+        {children && <div className="mt-4">{children}</div>}
+        {footer && <div className="mt-6 flex flex-wrap justify-end gap-2">{footer}</div>}
       </div>
-    </div>,
-    document.body
-  );
+    </dialog>, document.body,
+  )
 }
 
-/**
- * ConfirmModal Component
- * Specialized modal for confirmations
- */
 export interface ConfirmModalProps {
-  open: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  title: string;
-  description?: string;
-  confirmText?: string;
-  cancelText?: string;
-  variant?: 'default' | 'danger';
-  loading?: boolean;
+  open: boolean
+  onClose: () => void
+  onConfirm: () => void
+  title: string
+  description?: string
+  confirmText?: string
+  cancelText?: string
+  variant?: 'default' | 'danger'
+  loading?: boolean
 }
 
 export function ConfirmModal({
-  open,
-  onClose,
-  onConfirm,
-  title,
-  description,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
-  variant = 'default',
-  loading = false,
+  open, onClose, onConfirm, title, description, confirmText = 'Xác nhận',
+  cancelText = 'Hủy', variant = 'default', loading = false,
 }: ConfirmModalProps) {
   return (
     <Modal
-      open={open}
-      onClose={onClose}
-      size="sm"
-      title={title}
-      description={description}
+      open={open} onClose={onClose} title={title} description={description} size="sm"
+      showCloseButton={false} closeOnEscape={!loading} closeOnOverlayClick={!loading}
       footer={
         <>
-          <Button variant="outline" onClick={onClose} disabled={loading}>
-            {cancelText}
-          </Button>
-          <Button
-            variant={variant === 'danger' ? 'danger' : 'primary'}
-            onClick={onConfirm}
-            loading={loading}
-          >
+          <Button type="button" variant="outline" onClick={onClose} disabled={loading}>{cancelText}</Button>
+          <Button type="button" variant={variant === 'danger' ? 'danger' : 'primary'} onClick={onConfirm} loading={loading}>
             {confirmText}
           </Button>
         </>
       }
     />
-  );
+  )
 }
 
-/**
- * ModalFooter - Legacy support
- */
-export function ModalFooter({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={cn('flex items-center justify-end gap-3 mt-6 pt-6 border-t border-[var(--border)]', className)}>
-      {children}
-    </div>
-  );
+export function ModalFooter({ children, className }: { children: ReactNode; className?: string }) {
+  return <div className={cn('mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-[var(--border)] pt-4', className)}>{children}</div>
 }
 
-export default Modal;
+export default Modal

@@ -1,0 +1,141 @@
+{
+  "MH-39071": [
+    {
+      "source": "m1",
+      "target": "m1",
+      "kind": "create",
+      "owner": "an@valve.example.test",
+      "due": "2026-12-12",
+      "important": true,
+      "quote": "Bên tôi sẽ giao 12 bộ van vào ngày 12/12/2026."
+    },
+    {
+      "source": "m2",
+      "target": "m1",
+      "kind": "deadline",
+      "owner": null,
+      "due": "2026-12-14",
+      "important": true,
+      "quote": "Bên tôi chuyển hạn đến ngày 14/12/2026."
+    },
+    {
+      "source": "m3",
+      "target": "m1",
+      "kind": "owner",
+      "owner": "thanh@valve.example.test",
+      "due": null,
+      "important": true,
+      "quote": "Bên tôi chuyển trách nhiệm cho thanh@valve.example.test."
+    },
+    {
+      "source": "m5",
+      "target": "m1",
+      "kind": "completed",
+      "owner": null,
+      "due": null,
+      "important": true,
+      "quote": "Tôi đã giao 12 bộ van và đã hoàn tất cam kết."
+    }
+  ],
+  "HS-76304": [
+    {
+      "source": "n1",
+      "target": "n1",
+      "kind": "create",
+      "owner": "ha@compressor.example.test",
+      "due": "2027-01-01",
+      "important": true,
+      "quote": "Chúng tôi sẽ nộp biên bản kiểm định vào ngày mai."
+    },
+    {
+      "source": "n2",
+      "target": "n1",
+      "kind": "cancelled",
+      "owner": null,
+      "due": null,
+      "important": true,
+      "quote": "Chúng tôi đã hủy cam kết."
+    }
+  ],
+  "LT-72063": [
+    {
+      "source": "p1",
+      "target": "p1",
+      "kind": "create",
+      "owner": "son@frame.example.test",
+      "due": "2026-12-11",
+      "important": true,
+      "quote": "Tôi sẽ gửi bản kê linh kiện trước ngày 11/12/2026."
+    },
+    {
+      "source": "p1",
+      "target": "p1",
+      "kind": "create",
+      "owner": "son@frame.example.test",
+      "due": "2026-12-15",
+      "important": true,
+      "quote": "Tôi sẽ bàn giao mẫu khung trước ngày 15/12/2026."
+    }
+  ],
+  "RX-61237": [
+    {
+      "source": "r1",
+      "target": "r1",
+      "kind": "create",
+      "owner": "jules@bearing.example.test",
+      "due": "2026-12-06",
+      "important": true,
+      "quote": "We will provide the test certificate tomorrow."
+    },
+    {
+      "source": "r2",
+      "target": "r1",
+      "kind": "deadline",
+      "owner": null,
+      "due": "2026-12-10",
+      "important": true,
+      "quote": "We have changed the deadline to 2026-12-10."
+    },
+    {
+      "source": "r4",
+      "target": "r1",
+      "kind": "completed",
+      "owner": null,
+      "due": null,
+      "important": true,
+      "quote": "We have completed the commitment."
+    }
+  ],
+  "TT-19374": [
+    {
+      "source": "s1",
+      "target": "s1",
+      "kind": "create",
+      "owner": "phuong@metal.example.test",
+      "due": "2026-12-14",
+      "important": true,
+      "quote": "Chúng tôi sẽ thanh toán tiền giữ chỗ trước ngày 14/12/2026."
+    },
+    {
+      "source": "s2",
+      "target": "s1",
+      "kind": "deadline",
+      "owner": null,
+      "due": "2026-12-17",
+      "important": true,
+      "quote": "Đã xác nhận với kho: tiền giữ chỗ sẽ chuyển ngày 17/12/2026, thay lịch 14/12/2026."
+    }
+  ],
+  "GH-49025": [],
+  "BH-60328": [
+    {
+      "source": "u1",
+      "target": "u1",
+      "kind": "create",
+      "owner": "ly@motor.example.test",
+      "due": "2026-12-18",
+      "important": true,
+      "quote": "Đã xác nhận lịch: rô-to sẽ được bên tôi bàn giao vào ngày 18/12/2026."
+    }
+  ]
+}

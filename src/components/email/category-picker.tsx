@@ -5,6 +5,7 @@ import {
   Megaphone, AlertTriangle, X
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { mailCategoryLabels } from './mail-category-label'
 
 interface CategoryPickerProps {
   onSelect: (category: string) => void
@@ -13,12 +14,12 @@ interface CategoryPickerProps {
 }
 
 const categories = [
-  { id: 'work', label: 'Công việc', icon: Briefcase, color: 'text-blue-600 bg-blue-100 dark:bg-blue-500/20' },
-  { id: 'personal', label: 'Cá nhân', icon: User, color: 'text-purple-600 bg-purple-100 dark:bg-purple-500/20' },
-  { id: 'transaction', label: 'Giao dịch', icon: CreditCard, color: 'text-green-600 bg-green-100 dark:bg-green-500/20' },
-  { id: 'newsletter', label: 'Newsletter', icon: Newspaper, color: 'text-gray-600 bg-gray-100 dark:bg-gray-500/20' },
-  { id: 'promotion', label: 'Khuyến mãi', icon: Megaphone, color: 'text-orange-600 bg-orange-100 dark:bg-orange-500/20' },
-  { id: 'spam', label: 'Spam', icon: AlertTriangle, color: 'text-red-600 bg-red-100 dark:bg-red-500/20' },
+  { id: 'work', label: mailCategoryLabels.work, icon: Briefcase },
+  { id: 'personal', label: mailCategoryLabels.personal, icon: User },
+  { id: 'transaction', label: mailCategoryLabels.transaction, icon: CreditCard },
+  { id: 'newsletter', label: mailCategoryLabels.newsletter, icon: Newspaper },
+  { id: 'promotion', label: mailCategoryLabels.promotion, icon: Megaphone },
+  { id: 'spam', label: mailCategoryLabels.spam, icon: AlertTriangle },
 ]
 
 export function CategoryPicker({ onSelect, onClose, currentCategory }: CategoryPickerProps) {
@@ -50,7 +51,7 @@ export function CategoryPicker({ onSelect, onClose, currentCategory }: CategoryP
                   : 'hover:bg-[var(--secondary)] text-[var(--foreground)]'
               )}
             >
-              <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', cat.color)}>
+              <div className="neo-mail-label size-8 justify-center" data-category={cat.id} aria-hidden="true">
                 <cat.icon className="w-4 h-4" />
               </div>
               <span className="font-medium">{cat.label}</span>

@@ -1,3 +1,4 @@
+import 'server-only'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 let supabaseInstance: SupabaseClient | null = null
@@ -37,13 +38,16 @@ export async function trackBehavior(input: TrackBehaviorInput) {
   const { userId, emailId, action, readDuration } = input
 
   // Get email để tính time_to_action
-  const { data: email } = await getSupabase()
+  const { data: email, error } = await getSupabase()
     .from('emails')
     .select('received_at, from_address, from_name')
     .eq('id', emailId)
-    .single()
+    .eq('user_id', userId)
+    .maybeSingle()
+  if (error) throw new Error('Could not verify the email owner')
+  if (!email) return null
 
-  const timeToAction = email?.received_at
+  const timeToAction = email.received_at
     ? Math.floor((Date.now() - new Date(email.received_at).getTime()) / 1000)
     : null
 
@@ -59,9 +63,10 @@ export async function trackBehavior(input: TrackBehaviorInput) {
   })
 
   // Update sender score
-  if (email?.from_address) {
+  if (email.from_address) {
     await updateSenderScore(userId, email.from_address, email.from_name, action, readDuration)
   }
+  return { sender: email.from_address as string | null }
 }
 
 async function updateSenderScore(
@@ -124,6 +129,7 @@ async function updateSenderScore(
       .from('sender_scores')
       .update(updates)
       .eq('id', existing.id)
+      .eq('user_id', userId)
 
   } else {
     // Create new

@@ -5,6 +5,8 @@ import { Plus, RefreshCw, Trash2, Mail, AlertCircle, CheckCircle, Loader2, Spark
 import { Button } from '@/components/ui/button'
 import { AddAccountModal } from './add-account-modal'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { Alert } from '@/components/ui/alert'
+import { ConnectGoogleButton } from './connect-google'
 import { cn } from '@/lib/utils'
 
 // Account colors for color picker
@@ -47,6 +49,8 @@ export function SourceAccountsSection() {
   const [deleting, setDeleting] = useState(false)
   const [classifying, setClassifying] = useState(false)
   const [syncDropdownId, setSyncDropdownId] = useState<string | null>(null)
+  const [consentingId, setConsentingId] = useState<string | null>(null)
+  const [consentError, setConsentError] = useState<string | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const fetchAccounts = useCallback(async () => {
@@ -103,6 +107,22 @@ export function SourceAccountsSection() {
       alert('Đồng bộ thất bại')
     } finally {
       setSyncingId(null)
+    }
+  }
+
+  async function enableGmailSending(accountId: string) {
+    setConsentingId(accountId)
+    setConsentError(null)
+    try {
+      const response = await fetch('/api/source-accounts/google/send', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accountId }),
+      })
+      const result = await response.json()
+      if (!response.ok || typeof result.auth_url !== 'string') throw new Error()
+      window.location.assign(result.auth_url)
+    } catch {
+      setConsentError('Chưa thể mở màn hình cấp quyền gửi Gmail. Hãy thử lại.')
+      setConsentingId(null)
     }
   }
 
@@ -211,14 +231,14 @@ export function SourceAccountsSection() {
 
   return (
     <div className="bg-[var(--card)] rounded-xl border border-[var(--border)]">
-      <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
+      <div className="p-4 border-b border-[var(--border)] flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="text-[15px] font-semibold text-[var(--foreground)]">Tài khoản email</h3>
           <p className="text-[13px] text-[var(--muted-foreground)] mt-0.5">
             Kết nối các tài khoản email để đồng bộ vào InboxAI
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             onClick={handleClassify}
             size="sm"
@@ -234,6 +254,10 @@ export function SourceAccountsSection() {
           </Button>
         </div>
       </div>
+      <div className="px-4 py-2 border-b border-[var(--border)]">
+        <ConnectGoogleButton className="sm:w-auto" />
+      </div>
+      {consentError && <div className="px-4 pt-2"><Alert variant="error">{consentError}</Alert></div>}
 
       <div className="divide-y divide-[var(--border)]">
         {loading ? (
@@ -302,6 +326,14 @@ export function SourceAccountsSection() {
                 <p className="text-[12px] text-[var(--muted)] truncate">
                   {account.email_address}
                 </p>
+                {account.auth_type === 'oauth_google' && account.is_active && (
+                  <Button type="button" variant="outline" size="sm" className="mt-2 min-h-11"
+                    loading={consentingId === account.id} disabled={consentingId !== null}
+                    aria-label={`Cấp quyền gửi Gmail cho ${account.email_address}`}
+                    onClick={() => void enableGmailSending(account.id)}>
+                    Cấp quyền gửi Gmail
+                  </Button>
+                )}
                 <div className="flex items-center gap-3 mt-1">
                   <p className="text-[12px] text-[var(--muted-foreground)]">
                     Đồng bộ: {formatDate(account.last_sync_at)}

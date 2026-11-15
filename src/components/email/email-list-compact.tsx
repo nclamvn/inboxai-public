@@ -1,12 +1,15 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback, useMemo, MouseEvent, TouchEvent } from 'react'
-import { Star, Zap, Inbox, Newspaper, ChevronDown, ChevronRight, Loader2, Paperclip, Check, X, Archive, Trash2, Mail, MailOpen } from 'lucide-react'
+import { Star, ListTodo, Inbox, Newspaper, ChevronDown, ChevronRight, Loader2, Paperclip, Check, X, Archive, Trash2, Mail, MailOpen, Info } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { useSelection } from '@/contexts/email-selection-context'
 import { ContextMenu } from './context-menu'
 import { CategoryPicker } from './category-picker'
+import { getMailCategoryLabel, MailCategoryLabel } from './mail-category-label'
 import type { Email } from '@/types'
+import { inboxBandLabels, type InboxRanking } from '@/lib/action-inbox/rank'
 
 interface Props {
   emails: Email[]
@@ -14,21 +17,24 @@ interface Props {
   onSelect: (id: string) => void
   onStar?: (id: string) => void
   onCategoryClick?: (category: string) => void
+  onEditCategory?: (email: Email) => void
   compact?: boolean
-  smartSort?: boolean
+  groupByPriority?: boolean
+  rankings?: ReadonlyMap<string, InboxRanking>
+  onExplainPriority?: (email: Email) => void
   hasMore?: boolean
   loadingMore?: boolean
+  pageError?: boolean
   onLoadMore?: () => void
   onBulkAction?: (action: string, emailIds: string[], data?: Record<string, unknown>) => void
   selectionEnabled?: boolean
 }
 
 interface EmailSection {
-  id: string
+  id: 'action' | 'primary' | 'later'
   title: string
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
   emails: Email[]
-  defaultCollapsed?: boolean
 }
 
 // Long press duration in milliseconds
@@ -40,17 +46,19 @@ export function EmailListCompact({
   onSelect,
   onStar,
   onCategoryClick,
+  onEditCategory,
   compact = false,
-  smartSort = false,
+  groupByPriority = false,
+  rankings,
+  onExplainPriority,
   hasMore = false,
   loadingMore = false,
+  pageError = false,
   onLoadMore,
   onBulkAction,
   selectionEnabled = true
 }: Props) {
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
-    readLater: true // Collapsed by default
-  })
+  const [collapsedSections, setCollapsedSections] = useState<Partial<Record<EmailSection['id'], boolean>>>({})
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
   // Selection state - always call hook to follow rules of hooks
@@ -164,7 +172,7 @@ export function EmailListCompact({
   // Infinite scroll: observe the load more sentinel with PREFETCH
   // rootMargin: '400px' triggers load 400px before reaching the end
   useEffect(() => {
-    if (!onLoadMore || !hasMore) return
+    if (!onLoadMore || !hasMore || pageError) return
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -183,7 +191,7 @@ export function EmailListCompact({
     }
 
     return () => observer.disconnect()
-  }, [hasMore, loadingMore, onLoadMore])
+  }, [hasMore, loadingMore, onLoadMore, pageError])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -208,108 +216,22 @@ export function EmailListCompact({
     }
   }, [])
 
-  // Static category styles - memoized
-  // Use CSS variables for text color to ensure correct theme contrast
-  const categoryStyles = useMemo(() => ({
-    work: {
-      bg: 'bg-blue-100 dark:bg-blue-900/40',
-      text: 'text-[var(--foreground)] font-semibold',
-      hoverBg: 'hover:bg-blue-200 dark:hover:bg-blue-900/60'
-    },
-    personal: {
-      bg: 'bg-purple-100 dark:bg-purple-900/40',
-      text: 'text-[var(--foreground)] font-semibold',
-      hoverBg: 'hover:bg-purple-200 dark:hover:bg-purple-900/60'
-    },
-    transaction: {
-      bg: 'bg-emerald-100 dark:bg-emerald-900/40',
-      text: 'text-[var(--foreground)] font-semibold',
-      hoverBg: 'hover:bg-emerald-200 dark:hover:bg-emerald-900/60'
-    },
-    newsletter: {
-      bg: 'bg-gray-100 dark:bg-gray-800/60',
-      text: 'text-[var(--foreground)] font-semibold',
-      hoverBg: 'hover:bg-gray-200 dark:hover:bg-gray-800/80'
-    },
-    promotion: {
-      bg: 'bg-orange-100 dark:bg-orange-900/40',
-      text: 'text-[var(--foreground)] font-semibold',
-      hoverBg: 'hover:bg-orange-200 dark:hover:bg-orange-900/60'
-    },
-    social: {
-      bg: 'bg-cyan-100 dark:bg-cyan-900/40',
-      text: 'text-[var(--foreground)] font-semibold',
-      hoverBg: 'hover:bg-cyan-200 dark:hover:bg-cyan-900/60'
-    },
-    spam: {
-      bg: 'bg-red-100 dark:bg-red-900/40',
-      text: 'text-[var(--foreground)] font-semibold',
-      hoverBg: 'hover:bg-red-200 dark:hover:bg-red-900/60'
-    },
-    uncategorized: {
-      bg: 'bg-gray-100 dark:bg-gray-800/40',
-      text: 'text-[var(--foreground)] font-semibold',
-      hoverBg: 'hover:bg-gray-200 dark:hover:bg-gray-800/60'
-    },
-  }), [])
+  const sections = useMemo<EmailSection[]>(() => {
+    if (!groupByPriority || !rankings) return []
+    const grouped = {
+      action: [] as Email[],
+      primary: [] as Email[],
+      later: [] as Email[],
+    }
+    for (const email of emails) grouped[rankings.get(email.id)?.band ?? 'primary'].push(email)
+    const result: EmailSection[] = [
+      { id: 'action', title: inboxBandLabels.action, icon: ListTodo, emails: grouped.action },
+      { id: 'primary', title: inboxBandLabels.primary, icon: Inbox, emails: grouped.primary },
+      { id: 'later', title: inboxBandLabels.later, icon: Newspaper, emails: grouped.later },
+    ]
+    return result.filter(section => section.emails.length > 0)
+  }, [emails, groupByPriority, rankings])
 
-  const getCategoryStyle = useCallback((category: string | null) => {
-    if (!category) return null
-    return categoryStyles[category as keyof typeof categoryStyles] || categoryStyles.newsletter
-  }, [categoryStyles])
-
-  // Static category labels - memoized
-  const categoryLabels = useMemo(() => ({
-    work: 'Công việc',
-    personal: 'Cá nhân',
-    transaction: 'Giao dịch',
-    newsletter: 'Newsletter',
-    promotion: 'Khuyến mãi',
-    social: 'Mạng XH',
-    spam: 'Spam',
-    uncategorized: 'Chưa phân loại',
-  }), [])
-
-  const getCategoryLabel = useCallback((category: string | null) => {
-    if (!category) return ''
-    return categoryLabels[category as keyof typeof categoryLabels] || category
-  }, [categoryLabels])
-
-  // Group emails into sections for smart sort - memoized
-  const sections = useMemo(() => {
-    if (!smartSort) return []
-
-    const needsAction: Email[] = []
-    const primary: Email[] = []
-    const readLater: Email[] = []
-
-    emails.forEach(email => {
-      if (!email.is_read && (
-        (email.priority || 0) >= 4 ||
-        email.needs_reply ||
-        email.detected_deadline
-      )) {
-        needsAction.push(email)
-      } else if (email.category === 'newsletter' || email.category === 'promotion') {
-        readLater.push(email)
-      } else {
-        primary.push(email)
-      }
-    })
-
-    return [
-      { id: 'needsAction', title: 'Cần xử lý', icon: Zap, emails: needsAction },
-      { id: 'primary', title: 'Hộp thư chính', icon: Inbox, emails: primary },
-      { id: 'readLater', title: 'Đọc sau', icon: Newspaper, emails: readLater, defaultCollapsed: true }
-    ].filter(section => section.emails.length > 0)
-  }, [emails, smartSort])
-
-  const toggleSection = useCallback((sectionId: string) => {
-    setCollapsedSections(prev => ({
-      ...prev,
-      [sectionId]: !prev[sectionId]
-    }))
-  }, [])
 
   // Handle checkbox click (desktop) - memoized
   const handleCheckboxClick = useCallback((e: MouseEvent, email: Email) => {
@@ -361,6 +283,12 @@ export function EmailListCompact({
     const ids = Array.from(selectedIds)
 
     if (action === 'change-category') {
+      if (ids.length === 1 && contextMenu?.email.id === ids[0] && onEditCategory) {
+        onEditCategory(contextMenu.email)
+        clearSelection()
+        setContextMenu(null)
+        return
+      }
       setShowCategoryPicker(true)
       return
     }
@@ -373,7 +301,7 @@ export function EmailListCompact({
     }
 
     setContextMenu(null)
-  }, [selectedIds, onBulkAction, clearSelection, setIsSelecting])
+  }, [selectedIds, contextMenu, onEditCategory, onBulkAction, clearSelection, setIsSelecting])
 
   // Handle category change from picker - memoized
   const handleCategoryChange = useCallback((category: string) => {
@@ -385,16 +313,17 @@ export function EmailListCompact({
   }, [selectedIds, onBulkAction, clearSelection, setIsSelecting])
 
   // Mobile Selection Toolbar Component
-  const MobileSelectionToolbar = () => {
+  const renderMobileSelectionToolbar = () => {
     if (!isSelecting || selectedIds.size === 0) return null
 
     return (
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg safe-area-bottom">
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[var(--surface)] border-t border-[var(--border)] safe-area-bottom">
         <div className="flex items-center justify-between px-4 py-3">
           {/* Left: Cancel + Count */}
           <div className="flex items-center gap-3">
             <button
               onClick={exitSelectionMode}
+              aria-label="Thoát chế độ chọn thư"
               className="p-2 -m-2 text-gray-600 dark:text-gray-400"
             >
               <X className="w-5 h-5" />
@@ -438,10 +367,10 @@ export function EmailListCompact({
         </div>
 
         {/* Select All bar */}
-        <div className="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between px-4 py-2 bg-[var(--canvas)] border-t border-[var(--border)]">
           <button
             onClick={() => selectAll(emailIds)}
-            className="text-sm text-blue-700 dark:text-blue-400 font-semibold"
+            className="text-sm text-[var(--accent-foreground)] font-semibold"
           >
             Chọn tất cả ({emails.length})
           </button>
@@ -457,168 +386,115 @@ export function EmailListCompact({
   }
 
   const renderEmailItem = (email: Email) => {
-    const categoryStyle = email.category ? getCategoryStyle(email.category) : null
-    const emailIsSelected = isSelected(email.id)
+    const selected = isSelected(email.id)
+    const open = selectedId === email.id && !isSelecting
+    const subject = email.subject || '(Không có tiêu đề)'
+    const sender = email.from_name || email.from_address || 'Người gửi'
+    const category = email.category
+    const categoryLabel = getMailCategoryLabel(category)
+    const hasCategoryFilter = !compact && !!onCategoryClick
+    const rank = rankings?.get(email.id)
+    const reason = rank?.band === 'action' ? rank.reasons[0] : undefined
+    const priority = reason?.signal === 'alert' ? 'urgent' : reason ? 'important' : undefined
+    const priorityLabel = priority === 'urgent' ? 'Khẩn' : priority ? 'Quan trọng' : undefined
 
     return (
       <div
         key={email.id}
-        onClick={(e) => handleTap(email, e)}
-        onContextMenu={(e) => handleContextMenu(e, email)}
-        onTouchStart={(e) => handleTouchStart(e, email)}
+        data-active={open || selected}
+        className={cn(
+          'neo-mail-row group flex items-start gap-2 hover:bg-[var(--hover)]',
+          compact ? 'px-3 py-2' : 'px-4 py-3'
+        )}
+        onContextMenu={event => handleContextMenu(event, email)}
+        onTouchStart={event => handleTouchStart(event, email)}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            handleTap(email, e as unknown as MouseEvent)
-          }
-        }}
-        style={{
-          touchAction: 'manipulation',
-          WebkitTouchCallout: 'none',
-          WebkitUserSelect: 'none',
-        }}
-        className={cn(
-          'w-full transition-colors cursor-pointer group select-none',
-          compact ? 'px-3 py-2.5' : 'px-4 py-3',
-          selectedId === email.id && !isSelecting
-            ? 'bg-[var(--secondary)]'
-            : emailIsSelected
-              ? 'bg-blue-100 text-gray-900 dark:bg-blue-600/40 dark:text-white'
-              : 'hover:bg-[var(--hover)] active:bg-[var(--secondary)]',
-          !email.is_read && !emailIsSelected && 'bg-blue-50/30 dark:bg-blue-900/10'
-        )}
       >
-        <div className="flex items-start gap-3">
-          {/* Mobile: Checkbox when selecting, Avatar when not */}
-          <div className="md:hidden flex-shrink-0">
-            {isSelecting ? (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  toggleSelect(email.id)
-                }}
-                className={cn(
-                  'w-10 h-10 rounded-full flex items-center justify-center transition-all',
-                  emailIsSelected
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600'
-                )}
-              >
-                {emailIsSelected && <Check className="w-5 h-5" strokeWidth={2.5} />}
-              </button>
-            ) : (
-              <div className={cn(
-                'w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-medium',
-                !email.is_read
-                  ? 'bg-blue-100 dark:bg-blue-900/30 text-gray-900 dark:text-white'
-                  : 'bg-[var(--secondary)] text-[var(--muted)]'
-              )}>
-                {(email.from_name || email.from_address || 'U')[0].toUpperCase()}
-              </div>
-            )}
-          </div>
-
-          {/* Desktop: Checkbox */}
+        {selectionEnabled && (
           <button
-            onClick={(e) => handleCheckboxClick(e, email)}
-            className={cn(
-              'w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all hidden md:flex',
-              emailIsSelected
-                ? 'bg-[var(--primary)] border-[var(--primary)] text-white'
-                : 'border-gray-500 dark:border-gray-400 hover:border-[var(--primary)]',
-              !isSelecting && !emailIsSelected && 'opacity-0 group-hover:opacity-100'
-            )}
+            type="button"
+            aria-label={`Chọn thư: ${subject}`}
+            aria-pressed={selected}
+            className={cn('neo-icon-button h-8 w-8', isSelecting ? 'inline-flex' : 'hidden md:inline-flex')}
+            onClick={event => handleCheckboxClick(event, email)}
           >
-            {emailIsSelected && <Check className="w-3 h-3" strokeWidth={2.5} />}
+            <span className={cn(
+              'flex size-4 items-center justify-center rounded-xs border border-[var(--border-strong)]',
+              selected && 'border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)]'
+            )}>
+              {selected && <Check size={12} strokeWidth={2} aria-hidden="true" />}
+            </span>
           </button>
-
-          {/* Star - desktop only */}
+        )}
+        {!isSelecting && (
+          <span aria-hidden="true" className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-[var(--secondary)] text-xs font-semibold text-[var(--foreground-muted)] md:hidden">
+            {sender[0].toUpperCase()}
+          </span>
+        )}
+        {onStar && (
           <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onStar?.(email.id)
-            }}
-            className={cn(
-              'mt-0.5 flex-shrink-0 hidden md:block',
-              email.is_starred ? 'text-amber-500' : 'text-gray-500 dark:text-gray-400 hover:text-amber-400'
-            )}
+            type="button" aria-label={`Gắn sao: ${subject}`} aria-pressed={email.is_starred}
+            onClick={() => onStar(email.id)}
+            className={cn('neo-icon-button hidden h-8 w-8 md:inline-flex', email.is_starred && 'text-[var(--warning)]')}
           >
-            <Star
-              className="w-4 h-4"
-              strokeWidth={1.5}
-              fill={email.is_starred ? 'currentColor' : 'none'}
-            />
+            <Star size={16} strokeWidth={1.5} fill={email.is_starred ? 'currentColor' : 'none'} aria-hidden="true" />
           </button>
+        )}
 
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            {/* Row 1: Sender + Time */}
-            <div className="flex items-center justify-between gap-2">
-              <span className={cn(
-                'text-[14px] truncate',
-                email.is_read ? 'text-[var(--muted)] font-medium' : 'text-[var(--foreground)] font-semibold'
-              )}>
-                {email.from_name || email.from_address?.split('@')[0]}
+        <button
+          type="button"
+          data-email-opener={email.id}
+          onClick={event => handleTap(email, event)}
+          aria-current={open ? 'true' : undefined}
+          aria-label={[`${isSelecting ? 'Chọn' : 'Mở'} thư: ${subject}`, sender, !email.is_read && 'chưa đọc', priorityLabel, categoryLabel].filter(Boolean).join(', ')}
+          className="flex min-h-11 min-w-0 flex-1 flex-col items-stretch gap-1 text-start focus-visible:outline-none"
+        >
+          <span className="flex items-center justify-between gap-2">
+            <span className={cn('truncate text-sm leading-5', email.is_read ? 'font-medium text-[var(--foreground-secondary)]' : 'font-semibold')}>
+              {sender}
+            </span>
+            <span className="shrink-0 text-xs leading-5 tabular-nums text-[var(--foreground-muted)]">{formatTime(email.received_at)}</span>
+          </span>
+          <span className="flex min-w-0 items-center gap-2 text-sm leading-5">
+            {!email.is_read && <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-[var(--selection-line)]" />}
+            <span className={cn('truncate', !email.is_read && 'font-semibold')}>{subject}</span>
+            {email.snoozed_until && <Badge size="xs" variant="warning" className="shrink-0 px-1.5 py-0 leading-4">Đến hẹn</Badge>}
+            {(email.attachment_count || 0) > 0 && <Paperclip size={14} className="shrink-0 text-[var(--foreground-muted)]" aria-label="Có tệp đính kèm" />}
+          </span>
+          <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
+            {priorityLabel && <span className="neo-mail-label" data-priority={priority}>{priorityLabel}</span>}
+            {categoryLabel && (
+              <span className={hasCategoryFilter ? 'lg:hidden' : undefined}>
+                <MailCategoryLabel category={category} />
               </span>
-              <span className="text-[12px] text-[var(--muted-foreground)] flex-shrink-0">
-                {formatTime(email.received_at)}
-              </span>
-            </div>
+            )}
+            <span className={cn('min-w-0 basis-20 flex-1 truncate text-xs leading-4',
+              reason ? 'font-medium text-[var(--accent-foreground)]' : 'text-[var(--foreground-muted)]')}>
+              {reason?.label || (email.body_text || email.snippet || '').replace(/\s+/g, ' ').slice(0, 120)}
+            </span>
+          </span>
+        </button>
 
-            {/* Row 2: Priority + Subject + Attachment */}
-            <div className="flex items-center gap-1.5 mt-0.5">
-              {(email.priority || 0) >= 4 && (
-                <span className="w-1.5 h-1.5 rounded-full bg-red-600 flex-shrink-0" />
-              )}
-              <span className={cn(
-                'text-[14px] truncate',
-                email.is_read ? 'text-[var(--muted)]' : 'text-[var(--foreground)]'
-              )}>
-                {email.subject || '(Không có tiêu đề)'}
-              </span>
-              {(email.attachment_count || 0) > 0 && (
-                <span className="flex items-center gap-0.5 text-[var(--muted-foreground)] flex-shrink-0">
-                  <Paperclip className="w-3.5 h-3.5" strokeWidth={1.5} />
-                  {(email.attachment_count || 0) > 1 && (
-                    <span className="text-[11px]">{email.attachment_count}</span>
-                  )}
-                </span>
-              )}
-            </div>
+        {rank && onExplainPriority && !isSelecting && (
+          <button
+            type="button" aria-label={`Ưu tiên và nguồn: ${subject}`} title="Ưu tiên và nguồn"
+            className="neo-icon-button h-8 w-8" onClick={() => onExplainPriority(email)}
+          >
+            <Info size={16} strokeWidth={1.5} aria-hidden="true" />
+          </button>
+        )}
 
-            {/* Row 3: Preview */}
-            <p className="text-[13px] text-[var(--muted-foreground)] truncate mt-0.5">
-              {(email.body_text || email.snippet || '')?.replace(/\\n/g, ' ').slice(0, 80)}
-            </p>
-          </div>
-
-          {/* Unread indicator - mobile (when not selecting) */}
-          {!email.is_read && !isSelecting && (
-            <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2 md:hidden" />
-          )}
-
-          {/* Category Tag - desktop only */}
-          {email.category && categoryStyle && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onCategoryClick?.(email.category!)
-              }}
-              className={cn(
-                'px-2 py-0.5 rounded text-[11px] font-medium flex-shrink-0 transition-colors hidden md:block',
-                categoryStyle.bg,
-                categoryStyle.text,
-                categoryStyle.hoverBg
-              )}
-            >
-              {getCategoryLabel(email.category)}
-            </button>
-          )}
-        </div>
+        {hasCategoryFilter && category && categoryLabel && onCategoryClick && (
+          <button
+            type="button" onClick={() => onCategoryClick(category)}
+            aria-label={`Lọc danh mục ${categoryLabel}`}
+            className="hidden h-8 shrink-0 items-center justify-end rounded-[var(--radius-control)] px-2 hover:bg-[var(--secondary)] lg:inline-flex"
+          >
+            <MailCategoryLabel category={category} />
+          </button>
+        )}
       </div>
     )
   }
@@ -631,7 +507,7 @@ export function EmailListCompact({
     )
   }
 
-  const LoadMoreIndicator = () => (
+  const renderLoadMoreIndicator = () => (
     <div ref={loadMoreRef} className="py-4 flex justify-center">
       {loadingMore ? (
         <div className="flex items-center gap-2 text-[var(--muted-foreground)]">
@@ -639,9 +515,12 @@ export function EmailListCompact({
           <span className="text-[13px]">Đang tải...</span>
         </div>
       ) : hasMore ? (
-        <button onClick={onLoadMore} className="text-[13px] text-[var(--muted)] hover:text-[var(--foreground)]">
-          Tải thêm
-        </button>
+        <div className="text-center">
+          {pageError && <p role="status" className="text-sm text-[var(--error)]">Chưa tải được trang tiếp theo.</p>}
+          <button type="button" onClick={onLoadMore} className="neo-target px-3 py-2 text-sm text-[var(--accent-foreground)] underline">
+            {pageError ? 'Thử tải thêm' : 'Tải thêm'}
+          </button>
+        </div>
       ) : emails.length > 0 ? (
         <span className="text-[12px] text-[var(--muted-foreground)]">Đã hiển thị tất cả</span>
       ) : null}
@@ -673,20 +552,25 @@ export function EmailListCompact({
     />
   )
 
-  if (smartSort) {
-    // sections is already memoized above
+  if (groupByPriority) {
     return (
       <>
         <div className={cn(isSelecting && 'pb-32 md:pb-0')}>
           {sections.map((section) => {
             const Icon = section.icon
-            const isCollapsed = collapsedSections[section.id] ?? section.defaultCollapsed
+            const isCollapsed = collapsedSections[section.id] ??
+              (section.id === 'later' && !section.emails.some(email => email.id === selectedId))
 
             return (
               <div key={section.id}>
                 <button
-                  onClick={() => toggleSection(section.id)}
-                  className="w-full flex items-center gap-2 px-4 py-2 bg-[var(--secondary)] border-b border-[var(--border)] hover:bg-[var(--hover)]"
+                  type="button"
+                  aria-expanded={!isCollapsed}
+                  onClick={() => setCollapsedSections(previous => ({ ...previous, [section.id]: !isCollapsed }))}
+                  className={cn(
+                    'flex min-h-11 w-full items-center gap-2 border-b border-[var(--border)] px-4 py-2 text-start hover:bg-[var(--hover)]',
+                    section.id === 'action' ? 'neo-section-accent' : 'bg-[var(--canvas)]',
+                  )}
                 >
                   {isCollapsed ? (
                     <ChevronRight className="w-4 h-4 text-[var(--muted-foreground)]" strokeWidth={1.5} />
@@ -696,13 +580,13 @@ export function EmailListCompact({
                   <Icon
                     className={cn(
                       'w-4 h-4',
-                      section.id === 'needsAction' ? 'text-red-600 dark:text-red-400' : 'text-[var(--muted)]'
+                      section.id === 'action' ? 'text-[var(--accent-foreground)]' : 'text-[var(--muted)]'
                     )}
                     strokeWidth={1.5}
                   />
                   <span className={cn(
-                    'text-[13px] font-medium',
-                    section.id === 'needsAction' ? 'text-red-600 dark:text-red-400' : 'text-[var(--foreground)]'
+                    'text-[13px]',
+                    section.id === 'action' ? 'font-semibold text-[var(--accent-foreground)]' : 'font-medium text-[var(--foreground)]'
                   )}>
                     {section.title}
                   </span>
@@ -719,9 +603,9 @@ export function EmailListCompact({
               </div>
             )
           })}
-          {onLoadMore && <LoadMoreIndicator />}
+          {onLoadMore && renderLoadMoreIndicator()}
         </div>
-        <MobileSelectionToolbar />
+        {renderMobileSelectionToolbar()}
         {ContextMenuPortal}
         {CategoryPickerPortal}
       </>
@@ -734,9 +618,9 @@ export function EmailListCompact({
         <div className="divide-y divide-[var(--border)]">
           {emails.map(renderEmailItem)}
         </div>
-        {onLoadMore && <LoadMoreIndicator />}
+        {onLoadMore && renderLoadMoreIndicator()}
       </div>
-      <MobileSelectionToolbar />
+      {renderMobileSelectionToolbar()}
       {ContextMenuPortal}
       {CategoryPickerPortal}
     </>

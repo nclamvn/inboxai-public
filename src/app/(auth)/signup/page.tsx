@@ -14,6 +14,7 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [verificationRequired, setVerificationRequired] = useState(false)
   const [waitlistStatus, setWaitlistStatus] = useState<string | null>(null)
 
   // Step 1: Check if email is whitelisted
@@ -30,6 +31,7 @@ export default function SignupPage() {
       })
 
       const data = await res.json()
+      if (!res.ok) { setError(data.error || 'Đăng ký tạm thời chưa khả dụng.'); return }
 
       if (data.allowed) {
         // Email is approved or open beta - show signup form
@@ -62,14 +64,14 @@ export default function SignupPage() {
     }
   }
 
-  // Step 2a: Real signup for approved users (auto-confirmed)
+  // Step 2a: Request verified-email signup.
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setLoading(true)
 
     try {
-      // Use server-side API to create user with auto-confirm
+      // Server enforces admission and confirmation.
       const res = await fetch('/api/signup-whitelist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -87,7 +89,13 @@ export default function SignupPage() {
         return
       }
 
-      setMessage(data.message || 'Đăng ký thành công! Bạn có thể đăng nhập ngay.')
+      if (data.requires_email_verification !== true) {
+        setError('Không thể xác nhận yêu cầu đăng ký. Vui lòng thử lại sau.')
+        return
+      }
+      setVerificationRequired(true)
+      setPassword('')
+      setMessage(data.message || 'Vui lòng xác minh email trước khi đăng nhập.')
       setStep('success')
     } catch (err) {
       setError('Có lỗi xảy ra. Vui lòng thử lại.')
@@ -126,7 +134,7 @@ export default function SignupPage() {
 
   // Success state
   if (step === 'success') {
-    const isApprovedSignup = password.length > 0 // If they entered password, it was real signup
+    const isApprovedSignup = verificationRequired
 
     return (
       <div className="bg-[var(--card)] rounded-2xl shadow-executive-lg border border-[var(--border)] p-8 text-center">
@@ -135,7 +143,7 @@ export default function SignupPage() {
         </div>
 
         <h1 className="text-[24px] font-bold text-[var(--foreground)] mb-3">
-          {isApprovedSignup ? 'Đăng ký thành công!' : 'Cảm ơn bạn đã đăng ký!'}
+          {isApprovedSignup ? 'Kiểm tra email xác minh' : 'Cảm ơn bạn đã đăng ký!'}
         </h1>
 
         <p className="text-[15px] text-[var(--muted)] mb-6">
@@ -147,7 +155,7 @@ export default function SignupPage() {
             href="/login"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg font-medium hover:opacity-90"
           >
-            Đăng nhập ngay
+            Tới trang đăng nhập
             <ArrowRight className="w-4 h-4" strokeWidth={1.5} />
           </Link>
         ) : (
@@ -233,7 +241,6 @@ export default function SignupPage() {
 
   // Step 2a: Real signup form (for approved users or open beta)
   if (step === 'signup_form') {
-    const isOpenBeta = message.includes('Open Beta')
 
     return (
       <div className="bg-[var(--card)] rounded-2xl shadow-executive-lg border border-[var(--border)] p-8">
@@ -242,10 +249,10 @@ export default function SignupPage() {
             <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" strokeWidth={1.5} />
           </div>
           <h1 className="text-[24px] font-bold text-[var(--foreground)] mb-2">
-            {isOpenBeta ? 'Tạo tài khoản' : 'Email đã được duyệt!'}
+            Tạo tài khoản
           </h1>
           <p className="text-[var(--muted)]">
-            {isOpenBeta ? message : 'Hoàn tất đăng ký để sử dụng InboxAI'}
+            {message}
           </p>
         </div>
 
@@ -292,9 +299,9 @@ export default function SignupPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Tối thiểu 6 ký tự"
+                placeholder="Tối thiểu 12 ký tự"
                 required
-                minLength={6}
+                minLength={12}
                 className="w-full pl-10 pr-4 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
               />
             </div>

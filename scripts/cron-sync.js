@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-const https = require('https');
 
 const APP_URL = process.env.RENDER_EXTERNAL_URL || process.env.APP_URL;
 const CRON_SECRET = process.env.CRON_SECRET;
 
 async function triggerSync() {
+  const https = await import('node:https');
   console.log(`[CRON] Starting at ${new Date().toISOString()}`);
 
   if (!APP_URL) {

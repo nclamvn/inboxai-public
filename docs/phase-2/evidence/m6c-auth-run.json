@@ -1,0 +1,364 @@
+{
+  "date": "2026-11-12T01:22:18.985Z",
+  "provenance": "Real local GoTrue/PostgREST/Next; synthetic Gmail/IMAP readers, loopback Gmail HTTP and SMTP TLS with fixture DNS/socket mapping; internal verification SMTP sink; .test identities; not hosted/provider interoperability",
+  "images": {
+    "auth": "supabase/gotrue:v2.197.0",
+    "rest": "postgrest/postgrest:v14.18",
+    "mail": "axllent/mailpit:v1.28.1",
+    "db": "postgres:16"
+  },
+  "outcomes": [
+    {
+      "name": "upgrade preserves existing profile",
+      "status": "PASS"
+    },
+    {
+      "name": "direct Auth API cannot bypass closed registration policy",
+      "status": "PASS"
+    },
+    {
+      "name": "Next signup requires email verification",
+      "status": "PASS"
+    },
+    {
+      "name": "signup sets no authenticated access-token cookie",
+      "status": "PASS"
+    },
+    {
+      "name": "unverified signup has no admin access",
+      "status": "PASS"
+    },
+    {
+      "name": "password login rejected before verification",
+      "status": "PASS"
+    },
+    {
+      "name": "PKCE email callback creates a verified session",
+      "status": "PASS"
+    },
+    {
+      "name": "verified admitted user can open the inbox page",
+      "status": "PASS"
+    },
+    {
+      "name": "non-admin verified user cannot access global whitelist",
+      "status": "PASS"
+    },
+    {
+      "name": "real PostgREST JWT/RLS returns only own email",
+      "status": "PASS"
+    },
+    {
+      "name": "anonymous PostgREST cannot read tenant email",
+      "status": "PASS"
+    },
+    {
+      "name": "server-provisioned admin role grants whitelist access",
+      "status": "PASS"
+    },
+    {
+      "name": "admin revocation is enforced on the next request",
+      "status": "PASS"
+    },
+    {
+      "name": "closed policy rejects subsequent Next signups",
+      "status": "PASS"
+    },
+    {
+      "name": "actual PostgREST denies browser secret RPC, inventory and private schema",
+      "status": "PASS"
+    },
+    {
+      "name": "owner metadata SELECT star has no secret fields or values",
+      "status": "PASS"
+    },
+    {
+      "name": "browser cannot write removed plaintext token column",
+      "status": "PASS"
+    },
+    {
+      "name": "hot reads fail closed while legacy conversion is pending",
+      "status": "PASS"
+    },
+    {
+      "name": "maintenance defaults to dry run without changing revision",
+      "status": "PASS"
+    },
+    {
+      "name": "local CLI converts quarantined OAuth packet",
+      "status": "PASS"
+    },
+    {
+      "name": "legacy CBC text-key upgrade preserves synthetic password",
+      "status": "PASS"
+    },
+    {
+      "name": "conflicting legacy tokens remain quarantined without mutation",
+      "status": "PASS"
+    },
+    {
+      "name": "successful conversion removes plaintext legacy packet",
+      "status": "PASS"
+    },
+    {
+      "name": "service RPC rejects mismatched tenant reads and writes",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent compare-and-swap admits exactly one writer",
+      "status": "PASS"
+    },
+    {
+      "name": "rotation rewraps both current and rollback envelope",
+      "status": "PASS"
+    },
+    {
+      "name": "rollback works after retiring old key without plaintext fallback",
+      "status": "PASS"
+    },
+    {
+      "name": "maintenance does not reactivate a disabled account",
+      "status": "PASS"
+    },
+    {
+      "name": "rotation is idempotent under the active key",
+      "status": "PASS"
+    },
+    {
+      "name": "CLI rotation, encrypted restore and key inventory execute locally",
+      "status": "PASS"
+    },
+    {
+      "name": "maintenance refuses hosted URL before any database request",
+      "status": "PASS"
+    },
+    {
+      "name": "metadata and maintenance output contain no synthetic credential values",
+      "status": "PASS"
+    },
+    {
+      "name": "tampered stored authentication tag fails closed through real RPC",
+      "status": "PASS"
+    },
+    {
+      "name": "account deletion cascades encrypted vault rows",
+      "status": "PASS"
+    },
+    {
+      "name": "bounded maintenance page resumes without omissions or duplicate accounts",
+      "status": "PASS"
+    },
+    {
+      "name": "legacy sync rows retain evidence under a legacy namespace",
+      "status": "PASS"
+    },
+    {
+      "name": "real JWT callers cannot claim sync leases or read checkpoints",
+      "status": "PASS"
+    },
+    {
+      "name": "service sync RPC rejects a mismatched account tenant",
+      "status": "PASS"
+    },
+    {
+      "name": "Gmail first bounded invocation persists page and pending checkpoint",
+      "status": "PASS"
+    },
+    {
+      "name": "Gmail restart resumes all remaining pages and catches history",
+      "status": "PASS"
+    },
+    {
+      "name": "large Gmail history record retains unprocessed IDs durably",
+      "status": "PASS"
+    },
+    {
+      "name": "Gmail replay updates labels without duplicates or lost annotations",
+      "status": "PASS"
+    },
+    {
+      "name": "Gmail message deletion becomes a scoped evidence-preserving tombstone",
+      "status": "PASS"
+    },
+    {
+      "name": "expired Gmail history rebaselines and reconciles current source",
+      "status": "PASS"
+    },
+    {
+      "name": "same Gmail IDs and RFC Message-ID coexist in separate accounts",
+      "status": "PASS"
+    },
+    {
+      "name": "authenticated tenant cannot read another synced account",
+      "status": "PASS"
+    },
+    {
+      "name": "provider failure preserves checkpoint and durable backoff suppresses contact",
+      "status": "PASS"
+    },
+    {
+      "name": "targeted retry recovers all provider messages after failure",
+      "status": "PASS"
+    },
+    {
+      "name": "SQL page failure rolls back earlier rows and the checkpoint",
+      "status": "PASS"
+    },
+    {
+      "name": "IMAP overflow progresses in ascending UID order",
+      "status": "PASS"
+    },
+    {
+      "name": "IMAP keeps duplicate filenames as separate MIME parts",
+      "status": "PASS"
+    },
+    {
+      "name": "sync replay preserves local flag edits pending provider acknowledgement",
+      "status": "PASS"
+    },
+    {
+      "name": "IMAP replay preserves email and attachment identities",
+      "status": "PASS"
+    },
+    {
+      "name": "IMAP reconciliation updates flags and preserves expunged evidence",
+      "status": "PASS"
+    },
+    {
+      "name": "UIDVALIDITY reset creates a new UID identity and tombstones the old epoch",
+      "status": "PASS"
+    },
+    {
+      "name": "blocked IMAP destination preserves the persisted cursor and message rows",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent real HTTP claims admit exactly one active worker",
+      "status": "PASS"
+    },
+    {
+      "name": "expired worker cannot commit or release a replacement lease",
+      "status": "PASS"
+    },
+    {
+      "name": "lost commit acknowledgement recovers from database checkpoint without duplicates",
+      "status": "PASS"
+    },
+    {
+      "name": "account disabled during fetch cannot accept a page",
+      "status": "PASS"
+    },
+    {
+      "name": "source account deletion cascades private sync state",
+      "status": "PASS"
+    },
+    {
+      "name": "cron due-work selection excludes active leases and backoff and favors untouched accounts",
+      "status": "PASS"
+    },
+    {
+      "name": "missing send key is rejected before provider dispatch",
+      "status": "PASS"
+    },
+    {
+      "name": "foreign account and foreign reply fail before provider dispatch",
+      "status": "PASS"
+    },
+    {
+      "name": "malformed recipients are rejected before provider dispatch",
+      "status": "PASS"
+    },
+    {
+      "name": "browser roles cannot read or claim private send operations",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent Gmail route calls dispatch one MIME message",
+      "status": "PASS"
+    },
+    {
+      "name": "Gmail route preserves Bcc, Unicode and verified reply threading",
+      "status": "PASS"
+    },
+    {
+      "name": "accepted response replays without provider contact",
+      "status": "PASS"
+    },
+    {
+      "name": "changed content under the same key conflicts",
+      "status": "PASS"
+    },
+    {
+      "name": "Gmail accepted then dropped response leaves durable unknown outcome",
+      "status": "PASS"
+    },
+    {
+      "name": "unindexed Gmail Sent lookup stays unknown and has durable cooldown",
+      "status": "PASS"
+    },
+    {
+      "name": "exact Gmail Sent evidence resolves the original operation with no second dispatch",
+      "status": "PASS"
+    },
+    {
+      "name": "explicit rejection is terminal and provider error details stay private",
+      "status": "PASS"
+    },
+    {
+      "name": "accepted Gmail operations appear once in the tenant Sent mirror",
+      "status": "PASS"
+    },
+    {
+      "name": "terminal operations discard pending message content",
+      "status": "PASS"
+    },
+    {
+      "name": "actual TLS SMTP accepts a subset, hides Bcc header and never repeats a partial send",
+      "status": "PASS"
+    },
+    {
+      "name": "SMTP socket loss after DATA remains unknown without another SMTP transaction",
+      "status": "PASS"
+    },
+    {
+      "name": "stored loopback SMTP target has one terminal rejection and sends no mail",
+      "status": "PASS"
+    },
+    {
+      "name": "account setup rejects IMAP metadata destination before saving credentials or starting SMTP",
+      "status": "PASS"
+    },
+    {
+      "name": "lazy body read returns no content from a stored private IMAP target",
+      "status": "PASS"
+    },
+    {
+      "name": "attachment read reaches the IMAP policy for an owned source account",
+      "status": "PASS"
+    },
+    {
+      "name": "attachment cannot use a source account owned by another tenant",
+      "status": "PASS"
+    },
+    {
+      "name": "partial SMTP acceptance is durable and never re-dispatched for the same key",
+      "status": "PASS"
+    },
+    {
+      "name": "abandoned SMTP dispatch expires to unknown and grants no new dispatch",
+      "status": "PASS"
+    },
+    {
+      "name": "lost database acknowledgement recovers the committed receipt without a second send",
+      "status": "PASS"
+    },
+    {
+      "name": "IMAP reconciliation preserves local SMTP sent receipts",
+      "status": "PASS"
+    },
+    {
+      "name": "foreign tenant cannot mutate a terminal send receipt",
+      "status": "PASS"
+    }
+  ]
+}

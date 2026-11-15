@@ -1,12 +1,12 @@
 // Background worker to sync emails periodically
-const https = require('https')
-const http = require('http')
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://inboxai.onrender.com'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL
 const CRON_SECRET = process.env.CRON_SECRET
 const SYNC_INTERVAL = 5 * 60 * 1000 // 5 minutes
 
 async function triggerSync() {
+  const https = await import('node:https')
+  const http = await import('node:http')
   return new Promise((resolve, reject) => {
     const url = new URL('/api/cron/sync-emails', APP_URL)
     const isHttps = url.protocol === 'https:'
@@ -27,8 +27,9 @@ async function triggerSync() {
       let data = ''
       res.on('data', chunk => data += chunk)
       res.on('end', () => {
-        console.log(`[${new Date().toISOString()}] Sync completed (${res.statusCode}):`, data.substring(0, 200))
-        resolve(data)
+        console.log(`[${new Date().toISOString()}] Sync response: ${res.statusCode}`)
+        if (res.statusCode >= 200 && res.statusCode < 300) resolve(data)
+        else reject(new Error(`HTTP ${res.statusCode}`))
       })
     })
 
@@ -47,6 +48,9 @@ async function triggerSync() {
 }
 
 async function main() {
+  if (!APP_URL || !CRON_SECRET?.trim()) {
+    throw new Error('NEXT_PUBLIC_APP_URL and CRON_SECRET must be configured')
+  }
   console.log('='.repeat(50))
   console.log('InboxAI Sync Worker started')
   console.log('='.repeat(50))
@@ -87,4 +91,7 @@ async function main() {
   })
 }
 
-main()
+main().catch(error => {
+  console.error('[Worker] Startup failed:', error.message)
+  process.exitCode = 1
+})

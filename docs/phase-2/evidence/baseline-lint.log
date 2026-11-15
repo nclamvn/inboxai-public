@@ -1,0 +1,567 @@
+
+> ai-mailbox@0.1.0 lint
+> eslint
+
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/scripts/cron-sync.js
+   3:15  error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  51:18  warning  'e' is defined but never used            @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/scripts/sync-worker.js
+  2:15  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  3:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/sentry.server.config.ts
+  29:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/(auth)/login/page.tsx
+  36:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/(auth)/signup/page.tsx
+   58:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+   92:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+  120:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/(dashboard)/actions/page.tsx
+   83:6  warning  React Hook useEffect has a missing dependency: 'fetchActions'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  333:3  warning  'iconBg' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/(dashboard)/inbox/page.tsx
+   85:10  warning  'classifying' is assigned a value but never used                                                                                                   @typescript-eslint/no-unused-vars
+   86:10  warning  'reclassifying' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+  118:9   warning  'handleClassify' is assigned a value but never used                                                                                                @typescript-eslint/no-unused-vars
+  141:9   warning  'handleReclassify' is assigned a value but never used                                                                                              @typescript-eslint/no-unused-vars
+  232:9   warning  'handleDeleteAllInCategory' is assigned a value but never used                                                                                     @typescript-eslint/no-unused-vars
+  282:6   warning  React Hook useCallback has missing dependencies: 'CATEGORY_LABELS' and 'IMPORTANT_CATEGORIES'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  363:9   warning  'handleMaximize' is assigned a value but never used                                                                                                @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/(dashboard)/trash/page.tsx
+  4:32  warning  'AlertTriangle' is defined but never used  @typescript-eslint/no-unused-vars
+  7:10  warning  'EmailDetail' is defined but never used    @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/admin/whitelist/route.ts
+  21:24  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/ai/briefing/route.ts
+  59:9  warning  'needsReply' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/ai/classify-all/route.ts
+  11:28  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/ai/features/[emailId]/auto/route.ts
+   17:3   warning  'FEATURE_COSTS' is defined but never used     @typescript-eslint/no-unused-vars
+  230:13  warning  'service' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/ai/sender-insights/route.ts
+  21:27  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/attachments/[attachmentId]/route.ts
+  68:12  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/cron/sync-emails/route.ts
+  140:11  warning  'unsubscribeService' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/dashboard/stats/route.ts
+  10:27  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/debug/gmail-sync/route.ts
+  27:27  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/email-providers/route.ts
+   9:27  warning  'request' is defined but never used       @typescript-eslint/no-unused-vars
+  34:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/emails/refetch-bodies/route.ts
+  4:26  warning  'decryptPassword' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/emails/smart-views/route.ts
+  4:27  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/source-accounts/google/callback/route.ts
+  151:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/api/source-accounts/google/route.ts
+  10:28  warning  'request' is defined but never used       @typescript-eslint/no-unused-vars
+  37:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/app/page.tsx
+  7:17  warning  'Check' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/ai/ai-feature-button.tsx
+  26:3  warning  'emailId' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/ai/assistant-panel.tsx
+  9:10  warning  'IconBox' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/ai/reply-assistant.tsx
+    9:3   warning  'ChevronDown' is defined but never used                                                                          @typescript-eslint/no-unused-vars
+   53:6   warning  React Hook useEffect has a missing dependency: 'analyzeEmail'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   70:14  warning  'err' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+   99:14  warning  'err' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+  121:14  warning  'err' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/ai/urgent-alert.tsx
+  6:10  warning  'IconBox' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/account-switcher.tsx
+  130:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  193:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/action-items-card.tsx
+  73:6  warning  React Hook useEffect has a missing dependency: 'fetchActions'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/ai-bottom-bar.tsx
+  21:3  warning  'AlertCircle' is defined but never used       @typescript-eslint/no-unused-vars
+  51:5  warning  'refresh' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/ai-summary.tsx
+  295:26  error  React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/attachment-list.tsx
+  190:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-detail-full.tsx
+  182:9  warning  'handleBlockSender' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-detail-mobile.tsx
+   6:26  warning  'AlertCircle' is defined but never used                                                         @typescript-eslint/no-unused-vars
+   7:29  warning  'Check' is defined but never used                                                               @typescript-eslint/no-unused-vars
+  37:3   warning  'onRefresh' is defined but never used                                                           @typescript-eslint/no-unused-vars
+  73:3   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-detail.tsx
+  68:6  warning  React Hook useEffect has a missing dependency: 'email'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list-compact.tsx
+   26:11  warning  'EmailSection' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  722:27  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list-compact.tsx:722:27
+  720 |             )
+  721 |           })}
+> 722 |           {onLoadMore && <LoadMoreIndicator />}
+      |                           ^^^^^^^^^^^^^^^^^ This component is created during render
+  723 |         </div>
+  724 |         <MobileSelectionToolbar />
+  725 |         {ContextMenuPortal}
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list-compact.tsx:634:29
+  632 |   }
+  633 |
+> 634 |   const LoadMoreIndicator = () => (
+      |                             ^^^^^^^
+> 635 |     <div ref={loadMoreRef} className="py-4 flex justify-center">
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 636 |       {loadingMore ? (
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 648 |     </div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 649 |   )
+      | ^^^^ The component is created during render here
+  650 |
+  651 |   const ContextMenuPortal = contextMenu && (
+  652 |     <ContextMenu                                                                    react-hooks/static-components
+  724:10  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list-compact.tsx:724:10
+  722 |           {onLoadMore && <LoadMoreIndicator />}
+  723 |         </div>
+> 724 |         <MobileSelectionToolbar />
+      |          ^^^^^^^^^^^^^^^^^^^^^^ This component is created during render
+  725 |         {ContextMenuPortal}
+  726 |         {CategoryPickerPortal}
+  727 |       </>
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list-compact.tsx:388:34
+  386 |
+  387 |   // Mobile Selection Toolbar Component
+> 388 |   const MobileSelectionToolbar = () => {
+      |                                  ^^^^^^^
+> 389 |     if (!isSelecting || selectedIds.size === 0) return null
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 390 |
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 456 |     )
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 457 |   }
+      | ^^^^ The component is created during render here
+  458 |
+  459 |   const renderEmailItem = (email: Email) => {
+  460 |     const categoryStyle = email.category ? getCategoryStyle(email.category) : null  react-hooks/static-components
+  737:25  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list-compact.tsx:737:25
+  735 |           {emails.map(renderEmailItem)}
+  736 |         </div>
+> 737 |         {onLoadMore && <LoadMoreIndicator />}
+      |                         ^^^^^^^^^^^^^^^^^ This component is created during render
+  738 |       </div>
+  739 |       <MobileSelectionToolbar />
+  740 |       {ContextMenuPortal}
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list-compact.tsx:634:29
+  632 |   }
+  633 |
+> 634 |   const LoadMoreIndicator = () => (
+      |                             ^^^^^^^
+> 635 |     <div ref={loadMoreRef} className="py-4 flex justify-center">
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 636 |       {loadingMore ? (
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 648 |     </div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 649 |   )
+      | ^^^^ The component is created during render here
+  650 |
+  651 |   const ContextMenuPortal = contextMenu && (
+  652 |     <ContextMenu                                                   react-hooks/static-components
+  739:8   error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list-compact.tsx:739:8
+  737 |         {onLoadMore && <LoadMoreIndicator />}
+  738 |       </div>
+> 739 |       <MobileSelectionToolbar />
+      |        ^^^^^^^^^^^^^^^^^^^^^^ This component is created during render
+  740 |       {ContextMenuPortal}
+  741 |       {CategoryPickerPortal}
+  742 |     </>
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list-compact.tsx:388:34
+  386 |
+  387 |   // Mobile Selection Toolbar Component
+> 388 |   const MobileSelectionToolbar = () => {
+      |                                  ^^^^^^^
+> 389 |     if (!isSelecting || selectedIds.size === 0) return null
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 390 |
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 456 |     )
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 457 |   }
+      | ^^^^ The component is created during render here
+  458 |
+  459 |   const renderEmailItem = (email: Email) => {
+  460 |     const categoryStyle = email.category ? getCategoryStyle(email.category) : null                 react-hooks/static-components
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list-item.tsx
+  41:3  warning  'id' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list-virtual.tsx
+    5:16  warning  'Zap' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+  176:23  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list-virtual.tsx:176:23
+  174 |   const parentRef = useRef<HTMLDivElement>(null)
+  175 |
+> 176 |   const virtualizer = useVirtualizer({
+      |                       ^^^^^^^^^^^^^^ TanStack Virtual's `useVirtualizer()` API returns functions that cannot be memoized safely
+  177 |     count: emails.length,
+  178 |     getScrollElement: () => parentRef.current,
+  179 |     estimateSize: () => 76, // Estimated row height  react-hooks/incompatible-library
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/email-list.tsx
+  3:16  warning  'Paperclip' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/email/smart-reply.tsx
+  71:6  warning  React Hook useEffect has a missing dependency: 'fetchSuggestions'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/insights/weekly-report.tsx
+   12:10  warning  'IconBox' is defined but never used              @typescript-eslint/no-unused-vars
+  235:21  warning  'getVariant' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/layout/mobile-nav.tsx
+  5:29  warning  'Archive' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/layout/unified-top-bar.tsx
+  75:3  warning  'totalEmails' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/offline-banner.tsx
+  21:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/offline-banner.tsx:21:5
+  19 |   // Wait for client-side hydration to prevent flash
+  20 |   useEffect(() => {
+> 21 |     setMounted(true)
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  22 |   }, [])
+  23 |
+  24 |   // Show "back online" message when connection restored                                 react-hooks/set-state-in-effect
+  27:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/offline-banner.tsx:27:7
+  25 |   useEffect(() => {
+  26 |     if (wasOffline && isOnline) {
+> 27 |       setShowBackOnline(true)
+     |       ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  28 |       setDismissed(false)
+  29 |       const timer = setTimeout(() => {
+  30 |         setShowBackOnline(false)  react-hooks/set-state-in-effect
+  39:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/offline-banner.tsx:39:7
+  37 |   useEffect(() => {
+  38 |     if (!isOnline) {
+> 39 |       setDismissed(false)
+     |       ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  40 |     }
+  41 |   }, [isOnline])
+  42 |                                                                                                   react-hooks/set-state-in-effect
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/pwa/install-prompt.tsx
+  26:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/pwa/install-prompt.tsx:26:5
+  24 |
+  25 |     // Batch state updates
+> 26 |     setIsStandalone(standalone)
+     |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  27 |     setIsIOS(ios)
+  28 |
+  29 |     // Check if prompt was dismissed recently  react-hooks/set-state-in-effect
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/settings/add-account-modal.tsx
+  4:67  warning  'Server' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/settings/source-accounts-section.tsx
+    4:105  warning  'Edit2' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  258:19   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/ui/modal.tsx
+  74:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/ui/modal.tsx:74:5
+  72 |   // Mount check for SSR
+  73 |   useEffect(() => {
+> 74 |     setMounted(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  75 |   }, []);
+  76 |
+  77 |   // Handle escape key  react-hooks/set-state-in-effect
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/ui/toast.tsx
+  278:7  error    Error: Cannot access variable before it is declared
+
+`handleDismiss` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/ui/toast.tsx:278:7
+  276 |     // Dismiss timer
+  277 |     timerRef.current = setTimeout(() => {
+> 278 |       handleDismiss();
+      |       ^^^^^^^^^^^^^ `handleDismiss` accessed before it is declared
+  279 |     }, duration);
+  280 |
+  281 |     return () => {
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/components/ui/toast.tsx:287:3
+  285 |   }, [duration, isPersistent]);
+  286 |
+> 287 |   const handleDismiss = () => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 288 |     setIsExiting(true);
+      | ^^^^^^^^^^^^^^^^^^^^^^^
+> 289 |     setTimeout(onDismiss, 150);
+      | ^^^^^^^^^^^^^^^^^^^^^^^
+> 290 |   };
+      | ^^^^^ `handleDismiss` is declared here
+  291 |
+  292 |   const handleUndo = () => {
+  293 |     toast.onUndo?.();  react-hooks/immutability
+  285:6  warning  React Hook useEffect has a missing dependency: 'handleDismiss'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/contexts/theme-context.tsx
+  161:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/contexts/theme-context.tsx:161:7
+  159 |     const stored = getStoredTheme();
+  160 |     if (stored) {
+> 161 |       setModeState(stored);
+      |       ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  162 |     }
+  163 |     setMounted(true);
+  164 |   }, []);  react-hooks/set-state-in-effect
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/hooks/use-emails-query.ts
+  244:9  warning  'queryClient' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/hooks/use-media-query.ts
+  30:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/hooks/use-media-query.ts:30:7
+  28 |     if (!initializedRef.current) {
+  29 |       initializedRef.current = true;
+> 30 |       updateMatches(media.matches);
+     |       ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  31 |     }
+  32 |
+  33 |     // Create listener  react-hooks/set-state-in-effect
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/hooks/use-network-status.ts
+  79:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/hooks/use-network-status.ts:79:5
+  77 |
+  78 |     // Initial network info
+> 79 |     updateNetworkInfo()
+     |     ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  80 |
+  81 |     // Listen for online/offline events
+  82 |     window.addEventListener('online', handleOnline)  react-hooks/set-state-in-effect
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/classifier-updated.ts
+  15:8  warning  'VietnameseClassificationResult' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/classifier.ts
+   12:3  warning  'getEmailPatternHint' is defined but never used        @typescript-eslint/no-unused-vars
+   13:3  warning  'VIETNAMESE_DOMAINS' is defined but never used         @typescript-eslint/no-unused-vars
+   30:3  warning  'resolveCategory' is defined but never used            @typescript-eslint/no-unused-vars
+   35:3  warning  'updateEmailPhishingStatus' is defined but never used  @typescript-eslint/no-unused-vars
+   36:8  warning  'PhishingResult' is defined but never used             @typescript-eslint/no-unused-vars
+  110:9  warning  'fromLower' is assigned a value but never used         @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/feature-allocation.ts
+  844:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/feature-executors.ts
+  276:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/feature-runner.ts
+    9:3  warning  'TriggerType' is defined but never used                         @typescript-eslint/no-unused-vars
+  252:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/insights-service.ts
+  98:11  warning  'SenderScore' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/priority-rules.ts
+  24:30  warning  'fromAddress' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/prompts/vietnamese-classifier.ts
+  848:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/sender-trust.ts
+  54:3  warning  'senderName' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/setup.ts
+  68:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/smart-reply.ts
+  52:9  warning  'from' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/vietnamese-classifier-integration.ts
+    8:3  warning  'VIETNAMESE_EXAMPLES' is defined but never used                 @typescript-eslint/no-unused-vars
+   11:8  warning  'ClassificationExample' is defined but never used               @typescript-eslint/no-unused-vars
+   16:3  warning  'expandAbbreviations' is defined but never used                 @typescript-eslint/no-unused-vars
+   17:3  warning  'isVietnamese' is defined but never used                        @typescript-eslint/no-unused-vars
+   20:3  warning  'cleanEmailBody' is defined but never used                      @typescript-eslint/no-unused-vars
+   26:3  warning  'detectBanks' is defined but never used                         @typescript-eslint/no-unused-vars
+   27:3  warning  'detectEWallets' is defined but never used                      @typescript-eslint/no-unused-vars
+   28:3  warning  'detectECommerce' is defined but never used                     @typescript-eslint/no-unused-vars
+   30:3  warning  'detectMoneyAmounts' is defined but never used                  @typescript-eslint/no-unused-vars
+   32:8  warning  'DetectedEntity' is defined but never used                      @typescript-eslint/no-unused-vars
+  586:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/vietnamese-entities.ts
+  1025:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/ai/vietnamese-utils.ts
+  712:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/api/fetch-client.ts
+  227:22  warning  '_timeout' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  227:41  warning  '_retries' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  227:59  warning  '_params' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/api/protect.ts
+   75:74  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  145:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  172:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/email/imap-client.ts
+   94:7   warning  'DB_BATCH_SIZE' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  229:12  warning  'e' is defined but never used                        @typescript-eslint/no-unused-vars
+  257:13  warning  'totalMessages' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  302:15  warning  'batchStartTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  342:17  warning  'parseStartTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  383:17  warning  'dbStartTime' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/gmail/sync.ts
+  270:35  warning  'count' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/resend/templates.tsx
+  64:41  warning  'email' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/supabase/server.ts
+  1:35  warning  'CookieOptions' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/toast.ts
+  7:10  warning  'ApiError' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/os/Documents/ChatGPT/InboxAI2.0/src/lib/web-vitals.ts
+  118:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  119:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  120:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 136 problems (27 errors, 109 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+

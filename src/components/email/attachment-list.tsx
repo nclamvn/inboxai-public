@@ -1,22 +1,26 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import {
   Paperclip, FileText, Image, FileSpreadsheet,
-  File, Download, Eye, X, Loader2
+  File, Download, Eye, X
 } from 'lucide-react'
+import { isPurchaseCsv } from '@/lib/commitments/purchase-csv'
 import { cn } from '@/lib/utils'
+import { isRasterPreviewType } from '@/lib/email/attachment-preview'
 
-interface Attachment {
+export interface Attachment {
   id: string
   filename: string
-  content_type: string
+  content_type: string | null
   size: number
   is_inline: boolean
 }
 
 interface AttachmentListProps {
   attachments: Attachment[]
+  purchaseEmailId?: string
 }
 
 // Get icon based on content type
@@ -44,33 +48,18 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-export function AttachmentList({ attachments }: AttachmentListProps) {
+export function AttachmentList({ attachments, purchaseEmailId }: AttachmentListProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewName, setPreviewName] = useState<string>('')
-  const [previewType, setPreviewType] = useState<string>('')
-  const [loading, setLoading] = useState<string | null>(null)
 
   // Filter out inline attachments (shown in email body)
   const visibleAttachments = attachments.filter(a => !a.is_inline)
 
   if (visibleAttachments.length === 0) return null
 
-  const handlePreview = async (attachment: Attachment) => {
-    if (!attachment.content_type.startsWith('image/') && !attachment.content_type.includes('pdf')) {
-      // Direct download for non-previewable files
-      handleDownload(attachment)
-      return
-    }
-
-    setLoading(attachment.id)
-    try {
-      const url = `/api/attachments/${attachment.id}`
-      setPreviewUrl(url)
-      setPreviewName(attachment.filename)
-      setPreviewType(attachment.content_type)
-    } finally {
-      setLoading(null)
-    }
+  const handlePreview = (attachment: Attachment) => {
+    setPreviewUrl(`/api/attachments/${attachment.id}`)
+    setPreviewName(attachment.filename)
   }
 
   const handleDownload = (attachment: Attachment) => {
@@ -83,7 +72,6 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
   const closePreview = () => {
     setPreviewUrl(null)
     setPreviewName('')
-    setPreviewType('')
   }
 
   return (
@@ -99,14 +87,15 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
 
         <div className="flex flex-wrap gap-2">
           {visibleAttachments.map((att) => {
-            const Icon = getFileIcon(att.content_type)
-            const colorClass = getFileColor(att.content_type)
-            const isPreviewable = att.content_type.startsWith('image/') || att.content_type.includes('pdf')
+            const type = att.content_type?.toLowerCase() ?? ''
+            const Icon = getFileIcon(type)
+            const colorClass = getFileColor(type)
+            const isPreviewable = isRasterPreviewType(type)
 
             return (
               <div
                 key={att.id}
-                className="flex items-center gap-2 px-3 py-2 bg-[var(--secondary)] rounded-lg hover:bg-[var(--border)] transition-colors group"
+                className="group flex max-w-full flex-wrap items-center gap-2 rounded-lg bg-[var(--secondary)] px-3 py-2 transition-colors hover:bg-[var(--border)]"
               >
                 {/* Icon */}
                 <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', colorClass)}>
@@ -124,24 +113,40 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className={cn('ml-2 flex min-w-0 items-center gap-1', !(purchaseEmailId && isPurchaseCsv(att.filename, type)) &&
+                  'sm:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity')}>
+                  {purchaseEmailId && isPurchaseCsv(att.filename, type) && (
+                    <div className="flex flex-wrap items-center">
+                      <Link href={'/commitments/purchase-csv?' + new URLSearchParams({ email: purchaseEmailId, file: att.id })}
+                        prefetch={false} aria-label={'Đối soát CSV · ' + att.filename} className="neo-target inline-flex min-h-11 items-center px-2 text-xs font-medium text-[var(--accent-foreground)] underline">
+                        Đối soát CSV
+                      </Link>
+                      <Link href={'/commitments/payment?' + new URLSearchParams({ email: purchaseEmailId, file: att.id })}
+                        prefetch={false} aria-label={'Bảng giá hoặc hóa đơn · ' + att.filename}
+                        className="neo-target inline-flex min-h-11 items-center px-2 text-xs font-medium text-[var(--accent-foreground)] underline">
+                        Bảng giá / hóa đơn
+                      </Link>
+                      <Link href={'/commitments/settlements?' + new URLSearchParams({ email: purchaseEmailId, file: att.id })}
+                        prefetch={false} aria-label={'Đối soát thanh toán · ' + att.filename}
+                        className="neo-target inline-flex min-h-11 items-center px-2 text-xs font-medium text-[var(--accent-foreground)] underline">
+                        Thanh toán
+                      </Link>
+                    </div>
+                  )}
                   {isPreviewable && (
                     <button
                       onClick={() => handlePreview(att)}
-                      disabled={loading === att.id}
-                      className="p-1.5 rounded-lg hover:bg-[var(--card)] text-[var(--muted-foreground)]"
+                      type="button"
+                      className="neo-icon-button"
                       title="Xem trước"
                     >
-                      {loading === att.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
-                      )}
+                      <Eye className="w-4 h-4" />
                     </button>
                   )}
                   <button
                     onClick={() => handleDownload(att)}
-                    className="p-1.5 rounded-lg hover:bg-[var(--card)] text-[var(--muted-foreground)]"
+                    type="button"
+                      className="neo-icon-button"
                     title="Tải xuống"
                   >
                     <Download className="w-4 h-4" />
@@ -180,19 +185,11 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
 
           {/* Preview content */}
           <div className="max-w-full max-h-full overflow-auto">
-            {previewType.includes('pdf') ? (
-              <iframe
-                src={previewUrl}
-                className="w-[90vw] h-[85vh] bg-white rounded-lg"
-                title={previewName}
-              />
-            ) : (
-              <img
-                src={previewUrl}
-                alt={previewName}
-                className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg"
-              />
-            )}
+            <img
+              src={`${previewUrl}?preview=1`}
+              alt={previewName}
+              className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg"
+            />
           </div>
         </div>
       )}

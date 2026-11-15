@@ -3,15 +3,20 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  Star, Archive, Trash2, Reply, Forward, MoreHorizontal,
-  Sparkles, ChevronDown, ChevronUp, Loader2, X, Mail,
-  Check, ShieldAlert, Ban, Printer, Download, AlertTriangle
+  Star, Archive, Clock, Trash2, Reply, Forward, MoreHorizontal,
+  ListTodo, ChevronDown, ChevronUp, Loader2, X, Mail,
+  Check, ShieldAlert, Ban, Printer, Download, AlertTriangle, Tag
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ReplyAssistant } from '@/components/ai/reply-assistant'
 import { AIBottomBar } from './ai-bottom-bar'
+import { EmailConversation } from './email-conversation'
+import { SaveOfflineEmail } from '@/components/offline/save-offline-email'
+import { MailCategoryLabel } from './mail-category-label'
 import { sanitizeEmailHtml } from '@/lib/email/html-sanitizer'
 import { AttachmentList } from './attachment-list'
+import { offerReplyText } from '@/lib/replies/client'
+import { replyHref } from '@/lib/replies/contracts'
 import type { Email } from '@/types'
 
 interface Attachment {
@@ -25,20 +30,28 @@ interface Attachment {
 interface Props {
   email: Email
   onBack: () => void
+  closeLabel?: string
   onRefresh: () => void
   onStar?: (id: string) => void
   onArchive?: (id: string) => void
+  onSnooze?: () => void
   onDelete?: (id: string) => void
+  onExplainPriority?: () => void
+  onEditCategory?: () => void
   fullWidth?: boolean
 }
 
 export function EmailDetailFull({
   email,
   onBack,
+  closeLabel = 'Đóng',
   onRefresh,
   onStar,
   onArchive,
+  onSnooze,
   onDelete,
+  onExplainPriority,
+  onEditCategory,
   fullWidth = false
 }: Props) {
   const router = useRouter()
@@ -53,6 +66,9 @@ export function EmailDetailFull({
   const blockMenuRef = useRef<HTMLDivElement>(null)
   const moreMenuRef = useRef<HTMLDivElement>(null)
   const previousEmailId = useRef<string | null>(null)
+  const heading = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => { heading.current?.focus({ preventScroll: true }) }, [email.id])
 
   // Reset UI state when switching emails - instant feedback
   useEffect(() => {
@@ -197,14 +213,9 @@ export function EmailDetailFull({
     onBack()
   }
 
-  const handleUseDraft = (subject: string, body: string) => {
-    const params = new URLSearchParams({
-      replyTo: email.from_address || '',
-      replyToEmailId: email.id,
-      subject,
-      body,
-    })
-    router.push(`/compose?${params.toString()}`)
+  const handleUseDraft = (_subject: string, body: string) => {
+    offerReplyText(email.id, body)
+    router.push(replyHref(email.id))
   }
 
   const formatDate = (date: string | null) => {
@@ -217,19 +228,6 @@ export function EmailDetailFull({
       hour: '2-digit',
       minute: '2-digit'
     })
-  }
-
-  const getCategoryLabel = (category: string | null) => {
-    if (!category) return ''
-    const labels: Record<string, string> = {
-      work: 'Công việc',
-      personal: 'Cá nhân',
-      transaction: 'Giao dịch',
-      newsletter: 'Newsletter',
-      promotion: 'Khuyến mãi',
-      social: 'Mạng XH',
-    }
-    return labels[category] || category
   }
 
   const getPriorityLabel = (priority: number | null) => {
@@ -248,6 +246,8 @@ export function EmailDetailFull({
           <button
             type="button"
             onClick={handleStar}
+            aria-label="Gắn sao"
+            aria-pressed={email.is_starred}
             className={cn(
               'p-2 rounded-lg transition-colors',
               email.is_starred
@@ -264,6 +264,7 @@ export function EmailDetailFull({
           <button
             type="button"
             onClick={handleArchive}
+            aria-label="Lưu trữ thư"
             disabled={actionLoading === 'archive'}
             className="p-2 rounded-lg text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors"
           >
@@ -276,6 +277,7 @@ export function EmailDetailFull({
           <button
             type="button"
             onClick={handleDelete}
+            aria-label="Xóa thư"
             disabled={actionLoading === 'delete'}
             className="p-2 rounded-lg text-[var(--muted)] hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
           >
@@ -285,13 +287,18 @@ export function EmailDetailFull({
               <Trash2 className="w-5 h-5" strokeWidth={1.5} />
             )}
           </button>
+          {onEditCategory && (
+            <button type="button" onClick={onEditCategory} aria-label="Đổi nhãn" title="Đổi nhãn" className="neo-icon-button">
+              <Tag size={18} aria-hidden="true" />
+            </button>
+          )}
           {/* Spam Feedback Buttons */}
           {currentCategory === 'spam' ? (
             <button
               type="button"
               onClick={handleNotSpam}
               disabled={feedbackLoading === 'not_spam'}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-gray-900 dark:text-white bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-gray-900 dark:text-white border border-[var(--border)] hover:bg-[var(--hover)] transition-colors"
             >
               {feedbackLoading === 'not_spam' ? (
                 <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} />
@@ -305,7 +312,7 @@ export function EmailDetailFull({
               type="button"
               onClick={handleIsSpam}
               disabled={feedbackLoading === 'is_spam'}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-gray-900 dark:text-white bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-gray-900 dark:text-white border border-[var(--border)] hover:bg-[var(--hover)] transition-colors"
             >
               {feedbackLoading === 'is_spam' ? (
                 <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} />
@@ -324,6 +331,7 @@ export function EmailDetailFull({
               disabled={feedbackLoading === 'block'}
               className="p-2 rounded-lg text-[var(--muted-foreground)] hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
               title="Chặn người gửi"
+              aria-expanded={showBlockMenu}
             >
               {feedbackLoading === 'block' ? (
                 <Loader2 className="w-5 h-5 animate-spin" strokeWidth={1.5} />
@@ -333,7 +341,7 @@ export function EmailDetailFull({
             </button>
 
             {showBlockMenu && (
-              <div className="absolute left-0 top-full mt-1 w-56 bg-[var(--card)] rounded-lg border border-[var(--border)] shadow-lg z-50 py-1">
+              <div className="absolute left-0 top-full mt-1 w-56 bg-[var(--card)] rounded-lg border border-[var(--border)] z-50 py-1">
                 <button
                   type="button"
                   onClick={() => {
@@ -369,15 +377,21 @@ export function EmailDetailFull({
             <button
               type="button"
               onClick={() => setShowMoreMenu(!showMoreMenu)}
+              aria-label="Thao tác khác"
+              aria-expanded={showMoreMenu}
               className="p-2 rounded-lg text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)] transition-colors"
             >
               <MoreHorizontal className="w-5 h-5" strokeWidth={1.5} />
             </button>
 
             {showMoreMenu && (
-              <div className="absolute right-0 top-full mt-1 w-48 bg-[var(--card)] rounded-lg border border-[var(--border)] shadow-lg z-50 py-1">
+              <div className="absolute right-0 top-full mt-1 w-48 bg-[var(--card)] rounded-lg border border-[var(--border)] z-50 py-1">
                 {/* Print */}
-                <button
+                {onSnooze && <button type="button" onClick={() => { setShowMoreMenu(false); onSnooze() }}
+                className="flex min-h-11 w-full items-center gap-2 px-3 text-left text-sm hover:bg-[var(--hover)]">
+                <Clock size={16} aria-hidden="true" /> Hẹn xử lý
+              </button>}
+              <button
                   type="button"
                   onClick={() => {
                     setShowMoreMenu(false)
@@ -443,9 +457,10 @@ export function EmailDetailFull({
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          {email.direction !== 'outbound' && <button
             type="button"
             onClick={() => setShowAIAssistant(!showAIAssistant)}
+            aria-expanded={showAIAssistant}
             className={cn(
               'flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors',
               showAIAssistant
@@ -453,14 +468,15 @@ export function EmailDetailFull({
                 : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover)]'
             )}
           >
-            <Sparkles className="w-4 h-4" strokeWidth={1.5} />
+            <ListTodo className="w-4 h-4" strokeWidth={1.5} />
             AI Trả lời
-          </button>
+          </button>}
           <button
             type="button"
             onClick={handleClose}
-            className="p-2 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--muted)] hover:bg-[var(--hover)] transition-colors"
-            title="Đóng"
+            className="neo-icon-button"
+            title={closeLabel}
+            aria-label={closeLabel}
           >
             <X className="w-5 h-5" strokeWidth={1.5} />
           </button>
@@ -469,7 +485,7 @@ export function EmailDetailFull({
 
       {/* Email Header */}
       <div className="px-6 py-4 border-b border-[var(--border)]">
-        <h1 className="text-[20px] font-medium text-[var(--foreground)] mb-4">
+        <h1 ref={heading} tabIndex={-1} className="mb-4 break-words text-xl font-semibold leading-7">
           {email.subject || '(Không có tiêu đề)'}
         </h1>
 
@@ -504,29 +520,37 @@ export function EmailDetailFull({
           </div>
         </div>
 
+        {onExplainPriority && (
+          <button type="button" onClick={onExplainPriority}
+            className="neo-target mt-3 inline-flex items-center gap-2 border-s-2 border-[var(--selection-line)] px-2 py-2 text-sm font-medium text-[var(--accent-foreground)] hover:bg-[var(--hover)]"
+          >
+            <ListTodo size={16} strokeWidth={1.5} aria-hidden="true" />
+            Ưu tiên và nguồn
+          </button>
+        )}
+
+        <SaveOfflineEmail key={email.id} email={email} />
+
         {/* AI Analysis - Compact inline */}
         {(email.category || email.priority || email.summary) && (
           <div className="mt-4">
             <button
               type="button"
               onClick={() => setShowAIAnalysis(!showAIAnalysis)}
+              aria-expanded={showAIAnalysis}
               className="flex items-center gap-2 text-[13px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
             >
-              <Sparkles className="w-3.5 h-3.5" strokeWidth={1.5} />
+              <ListTodo className="w-3.5 h-3.5" strokeWidth={1.5} />
               <span className="flex items-center gap-2">
-                {email.priority && (
+                {email.priority && !onExplainPriority && (
                   <span className={cn(
                     'px-1.5 py-0.5 rounded text-[11px] font-medium',
-                    (email.priority || 0) >= 4 ? 'bg-red-100 dark:bg-red-900/30 text-gray-900 dark:text-white' : 'bg-[var(--secondary)] text-[var(--muted)]'
+                    (email.priority || 0) >= 4 ? 'bg-[var(--warning-bg)] text-[var(--warning)]' : 'bg-[var(--secondary)] text-[var(--muted)]'
                   )}>
                     {getPriorityLabel(email.priority)}
                   </span>
                 )}
-                {email.category && (
-                  <span className="px-1.5 py-0.5 rounded text-[11px] font-medium bg-[var(--secondary)] text-[var(--muted)]">
-                    {getCategoryLabel(email.category)}
-                  </span>
-                )}
+                <MailCategoryLabel category={email.category} />
               </span>
               {showAIAnalysis ? (
                 <ChevronUp className="w-3.5 h-3.5" strokeWidth={1.5} />
@@ -547,22 +571,23 @@ export function EmailDetailFull({
       </div>
 
       {/* Email Body */}
-      <div className="flex-1 overflow-y-auto px-6 py-6">
+      <div role="region" aria-label="Nội dung thư" tabIndex={0} className="flex-1 overflow-y-auto px-6 py-6">
+        <EmailConversation key={email.id} email={email} />
         {email.body_html && email.body_html.replace(/<[^>]*>/g, '').trim().length > 10 ? (
           <div
-            className="email-content prose prose-sm dark:prose-invert max-w-none text-[var(--foreground)] animate-fadeIn"
+            className="email-content prose prose-sm dark:prose-invert max-w-none text-[var(--foreground)] "
             dangerouslySetInnerHTML={{ __html: sanitizeEmailHtml(email.body_html, { allowImages: true }) }}
           />
         ) : email.body_text && email.body_text.trim().length > 0 ? (
-          <pre className="whitespace-pre-wrap font-sans text-[15px] text-[var(--foreground)] leading-relaxed bg-transparent p-0 m-0 animate-fadeIn">
+          <pre className="whitespace-pre-wrap break-words font-sans text-[15px] text-[var(--foreground)] leading-relaxed bg-transparent p-0 m-0 ">
             {email.body_text}
           </pre>
         ) : email.snippet && email.snippet.trim().length > 0 ? (
-          <div className="text-[15px] text-[var(--foreground)] leading-relaxed whitespace-pre-wrap animate-fadeIn">
+          <div className="text-[15px] text-[var(--foreground)] leading-relaxed whitespace-pre-wrap ">
             {email.snippet}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-16 text-center animate-fadeIn">
+          <div className="flex flex-col items-center justify-center py-16 text-center ">
             <div className="w-16 h-16 rounded-full bg-[var(--secondary)] flex items-center justify-center mb-4">
               <Mail className="w-8 h-8 text-[var(--muted-foreground)]" strokeWidth={1.5} />
             </div>
@@ -577,33 +602,33 @@ export function EmailDetailFull({
 
         {/* Attachments */}
         {attachments.length > 0 && (
-          <AttachmentList attachments={attachments} />
+          <AttachmentList attachments={attachments}
+              purchaseEmailId={/\bPO-[0-9]{1,12}\b/i.test(email.subject ?? '') && email.direction !== 'outbound' ? email.id : undefined} />
         )}
       </div>
 
       {/* AI Bottom Bar */}
-      <AIBottomBar
+      {email.direction !== 'outbound' && <AIBottomBar
         emailId={email.id}
         category={currentCategory}
-        priority={email.priority}
         onReplySelect={(reply) => {
           handleUseDraft(`Re: ${email.subject}`, reply)
         }}
-      />
+      />}
 
       {/* Quick Reply Bar */}
       {!showAIAssistant && (
         <div className="px-6 py-4 border-t border-[var(--border)] bg-[var(--secondary)]">
           <div className="flex items-center gap-2">
-            <button
+            {email.direction !== 'outbound' && <button
               type="button"
               onClick={() => handleUseDraft(`Re: ${email.subject}`, '')}
               className="flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg text-[14px] font-medium hover:opacity-90 transition-colors"
             >
               <Reply className="w-4 h-4" strokeWidth={1.5} />
               Trả lời
-            </button>
-            <button
+            </button>}
+            <button onClick={() => router.push('/compose?forward=' + encodeURIComponent(email.id))}
               type="button"
               className="flex items-center gap-2 px-4 py-2 border border-[var(--border)] rounded-lg text-[14px] text-[var(--muted)] hover:bg-[var(--hover)] transition-colors"
             >
@@ -615,7 +640,7 @@ export function EmailDetailFull({
       )}
 
       {/* AI Reply Assistant */}
-      {showAIAssistant && (
+      {showAIAssistant && email.direction !== 'outbound' && (
         <div className="border-t border-[var(--border)]">
           <ReplyAssistant
             email={email}

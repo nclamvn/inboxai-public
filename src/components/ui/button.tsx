@@ -15,7 +15,6 @@ const buttonVariants = {
     primary: [
       'bg-[var(--primary)] text-[var(--primary-foreground)]',
       'hover:bg-[var(--primary-hover)]',
-      'shadow-sm hover:shadow-md',
       'border border-transparent',
     ].join(' '),
     secondary: [
@@ -34,9 +33,8 @@ const buttonVariants = {
       'border border-transparent',
     ].join(' '),
     danger: [
-      'bg-[var(--error)] text-white',
-      'hover:bg-red-700 dark:hover:bg-red-600',
-      'shadow-sm hover:shadow-md',
+      'bg-[var(--error)] text-[var(--status-on-fill)]',
+      'hover:opacity-90',
       'border border-transparent',
     ].join(' '),
     'danger-outline': [
@@ -45,9 +43,8 @@ const buttonVariants = {
       'border border-[var(--error)]',
     ].join(' '),
     success: [
-      'bg-[var(--success)] text-white',
-      'hover:bg-green-700 dark:hover:bg-green-600',
-      'shadow-sm hover:shadow-md',
+      'bg-[var(--success)] text-[var(--status-on-fill)]',
+      'hover:opacity-90',
       'border border-transparent',
     ].join(' '),
     link: [
@@ -58,15 +55,15 @@ const buttonVariants = {
     ].join(' '),
   },
   size: {
-    xs: 'h-7 px-2 text-xs gap-1 rounded-md',
-    sm: 'h-8 px-3 text-[13px] gap-1.5 rounded-lg',
-    md: 'h-10 px-4 text-[14px] gap-2 rounded-lg',
-    lg: 'h-12 px-6 text-[15px] gap-2 rounded-xl',
-    xl: 'h-14 px-8 text-base gap-3 rounded-xl',
-    icon: 'h-10 w-10 rounded-lg p-0',
-    'icon-xs': 'h-7 w-7 rounded-md p-0',
-    'icon-sm': 'h-8 w-8 rounded-lg p-0',
-    'icon-lg': 'h-12 w-12 rounded-xl p-0',
+    xs: 'h-7 px-2 text-xs gap-1 rounded-[var(--radius-control)]',
+    sm: 'h-8 px-3 text-[13px] gap-2 rounded-[var(--radius-control)]',
+    md: 'h-10 px-4 text-[14px] gap-2 rounded-[var(--radius-control)]',
+    lg: 'h-12 px-6 text-[15px] gap-2 rounded-[var(--radius-control)]',
+    xl: 'h-14 px-8 text-base gap-3 rounded-[var(--radius-control)]',
+    icon: 'h-10 w-10 rounded-[var(--radius-control)] p-0',
+    'icon-xs': 'h-7 w-7 rounded-[var(--radius-control)] p-0',
+    'icon-sm': 'h-8 w-8 rounded-[var(--radius-control)] p-0',
+    'icon-lg': 'h-12 w-12 rounded-[var(--radius-control)] p-0',
   },
 };
 
@@ -137,11 +134,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           // Base styles
           'inline-flex items-center justify-center',
           'font-medium',
-          'transition-all duration-150',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]',
+          'transition-colors duration-150',
+          'focus-ring neo-target',
           'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
-          'active:scale-[0.98]',
-          'select-none',
+              'select-none',
           // Variant
           buttonVariants.variant[variant],
           // Size
@@ -157,7 +153,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {/* Loading spinner */}
         {loading && (
-          <Loader2 className={cn('animate-spin', getLoaderSize())} strokeWidth={2} />
+          <Loader2 aria-hidden="true" className={cn('animate-spin', getLoaderSize())} strokeWidth={2} />
         )}
 
         {/* Left icon (hidden when loading) */}

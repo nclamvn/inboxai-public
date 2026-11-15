@@ -1,0 +1,96 @@
+{
+  "engine": "157.0.8103.51",
+  "results": [
+    {
+      "name": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "styles": {
+        "navy": "#174A72",
+        "canvas": "#F7F9FA",
+        "surface": "#FFFFFF",
+        "border": "#E1E7EB",
+        "text": "#192532",
+        "accent": "2px",
+        "grid": "4px",
+        "font": "\"Inter Variable\", system-ui, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+        "fontLoaded": true,
+        "horizontalOverflow": false,
+        "bodyMotion": "1e-05s"
+      },
+      "axe": [],
+      "runtimeErrors": [],
+      "readingAxe": []
+    },
+    {
+      "name": "tablet",
+      "viewport": {
+        "width": 834,
+        "height": 1112
+      },
+      "styles": {
+        "navy": "#174A72",
+        "canvas": "#F7F9FA",
+        "surface": "#FFFFFF",
+        "border": "#E1E7EB",
+        "text": "#192532",
+        "accent": "2px",
+        "grid": "4px",
+        "font": "\"Inter Variable\", system-ui, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+        "fontLoaded": true,
+        "horizontalOverflow": false,
+        "bodyMotion": "1e-05s"
+      },
+      "axe": [],
+      "runtimeErrors": []
+    },
+    {
+      "name": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "styles": {
+        "navy": "#174A72",
+        "canvas": "#F7F9FA",
+        "surface": "#FFFFFF",
+        "border": "#E1E7EB",
+        "text": "#192532",
+        "accent": "2px",
+        "grid": "4px",
+        "font": "\"Inter Variable\", system-ui, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+        "fontLoaded": true,
+        "horizontalOverflow": false,
+        "bodyMotion": "1e-05s"
+      },
+      "axe": [],
+      "runtimeErrors": [],
+      "dialogAxe": [],
+      "composeAxe": []
+    },
+    {
+      "name": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "styles": {
+        "navy": "#174A72",
+        "canvas": "#111C25",
+        "surface": "#182630",
+        "border": "#344550",
+        "text": "#E9F0F4",
+        "accent": "2px",
+        "grid": "4px",
+        "font": "\"Inter Variable\", system-ui, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+        "fontLoaded": true,
+        "horizontalOverflow": false,
+        "bodyMotion": "1e-05s"
+      },
+      "axe": [],
+      "runtimeErrors": []
+    }
+  ]
+}

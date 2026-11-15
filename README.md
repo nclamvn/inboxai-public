@@ -25,9 +25,14 @@ Hệ thống quản lý email thông minh sử dụng AI, được thiết kế 
 | Auth | Supabase Auth, Google OAuth |
 | Email Service | Resend |
 
+## Giai đoạn 2
+
+Tiêu chuẩn sản phẩm, audit, kế hoạch PR và security gate tại [docs/phase-2](docs/phase-2/README.md).
+Chưa kết nối email thật hoặc triển khai production trước khi gate được kiểm chứng.
+
 ## Yêu Cầu Hệ Thống
 
-- Node.js 18.x trở lên
+- Node.js 22.12 trở lên (CI dùng Node.js 24)
 - npm hoặc yarn
 - Tài khoản Supabase (miễn phí)
 - API key OpenAI hoặc Anthropic
