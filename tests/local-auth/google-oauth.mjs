@@ -157,6 +157,7 @@ export async function startGoogleOAuthFixture() {
           headers: [{ name: 'Content-Disposition', value: 'attachment' }],
         }))
         if (section === 'attachments') {
+          box.attachmentReads.push(id+'/'+attachmentId)
           const pause = box.attachmentPauses.get(id)
           if (pause) {
             box.attachmentPauses.delete(id)
@@ -194,7 +195,7 @@ export async function startGoogleOAuthFixture() {
     url: `http://127.0.0.1:${server.address().port}`, calls,
     registerMailbox(email, canSend = false, canModify = false) {
       const box = { online: true, drops: 0, fullReads: 0, historyStarts: [], messages: new Map(), history: [],
-        attachmentPauses: new Map() }
+        attachmentPauses: new Map(), attachmentReads: [] }
       const grant = { mailbox: box, email, subject: email, scopes: [gmailReadScope, googleEmailScope, ...(canSend ? [gmailSendScope] : []), ...(canModify ? [gmailModifyScope] : [])] }
       return {
         tokens: issue(grant, true), box,

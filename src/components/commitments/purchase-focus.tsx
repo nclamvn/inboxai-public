@@ -28,8 +28,8 @@ const updates = {
   stale: 'Căn cứ của bản bàn giao đã thay đổi. Hãy kiểm tra hồ sơ trước khi duyệt.',
 }
 
-function FocusRow({ item, scan, scanUnavailable }: {
-  item: PurchaseFocusItem; scan?: SupplementScan; scanUnavailable: boolean
+function FocusRow({ item, scan, scanUnavailable, refresh }: {
+  item: PurchaseFocusItem; scan?: SupplementScan; scanUnavailable: boolean; refresh: () => Promise<unknown>
 }) {
   const detail = item.orderId && item.invoiceId
     ? paymentHref(item.orderId,item.invoiceId)
@@ -56,7 +56,7 @@ function FocusRow({ item, scan, scanUnavailable }: {
         {file && <a href={file} className={link}>Tải chứng từ · {item.filename}</a>}
         {item.openCount>1 && <Link href="/commitments/dues" prefetch={false} className={link}>Xem {item.openCount-1} việc khác của PO</Link>}
       </div>
-      {item.orderId && <PurchaseSupplement scan={scan} unavailable={scanUnavailable} />}
+      {item.orderId && <PurchaseSupplement scan={scan} unavailable={scanUnavailable} refresh={refresh} />}
     </div>
     {detail && <Link href={detail} prefetch={false} className={link}>
       {actions[item.task]}<ArrowRight size={16} className="shrink-0" aria-hidden="true" />
@@ -89,6 +89,6 @@ export function PurchaseFocus({ userId, items, unavailable }: {
       <Link href="/commitments/dues" prefetch={false} className={link}>Xem bảng công nợ</Link>
     </div>
     <ul className="divide-y divide-[var(--border)]">{items.map(item => <FocusRow key={item.id} item={item} scan={scan.data?.find(candidate=>candidate.caseId===item.id)}
-      scanUnavailable={scan.isError} />)}</ul>
+      scanUnavailable={scan.isError} refresh={scan.refetch} />)}</ul>
   </section>
 }

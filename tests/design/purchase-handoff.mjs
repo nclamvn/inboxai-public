@@ -12,7 +12,7 @@ const post = (value, headers = key()) => ({
 })
 
 export async function rehearsePurchaseHandoff({ app,page,deliver,request,accounts,capture,login,previousEmail,admin,
-  email,password,sql,googleProvider,record,runtimeErrors,orderCode,supplier,warehouse,purchaseSettlement,purchaseReturn,purchaseDues,purchaseExceptions,purchaseBatches,purchaseFocus,purchaseSupplements,purchaseRelease,connectMailbox,output }) {
+  email,password,sql,googleProvider,record,runtimeErrors,orderCode,supplier,warehouse,purchaseSettlement,purchaseReturn,purchaseDues,purchaseExceptions,purchaseBatches,purchaseFocus,purchaseSupplements,purchaseRelease,connectMailbox,output,restartNext }) {
   const reviewerEmail = 'ke-toan-handoff@example.test'
   for (const address of [reviewerEmail,previousEmail]) {
     assert.equal((await admin.from('whitelist').upsert({email:address,is_active:true},{onConflict:'email'})).error,null)
@@ -50,11 +50,13 @@ export async function rehearsePurchaseHandoff({ app,page,deliver,request,account
   if (purchaseRelease) {
     const { rehearsePurchaseRelease } = await import('../eval/purchase-release/browser.mjs')
     const { rehearsePurchaseApprovalFreshness } = await import('./purchase-approval-freshness.mjs')
+    const { rehearseSupplementProgress } = await import('./purchase-supplement-progress.mjs')
     const reviewerMailbox = await connectMailbox('ke-toan-release',reviewerId)
     const options = { app,page,reviewer,outsider,deliver,request,accounts,
-      fileAction,assign,invoice,receipts,warehouse,capture,record,output,sql,reviewerId,reviewerMailbox }
+      fileAction,assign,invoice,receipts,warehouse,capture,record,output,sql,reviewerId,reviewerMailbox,restartNext }
     await rehearsePurchaseRelease(options)
     await rehearsePurchaseApprovalFreshness(options)
+    await rehearseSupplementProgress(options)
     assert.equal(googleProvider.calls.sendAttempts,0)
     assert.deepEqual(runtimeErrors,[])
     return

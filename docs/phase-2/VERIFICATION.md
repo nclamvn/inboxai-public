@@ -1,5 +1,40 @@
 # Verification record
 
+## Rà soát chứng từ có thể tiếp tục sau gián đoạn
+
+Ngày 15/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,
+Chrome 157.0.8103.79, PostgreSQL 16 và hai Gmail giả lập qua loopback.
+`npm run test:purchase-release` exit 0 với 25 kiểm tra, gồm ba nhóm
+mới trên hồ sơ PO-9984 với 24 phần đính kèm CSV.
+
+- Mất phản hồi sau khi PostgreSQL ghi một lượt rà, trong lúc Chrome
+  ngắt mạng và khởi động lại tiến trình Next.js. Trang tải lại hiện
+  6/24 tệp. Số lượt đọc phần đính kèm từ Gmail giả lập vẫn là sáu.
+  Giả lập Gmail ngắt kết nối cũng giữ nguyên 6/24 và báo lý do.
+- Đồng bộ lại một phần đính kèm đã đổi kích thước. Trang hiện 5/24.
+  Lượt kế tiếp đọc lại đúng phần đổi cùng năm phần chưa rà. Hoàn tất
+  24 tệp với 25 lần đọc phần đính kèm. Bản B được phát hiện ngoài
+  sáu tệp đầu và chặn yêu cầu duyệt A khi B còn chưa ghi vào sổ.
+- Sau bàn giao B, trạng thái rà của A không ghi được vào phiên bản
+  mới. Mua hàng rà tiếp 12 tệp còn trong phạm vi B. Kế toán chỉ đọc
+  lại chứng từ đã bàn giao và duyệt đúng một lần. Quyết định sau
+  tải lại vẫn trỏ đúng email và phần đính kèm. Người ngoài hồ sơ
+  không đọc hay ghi được tiến độ qua API.
+
+| Lệnh | Kết quả local |
+| --- | --- |
+| `npm run test:purchase-release` | Exit 0. 25 kiểm tra. Build production hoàn tất 121 bước tạo trang. |
+| `npm run test:purchase-supplements` | Exit 0. 41 kiểm tra hồi quy. |
+| `npm run test:design -- --isolated`, `npm run test:platform -- --isolated` | Exit 0. 29 và 19 kiểm tra. |
+| `npm run test:staging -- --isolated` | Exit 0. 31 kiểm tra nâng cấp, sao lưu và khôi phục. |
+| `npm run lint`, `npm run typecheck`, `npm run test:unit`, `npm run test:integration`, `npm run test:db` | Exit 0. Còn 92 cảnh báo lint cũ. 252 unit, 200 integration và 47 nhóm database. |
+
+Lượt thử đầu phát hiện giao diện tự thử lại lần ghi khi mất phản hồi.
+Đã tắt thử lại tự động cho nút rà. Bộ thử cũng được chỉnh để chờ hết
+nhóm có bản B vì các phần cùng email có cùng mốc thời gian nguồn.
+Hai ảnh mới qua axe và kiểm tra tràn ngang. Toàn bộ kiểm thử ở local
+với dữ liệu giả lập. [Cách rà tiếp và điều kiện duyệt](PURCHASE_LOCAL_RELEASE.md#tiếp-tục-rà-soát-sau-gián-đoạn).
+
 ## Chặn duyệt bản cũ khi có chứng từ đính chính
 
 Ngày 15/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,

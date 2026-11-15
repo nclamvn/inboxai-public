@@ -16,7 +16,7 @@ const command = (value, key = randomUUID()) => ({
 })
 const at = daysAgo => new Date(Date.now() - daysAgo * 86_400_000).toISOString()
 
-export async function rehearseWarehouseReconciliation({ app, base, email, previousEmail, password, userId, admin, appFetch, googleProvider, record, output, warehouseCorrection = false, multilinePurchase = false, purchaseCsv = false, purchasePayment = false, purchaseInstallments = false, purchaseHandoff = false, purchaseSettlement = false, purchaseReturn = false, purchaseDues = false, purchaseExceptions = false, purchaseBatches = false, purchaseFocus = false, purchaseSupplements = false, purchaseRelease = false, sql }) {
+export async function rehearseWarehouseReconciliation({ app, base, email, previousEmail, password, userId, admin, appFetch, googleProvider, record, output, warehouseCorrection = false, multilinePurchase = false, purchaseCsv = false, purchasePayment = false, purchaseInstallments = false, purchaseHandoff = false, purchaseSettlement = false, purchaseReturn = false, purchaseDues = false, purchaseExceptions = false, purchaseBatches = false, purchaseFocus = false, purchaseSupplements = false, purchaseRelease = false, sql, restartNext }) {
   const vault = new CredentialVault(admin, parseKeyring(vaultKeys, 'local1'))
   const accounts = {}
   async function connectMailbox(department, ownerId) {
@@ -92,7 +92,7 @@ export async function rehearseWarehouseReconciliation({ app, base, email, previo
       const { rehearsePurchaseHandoff } = await import('./purchase-handoff.mjs')
       await rehearsePurchaseHandoff({ app, page, deliver, request, accounts, capture, login, previousEmail, admin,
         email, password, sql, googleProvider, record, runtimeErrors, orderCode: purchaseOrder, supplier, warehouse,
-        purchaseSettlement, purchaseReturn, purchaseDues, purchaseExceptions, purchaseBatches, purchaseFocus, purchaseSupplements, purchaseRelease, connectMailbox, output })
+        purchaseSettlement, purchaseReturn, purchaseDues, purchaseExceptions, purchaseBatches, purchaseFocus, purchaseSupplements, purchaseRelease, connectMailbox, output, restartNext })
       return
     }
     if (purchaseInstallments) {

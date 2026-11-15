@@ -9,8 +9,44 @@ const link = (page,name) => page.getByRole('link',{name,exact:true})
 const status = (page,text) => page.getByRole('status').filter({hasText:text}).waitFor()
 const blockText = 'Có chứng từ đính chính mới. Mua hàng cần kiểm tra và bàn giao lại trước khi duyệt.'
 
+export async function prepareSupplementalHandoff(options,{po,original,current,supplier,due}) {
+  const {app,page,reviewer,deliver,request,fileAction,invoice} = options
+  const initial = await setupPurchase({...options,supplier,paymentDue:due,reference:po,number:original})
+  const scope = () => request('/api/commitments/payment?id='+initial.orderId)
+  await reviewer.goto(app+handoffPage+'?id='+initial.handoffId)
+  await button(reviewer,'Yêu cầu bổ sung chứng từ').click()
+  await reviewer.getByLabel('Chứng từ cần bổ sung').fill('Cần xác minh hạn thanh toán trên hóa đơn đính chính.')
+  await button(reviewer,'Giao yêu cầu cho Mua hàng').click()
+  await status(reviewer,'Đã giao yêu cầu bổ sung cho Mua hàng.')
+
+  const csv = (replaces,number,date,reference=po) => [
+    invoice+',payment_due',[reference,number,replaces,'B',30,'bộ',2000,'VND',date].join(','),'',
+  ].join('\n')
+  const mail = (uid,content,age,from=supplier,filename='dinh-chinh.csv') =>
+    deliver(po+'-'+uid,'mua-hang',from,age,'Bổ sung hóa đơn',
+      'Phiên bản gửi kèm để Mua hàng kiểm tra.',[{filename,contentType:'text/csv',data:Buffer.from(content).toString('base64')}],po)
+
+  const bytes = csv(original,current,due)
+  await fileAction(await mail('a',bytes,3),'dinh-chinh.csv','Ghi nhận hóa đơn')
+  await page.goto(app+'/commitments/payment?id='+initial.orderId)
+
+  async function handover() {
+    await button(page,'Bàn giao bản bổ sung').click()
+    await status(page,'Đã bàn giao hồ sơ cho Kế toán.')
+    const snapshot = await scope()
+    const result = await request(handoffs+'?'+new URLSearchParams({commitment:initial.orderId,invoice:snapshot.invoice.id}))
+    return result.pending.id
+  }
+
+  const target = await handover()
+  await reviewer.goto(app+handoffPage+'?id='+target)
+  await reviewer.getByRole('region',{name:'So sánh bản bổ sung'}).getByText('Bản bổ sung · '+current,{exact:true}).waitFor()
+  await button(reviewer,'Duyệt bản bổ sung').waitFor()
+  return { initial,scope,csv,mail,bytes,target,handover }
+}
+
 export async function rehearsePurchaseApprovalFreshness(options) {
-  const { app,page,reviewer,outsider,accounts,deliver,request,fileAction,capture,record,invoice,sql,reviewerId,reviewerMailbox } = options
+  const { app,page,reviewer,outsider,accounts,request,capture,record,sql,reviewerId,reviewerMailbox } = options
   const supplier = 'yen@linh-kien.example.test'
   const due = new Date(Date.now()+6*86_400_000).toISOString().slice(0,10)
   const laterDue = new Date(Date.now()+10*86_400_000).toISOString().slice(0,10)
@@ -21,40 +57,8 @@ export async function rehearsePurchaseApprovalFreshness(options) {
     return response.json()
   }
 
-  async function pendingCase(po,original,current) {
-    const initial = await setupPurchase({...options,supplier,paymentDue:due,reference:po,number:original})
-    const scope = () => request('/api/commitments/payment?id='+initial.orderId)
-    await reviewer.goto(app+handoffPage+'?id='+initial.handoffId)
-    await button(reviewer,'Yêu cầu bổ sung chứng từ').click()
-    await reviewer.getByLabel('Chứng từ cần bổ sung').fill('Cần xác minh hạn thanh toán trên hóa đơn đính chính.')
-    await button(reviewer,'Giao yêu cầu cho Mua hàng').click()
-    await status(reviewer,'Đã giao yêu cầu bổ sung cho Mua hàng.')
-
-    const csv = (replaces,number,date,reference=po) => [
-      invoice+',payment_due',[reference,number,replaces,'B',30,'bộ',2000,'VND',date].join(','),'',
-    ].join('\n')
-    const mail = (uid,content,age,from=supplier,filename='dinh-chinh.csv') =>
-      deliver(po+'-'+uid,'mua-hang',from,age,'Bổ sung hóa đơn',
-        'Phiên bản gửi kèm để Mua hàng kiểm tra.',[{filename,contentType:'text/csv',data:Buffer.from(content).toString('base64')}],po)
-
-    const bytes = csv(original,current,due)
-    await fileAction(await mail('a',bytes,3),'dinh-chinh.csv','Ghi nhận hóa đơn')
-    await page.goto(app+'/commitments/payment?id='+initial.orderId)
-
-    async function handover() {
-      await button(page,'Bàn giao bản bổ sung').click()
-      await status(page,'Đã bàn giao hồ sơ cho Kế toán.')
-      const snapshot = await scope()
-      const result = await request(handoffs+'?'+new URLSearchParams({commitment:initial.orderId,invoice:snapshot.invoice.id}))
-      return result.pending.id
-    }
-
-    const target = await handover()
-    await reviewer.goto(app+handoffPage+'?id='+target)
-    await reviewer.getByRole('region',{name:'So sánh bản bổ sung'}).getByText('Bản bổ sung · '+current,{exact:true}).waitFor()
-    await button(reviewer,'Duyệt bản bổ sung').waitFor()
-    return { initial,scope,csv,mail,bytes,target,handover }
-  }
+  const pendingCase = (po,original,current) =>
+    prepareSupplementalHandoff(options,{po,original,current,supplier,due})
 
   const control = await pendingCase('PO-9974','INV-9074','INV-9174')
   sql(`DO $$ BEGIN
