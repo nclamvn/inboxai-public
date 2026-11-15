@@ -138,3 +138,24 @@ Mỗi lượt kiểm tra tối đa sáu tệp trong tám giây. Nếu chưa ki�
 đủ, yêu cầu duyệt dừng và báo rõ để kiểm tra lại. Bản chưa đồng bộ
 chưa có mặt trong danh sách kiểm tra. Biên nhận đã ghi thành công
 được trả lại khi thử lại cùng yêu cầu.
+
+## Tiếp tục rà soát sau gián đoạn
+
+Mở hồ sơ cần bổ sung trong Inbox và chọn **Rà soát chứng từ**.
+InboxAI lưu các tệp đã kiểm tra theo hồ sơ, phiên bản hóa đơn,
+ID phần đính kèm và dấu nhận diện nguồn. **Rà tiếp chứng từ** lấy
+tối đa sáu tệp chưa có kết quả còn hiệu lực. Kết quả lưu ở
+PostgreSQL và hiện lại khi tải trang sau mất kết nối hoặc khởi
+động lại ứng dụng. Tệp chưa đọc được vẫn chờ xử lý. Khi một phần
+tệp đổi dấu nhận diện, chỉ kết quả của phần đó mất hiệu lực.
+
+Mua hàng thấy số tệp đã rà, chứng từ khớp và lý do cần đối chiếu.
+Kế toán nhận thông báo chờ kiểm tra hoặc chờ bàn giao bản mới,
+với quyền tải giới hạn ở chứng từ đã bàn giao. Dấu kiểm tra lúc
+duyệt ràng buộc toàn bộ danh sách hiện hành và kết quả đã lưu.
+Nếu có bản đính chính hợp lệ hoặc danh sách đổi trước khi ghi
+quyết định, chốt duyệt cũ vẫn có hiệu lực. Khi bàn giao hóa đơn
+khác, tiến độ được tính lại theo phiên bản mới.
+
+Chạy kịch bản Chrome bằng `npm run test:purchase-release`.
+Dữ liệu nghiệm thu gồm 24 tệp CSV trên hai hộp Gmail giả lập.

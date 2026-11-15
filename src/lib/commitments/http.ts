@@ -67,6 +67,7 @@ export async function ledgerRpc(client: LedgerSession, name: 'save_commitment' |
   | 'preview_purchase_batch' | 'list_purchase_batches' | 'read_purchase_batch' | 'read_purchase_batch_receipt'
   | 'confirm_purchase_batch' | 'resolve_purchase_batch_files'
   | 'list_purchase_focus'
+  | 'read_purchase_supplement_progress' | 'save_purchase_supplement_progress'
   | 'list_purchase_supplement_sources' | 'inspect_purchase_supplement' | 'confirm_purchase_supplement'
   | 'read_purchase_payment' | 'list_purchase_payment_attention' | 'read_purchase_payment_receipt' | 'preview_purchase_payment' | 'confirm_purchase_payment'
   | 'read_purchase_csv_proof' | 'check_purchase_csv_source' | 'preview_purchase_csv' | 'read_purchase_csv_receipt' | 'confirm_purchase_csv'

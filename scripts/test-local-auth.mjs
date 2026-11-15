@@ -459,7 +459,7 @@ try {
       previousEmail, previousId, anon, anonymousClient, restartNext, smtpWire, record, output: journeyOutput })
   } else if (warehouseReconciliation) {
     const { rehearseWarehouseReconciliation } = await import('../tests/design/warehouse-reconciliation.mjs')
-    await rehearseWarehouseReconciliation({ app, base, email, previousEmail, password, userId, admin, appFetch, googleProvider, record, output: journeyOutput, warehouseCorrection, multilinePurchase, purchaseCsv, purchasePayment, purchaseInstallments, purchaseHandoff, purchaseSettlement, purchaseReturn, purchaseDues, purchaseExceptions, purchaseBatches, purchaseFocus, purchaseSupplements, purchaseRelease, sql })
+    await rehearseWarehouseReconciliation({ app, base, email, previousEmail, password, userId, admin, appFetch, googleProvider, record, output: journeyOutput, warehouseCorrection, multilinePurchase, purchaseCsv, purchasePayment, purchaseInstallments, purchaseHandoff, purchaseSettlement, purchaseReturn, purchaseDues, purchaseExceptions, purchaseBatches, purchaseFocus, purchaseSupplements, purchaseRelease, sql, restartNext })
   } else if (deliveryCommitments) {
     const { rehearseDeliveryCommitments } = await import('../tests/design/delivery-commitments.mjs')
     await rehearseDeliveryCommitments({ app, base, email, previousEmail, password, userId, admin, appFetch, googleProvider, record, output: journeyOutput })
