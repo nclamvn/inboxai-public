@@ -3,6 +3,7 @@ import { z } from 'zod'
 import type { AttentionItem } from '@/lib/commitments/attention'
 import type { CommitmentProposal } from '@/lib/commitments/detection'
 import { scanCatchupProposals } from '@/lib/commitments/detection-server'
+import { purchaseFocus } from '@/lib/commitments/purchase-focus'
 import { ledgerJson, ledgerRpc, withLedgerSession } from '@/lib/commitments/http'
 
 const accountFilter = z.array(z.uuid().transform(id => id.toLowerCase())).max(50)
@@ -15,9 +16,10 @@ export async function GET(request: NextRequest) {
     const read = async (ids: string[]): Promise<AttentionPage> =>
       ledgerRpc(client, 'list_commitment_attention', { p_accounts: accounts.data, p_reply_ids: ids })
 
-    const [initial, status, invoices] = await Promise.all([read([]),
+    const [initial, status, invoices, focus] = await Promise.all([read([]),
       ledgerRpc(client, 'read_commitment_catchup_status', { p_accounts: accounts.data }),
       ledgerRpc(client, 'list_purchase_payment_attention', { p_accounts: accounts.data }),
+      ledgerRpc(client, 'list_purchase_focus', { p_accounts: accounts.data }).then(value => purchaseFocus.parse(value)).catch(() => null),
     ])
     const replies = new Map<string, CommitmentProposal>()
     if (initial.tracking) {
@@ -31,7 +33,7 @@ export async function GET(request: NextRequest) {
       }
     }
     const page = replies.size ? await read([...replies.keys()]) : initial
-    return ledgerJson({ accounts: status, invoices, items: page.items.map(item => {
+    return ledgerJson({ accounts: status, invoices, purchaseFocus: focus, items: page.items.map(item => {
       const proposal = item.reason === 'reply' ? replies.get(item.id) : null
       return { ...item, reply: proposal ? {
         emailId: proposal.emailId, subject: proposal.subject, quote: proposal.quote, needsReview: !proposal.review, correction: proposal.kind === 'correction' ||

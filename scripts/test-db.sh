@@ -46,6 +46,9 @@ for task_migration in supabase/migrations/*.sql; do
   if [[ "$task_migration" == "supabase/migrations/20261114060000_purchase_installments.sql" ]]; then
     psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -v seed_installments=true -f tests/db/purchase-installments-upgrade.sql
   fi
+  if [[ "$task_migration" == "supabase/migrations/20261115010000_purchase_payment_returns.sql" ]]; then
+    psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -v seed_return_upgrade=true -f tests/db/purchase-return-upgrade.sql
+  fi
   echo "Applying $task_migration"
   psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f "$task_migration"
   if [[ "$task_migration" == "supabase/migrations/20261111090000_ask_inbox.sql" ]]; then
@@ -59,6 +62,12 @@ for task_migration in supabase/migrations/*.sql; do
   fi
   if [[ "$task_migration" == "supabase/migrations/20261114060000_purchase_installments.sql" ]]; then
     psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -v seed_installments=false -f tests/db/purchase-installments-upgrade.sql
+  fi
+  if [[ "$task_migration" == "supabase/migrations/20261114070000_purchase_handoffs.sql" ]]; then
+    psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/purchase-handoff.sql
+  fi
+  if [[ "$task_migration" == "supabase/migrations/20261115010000_purchase_payment_returns.sql" ]]; then
+    psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -v seed_return_upgrade=false -f tests/db/purchase-return-upgrade.sql
   fi
 done
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/tenant-isolation.sql
@@ -94,3 +103,8 @@ psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/warehouse-reconcilia
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/multiline-purchase.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/purchase-csv.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/purchase-payment.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/purchase-settlement.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/purchase-return.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/purchase-dues.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/purchase-due-exceptions.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/purchase-batches.sql

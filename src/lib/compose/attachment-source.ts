@@ -13,9 +13,10 @@ type Client = Awaited<ReturnType<typeof createClient>>
 const sentFile = z.object({ filename: z.string(), contentType: z.string(), data: z.string(),
   sha256: z.string(), emailId: z.uuid() })
 
-async function gmailJson(token: string, path: string, limit: number) {
+async function gmailJson(token: string, path: string, limit: number, deadline?: AbortSignal) {
+  const timeout = AbortSignal.timeout(10_000)
   const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/' + path, {
-    headers: { Authorization: 'Bearer ' + token }, signal: AbortSignal.timeout(10_000),
+    headers: { Authorization: 'Bearer ' + token }, signal: deadline ? AbortSignal.any([deadline, timeout]) : timeout,
     redirect: 'error', cache: 'no-store',
   })
   if (!response.ok) throw new SendError(response.status === 404 ? 404 : 502, 'Không tải được tệp từ Gmail.')
@@ -51,10 +52,16 @@ function gmailPart(root: GmailMessagePart, partKey: string) {
 
 const maxDownload = 25 * 1024 * 1024
 
-export async function readMailAttachment(client: Client, actor: string, id: string, source?: string, limit = maxDownload, verifyGmailSource = false) {
-  const { data: attachment, error } = await client.from('attachments')
+export type AttachmentReadBudget = { signal: AbortSignal; maxGmailEnvelope?: number }
+
+export async function readMailAttachment(client: Client, actor: string, id: string, source?: string, limit = maxDownload,
+  verifyGmailSource = false, budget?: AttachmentReadBudget) {
+  const timeout = AbortSignal.timeout(10_000)
+  const deadline = budget ? AbortSignal.any([budget.signal, timeout]) : timeout
+  const attachmentQuery = client.from('attachments')
     .select('email_id, filename, size, sync_part_key, emails!inner(original_uid, user_id, sync_namespace, source_account_id, provider_deleted, is_deleted, subject, from_address, received_at)')
-    .eq('id', id).single()
+    .eq('id', id).eq('emails.user_id', actor)
+  const { data: attachment, error } = await (budget ? attachmentQuery.abortSignal(deadline) : attachmentQuery).single()
   if (error || !attachment) {
     if (verifyGmailSource) throw new SendError(404, 'Không tìm thấy tệp trong email.')
     const { data, error: storedError } = await client.rpc('read_sent_mail_file', { p_id: id })
@@ -85,10 +92,11 @@ export async function readMailAttachment(client: Client, actor: string, id: stri
   const partKey = attachment.sync_part_key
 
   if (email.sync_namespace === 'gmail' && /^[A-Za-z0-9_-]{1,128}$/.test(email.original_uid)) {
-    const token = await getValidAccessToken(actor, email.source_account_id, AbortSignal.timeout(10_000))
+    const token = await getValidAccessToken(actor, email.source_account_id, budget ? deadline : AbortSignal.timeout(10_000))
     if (!token) throw new SendError(403, 'Chưa có quyền đọc thư Gmail.')
     const path = encodeURIComponent(email.original_uid)
-    const message = await gmailJson(token, path + '?format=full', Math.ceil(maxDownload * 1.5) + 65536) as GmailMessage
+    const message = await gmailJson(token, path + '?format=full', budget?.maxGmailEnvelope ?? Math.ceil(maxDownload * 1.5) + 65536,
+      budget?.signal) as GmailMessage
     const part = message.id === email.original_uid && message.payload && typeof partKey === 'string'
       ? gmailPart(message.payload, partKey) : undefined
     if (!part?.filename) throw new SendError(404, 'Không tìm thấy tệp trong email.')
@@ -107,7 +115,7 @@ export async function readMailAttachment(client: Client, actor: string, id: stri
     if ((part.body?.size ?? 0) > limit) throw new SendError(413, 'Tệp vượt giới hạn dung lượng.')
     const data = part.body?.attachmentId
       ? z.object({ data: z.string() }).parse(await gmailJson(token,
-        path + '/attachments/' + encodeURIComponent(part.body.attachmentId), Math.ceil(limit * 1.5) + 1024)).data
+        path + '/attachments/' + encodeURIComponent(part.body.attachmentId), Math.ceil(limit * 1.5) + 1024, budget?.signal)).data
       : part.body?.data
     if (typeof data !== 'string' || !/^[A-Za-z0-9_-]*={0,2}$/.test(data)) {
       throw new SendError(502, 'Không đọc được nội dung tệp Gmail.')

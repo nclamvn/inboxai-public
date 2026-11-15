@@ -37,6 +37,5 @@ BEGIN
   THEN RAISE EXCEPTION 'New installment boundaries permit an unauthorized call'; END IF;
 END;
 $$;
-DELETE FROM auth.users WHERE id='fb910000-0000-4000-8000-000000000001';
 SELECT 'PASS: existing invoice and its pending replacement migrate to the same installment and preserve the earlier reservation' AS result;
 \endif

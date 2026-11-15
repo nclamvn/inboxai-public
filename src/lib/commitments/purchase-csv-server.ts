@@ -1,7 +1,7 @@
 import 'server-only'
 import { createHash } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
-import { readMailAttachment } from '@/lib/compose/attachment-source'
+import { readMailAttachment, type AttachmentReadBudget } from '@/lib/compose/attachment-source'
 import { SendError } from '@/lib/mail-send/contracts'
 import { CommitmentRequestError, ledgerRpc, type LedgerSession } from './http'
 import { isPurchaseCsv, purchaseCsvMaxSize } from './purchase-csv'
@@ -12,9 +12,9 @@ export function purchaseCsvService() {
   })
 }
 
-export async function readPurchaseCsv(client: LedgerSession, actor: string, emailId: string, attachmentId: string) {
+export async function readPurchaseCsv(client: LedgerSession, actor: string, emailId: string, attachmentId: string, budget?: AttachmentReadBudget) {
   try {
-    const file = await readMailAttachment(client, actor, attachmentId, emailId, purchaseCsvMaxSize, true)
+    const file = await readMailAttachment(client, actor, attachmentId, emailId, purchaseCsvMaxSize, true, budget)
     if (!isPurchaseCsv(file.filename, file.contentType)) throw new CommitmentRequestError(422, 'Tệp nguồn phải là CSV.')
     let source: string
     try {

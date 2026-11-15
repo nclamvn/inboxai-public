@@ -13,6 +13,7 @@ import { catchupHref, type CatchupAccount } from '@/lib/commitments/catchup'
 import type { AttentionItem } from '@/lib/commitments/attention'
 import { approveCommitmentReminder, LedgerApiError, loadCommitmentAttention, loadCommitmentReminder } from '@/lib/commitments/client'
 import { PurchaseLines } from './purchase-lines'
+import { PurchaseFocus } from './purchase-focus'
 import { WarehouseTotals } from './warehouse-reconciliation'
 import { deliveryLabel } from '@/lib/commitments/delivery'
 import { commitmentsHref, formatCommitmentDue, formatCommitmentMoment, ownerLabel } from '@/lib/commitments/view'
@@ -153,7 +154,7 @@ function CatchupStatus({ userId, accounts, filter, onSynced }: {
     onSettled: () => {
       void cache.invalidateQueries({ predicate: ({ queryKey }) =>
         queryKey[0] === 'emails' || (queryKey[0] === 'commitments' && queryKey[1] === userId &&
-          (queryKey[2] === 'attention' || queryKey[2] === 'catchup')),
+          (queryKey[2] === 'attention' || queryKey[2] === 'catchup' || queryKey[2] === 'purchase-supplements')),
       })
     },
   })
@@ -208,13 +209,21 @@ export function CommitmentAttention({ userId, accounts, onSynced }: {
   })
   const items = query.data?.items ?? []
   const status = query.data?.accounts ?? []
-  const invoices = query.data?.invoices ?? []
-  const refresh = () => void query.refetch()
+  const focus = query.data?.purchaseFocus ?? []
+  const focusUnavailable = query.data?.purchaseFocus === null
+  const focusedInvoices = new Set(focus.map(item=>item.invoiceId))
+  const invoices = (query.data?.invoices ?? []).filter(invoice=>!focusedInvoices.has(invoice.invoiceId))
+  const hasAttention = items.length>0 || invoices.length>0 || status.length>0 || focus.length>0 || focusUnavailable || query.isError
+  const cache = useQueryClient()
+  const refresh = () => {
+    void query.refetch()
+    void cache.invalidateQueries({ queryKey: ['commitments', userId, 'purchase-supplements'] })
+  }
 
-  if (!items.length && !invoices.length && !status.length && !query.isError && !review) return null
+  if (!hasAttention && !review) return null
   return (
     <>
-      {(items.length > 0 || invoices.length > 0 || status.length > 0 || query.isError) && (
+      {hasAttention && (
         <section aria-labelledby={title} className="border-b border-[var(--border)] bg-[var(--surface)]">
           <div className="neo-section-accent flex min-w-0 items-center justify-between gap-3 px-4 sm:px-5">
             <h2 id={title} ref={heading} tabIndex={-1} className="py-3 text-sm font-semibold">Cam kết cần chú ý</h2>
@@ -224,6 +233,7 @@ export function CommitmentAttention({ userId, accounts, onSynced }: {
             </button>
           </div>
           {query.isError && <p role="status" className="px-4 pb-3 text-sm text-[var(--error)]">Chưa cập nhật được cam kết. Thử làm mới.</p>}
+          <PurchaseFocus userId={userId} items={focus} unavailable={focusUnavailable} />
           {invoices.length > 0 && <ul aria-label="Hóa đơn cần đối soát" className="divide-y divide-[var(--border)] border-t border-[var(--border)]">
             {invoices.map(invoice => <li key={invoice.invoiceId} className="flex flex-wrap items-center gap-x-4 px-4 sm:px-5">
               <Badge variant={invoice.status === 'ready' ? 'info' : 'warning'}>{invoice.status === 'ready' ? 'Hóa đơn chờ duyệt' :

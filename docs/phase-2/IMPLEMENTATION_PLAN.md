@@ -8,6 +8,20 @@ M0-E local evidence is recorded in M0E_LOCAL_HANDOFF.md. Remote PRs/CI and hoste
 settings remain deferred, not passed. M1-A was explicitly authorized locally and is recorded in M1A_LOCAL_HANDOFF.md;
 the real-mail/production gate remains closed throughout.
 
+## Milestone delivery
+
+Owner direction on 2026-11-12 is to deliver and report a complete user workflow
+at a time. The PR scopes below support implementation, verification and rollback
+within a milestone. Complete those scopes without requiring a separate owner
+handoff for each one. When a local test depends on missing data, a provider or
+a routine business decision, use a synthetic scenario or a reversible assumption
+within the authorized scope. Record the assumption and run the scenario end to
+end. Route genuine authorization dependencies through the existing security gate.
+
+Report the user-visible result, the evidence and any unmet acceptance criteria
+together. Measurements from synthetic scenarios, scripted form use and real users
+retain their original provenance. See the [M6 local acceptance report](M6_LOCAL_HANDOFF.md).
+
 | PR | Dependencies | Scope | Acceptance criteria |
 | --- | --- | --- | --- |
 | M0-A audit and authority | none | AGENTS, standard, map/debt/risk, baseline logs | Source SHA, coverage limits, missing documents resolved from owner, no invented PASS |

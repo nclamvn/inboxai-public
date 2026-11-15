@@ -19,7 +19,7 @@ switch (mode) {
     writeFileSync(`${output}/manual.html`, html)
     if (manualPath === '--serve') {
       createServer((request, response) => {
-        if (request.method !== 'GET' || request.url !== '/') { response.writeHead(404).end(); return }
+        if (request.method !== 'GET' || !['/', '/retake'].includes(request.url)) { response.writeHead(404).end(); return }
         response.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }).end(html)
       }).listen(57341, '127.0.0.1', () => console.log('Đọc thư thủ công: http://127.0.0.1:57341/'))
     } else console.log(`${output}/manual.html`)

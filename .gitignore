@@ -26,6 +26,15 @@
 /test-results/purchase-csv/
 /test-results/purchase-payment/
 /test-results/purchase-installments/
+/test-results/purchase-handoff/
+/test-results/purchase-settlement/
+/test-results/purchase-return/
+/test-results/purchase-dues/
+/test-results/purchase-exceptions/
+/test-results/purchase-batches/
+/test-results/purchase-focus/
+/test-results/purchase-supplements/
+/test-results/purchase-release/
 /test-results/day-preview/
 /test-results/inbox-catchup/
 /test-results/reply-workflow/

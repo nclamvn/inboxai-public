@@ -36,3 +36,12 @@ test('the scorer rejects mismatched corpus hashes and duplicated case results', 
   assert.throws(() => summarize({ method: 'manual', corpusDigest, cases: [sample, sample] }, allLabels))
   assert.equal(summarize({ method: 'manual', corpusDigest, cases: [sample] }, allLabels).precision, null)
 })
+
+test('empty confirmations must agree with the submitted events', () => {
+  const allLabels = labelsForScoring()
+  const sample = { id: row.id, events: [], elapsedMs: 25 }
+  const score = record => summarize({ method: 'manual', corpusDigest, cases: [record] }, allLabels)
+  assert.equal(score({ ...sample, confirmedNoEvents: true }).byCase[0].confirmedNoEvents, true)
+  assert.throws(() => score({ ...sample, confirmedNoEvents: false }), /Empty-event confirmation/)
+  assert.throws(() => score({ ...sample, confirmedNoEvents: true, events: [candidate(labels[0])] }), /Empty-event confirmation/)
+})

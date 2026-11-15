@@ -13,6 +13,8 @@
   input,select,textarea{padding:4px 8px;border:1px solid #8494a2;border-radius:4px;box-sizing:border-box;max-width:100%}
   textarea{width:100%;min-height:72px} button{margin:8px 8px 8px 0;padding:4px 12px;border:1px solid #174A72;border-radius:4px;background:white;color:#174A72;cursor:pointer}
   button[type=submit]{background:#174A72;color:#fff} .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}
+  .confirmation:not([hidden]){display:flex;flex-direction:row;align-items:center;gap:8px;width:fit-content}
+  .confirmation[hidden]{display:none}
   :focus-visible{outline:2px solid #174A72;outline-offset:2px}
 </style>
 </head>
@@ -28,7 +30,14 @@
   <section id="work" hidden>
     <h2 id="title" tabindex="-1"></h2>
     <div id="messages"></div>
-    <form id="review"><div id="events"></div><button id="add" type="button">Thêm mục</button><button type="submit">Ghi nhận và tiếp tục</button></form>
+    <form id="review">
+      <div id="events"></div>
+      <button id="add" type="button">Thêm mục</button>
+      <label id="empty-confirmation" class="confirmation">
+        <input id="no-events" type="checkbox" required> Không có sự kiện
+      </label>
+      <button type="submit">Ghi nhận và tiếp tục</button>
+    </form>
   </section>
   <section id="done" hidden><h2>Đã ghi kết quả</h2><button id="download">Tải kết quả JSON</button></section>
 </main>
@@ -37,12 +46,15 @@
   const fixture = JSON.parse(document.querySelector('#fixture').textContent)
   const get = id => document.getElementById(id)
   const kinds = { create: 'Cam kết mới', deadline: 'Đổi hạn', owner: 'Chuyển trách nhiệm', completed: 'Hoàn tất', cancelled: 'Hủy' }
-  let selected, cursor = 0, start, opened, changes, added, removed
+  const retake = location.pathname === '/retake'
+  const noEvents = get('no-events')
+  let selected, cursor = 0, start, opened, changes, added, removed, attempt
   const results = []
   const element = (tag, text) => { const node = document.createElement(tag); node.textContent = text ?? ''; return node }
 
   function begin(quick) {
     selected = quick ? fixture.cases.filter(row => ['QA-6329', 'WO-8531', 'RT-5248'].includes(row.id)) : fixture.cases
+    attempt = new Date().toISOString().replace(/[:.]/g, '-')
     get('welcome').hidden = true
     get('work').hidden = false
     next()
@@ -67,8 +79,17 @@
       return details
     }))
     get('events').replaceChildren()
+    syncEmptyConfirmation()
     start = performance.now()
     get('title').focus()
+  }
+
+  function syncEmptyConfirmation() {
+    const hasEvents = get('events').children.length > 0
+    noEvents.checked = false
+    noEvents.disabled = hasEvents
+    noEvents.required = !hasEvents
+    get('empty-confirmation').hidden = hasEvents
   }
 
   function field(name, title, control) {
@@ -95,14 +116,16 @@
     controls.append(field('source', 'Thư nguồn', select(ids)), field('target', 'Thư tạo cam kết', select(ids)),
       field('kind', 'Loại', select(Object.entries(kinds))), field('owner', 'Người phụ trách', owner), field('due', 'Hạn', due))
     const remove = element('button', 'Bỏ mục'); remove.type = 'button'
-    remove.onclick = () => { removed++; row.remove(); get('add').focus() }
+    remove.onclick = () => { removed++; row.remove(); syncEmptyConfirmation(); get('add').focus() }
     row.append(element('legend', 'Sự kiện cam kết'), controls, field('quote', 'Câu nguyên văn', quote), remove)
     get('events').append(row)
+    syncEmptyConfirmation()
     controls.querySelector('select').focus()
     added++
   }
 
   get('short').onclick = () => begin(true)
+  get('full').hidden = retake
   get('full').onclick = () => begin(false)
   get('add').onclick = add
   get('events').addEventListener('change', () => changes++)
@@ -110,7 +133,7 @@
     event.preventDefault()
     const events = Array.from(get('events').children, row => Object.fromEntries(Array.from(row.querySelectorAll('[name]'),
       control => [control.name, control.value.trim() || null])))
-    results.push({ id: selected[cursor].id, events, elapsedMs: Math.round(performance.now() - start),
+    results.push({ id: selected[cursor].id, events, confirmedNoEvents: noEvents.checked, elapsedMs: Math.round(performance.now() - start),
       openedEmails: opened.size, fieldChanges: changes, rowsAdded: added, rowsRemoved: removed })
     cursor++
     next()
@@ -118,7 +141,7 @@
   get('download').onclick = () => {
     const data = { method: 'manual', corpusDigest: fixture.corpusDigest, cases: results }
     const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }))
-    const link = element('a'); link.href = url; link.download = 'm6g-manual.json'; link.click()
+    const link = element('a'); link.href = url; link.download = retake ? `m6g-manual-retake-${attempt}.json` : 'm6g-manual.json'; link.click()
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 </script>

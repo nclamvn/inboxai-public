@@ -82,7 +82,9 @@ const activityCount = z.number().int().min(0).optional()
 const observation = z.object({
   id: z.string(), events: z.array(event).max(16), elapsedMs: duration, error: z.string().optional(),
   openedEmails: activityCount, fieldChanges: activityCount, rowsAdded: activityCount, rowsRemoved: activityCount,
-})
+  confirmedNoEvents: z.boolean().optional(),
+}).refine(row => row.confirmedNoEvents === undefined || row.confirmedNoEvents === (row.events.length === 0),
+  { path: ['confirmedNoEvents'], message: 'Empty-event confirmation does not match the submitted events' })
 
 export function summarize(report, labels) {
   assert.equal(report.corpusDigest, corpusDigest, 'Mismatched email corpus')

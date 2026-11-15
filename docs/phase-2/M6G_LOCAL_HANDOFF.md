@@ -26,7 +26,6 @@ thẩm định độc lập. [Email](../../tests/eval/commitments/cases.json) ·
 | InboxAI | 10/11 | 90,9% | 58,8% (10/17) | 6/14 | 0,237 s | 2,250 s |
 | LLM trực tiếp | 14/21 | 66,7% | 82,4% (14/17) | 2/14 | 3,721 s | 31,472 s |
 | Agent có công cụ | 14/22 | 63,6% | 82,4% (14/17) | 2/14 | 5,373 s | 48,093 s |
-| Đọc thủ công | Chờ người thực hiện | — | — | — | — | — |
 
 Một đề xuất đúng phải khớp loại sự kiện, thư nguồn, thư tạo cam kết,
 người phụ trách và hạn theo trường áp dụng, kèm nguyên câu dẫn chứng quyết
@@ -73,6 +72,66 @@ trách qua tài khoản khác. Cả hai nhánh model đưa lịch có điều ki
 muộn và ngày đổi bởi bên thiếu thẩm quyền vào kết quả. Agent có thêm lượt đọc
 nhưng không tăng số sự kiện đúng so với cùng model gọi trực tiếp trong mẫu này.
 Số liệu chưa đủ để kết luận tiết kiệm công trên hộp thư thực tế.
+
+## Đối chiếu trên ba hồ sơ đọc thủ công
+
+Tệp người dùng xuất khớp mã SHA-256 của tập email M6-G. Ba hồ sơ
+`QA-6329`, `WO-8531` và `RT-5248` có lần lượt 3, 0 và 2 sự kiện theo nhãn.
+Cả 5 sự kiện đều được gán nhãn quan trọng. [Tệp bài làm](../../test-results/m6g/manual-result.json) ·
+[Kết quả chấm theo hồ sơ](../../test-results/m6g/comparison.json)
+
+| Phương án | Đúng / đã gửi hoặc đề xuất | Precision | Recall | Bỏ sót quan trọng | Tổng thời gian |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Đọc thủ công | 0/0 | — | 0/5 (0%) | 5/5 | 8,193 s thao tác |
+| InboxAI | 2/3 | 66,7% | 2/5 (40%) | 3/5 | 0,509 s xử lý máy |
+| LLM trực tiếp | 4/5 | 80% | 4/5 (80%) | 1/5 | 7,393 s xử lý máy |
+| Agent có công cụ | 4/5 | 80% | 4/5 (80%) | 1/5 | 11,987 s xử lý máy |
+
+Bài làm thủ công có ba mảng sự kiện trống. Form ghi nhận 3 lượt mở thư,
+đều ở `QA-6329`, cùng 0 dòng được tạo và 0 lượt thay đổi trường. Thời gian
+từ lúc mở đến lúc nộp từng hồ sơ là 5,827 s, 1,349 s và 1,017 s theo thứ tự
+trên. Precision để trống vì mẫu số bằng 0. Tổng 8,193 s đo lượt nộp ba hồ sơ
+trống. Mẫu này chưa đủ để ước tính thời gian đọc và ghi đầy đủ cam kết hoặc
+thời gian tiết kiệm so với các phương án tự động.
+
+Lượt làm lại mở đúng ba hồ sơ tại `http://127.0.0.1:57341/retake`. Form yêu cầu
+chọn **Không có sự kiện** trước khi nộp hồ sơ trống và ghi xác nhận đó vào JSON.
+Tệp `m6g-manual-retake-<thời điểm bắt đầu>.json` lưu riêng lượt làm lại.
+Các số đọc thủ công trong bảng hiện lấy từ lượt đầu.
+
+| Công rà soát ước tính theo nhãn | Duyệt đúng | Sửa | Bỏ | Tạo thêm | Đối chiếu nguồn |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Đọc thủ công | 0 | 0 | 0 | 5 | 0 |
+| InboxAI | 2 | 1 | 0 | 2 | 3 |
+| LLM trực tiếp | 4 | 1 | 0 | 0 | 5 |
+| Agent có công cụ | 4 | 1 | 0 | 0 | 5 |
+
+InboxAI khớp hai sự kiện ở `QA-6329` và còn thiếu sự kiện hoàn tất.
+Ở `RT-5248`, đề xuất tạo cam kết thiếu ngày quy đổi từ “ngày mai” và lần
+hủy bị chặn vì chưa có bản ghi đã xác nhận. Cả hai nhánh model phát hiện
+lần hủy nhưng điền người phụ trách vào trường cần để trống theo nhãn.
+`WO-8531` có nhãn rỗng và cả bốn phương án đều trả rỗng.
+
+## Nghiệm thu bằng Chrome local ngày 12/11/2026
+
+Codex chạy từ trang bắt đầu của `/retake`, mở cả 7 thư giả lập, nhập các sự
+kiện qua form, tải JSON và chấm tệp xuất bằng bộ chấm M6-G.
+
+| Hồ sơ | Kịch bản | Kết quả |
+| --- | --- | --- |
+| `QA-6329` | Ghi cam kết có hạn, chuyển người phụ trách và ghi nhận hoàn tất ở tài khoản khác | Xuất đủ 3 sự kiện với liên kết về thư tạo cam kết và câu trích dẫn. |
+| `WO-8531` | Thư chuyển tiếp để tham khảo và thư chứa chỉ dẫn giả | Xuất 0 sự kiện và có xác nhận **Không có sự kiện**. |
+| `RT-5248` | Xác định hạn từ “ngày mai”, rồi ghi nhận hủy | Xuất đủ 2 sự kiện và gắn lần hủy vào đúng cam kết. |
+
+Form chặn nộp hồ sơ trống chưa xác nhận và mục thiếu thư nguồn. Thêm mục rồi
+xóa mục cuối buộc xác nhận lại. Sang hồ sơ kế tiếp, ô xác nhận bắt đầu ở trạng
+thái chưa chọn. Tệp xuất có đúng ba hồ sơ và bộ chấm khớp 5/5 sự kiện cùng 5 câu
+trích dẫn nguyên văn. [JSON xuất từ form](../../test-results/m6g/assistant-acceptance-input.json) ·
+[Kết quả chấm](../../test-results/m6g/assistant-acceptance.json)
+
+Đây là lần nghiệm thu giao diện bằng dữ liệu giả lập đã biết, do Codex thao tác.
+Thời gian chạy thuộc kịch bản kiểm thử. Phép đo đọc thủ công và kết quả của bộ
+phát hiện tự động xem ở bảng đối chiếu phía trên.
 
 ## Tái lập
 
@@ -125,7 +184,7 @@ xuất và đọc lại JSON bằng thao tác tự động. Chỉ một lần đ
 mới đi vào nhánh thủ công.
 
 [So sánh cục bộ](../../test-results/m6g/comparison.json) ·
-[API và sổ cam kết](../../test-results/m6g/local-run.json) ·
+[Log API và sổ cam kết](../../test-results/m6g/product-run.log) ·
 [Nhánh InboxAI](../../test-results/m6g/product.json) ·
 [LLM trực tiếp](../../test-results/m6g/direct.json) ·
 [Agent](../../test-results/m6g/agent.json)

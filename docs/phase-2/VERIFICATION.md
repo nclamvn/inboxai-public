@@ -1,5 +1,298 @@
 # Verification record
 
+## Chốt bản local cho luồng bổ sung và duyệt lại chứng từ
+
+Ngày 15/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,
+Chrome 157.0.8103.79, PostgreSQL 16 và hai Gmail giả lập qua loopback.
+Bộ khóa SHA-256 có bốn PO, chín thư, mười phần đính kèm. Chrome theo
+hai vai, xác nhận hai lần duyệt hợp lệ, giữ hai hồ sơ chờ, thử lại
+một lần mất phản hồi và xác minh lại ID nguồn sau tải lại. Từng ảnh
+chụp qua axe và kiểm tra tràn ngang. Lượt Chrome đầu phát hiện
+assertion kiểm quyền trỏ vào trang khung 200 thay vì API tài nguyên.
+Đã chuyển kiểm tra sang API 404. Hai lượt hoàn chỉnh sau đó cho
+cùng kết quả nghiệp vụ.
+
+| Lệnh | Kết quả |
+| --- | --- |
+| `npm run test:purchase-release` | Exit 0. 18 kiểm tra, gồm 4 hồ sơ mới và 14 kiểm tra nền. Build Next hoàn tất 121 bước tạo trang. |
+| `npm run bench:purchase-release -- models` | Exit 0. Hai nhánh Qwen3 4B local hoàn tất cả 4 hồ sơ. |
+| `npm run bench:purchase-release -- compare` | Exit 0. InboxAI 4/4, đọc thủ công mô phỏng 4/4, LLM trực tiếp 0/4, agent 0/4. |
+| `npm run lint`, `npm run typecheck` | Exit 0. Lint còn 92 cảnh báo có sẵn. |
+| `npm run test:unit`, `npm run test:integration`, `npm run test:db` | Exit 0. 252 unit, 200 integration, 47 nhóm database. |
+| `npm run test:purchase-supplements` | Exit 0. 41 kiểm tra hồi quy. |
+| `npm run test:staging -- --isolated` | Exit 0. 31 kiểm tra nâng cấp, sao lưu, khôi phục. |
+| `npm run test:design -- --isolated`, `npm run test:platform -- --isolated` | Exit 0. 29 và 19 kiểm tra trình duyệt. |
+
+[Hồ sơ nghiệm thu, quy tắc đối chứng và hướng dẫn chạy lại](PURCHASE_LOCAL_RELEASE.md).
+Mọi lượt chạy dùng dữ liệu giả lập. Phép đo thủ công là thao tác và đọc
+CSV mô phỏng trong Chrome. Thời gian con người và công sửa thực tế chưa
+được đo. Cổng hộp thư thật vẫn đóng.
+
+## Tìm thư bổ sung cho hồ sơ đang chờ
+
+Nghiệm thu ngày 15/11/2026 trên Chrome, Next.js 16.4.6, PostgreSQL 16 và
+hai Gmail giả lập qua loopback. Cùng PO-9422, đường tìm theo Inbox mở
+ba email đã chọn cho kịch bản và xem các tệp. Đường dẫn từ thẻ hồ sơ
+mở thẳng ID tệp và bản xem trước đúng với không lần mở email.
+Đây là số thao tác trên kịch bản, chưa có số đo thời gian người dùng.
+
+Bộ thử đưa hai tệp cùng tên vào một thư, gửi lại đúng byte ở thư khác,
+gửi sai PO và gửi bản cũ sau. Chỉ bản đúng vào nhóm khớp và tệp sai đi
+vào mục đối chiếu. Khi thêm bản thứ hai cùng thay hóa đơn đang hiệu
+lực, cả hai được trình bày để chọn, và không hiện nút gợi ý duy nhất.
+Kế toán, người ngoài và phiên ẩn danh không đọc được ứng viên của
+Mua hàng. Dấu vết nội dung sai và lệnh xác nhận cho hồ sơ khác bị chặn.
+
+Xác nhận bản bổ sung trên Chrome chỉ ghi một hóa đơn khi mất phản hồi.
+Bản cạnh tranh rời nhóm khớp sau lần ghi. Mua hàng bàn giao, Kế toán
+duyệt lại và hồ sơ rời Inbox hai phía. Mở lại email nguồn truy được
+đúng ID tệp dù email có hai liên kết cùng tên. Lượt đầu phát hiện lỗi
+chỉ mục khi role cập nhật email, và lượt Chrome thử trước cần chờ
+chuyển trang, phân biệt ID tệp trong bước kiểm chứng cuối. Các lượt
+chốt dưới đây chạy qua những điểm đã sửa.
+
+| Lệnh | Kết quả local |
+| --- | --- |
+| `npm run test:purchase-supplements` | Exit 0. 41 kiểm tra gồm 2 nhóm bổ sung và 39 nhóm hồi quy. 20 màn qua axe và kiểm tra tràn ngang |
+| Next.js production build trong bộ Chrome | Exit 0. Hoàn tất bước tạo 121 trang |
+| `npm run lint`, `npm run typecheck` | Exit 0. Lint có 92 cảnh báo đã có |
+| `npm run test:unit`, `npm run test:integration` | Exit 0. 252 và 200 test |
+| `npm run test:db` | Exit 0. 47 nhóm, gồm quyền đọc danh sách và chặn gọi RPC ghi nhận ngoài phạm vi |
+| `npm run test:design -- --isolated`, `npm run test:platform -- --isolated` | Exit 0. 29 và 19 kiểm tra |
+| `npm run test:staging -- --isolated` | Exit 0. 31 kiểm tra nâng cấp, sao lưu và khôi phục |
+
+Giới hạn hiện tại là hóa đơn CSV thuộc đúng thư và hồ sơ giống hợp
+đồng đầu vào của luồng mua hàng. Chứng cứ nằm trong
+`test-results/purchase-supplements/`. [Phạm vi và phép đo](PURCHASE_SUPPLEMENTS.md).
+
+## Inbox dẫn việc từ yêu cầu bổ sung đến duyệt xong
+
+Nghiệm thu ngày 15/11/2026 trên Chrome, Next.js 16.4.6 và PostgreSQL 16
+local với hai Gmail giả lập. Kịch bản PO-9422 so sánh hai đường vào cùng
+một hồ sơ trong cùng trạng thái. Cả Mua hàng và Kế toán đi từ ba lần bấm
+qua Cam kết xuống còn một lần bấm từ Inbox. Đây là phép đo điều hướng
+tự động, chưa đo thời gian thao tác con người.
+
+Chrome kiểm tra quyền theo tài khoản, đường tải chứng từ được giao,
+yêu cầu bổ sung chuyển sang chờ Kế toán, bản mới đến làm bản bàn giao
+cũ mất nút duyệt, và việc duyệt lại bị mất phản hồi vẫn dùng một
+biên nhận. Sau khi tải lại, việc đã khép rời Inbox hai phía còn lịch
+sử và email nguồn vẫn truy được từ hồ sơ. Luồng tiếp tục kiểm tra
+chứng từ sai PO, đến muộn, thiếu hạn và người ngoài hồ sơ.
+
+| Lệnh | Kết quả local |
+| --- | --- |
+| `npm run test:purchase-focus` | Exit 0. 39 kiểm tra gồm 3 nhóm dẫn việc và 36 nhóm hồi quy. 18 màn qua axe và kiểm tra tràn ngang |
+| Next.js production build trong bộ Chrome | Exit 0. Hoàn tất bước tạo 120 trang |
+| `npm run lint`, `npm run typecheck` | Exit 0. Lint có 92 cảnh báo đã có |
+| `npm run test:unit`, `npm run test:integration` | Exit 0. 252 và 200 test |
+| `npm run test:db` | Exit 0. 47 nhóm, có thêm quyền đọc Inbox theo vai, bộ lọc tài khoản và nguồn thiếu |
+| `npm run test:design -- --isolated`, `npm run test:platform -- --isolated` | Exit 0. 29 và 19 kiểm tra trước lần thêm link bảng công nợ và ưu tiên bản cần bàn giao lại |
+| `npm run test:staging -- --isolated` | Exit 0. 31 kiểm tra trước chỉnh cuối. Chrome và SQL cuối áp dụng migration chốt |
+
+Kết quả không xác nhận giá trị trên hộp thư thật. Chứng cứ nằm trong
+`test-results/purchase-focus/`. [Luồng và đối chứng điều hướng](PURCHASE_FOCUS.md).
+
+## Lập và duyệt đợt thanh toán
+
+Nghiệm thu ngày 15/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,
+PostgreSQL 16 và Chrome 157.0.8103.79. Hai Gmail giả lập qua loopback
+cho Mua hàng và Kế toán. Người duyệt độc lập dùng phiên InboxAI riêng.
+
+Khoản tạm giữ vì thiếu chứng từ bị chặn khi chọn và khi gọi API xem
+trước. Kế toán không thể tự duyệt hay gán người chưa được cấp quyền.
+Đính chính INV-8714 làm đề nghị cũ hết hiệu lực dù tổng tiền giữ nguyên.
+Kế toán hủy đề nghị cũ rồi lập lại với hai PO. Mất phản hồi khi duyệt
+trả đúng một biên nhận và quyết định. Số đã đối chiếu vẫn là 0 ₫ sau
+khi duyệt. Chứng từ có ngày chuyển trước ngày duyệt, dù email đến sau,
+không được gắn vào đợt mới.
+
+Ba chứng từ 25.000 ₫, 60.000 ₫ và 35.000 ₫ đưa số còn phải đối chiếu
+từ 120.000 ₫ về 0 ₫. Phản hồi bị mất sau khi ghi chứng từ 25.000 ₫
+được thử lại và nhận cùng biên nhận. Đợt chỉ khép một lần, giữ ba nguồn
+sau khi tải lại. Kế toán mở lại đúng email, người duyệt chỉ thấy
+chứng từ trong phạm vi được giao. PostgreSQL kiểm tra thêm việc một
+khoản hoàn cập nhật số đã đối chiếu của đợt gốc mà không tự giữ lại
+khoản phải trả.
+
+Lượt Chrome đầu phát hiện tên biến trùng tên cột trong truy vấn xác
+quyền. Đã sửa và kiểm tra lại ở PostgreSQL và Chrome. Các bộ hồi quy
+giao diện, hiệu năng và staging chạy trước lần bổ sung quy tắc ngày
+chứng từ. Lượt Chrome và PostgreSQL cuối kiểm tra quy tắc đó.
+
+| Lệnh | Kết quả local |
+| --- | --- |
+| `npm run test:purchase-batches` | Exit 0. 41 kiểm tra, gồm 5 nhóm đợt thanh toán và 36 nhóm hồi quy. 19 màn qua axe và kiểm tra tràn ngang |
+| Next.js production build trong bộ Chrome | Exit 0. Hoàn tất bước tạo 120 trang |
+| `npm run lint`, `npm run typecheck` | Exit 0. Lint có 92 cảnh báo đã có |
+| `npm run test:unit`, `npm run test:integration` | Exit 0. 252 và 200 test |
+| `npm run test:db` | Exit 0. 47 nhóm, gồm quyền duyệt, giữ phạm vi, ngày chứng từ, đóng đợt và hoàn tiền |
+| `npm run test:design -- --isolated` | Exit 0. 29 kiểm tra |
+| `npm run test:platform -- --isolated` | Exit 0. 19 kiểm tra |
+| `npm run test:staging -- --isolated` | Exit 0. 31 kiểm tra nâng cấp, sao lưu và khôi phục |
+
+Kịch bản dùng chứng từ Gmail giả lập và số dư VND trước thuế. Quyền
+duyệt do bộ kiểm thử cấp trước trong database local. Chứng cứ nằm trong
+`test-results/purchase-batches/`.
+
+## Xử lý ngoại lệ công nợ từ yêu cầu bổ sung đến duyệt lại
+
+Nghiệm thu ngày 15/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,
+PostgreSQL 16 và Chrome 157.0.8103.79. Hai Gmail loopback cho Mua hàng
+và Kế toán. Ba phiên InboxAI độc lập gồm hai vai xử lý và người ngoài.
+
+Trong PO-9422, Kế toán yêu cầu bổ sung hạn cho INV-8702. Phản hồi bị mất
+sau khi ghi, rồi thao tác thử lại trả cùng biên nhận. Bảng có đúng một
+mục chờ Mua hàng và chặn cả yêu cầu ghi khoản trả đã xem trước. Tệp sai
+PO, bản thiếu hạn và thư đến sau mang chứng từ cũ đều bị chặn. Bản
+INV-8712 mất hiệu lực duyệt khi INV-8713 đến. Kế toán trả lại, Mua hàng
+bàn giao đúng người phụ trách và Kế toán đối chiếu hai bản trước khi duyệt.
+
+Mất phản hồi khi duyệt cũng trả lại đúng quyết định khi thử lại. Bảng
+giữ một dòng 60.000 ₫ theo INV-8713 với hạn mới. Tải lại trang giữ
+đủ năm sự kiện và mở đúng email chứng từ. Chứng từ trả tiền của bản
+cũ tiếp tục bị chặn, bản hiện hành xem trước được. Lượt chạy đầu dừng
+ở bước mở ngăn chứng từ trong bài kiểm thử. Bộ kiểm thử đã sửa để mở
+ngăn, bấm liên kết và kiểm tra email đích thực sự hiển thị.
+
+| Lệnh | Kết quả local |
+| --- | --- |
+| `npm run test:purchase-exceptions` | Exit 0. 36 kiểm tra, gồm 4 nhóm ngoại lệ và 32 nhóm hồi quy. 16 màn qua axe và kiểm tra tràn ngang |
+| Next.js production build trong bộ Chrome | Exit 0. Hoàn tất bước tạo 118 trang |
+| `npm run lint`, `npm run typecheck` | Exit 0. Lint có 92 cảnh báo đã có |
+| `npm run test:unit`, `npm run test:integration` | Exit 0. 252 và 200 test |
+| `npm run test:db` | Exit 0. 46 nhóm, gồm quyền đọc, quyền ghi, chống yêu cầu lặp và bảo toàn quyết định cũ |
+| `npm run test:design -- --isolated` | Exit 0. 29 kiểm tra |
+| `npm run test:platform -- --isolated` | Exit 0. 19 kiểm tra |
+| `npm run test:staging -- --isolated` | Exit 0. 31 kiểm tra nâng cấp, sao lưu và khôi phục |
+
+Kịch bản dùng hóa đơn CSV và số dư VND trước thuế. Google và nguồn
+ngân hàng đều giả lập. Chứng cứ nằm trong `test-results/purchase-exceptions/`.
+
+## Công nợ cần xử lý theo hạn thanh toán
+
+Nghiệm thu ngày 15/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,
+PostgreSQL 16 và Chrome 157.0.8103.79. Hai Gmail giả lập chạy qua loopback.
+Chrome dùng ba phiên độc lập cho Mua hàng, Kế toán và người ngoài.
+
+Ba PO đi qua nhập chứng từ, bàn giao và duyệt. Bảng xếp hạn thanh toán
+theo hóa đơn đã duyệt và ghi rõ hồ sơ thiếu hạn. Đồng hồ trình duyệt
+chuyển qua nửa đêm Việt Nam, đổi nhãn từ hôm nay sang quá hạn. Khoản trả
+200.000 ₫ trên hóa đơn 312.000 ₫ để lại đúng 112.000 ₫. Khi có đính chính,
+hạn cũ và đường tải tài liệu cũ bị thu hồi. Sau khi duyệt lại, đúng một
+mục mang hạn mới và số dư 104.000 ₫. Sau khi trả đủ, mục rời bảng. Khoản
+bị hoàn và thử lại khi mất phản hồi đưa đúng một mục 104.000 ₫ trở lại.
+Tải lại trang giữ số dư và nguồn. Khoản thay thế khép mục lần nữa.
+
+Chrome mở email hóa đơn thuộc Mua hàng, tải đúng bản CSV được bàn giao
+cho Kế toán và mở đúng email chứng từ hoàn. Người ngoài nhận danh sách
+rỗng và không thể tải chứng từ. Truy cập ẩn danh bị từ chối. Lượt đầu
+phát hiện trùng tên cột trạng thái trong truy vấn danh sách. Truy vấn
+đã sửa và bộ DB gọi trực tiếp RPC để bắt lại lỗi tương tự.
+
+| Lệnh | Kết quả local |
+| --- | --- |
+| `npm run test:purchase-dues` | Exit 0. 32 kiểm tra với ba PO và hai Gmail giả lập. 13 màn qua axe và kiểm tra tràn ngang, gồm bảng công nợ ở 1.380 px và 390 px |
+| Next.js production build trong bộ Chrome | Exit 0. Hoàn tất bước tạo 118 trang |
+| `npm run lint`, `npm run typecheck` | Exit 0. Lint có 92 cảnh báo đã có |
+| `npm run test:unit`, `npm run test:integration` | Exit 0. 252 và 200 test |
+| `npm run test:db` | Exit 0. 45 nhóm, gồm CSV có hạn và không hạn, đầu vào sai và quyền đọc RPC |
+| `npm run test:design -- --isolated` | Exit 0. 29 kiểm tra |
+| `npm run test:platform -- --isolated` | Exit 0. 19 kiểm tra |
+| `npm run test:staging -- --isolated` | Exit 0. 31 kiểm tra nâng cấp, sao lưu và khôi phục |
+
+Bảng theo dõi số dư trước thuế VND trong phạm vi hồ sơ đã bàn giao.
+Các đối chiếu ngân hàng, Gmail thật và tải thực tế nhiều hồ sơ vẫn chưa
+được đo. Chứng cứ Chrome nằm trong `test-results/purchase-dues/`.
+
+## Đối soát khoản chuyển bị hoàn và mở lại công nợ
+
+Nghiệm thu ngày 15/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,
+PostgreSQL 16 và Chrome 157.0.8103.79. Dùng hai Gmail loopback và ba vai
+InboxAI độc lập gồm Mua hàng, Kế toán và người ngoài hồ sơ.
+
+Hóa đơn đã ghi đủ 304.000 ₫. Chứng từ `RT-78101` trỏ đến giao dịch
+`BANK-78102` và hoàn 104.000 ₫. Chứng từ sai mã, vượt tiền gốc, gửi lại
+dưới tên và định dạng khác, hay cộng dồn vượt giao dịch gốc đều bị chặn.
+Mua hàng và người ngoài không có quyền ghi chứng từ. Khi mất phản hồi
+sau lúc ghi, Chrome thử lại và nhận cùng biên nhận. Công nợ mở lại đúng
+104.000 ₫, với nguồn hiển thị theo quyền hộp thư. Khoản thay thế
+`BANK-78103` được ghi từ chứng từ CSV trong phiên Chrome mới của Kế toán.
+Sau khi tải lại, cả hai vai thấy số dư 0 ₫ và lịch sử giữ đủ bốn dòng.
+Các lượt đầu phát hiện GoTrue local cạn cổng TCP đến PostgreSQL. Bản
+nghiệm thu chạy với pool kết nối giới hạn trong Docker kiểm thử.
+
+| Lệnh | Kết quả local |
+| --- | --- |
+| `npm run test:purchase-return` | Exit 0. 26 kiểm tra gồm 4 nhóm hoàn tiền, 8 nhóm hồi quy nghiệp vụ và 14 kiểm tra nền. 11 màn qua axe và kiểm tra tràn ngang |
+| Next.js production build trong bộ Chrome | Exit 0. Hoàn tất bước tạo 116 trang |
+| `npm run lint`, `npm run typecheck` | Exit 0. Lint có 92 cảnh báo đã có |
+| `npm run test:unit`, `npm run test:integration` | Exit 0. 252 và 200 test |
+| `npm run test:db` | Exit 0. 44 nhóm, gồm mẫu CSV và nâng cấp với khoản trả cùng biên nhận đã tồn tại |
+| `npm run test:design -- --isolated`, `npm run test:platform -- --isolated` | Exit 0. 29 và 19 kiểm tra |
+| `npm run test:staging -- --isolated` | Exit 0. 31 kiểm tra nâng cấp, sao lưu và khôi phục |
+
+[Cách chạy lại](PURCHASE_RETURN.md) · [Báo cáo Chrome](../../test-results/purchase-return/report.json) · [Ảnh xem trước khoản hoàn](../../test-results/purchase-return/09-xem-truoc-hoan-tien.png) · [Ảnh Mua hàng thấy công nợ mở lại](../../test-results/purchase-return/10-mua-hang-cong-no-mo-lai.png) · [Ảnh khép lại trên Chrome mobile](../../test-results/purchase-return/11-ke-toan-khep-lai-cong-no.png).
+
+## Đối soát thanh toán và khép công nợ
+
+Nghiệm thu ngày 14/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,
+PostgreSQL 16 và Chrome 157.0.8103.79. Hai Gmail loopback của Mua hàng và
+Kế toán, với ba phiên InboxAI cho hai vai đó và người ngoài hồ sơ.
+
+Trên `PO-9418`, Kế toán ghi 200.000 ₫ cho `INV-7803` trị giá 312.000 ₫.
+Mua hàng thấy còn 112.000 ₫ và không mở được thư nguồn của Kế toán.
+Chứng từ gửi lại dưới tên khác, có BOM và ký tự xuống dòng khác, bị nhận
+diện theo mã giao dịch. Hệ thống chặn chứng từ vượt số dư và bản xem trước
+tạo trước khi một khoản khác được ghi. Bản đính chính có giá trị 304.000 ₫.
+Hệ thống chặn chứng từ ghi `INV-7803` và giữ khoản đã trả. Kế toán duyệt `INV-7804`,
+ghi thêm 104.000 ₫ và thử lại sau khi Chrome bỏ phản hồi đầu tiên. Thử
+lại trả cùng biên nhận. Cả hai vai thấy hai giao dịch, đúng 304.000 ₫
+đã ghi và số dư 0 ₫ sau tải lại. Người ngoài và người dùng chưa đăng
+nhập bị chặn. Kịch bản ghi nhận 0 lần gửi Gmail.
+
+| Lệnh | Kết quả local |
+| --- | --- |
+| `npm run test:purchase-settlement` | Exit 0. 22 kiểm tra, gồm 4 nhóm thanh toán, 4 nhóm bàn giao và 14 kiểm tra nền. 8 màn qua axe và kiểm tra tràn ngang |
+| Next.js production build trong bộ Chrome | Exit 0. Hoàn tất bước tạo 116 trang |
+| `npm run lint`, `npm run typecheck` | Exit 0. Lint có 92 cảnh báo đã có |
+| `npm run test:unit`, `npm run test:integration` | Exit 0. 252 và 200 test |
+| `npm run test:db` | Exit 0. 42 nhóm, gồm quyền RPC, số tiền nguyên VND và ngày hợp lệ |
+| `npm run test:purchase-payment` | Exit 0. 20 kiểm tra hồi quy đối soát trước thanh toán |
+| `npm run test:design -- --isolated`, `npm run test:platform -- --isolated` | Exit 0. 29 và 19 kiểm tra |
+| `npm run test:staging -- --isolated` | Exit 0. 31 kiểm tra nâng cấp, sao lưu và khôi phục |
+
+[Cách chạy lại](PURCHASE_SETTLEMENT.md) · [Báo cáo Chrome](../../test-results/purchase-settlement/report.json) · [Ảnh xem trước khoản trả một phần](../../test-results/purchase-settlement/05-xem-truoc-tra-mot-phan.png) · [Ảnh khép công nợ trên Chrome mobile](../../test-results/purchase-settlement/08-ke-toan-khep-cong-no-mobile.png).
+
+## Bàn giao hồ sơ từ Mua hàng sang Kế toán
+
+Nghiệm thu ngày 14/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,
+PostgreSQL 16 và Chrome 157.0.8103.79. Hai Gmail loopback chứa chứng từ Mua
+hàng và Kho. Ba phiên InboxAI riêng mô phỏng Mua hàng, Kế toán và người ngoài.
+
+Mua hàng bàn giao đợt `INV-7802`. Kế toán đọc và tải đúng bốn tệp dẫn
+chứng. Truy cập ngoài phạm vi và gọi thẳng đường duyệt từ Mua hàng hoặc
+người ngoài đều bị chặn. Kế toán trả hồ sơ kèm lý do, được lưu cùng danh
+tính người trả. Hóa đơn `INV-7803` đính chính số lượng xuống 39. Phiếu kho
+đến muộn làm lượt bàn giao đang mở hết hiệu lực. Sau lần bàn giao mới,
+Chrome bỏ phản hồi duyệt đã ghi thành công. Thử lại dùng cùng khóa và nhận
+cùng biên nhận. Sau tải lại, nhật ký có đúng một lần duyệt của Kế toán và
+số cộng dồn giữ nguyên 89 bộ, gồm 50 bộ đã duyệt ở đợt trước. Có 0 lần
+gửi thư tới Gmail giả lập. Luồng chỉ xác nhận đủ căn cứ thanh toán.
+
+| Lệnh | Kết quả local |
+| --- | --- |
+| `npm run test:purchase-handoff` | Exit 0. 18 kiểm tra gồm 4 nhóm nghiệp vụ và 14 kiểm tra nền. Bốn ảnh Chrome qua axe và kiểm tra không tràn ngang |
+| Next.js production build trong bộ Chrome | Exit 0. Tạo đủ 114 trang |
+| `npm run lint`, `npm run typecheck` | Exit 0. Lint có 92 cảnh báo hiện có |
+| `npm run test:unit`, `npm run test:integration` | Exit 0. 252 và 200 test |
+| `npm run test:db` | Exit 0. 41 nhóm, gồm giữ quyết định cũ qua nâng cấp, phạm vi quyền, chặn gọi RPC trực tiếp, ghi nhật ký và thử lại |
+| `npm run test:purchase-installments`, `npm run test:purchase-payment` | Exit 0. 22 và 20 kiểm tra hồi quy |
+| `npm run test:design -- --isolated`, `npm run test:platform -- --isolated` | Exit 0. 29 và 19 kiểm tra |
+| `npm run test:staging -- --isolated` | Exit 0. 31 kiểm tra nâng cấp, sao lưu và khôi phục |
+
+[Phạm vi và cách chạy lại](PURCHASE_HANDOFF.md) · [Báo cáo Chrome](../../test-results/purchase-handoff/report.json) · [Ảnh Kế toán xem chứng từ](../../test-results/purchase-handoff/01-ke-toan-chung-tu.png) · [Ảnh sau duyệt trên Chrome mobile](../../test-results/purchase-handoff/04-duyet-mobile.png).
+
 ## Đối soát nhiều hóa đơn theo đợt trên cùng một PO
 
 Nghiệm thu ngày 14/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,
@@ -707,7 +1000,54 @@ zero outbound attempts were verified. Lint, TypeScript, 241 unit tests, 197
 integration tests, 19 SQL groups, 22 daily, 25 design, 19 platform and 41 E2E
 checks completed locally. See the [catch-up handoff](INBOX_CATCHUP_LOCAL_HANDOFF.md).
 
-Latest: [M6-G Commitment Intelligence evaluation](M6G_LOCAL_HANDOFF.md).
+Latest: [Action Inbox daily commitments local acceptance](ACTION_INBOX_DAILY_LOCAL_HANDOFF.md).
+Previous: [Commitment lifecycle local acceptance](COMMITMENT_LIFECYCLE_LOCAL_HANDOFF.md),
+[M6 local acceptance report](M6_LOCAL_HANDOFF.md) and
+[M6-G Commitment Intelligence evaluation](M6G_LOCAL_HANDOFF.md).
+
+On 2026-11-12, the daily commitment workflow passed 22 local Chrome and Auth
+checks. Concurrent approval, lost acknowledgement, reload and late replay
+produced one SMTP TLS delivery to Mailpit. UTC+7 and send-claim authorization
+were checked in the 18-group SQL suite. Production-mode build, 41 E2E, 25 design,
+19 platform, 241 unit, 197 integration, TypeScript and lint (91 existing warnings)
+completed locally. The handoff records the shared fixture and the direct-model,
+tool-enabled and scripted Inbox comparisons.
+
+The commitment lifecycle milestone on 2026-11-12 verified production-mode
+local builds, 41 end-to-end checks, 30 commitment browser checks, 17 SQL
+groups, 240 unit and 197 integration tests, TypeScript, 4 scorer tests, and
+lint with 91 existing warnings. Shared Auth cases appear in multiple runs.
+The new synthetic corpus used the same 22 emails for the previous detector,
+the updated detector and both local model baselines. See the milestone
+handoff for quality, provenance and remaining coverage.
+
+The M6 closeout reran `npm run test:e2e` on 2026-11-12 at 10:34 ICT, on macOS
+arm64 with Node 24.14.1. The command exited 0 with 41 checks and a production-mode
+build using only synthetic data. The isolated containers and `.next-build` were
+removed. Docker image prune reclaimed 0 B. The earlier local preview returned HTTP
+200. [JSON](../../test-results/m6g/closeout-e2e.json) · [Log](../../test-results/m6g/closeout-e2e.log)
+
+On 2026-11-12, Codex completed the three-case retake in local Chrome on macOS
+arm64 with Node 24.14.1. The exported JSON matched 5/5 expected events and
+preserved explicit confirmation for the empty case. The run used scripted
+UI actions with known synthetic cases. `npm run lint`, `npm run typecheck`,
+`npm run test:unit` (238), `npm run test:integration` (197),
+`node --test tests/eval/commitments/benchmark.test.mjs` (4), and
+`npm run test:e2e` (41, including a production-mode build) exited 0. Lint
+reported 91 existing warnings. The isolated build directory was removed and
+Docker image prune reclaimed 0 B. [UI acceptance](../../test-results/m6g/assistant-acceptance.json) ·
+[E2E report](../../test-results/m6g/acceptance-e2e.json)
+
+M6-G manual retake verification on 2026-11-12 ran locally on macOS arm64 with
+Node 24.14.1. Chrome verified that an empty case requires confirmation, adding a
+row clears the confirmation, removing the last row requires a fresh confirmation,
+and the three-case retake exports the case IDs and confirmation flags. The four
+benchmark scorer tests passed, including inconsistent confirmation rejection.
+`npm run lint`, `npm run typecheck`, `npm run test:unit` (238 tests),
+`npm run test:integration` (197 tests) and `npm run build` all exited 0. Lint
+reported 91 existing warnings. The build used synthetic configuration and the
+separate `.next-build` directory. [M6-G retake](M6G_LOCAL_HANDOFF.md#đối-chiếu-trên-ba-hồ-sơ-đọc-thủ-công)
+
 Previous: [M6-F adversarial security rehearsal](#m6-f-adversarial-security-rehearsal),
 [M6-E Gmail consent](#m6-e-gmail-consent),
 [M6-D Codex preview and purchasing journey](M6D_LOCAL_HANDOFF.md),

@@ -1,0 +1,6 @@
+{
+  "PO-9536": {"decision":"approve","source":"n02","part":"b","invoice":"INV-9136","due":"2027-02-12"},
+  "PO-9648": {"decision":"approve","source":"n03","part":"a","invoice":"INV-9148","due":"2027-03-03"},
+  "PO-9752": {"decision":"hold","source":null,"part":null,"invoice":null,"due":null},
+  "PO-9869": {"decision":"hold","source":null,"part":null,"invoice":null,"due":null}
+}

@@ -8,8 +8,10 @@ import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { LedgerApiError } from '@/lib/commitments/client'
-import { formatVnd, paymentReceipt, type PaymentCommand, type PaymentPreview, type PaymentSnapshot, type PaymentSource } from '@/lib/commitments/purchase-payment'
+import { formatVnd, paymentHref, paymentReceipt, type PaymentCommand, type PaymentPreview, type PaymentSnapshot, type PaymentSource } from '@/lib/commitments/purchase-payment'
+import { HandoffOwnerPanel } from './purchase-handoff'
 import { PurchaseCsvSource } from './purchase-csv-source'
+import { PurchaseSettlementBalance } from './purchase-settlement'
 
 const endpoint = '/api/commitments/payment'
 const link = 'neo-target inline-flex min-h-11 min-w-0 items-center gap-2 break-words text-sm font-medium text-[var(--accent-foreground)] underline underline-offset-4'
@@ -33,12 +35,6 @@ function SourceFile({ source, row }: { source: PaymentSource; row?: number }) {
       <span className="[overflow-wrap:anywhere]">{source.filename}{row !== undefined && ' · dòng ' + row}</span>
     </a>
   </div>
-}
-
-function paymentHref(id: string, invoice?: string) {
-  const params = new URLSearchParams({ id })
-  if (invoice) params.set('invoice', invoice)
-  return '/commitments/payment?' + params
 }
 
 export function PaymentComparison({ snapshot, detailsLink = false }: { snapshot: PaymentSnapshot; detailsLink?: boolean }) {
@@ -79,6 +75,7 @@ export function PaymentComparison({ snapshot, detailsLink = false }: { snapshot:
       </ul>
     </details>}
     {snapshot.invoice?.replaces && <p className="text-sm text-[var(--foreground-secondary)]">Hóa đơn thay thế {snapshot.invoice.replaces}</p>}
+    {snapshot.invoice?.lines[0]?.paymentDue && <p className="text-sm">Hạn thanh toán trên hóa đơn <time dateTime={snapshot.invoice.lines[0].paymentDue}>{snapshot.invoice.lines[0].paymentDue}</time></p>}
     {snapshot.lines && <div className="divide-y divide-[var(--border)] border-y border-[var(--border)]">
       {snapshot.lines.map(line => {
         const shortage = Math.max(0, line.quantity - line.received)
@@ -142,7 +139,9 @@ export function PaymentComparison({ snapshot, detailsLink = false }: { snapshot:
   </section>
 }
 
-type Scope = { id: string; invoiceId?: string } | { emailId: string; attachmentId: string }
+type Scope = { id: string; invoiceId?: string } | {
+  emailId: string; attachmentId: string; supplementId?: string; expectedDigest?: string
+}
 
 async function readJson(response: Response) {
   const body = await response.json()
@@ -153,7 +152,13 @@ async function readJson(response: Response) {
 export function PurchasePayment({ userId, scope }: { userId: string; scope: Scope }) {
   const cache = useQueryClient()
   const params = new URLSearchParams('id' in scope ? { id: scope.id } : { email: scope.emailId, file: scope.attachmentId })
+  const supplement = 'emailId' in scope && scope.supplementId && scope.expectedDigest
+    ? { id: scope.supplementId, digest: scope.expectedDigest } : null
   if ('id' in scope && scope.invoiceId) params.set('invoice',scope.invoiceId)
+  if (supplement) {
+    params.set('supplement', supplement.id)
+    params.set('digest', supplement.digest)
+  }
   const data = useQuery({
     queryKey: ['commitments', userId, 'payment', scope],
     queryFn: async ({ signal }) => readJson(await fetch(endpoint + '?' + params, { signal, cache:'no-store' })),
@@ -163,6 +168,7 @@ export function PurchasePayment({ userId, scope }: { userId: string; scope: Scop
   const busyRef = useRef(false)
   const [pending, setPending] = useState(false)
   const [failure, setFailure] = useState<{ message: string; uncertain: boolean }>()
+  const [managed, setManaged] = useState(false)
   const [saved, setSaved] = useState<PaymentReceipt>()
   const preview = 'emailId' in scope ? data.data as PaymentPreview | undefined : undefined
   const snapshot = 'id' in scope ? data.data as PaymentSnapshot | undefined : undefined
@@ -175,7 +181,8 @@ export function PurchasePayment({ userId, scope }: { userId: string; scope: Scop
     setPending(true)
     setFailure(undefined)
     try {
-      const received = paymentReceipt.parse(await readJson(await fetch(endpoint, {
+      const saveUrl = supplement ? endpoint + '?' + new URLSearchParams({ supplement: supplement.id }) : endpoint
+      const received = paymentReceipt.parse(await readJson(await fetch(saveUrl, {
         method: 'POST', headers: { 'Content-Type':'application/json', 'Idempotency-Key':frozen.key },
         body: JSON.stringify(frozen.command),
       })))
@@ -198,11 +205,13 @@ export function PurchasePayment({ userId, scope }: { userId: string; scope: Scop
     setFailure(undefined)
     void data.refetch()
   }
-  const command = preview?.command ?? snapshot?.command
+  const handoffManaged = managed || snapshot?.handoffManaged
+  const command = preview?.command ?? (handoffManaged ? null : snapshot?.command)
   return <section aria-labelledby="payment-heading" className="mx-auto max-w-3xl space-y-5 px-4 py-5 sm:px-6">
     <Link prefetch={false} href={'emailId' in scope ? '/inbox?email=' + scope.emailId : '/commitments'}
       className={link}><ArrowLeft size={16} aria-hidden="true" />{'emailId' in scope ? 'Về email nguồn' : 'Về sổ cam kết'}</Link>
     <h1 id="payment-heading" className="border-s-2 border-[var(--accent)] ps-3 text-xl font-semibold sm:text-2xl">Đối soát trước thanh toán</h1>
+    {supplement && <p className="text-sm text-[var(--foreground-secondary)]">Chứng từ bổ sung được mở từ hồ sơ đang chờ trong Inbox.</p>}
     {data.isPending && <p role="status" className="text-sm">Đang đọc chứng từ…</p>}
     {data.isError && <Alert variant="warning" title="Chứng từ cần kiểm tra">
       <p>{data.error instanceof LedgerApiError ? data.error.message : 'Chưa đọc được chứng từ. Hãy thử lại.'}</p>
@@ -211,6 +220,7 @@ export function PurchasePayment({ userId, scope }: { userId: string; scope: Scop
     {preview && !data.isError && <section aria-label="Xem trước chứng từ" className="space-y-3">
       <p className="text-sm font-semibold">{preview.kind === 'price' ? 'Bảng đơn giá PO' : 'Hóa đơn'} {preview.number} · {preview.reference}</p>
       {preview.replaces && <p className="text-sm">Thay hóa đơn {preview.replaces}</p>}
+      {preview.lines[0]?.paymentDue && <p className="text-sm">Hạn thanh toán trên hóa đơn <time dateTime={preview.lines[0].paymentDue}>{preview.lines[0].paymentDue}</time></p>}
       <p className="break-all text-xs text-[var(--foreground-muted)]">{preview.source.sender} → {preview.source.account}</p>
       <SourceFile source={preview.source} />
       <table className="w-full table-fixed border-y border-[var(--border)] text-sm">
@@ -225,6 +235,14 @@ export function PurchasePayment({ userId, scope }: { userId: string; scope: Scop
       </table>
     </section>}
     {snapshot && !data.isError && <PaymentComparison snapshot={snapshot} />}
+    {snapshot?.id && snapshot.invoice && handoffManaged && !data.isError &&
+      <PurchaseSettlementBalance userId={userId} scope={{ orderId: snapshot.id, invoiceId: snapshot.invoice.id }} />}
+    {snapshot?.id && snapshot.invoice && !data.isError && <HandoffOwnerPanel
+      key={snapshot.invoice.id} userId={userId} commitmentId={snapshot.id} invoiceId={snapshot.invoice.id}
+      proof={snapshot.command?.proof} setManaged={setManaged} />}
+    {handoffManaged && snapshot?.command && <p className="text-sm text-[var(--foreground-secondary)]">
+      Kế toán được giao sẽ duyệt hóa đơn này.
+    </p>}
     {failure && <Alert variant="warning" title="Chưa xác nhận được">{failure.message}</Alert>}
     {saved && <div role="status" className="text-sm">
       {saved.decisionId ? 'Đã duyệt đối soát.' : 'Đã ghi nhận chứng từ.'}

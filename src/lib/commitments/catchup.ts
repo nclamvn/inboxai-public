@@ -1,4 +1,5 @@
 import type { AttentionItem } from './attention'
+import type { PurchaseFocusItem } from './purchase-focus'
 
 export type CatchupAccount = {
   id: string
@@ -11,6 +12,7 @@ export type CatchupAccount = {
 export type CatchupAttention = {
   items: AttentionItem[]
   invoices?: import('./purchase-payment').PaymentAttention[]
+  purchaseFocus?: PurchaseFocusItem[] | null
   accounts: CatchupAccount[]
 }
 

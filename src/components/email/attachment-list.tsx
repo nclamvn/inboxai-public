@@ -113,7 +113,7 @@ export function AttachmentList({ attachments, purchaseEmailId }: AttachmentListP
                 </div>
 
                 {/* Actions */}
-                <div className={cn('flex items-center gap-1 ml-2', !(purchaseEmailId && isPurchaseCsv(att.filename, type)) &&
+                <div className={cn('ml-2 flex min-w-0 items-center gap-1', !(purchaseEmailId && isPurchaseCsv(att.filename, type)) &&
                   'sm:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity')}>
                   {purchaseEmailId && isPurchaseCsv(att.filename, type) && (
                     <div className="flex flex-wrap items-center">
@@ -125,6 +125,11 @@ export function AttachmentList({ attachments, purchaseEmailId }: AttachmentListP
                         prefetch={false} aria-label={'Bảng giá hoặc hóa đơn · ' + att.filename}
                         className="neo-target inline-flex min-h-11 items-center px-2 text-xs font-medium text-[var(--accent-foreground)] underline">
                         Bảng giá / hóa đơn
+                      </Link>
+                      <Link href={'/commitments/settlements?' + new URLSearchParams({ email: purchaseEmailId, file: att.id })}
+                        prefetch={false} aria-label={'Đối soát thanh toán · ' + att.filename}
+                        className="neo-target inline-flex min-h-11 items-center px-2 text-xs font-medium text-[var(--accent-foreground)] underline">
+                        Thanh toán
                       </Link>
                     </div>
                   )}

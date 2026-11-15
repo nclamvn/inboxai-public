@@ -16,20 +16,22 @@ const command = (value, key = randomUUID()) => ({
 })
 const at = daysAgo => new Date(Date.now() - daysAgo * 86_400_000).toISOString()
 
-export async function rehearseWarehouseReconciliation({ app, base, email, previousEmail, password, userId, admin, appFetch, googleProvider, record, output, warehouseCorrection = false, multilinePurchase = false, purchaseCsv = false, purchasePayment = false, purchaseInstallments = false }) {
+export async function rehearseWarehouseReconciliation({ app, base, email, previousEmail, password, userId, admin, appFetch, googleProvider, record, output, warehouseCorrection = false, multilinePurchase = false, purchaseCsv = false, purchasePayment = false, purchaseInstallments = false, purchaseHandoff = false, purchaseSettlement = false, purchaseReturn = false, purchaseDues = false, purchaseExceptions = false, purchaseBatches = false, purchaseFocus = false, purchaseSupplements = false, purchaseRelease = false, sql }) {
   const vault = new CredentialVault(admin, parseKeyring(vaultKeys, 'local1'))
   const accounts = {}
-  for (const department of ['mua-hang', 'ky-thuat']) {
+  async function connectMailbox(department, ownerId) {
     const address = department + '@warehouse.example.test'
     const google = googleProvider.registerMailbox(address, true)
     const id = randomUUID()
-    await vault.write({ userId, accountId: id }, {
+    await vault.write({ userId: ownerId, accountId: id }, {
       kind: 'google', accessToken: google.tokens.access_token, refreshToken: google.tokens.refresh_token,
       expiresAt: new Date(Date.now() + 3_600_000).toISOString(), scope: google.tokens.scope,
       googleSubject: address, sendDisabled: false,
     }, 0, { email_address: address, provider: 'gmail' })
-    accounts[department] = { ...google, id, address }
+    return { ...google, id, address }
   }
+  accounts['mua-hang'] = await connectMailbox('mua-hang', userId)
+  accounts['ky-thuat'] = (purchaseSettlement || purchaseRelease) ? accounts['mua-hang'] : await connectMailbox('ky-thuat', userId)
 
   async function request(path, init, status = 200) {
     const response = await appFetch(path, init)
@@ -38,10 +40,10 @@ export async function rehearseWarehouseReconciliation({ app, base, email, previo
     return result
   }
 
-  async function deliver(uid, department, from, age, subject, body, attachments = []) {
+  async function deliver(uid, department, from, age, subject, body, attachments = [], reference = purchaseOrder) {
     const account = accounts[department]
-    account.deliver([{ id: uid, threadId: department + '-' + purchaseOrder, messageId: '<' + uid + '@example.test>',
-      from, at: at(age), subject: '[' + purchaseOrder + '] ' + subject, body, attachments }])
+    account.deliver([{ id: uid, threadId: department + '-' + reference, messageId: '<' + uid + '@example.test>',
+      from, at: at(age), subject: '[' + reference + '] ' + subject, body, attachments }])
     await request('/api/source-accounts/sync', command({ refresh: true }))
     const result = await admin.from('emails').select('id').eq('user_id', userId)
       .eq('source_account_id', account.id).eq('original_uid', uid).single()
@@ -67,10 +69,10 @@ export async function rehearseWarehouseReconciliation({ app, base, email, previo
     return target
   }
 
-  async function capture(name) {
-    assert.deepEqual(await audit(page), [])
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false)
-    await page.screenshot({ path: output + '/' + name + '.png', animations: 'disabled' })
+  async function capture(name, target = page) {
+    assert.deepEqual(await audit(target), [])
+    assert.equal(await target.evaluate(() => document.documentElement.scrollWidth > innerWidth), false)
+    await target.screenshot({ path: output + '/' + name + '.png', animations: 'disabled' })
   }
 
   async function review(source, quote, expectRetry = false) {
@@ -86,6 +88,13 @@ export async function rehearseWarehouseReconciliation({ app, base, email, previo
 
   try {
     page = await login(email)
+    if (purchaseHandoff || purchaseSettlement) {
+      const { rehearsePurchaseHandoff } = await import('./purchase-handoff.mjs')
+      await rehearsePurchaseHandoff({ app, page, deliver, request, accounts, capture, login, previousEmail, admin,
+        email, password, sql, googleProvider, record, runtimeErrors, orderCode: purchaseOrder, supplier, warehouse,
+        purchaseSettlement, purchaseReturn, purchaseDues, purchaseExceptions, purchaseBatches, purchaseFocus, purchaseSupplements, purchaseRelease, connectMailbox, output })
+      return
+    }
     if (purchaseInstallments) {
       const { rehearsePurchaseInstallments } = await import('./purchase-installments.mjs')
       await rehearsePurchaseInstallments({ app, page, deliver, request, accounts, capture, login, previousEmail, admin,

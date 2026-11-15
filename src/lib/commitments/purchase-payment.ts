@@ -23,7 +23,9 @@ export type PaymentSource = {
   account: string
   digest: string
 }
-export type PaymentDocumentLine = { row: number; code: string; quantity: number; unit: string; price: number; quote: string }
+export type PaymentDocumentLine = {
+  row: number; code: string; quantity: number; unit: string; price: number; quote: string; paymentDue?: string
+}
 type PaymentDocument = {
   id: string
   kind: 'price' | 'invoice'
@@ -61,6 +63,7 @@ type PaymentBalance = { code: string; unit: string; approved: number; remaining:
 export type PaymentSnapshot = {
   id?: string
   reference?: string
+  handoffManaged?: boolean
   status: 'unavailable' | 'missing_price' | 'missing_invoice' | 'blocked' | 'ready' | 'approved' | 'superseded'
   price?: PaymentDocument | null
   invoice?: PaymentDocument | null
@@ -81,3 +84,9 @@ export const paymentReceipt = z.strictObject({
 
 const vnd = new Intl.NumberFormat('vi-VN')
 export const formatVnd = (amount: number) => vnd.format(amount) + ' ₫'
+
+export function paymentHref(id: string, invoice?: string) {
+  const params = new URLSearchParams({ id })
+  if (invoice) params.set('invoice', invoice)
+  return '/commitments/payment?' + params
+}

@@ -132,7 +132,15 @@ export function CommitmentLedger({ userId, accounts: warehouseAccounts }: { user
           <h1 className="neo-title" ref={listHeading} tabIndex={-1}>Cam kết</h1>
           <p className="mt-1 text-xs text-[var(--foreground-muted)]">Hạn chót theo giờ Việt Nam (UTC+7)</p>
         </div>
-        <div className="flex min-w-0 items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+          <Link href="/commitments/dues" prefetch={false}
+            className="neo-target inline-flex min-h-11 items-center text-sm font-medium text-[var(--accent-foreground)] underline">
+            Công nợ cần xử lý
+          </Link>
+          <Link href="/commitments/handoffs" prefetch={false}
+            className="neo-target inline-flex min-h-11 items-center text-sm font-medium text-[var(--accent-foreground)] underline">
+            Hồ sơ Kế toán
+          </Link>
           <Link href={commitmentsHref(group) + '&view=proposals'} prefetch={false}
             aria-current={showProposals && !catchup ? 'page' : undefined}
             className="neo-nav-item neo-nav-inline neo-target gap-2 px-2 text-sm">
