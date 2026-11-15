@@ -157,6 +157,12 @@ export async function startGoogleOAuthFixture() {
           headers: [{ name: 'Content-Disposition', value: 'attachment' }],
         }))
         if (section === 'attachments') {
+          const pause = box.attachmentPauses.get(id)
+          if (pause) {
+            box.attachmentPauses.delete(id)
+            pause.entered.resolve()
+            await pause.released.promise
+          }
           const index = parts.findIndex(part => part.body.attachmentId === attachmentId)
           return index < 0 ? json({}, 404) : json({
             size: parts[index].body.size, data: Buffer.from(item.attachments[index].data, 'base64').toString('base64url'),
@@ -187,7 +193,8 @@ export async function startGoogleOAuthFixture() {
   return {
     url: `http://127.0.0.1:${server.address().port}`, calls,
     registerMailbox(email, canSend = false, canModify = false) {
-      const box = { online: true, drops: 0, fullReads: 0, historyStarts: [], messages: new Map(), history: [] }
+      const box = { online: true, drops: 0, fullReads: 0, historyStarts: [], messages: new Map(), history: [],
+        attachmentPauses: new Map() }
       const grant = { mailbox: box, email, subject: email, scopes: [gmailReadScope, googleEmailScope, ...(canSend ? [gmailSendScope] : []), ...(canModify ? [gmailModifyScope] : [])] }
       return {
         tokens: issue(grant, true), box,
@@ -197,6 +204,15 @@ export async function startGoogleOAuthFixture() {
           }
         },
         changeLabels: (id, add, remove) => changeLabels(box, id, add, remove),
+        pauseAttachment(id) {
+          assert.ok(box.messages.has(id) && !box.attachmentPauses.has(id))
+          const pause = { entered: Promise.withResolvers(), released: Promise.withResolvers() }
+          box.attachmentPauses.set(id, pause)
+          return { entered: pause.entered.promise, release() {
+            box.attachmentPauses.delete(id)
+            pause.released.resolve()
+          } }
+        },
         deliver(items) {
           for (const item of items) {
             box.messages.set(item.id, { ...item, historyId: String(101 + box.history.length) })

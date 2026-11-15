@@ -1,5 +1,40 @@
 # Verification record
 
+## Chặn duyệt bản cũ khi có chứng từ đính chính
+
+Ngày 15/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,
+Chrome 157.0.8103.79, PostgreSQL 16 và hai hộp Gmail giả lập qua
+loopback. Luồng chạy cùng `npm run test:purchase-release`, exit 0
+với 22 kiểm tra, gồm ba nhóm mới sau bộ bốn hồ sơ đã khóa.
+
+- PO-9974 vẫn duyệt được bản đang chờ khi có thư sai người gửi, thư
+  cùng nhà cung cấp nhưng vào hộp Kế toán, sai PO, sai thứ tự hoặc
+  tệp gửi lại nguyên byte. RPC cũ thiếu dấu kiểm tra danh sách trả
+  lỗi và không ghi quyết định.
+- PO-9978 giữ tab Kế toán cũ. Fixture tạm dừng lượt đọc một tệp sau
+  khi máy chủ đã lấy danh sách ứng viên. Trong lúc dừng, Gmail đồng
+  bộ bản B hợp lệ. Yêu cầu cũ trả 409, dù Mua hàng chưa ghi nhận B.
+  Không có quyết định cho A. Kế toán cũng không tải được phần tệp B
+  chưa giao, và người ngoài không thể duyệt hồ sơ.
+- Mua hàng mở đúng phần đính kèm B từ Inbox, ghi nhận và bàn giao.
+  Tab cũ mất nút duyệt sau tải lại. Khi giả lập mất phản hồi ở lần
+  duyệt B, thao tác thử lại giữ nguyên mã yêu cầu, mã biên nhận và
+  đúng một sự kiện duyệt. Sau tải lại, sổ trỏ đúng ID thư và ID tệp.
+
+| Lệnh | Kết quả local |
+| --- | --- |
+| `npm run test:purchase-release` | Exit 0. 22 kiểm tra. Build production hoàn tất 121 bước tạo trang. |
+| `npm run test:purchase-supplements` | Exit 0. 41 kiểm tra hồi quy. |
+| `npm run test:staging -- --isolated` | Exit 0. 31 kiểm tra nâng cấp, sao lưu và khôi phục. |
+| `npm run lint`, `npm run typecheck` | Exit 0. Lint còn 92 cảnh báo cũ. |
+| `npm run test:unit`, `npm run test:integration`, `npm run test:db` | Exit 0. 252 unit, 200 integration và 47 nhóm database. |
+
+Lượt đầu xác nhận 409 nhưng dừng vì bộ thử tìm cảnh báo sai vai trò
+trợ năng. Đã sửa bộ chọn theo vai trò `status` của cảnh báo hiện có.
+Lượt chốt còn xác nhận hai ảnh Chrome qua axe và kiểm tra tràn ngang.
+Không dùng Gmail thật, không push hay deploy.
+[Quy tắc kiểm tra trước duyệt](PURCHASE_LOCAL_RELEASE.md#chặn-duyệt-bản-cũ-khi-có-đính-chính).
+
 ## Kiểm tra luồng bổ sung chứng từ trong CI
 
 Ngày 15/11/2026 trên macOS arm64, Node 24.14.1 và Chrome 157.0.8103.79.

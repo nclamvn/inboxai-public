@@ -5,11 +5,19 @@ import { purchaseCsvService, readPurchaseCsv } from './purchase-csv-server'
 import type { PaymentPreview } from './purchase-payment'
 import type { SupplementScan } from './purchase-supplement'
 
-const candidates = z.array(z.object({
-  caseId: z.uuid(), truncated: z.boolean(),
-  sources: z.array(z.object({ emailId: z.uuid(), fileId: z.uuid(), filename: z.string(), subject: z.string(),
-    binding: z.string().regex(/^[a-f0-9]{64}$/) })).max(6),
-})).max(4)
+const digest = z.string().regex(/^[a-f0-9]{64}$/)
+const sourceList = z.object({
+  caseId: z.uuid(), truncated: z.boolean(), sources: z.array(z.object({
+    emailId: z.uuid(), fileId: z.uuid(), filename: z.string(), subject: z.string(), binding: digest,
+  })).max(6),
+})
+const candidates = z.array(sourceList).max(4)
+const approvalScan = z.union([
+  z.object({ scope: z.null(), token: z.null() }),
+  z.object({ scope: sourceList.extend({ ownerId: z.uuid(), invoice: z.string() }), token: digest }),
+])
+
+const incompleteReview = 'Chưa kiểm tra hết chứng từ bổ sung. Hãy kiểm tra lại hồ sơ trước khi duyệt.'
 
 type Verdict = { status: 'match'; preview: PaymentPreview } | { status: 'ignore' | 'duplicate' } |
   { status: SupplementScan['checks'][number]['code'] }
@@ -19,6 +27,41 @@ export async function inspectSupplement(service: LedgerSession, actor: string, c
   return ledgerRpc(service, 'inspect_purchase_supplement', {
     p_actor: actor, p_case: caseId, p_email: emailId, p_attachment: fileId, p_binding: binding, p_text: csv,
   }, signal)
+}
+
+export async function verifyPurchaseApproval(service: LedgerSession, actor: string, handoffId: string,
+  requestSignal: AbortSignal) {
+  const signal = AbortSignal.any([requestSignal, AbortSignal.timeout(8_000)])
+  const { scope, token } = approvalScan.parse(await ledgerRpc(service, 'read_purchase_approval_scan', {
+    p_actor: actor, p_handoff: handoffId,
+  }, signal))
+  if (!scope) return null
+  const { ownerId, caseId, invoice, sources, truncated } = scope
+
+  async function supersedes(source: typeof sources[number]) {
+    const { emailId, fileId, binding } = source
+    try {
+      const file = await readPurchaseCsv(service, ownerId, emailId, fileId, { signal, maxGmailEnvelope: 1024 * 1024 })
+      const verdict = await inspectSupplement(service, ownerId, caseId, emailId, fileId, binding, file.source, signal)
+      if (verdict.status !== 'match') return false
+      if (verdict.preview.command.digest !== file.digest) throw new Error('Purchase attachment digest changed')
+      return verdict.preview.replaces === invoice
+    } catch (error) {
+      if (error instanceof CommitmentRequestError && error.status === 422 && !signal.aborted) return false
+      return null
+    }
+  }
+
+  let incomplete = truncated
+  for (let offset = 0; offset < sources.length && !signal.aborted; offset += 3) {
+    const results = await Promise.all(sources.slice(offset, offset + 3).map(supersedes))
+    if (results.includes(true)) {
+      throw new CommitmentRequestError(409, 'Có chứng từ đính chính mới. Mua hàng cần kiểm tra và bàn giao lại trước khi duyệt.')
+    }
+    incomplete ||= results.includes(null)
+  }
+  if (incomplete || signal.aborted) throw new CommitmentRequestError(409, incompleteReview)
+  return token
 }
 
 export async function scanSupplements(client: LedgerSession, actor: string, cases: string[], requestSignal: AbortSignal) {

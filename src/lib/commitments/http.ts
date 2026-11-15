@@ -9,6 +9,10 @@ export class CommitmentRequestError extends Error {
   constructor(readonly status: number, message: string) { super(message) }
 }
 
+export class PurchaseReviewChangedError extends CommitmentRequestError {
+  constructor(message: string) { super(409, message) }
+}
+
 export function ledgerJson(data: unknown, status = 200) {
   return NextResponse.json(data, { status, headers: { 'Cache-Control': 'private, no-store' } })
 }
@@ -57,7 +61,7 @@ export async function readCommitmentJson(request: NextRequest): Promise<unknown>
 export async function ledgerRpc(client: LedgerSession, name: 'save_commitment' | 'list_commitments' | 'list_commitment_board' | 'read_commitment'
   | 'scan_commitment_mail' | 'read_commitment_lifecycle_targets' | 'confirm_commitment_detection'
   | 'read_purchase_handoff' | 'list_purchase_handoffs' | 'read_purchase_handoff_owner' | 'read_purchase_handoff_receipt'
-  | 'resolve_purchase_handoff_files' | 'confirm_purchase_handoff'
+  | 'resolve_purchase_handoff_files' | 'confirm_purchase_handoff' | 'read_purchase_approval_scan'
   | 'read_purchase_settlement' | 'preview_purchase_settlement' | 'read_purchase_settlement_receipt' | 'confirm_purchase_settlement'
   | 'list_purchase_dues' | 'resolve_purchase_due_file'
   | 'preview_purchase_batch' | 'list_purchase_batches' | 'read_purchase_batch' | 'read_purchase_batch_receipt'
@@ -80,6 +84,8 @@ export async function ledgerRpc(client: LedgerSession, name: 'save_commitment' |
       throw new CommitmentRequestError(422, error.message)
     case 'PT432':
       throw new CommitmentRequestError(409, error.message)
+    case 'PT433':
+      throw new PurchaseReviewChangedError(error.message)
     case 'PT403':
       throw new CommitmentRequestError(403, error.message)
     case 'PT404':

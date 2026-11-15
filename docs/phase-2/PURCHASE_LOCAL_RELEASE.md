@@ -115,3 +115,26 @@ Chrome được đối chiếu trực tiếp với nhãn đã khóa, gồm đún
 đính kèm, hồ sơ phải giữ chờ và bằng chứng thử lại lúc duyệt. Job lưu
 JSON và ảnh nghiệm thu trong bảy ngày. Nó chạy trên pull request và
 các nhánh được khai báo ở bộ lọc push của workflow.
+
+## Chặn duyệt bản cũ khi có đính chính
+
+Khi duyệt bản bổ sung, máy chủ kiểm tra các tệp CSV mới đã đồng bộ
+trong hộp thư Gmail của Mua hàng. Phạm vi bám theo nguồn của hóa đơn
+gốc, đúng nhà cung cấp, đúng PO và bản đang bàn giao. Chỉ khi xác minh
+được chứng từ khác byte và thay đúng hóa đơn đang chờ duyệt, Kế toán
+mới nhận thông báo có bản đính chính cần Mua hàng kiểm tra. Thư sai
+nguồn, sai PO, đến muộn với thời điểm nguồn cũ hoặc gửi lại nguyên byte
+không tạo trạng thái chờ. Bên duyệt vẫn chỉ đọc được chứng từ đã giao.
+
+Danh sách đã kiểm tra được đối chiếu trong cùng giao dịch ghi quyết
+định. Khóa dùng chung với đồng bộ Gmail bảo đảm một trang đồng bộ
+đã ghi trước lúc duyệt sẽ được tính vào lần đối chiếu này. Danh sách
+đổi làm giao dịch hủy cả quyết định và biên nhận. Máy chủ kiểm tra lại
+tối đa một lần với cùng mã yêu cầu. Khi Mua hàng xác nhận và bàn giao
+bản mới, bản cũ bị thay thế qua cơ chế bàn giao hiện có.
+
+Phạm vi là đính chính CSV đã vào Inbox qua nguồn Gmail của hồ sơ.
+Mỗi lượt kiểm tra tối đa sáu tệp trong tám giây. Nếu chưa kiểm tra
+đủ, yêu cầu duyệt dừng và báo rõ để kiểm tra lại. Bản chưa đồng bộ
+chưa có mặt trong danh sách kiểm tra. Biên nhận đã ghi thành công
+được trả lại khi thử lại cùng yêu cầu.

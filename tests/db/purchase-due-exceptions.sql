@@ -75,10 +75,19 @@ BEGIN
     OR public.list_purchase_supplement_sources(ARRAY[handoff]) IS DISTINCT FROM '[]'::jsonb THEN
     RAISE EXCEPTION 'Outsider gained visibility into another tenant exception';
   END IF;
+  BEGIN
+    PERFORM public.read_purchase_approval_scan(outsider,handoff);
+    RAISE EXCEPTION 'Outsider read the approval verification scope';
+  EXCEPTION WHEN SQLSTATE 'PT404' THEN NULL;
+  END;
   IF has_table_privilege('authenticated','private.purchase_due_exceptions','SELECT')
     OR has_table_privilege('service_role','private.purchase_due_exception_events','UPDATE')
     OR has_function_privilege('anon','public.read_purchase_handoff(uuid)','EXECUTE')
     OR has_function_privilege('authenticated','public.confirm_purchase_handoff(uuid,uuid,jsonb)','EXECUTE')
+    OR has_function_privilege('authenticated','public.confirm_purchase_handoff(uuid,uuid,jsonb,text)','EXECUTE')
+    OR has_function_privilege('anon','public.read_purchase_approval_scan(uuid,uuid)','EXECUTE')
+    OR has_function_privilege('authenticated','public.read_purchase_approval_scan(uuid,uuid)','EXECUTE')
+    OR has_function_privilege('service_role','private.apply_purchase_due_handoff(uuid,uuid,jsonb)','EXECUTE')
     OR has_function_privilege('service_role','private.confirm_purchase_handoff(uuid,uuid,jsonb)','EXECUTE')
     OR has_function_privilege('anon','public.list_purchase_focus(uuid[])','EXECUTE')
     OR has_function_privilege('anon','public.list_purchase_supplement_sources(uuid[])','EXECUTE')
