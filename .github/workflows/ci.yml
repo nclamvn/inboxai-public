@@ -3,7 +3,7 @@ name: Phase 2 quality and security
 on:
   pull_request:
   push:
-    branches: [phase2/m0-security-baseline-20261111]
+    branches: [phase2/m0-security-baseline-20261111, codex/purchase-release-ci]
   workflow_dispatch:
 
 permissions:
@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        command: [lint, typecheck, test:unit, test:integration, build]
+        command: [lint, typecheck, 'test:unit', 'test:integration', build]
     env:
       # Synthetic build-only values. Never use repository production secrets.
       NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:9
@@ -98,3 +98,35 @@ jobs:
       - run: npm run test:local-auth
       - if: always()
         run: docker compose -p inboxai-m0e-local -f tests/local-auth/compose.yml down
+
+  purchase-release-chrome:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: google-chrome --version
+      - name: Pull pinned fixture images
+        run: >-
+          docker compose
+          -f tests/local-auth/compose.yml
+          -f tests/local-auth/e2e.compose.yml
+          -f tests/local-auth/purchase-release.compose.yml
+          pull
+      - run: npm run test:purchase-release
+      - name: Upload synthetic Chrome evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: purchase-release-chrome
+          path: |
+            test-results/purchase-release/report.json
+            test-results/purchase-release/browser.json
+            test-results/purchase-release/*.png
+          retention-days: 7

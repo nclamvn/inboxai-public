@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { writeFileSync } from 'node:fs'
 import { setupPurchase } from '../../design/purchase-dues.mjs'
-import { cases, corpusId, hold, materialize } from './corpus.mjs'
+import { assertBrowserDecisions, cases, corpusId, hold, materialize } from './corpus.mjs'
 
 const handoffs = '/api/commitments/handoffs'
 const button = (page,name) => page.getByRole('button',{name,exact:true})
@@ -195,4 +195,6 @@ export async function rehearsePurchaseRelease(options) {
     save()
     record(row.po+': Chrome captured source selection and persisted approval or kept the exception on hold.',true)
   }
+  assertBrowserDecisions(product,manual)
+  record('All Chrome decisions, including exact sources and holds, match the frozen purchase labels.',true)
 }
