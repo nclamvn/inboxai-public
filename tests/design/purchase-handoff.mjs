@@ -49,9 +49,12 @@ export async function rehearsePurchaseHandoff({ app,page,deliver,request,account
 
   if (purchaseRelease) {
     const { rehearsePurchaseRelease } = await import('../eval/purchase-release/browser.mjs')
-    await connectMailbox('ke-toan-release',reviewerId)
-    await rehearsePurchaseRelease({ app,page,reviewer,outsider,deliver,request,accounts,
-      fileAction,assign,invoice,receipts,warehouse,capture,record,output })
+    const { rehearsePurchaseApprovalFreshness } = await import('./purchase-approval-freshness.mjs')
+    const reviewerMailbox = await connectMailbox('ke-toan-release',reviewerId)
+    const options = { app,page,reviewer,outsider,deliver,request,accounts,
+      fileAction,assign,invoice,receipts,warehouse,capture,record,output,sql,reviewerId,reviewerMailbox }
+    await rehearsePurchaseRelease(options)
+    await rehearsePurchaseApprovalFreshness(options)
     assert.equal(googleProvider.calls.sendAttempts,0)
     assert.deepEqual(runtimeErrors,[])
     return

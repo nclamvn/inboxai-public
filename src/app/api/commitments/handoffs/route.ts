@@ -2,7 +2,8 @@ import type { NextRequest } from 'next/server'
 import { commitmentId, requestKey } from '@/lib/commitments/contracts'
 import { purchaseCsvService, readPurchaseCsv } from '@/lib/commitments/purchase-csv-server'
 import { handoffCommand, handoffReceipt } from '@/lib/commitments/purchase-handoff'
-import { CommitmentRequestError, ledgerJson, ledgerRpc, readCommitmentJson, withLedgerSession } from '@/lib/commitments/http'
+import { CommitmentRequestError, PurchaseReviewChangedError, ledgerJson, ledgerRpc, readCommitmentJson, withLedgerSession } from '@/lib/commitments/http'
+import { verifyPurchaseApproval } from '@/lib/commitments/purchase-supplement-server'
 
 export const maxDuration = 60
 
@@ -86,11 +87,24 @@ export async function POST(request: NextRequest) {
     const existing = await ledgerRpc(client, 'read_purchase_handoff_receipt', args)
     if (existing.replayed) return ledgerJson(handoffReceipt.parse(existing))
 
+    const service = purchaseCsvService()
     if (command.data.action === 'approve') {
+      const handoffId = command.data.handoffId
+      async function approve() {
+        const token = await verifyPurchaseApproval(service, actor, handoffId, request.signal)
+        return ledgerRpc(service, 'confirm_purchase_handoff', { p_actor: actor, ...args, p_review_token: token })
+      }
+
       try {
-        const { ownerId, files } = await resolveFiles(actor, command.data.handoffId)
+        const { ownerId, files } = await resolveFiles(actor, handoffId)
         for (let offset = 0; offset < files.length; offset += 4) {
           await Promise.all(files.slice(offset, offset + 4).map(file => loadVerifiedFile(ownerId, file)))
+        }
+        try {
+          return ledgerJson(handoffReceipt.parse(await approve()))
+        } catch (error) {
+          if (!(error instanceof PurchaseReviewChangedError)) throw error
+          return ledgerJson(handoffReceipt.parse(await approve()))
         }
       } catch (error) {
         // Another delivery of the same request may have completed during verification.
@@ -99,7 +113,7 @@ export async function POST(request: NextRequest) {
         throw error
       }
     }
-    return ledgerJson(handoffReceipt.parse(await ledgerRpc(purchaseCsvService(), 'confirm_purchase_handoff', {
+    return ledgerJson(handoffReceipt.parse(await ledgerRpc(service, 'confirm_purchase_handoff', {
       p_actor: actor, ...args,
     })))
   })
