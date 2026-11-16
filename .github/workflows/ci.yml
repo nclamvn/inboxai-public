@@ -119,6 +119,12 @@ jobs:
           -f tests/local-auth/e2e.compose.yml
           -f tests/local-auth/purchase-release.compose.yml
           pull
+      - name: Pull visual and platform fixture images
+        run: >-
+          docker compose
+          -f tests/local-auth/compose.yml
+          -f tests/local-auth/e2e.compose.yml
+          pull
       - run: npm run test:purchase-release
       - run: npm run test:design -- --isolated
       - run: npm run test:platform -- --isolated

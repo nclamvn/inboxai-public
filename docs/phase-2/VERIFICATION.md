@@ -49,6 +49,18 @@ venv was created. `docker image prune -f` reclaimed 0 B; the harness removed
 its disposable fixture containers and networks. The existing preview and its
 `.next` were retained.
 
+Remote CI for `40c4c2f` passed all eight non-Chrome jobs and the purchase-release
+step. Its later visual step failed before application startup: the pinned
+purchase overlay had been pulled, but the base visual/platform images were
+absent on the clean runner (`postgres:16` and `axllent/mailpit:v1.28.1`).
+[Failed run and logs](https://github.com/nclamvn/inboxai-public/actions/runs/43855189497).
+Added an explicit pull for the visual/platform compose set without skipping
+any test. The same pull command exited 0 locally; fresh design and platform
+reruns then exited 0 with 33 and 19 groups respectively. Logs:
+`ci-image-pull.log`, `ci-design.log`, `ci-platform.log` under the cleanup evidence
+directory. Removed `.next-build` again after these reruns; Docker image prune
+ran again. These local results are not the next remote run's conclusion.
+
 ## Nâng cấp nhận diện bằng màu và icon
 
 Ngày 16/11/2026, local macOS arm64, Node 24.14.1, Next.js 16.4.6,
