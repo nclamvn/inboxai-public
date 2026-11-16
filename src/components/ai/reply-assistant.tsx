@@ -1,22 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import {
-  Sparkles,
-  Zap,
-  FileText,
-  Search,
-  ChevronDown,
-  Copy,
-  Check,
-  RefreshCw,
-  Send,
-  Loader2,
-  MessageSquare,
-  Clock,
-  AlertCircle,
-  X
-} from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Sparkles, Zap, FileText, Search, Copy, Check, RefreshCw, Send, Loader2, MessageSquare, Clock, AlertCircle, X } from 'lucide-react'
 import type { Email } from '@/types'
 import type { EmailAnalysis } from '@/lib/ai/email-analyzer'
 import type { GeneratedDraft } from '@/lib/ai/draft-generator'
@@ -38,6 +23,7 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
   const [loading, setLoading] = useState<Record<string, boolean>>({})
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const scope = useRef<AbortController | null>(null)
 
   // Draft options
   const [draftOptions, setDraftOptions] = useState({
@@ -49,33 +35,36 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
   })
 
   useEffect(() => {
-    analyzeEmail()
-  }, [email.id])
-
-  const analyzeEmail = async () => {
-    setLoading(prev => ({ ...prev, analyze: true }))
+    const controller = new AbortController()
+    scope.current = controller
+    setAnalysis(null)
+    setDraft(null)
+    setResearch(null)
+    setLoading({ analyze: true })
     setError(null)
-
-    try {
-      const res = await fetch('/api/ai/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ emailId: email.id })
-      })
-
-      if (!res.ok) throw new Error('Failed to analyze')
-
-      const data = await res.json()
-      setAnalysis(data)
-    } catch (err) {
-      setError('Không thể phân tích email')
-    } finally {
-      setLoading(prev => ({ ...prev, analyze: false }))
+    async function load() {
+      try {
+        const res = await fetch('/api/ai/analyze', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ emailId: email.id }), signal: controller.signal,
+        })
+        if (!res.ok) throw new Error('Failed to analyze')
+        const data = await res.json()
+        if (!controller.signal.aborted) setAnalysis(data)
+      } catch {
+        if (!controller.signal.aborted) setError('Không thể phân tích email')
+      } finally {
+        if (!controller.signal.aborted) setLoading(prev => ({ ...prev, analyze: false }))
+      }
     }
-  }
+    void load()
+    return () => controller.abort()
+  }, [email.id])
 
   const generateDraft = async () => {
     if (!analysis) return
+    const controller = scope.current
+    if (!controller || controller.signal.aborted) return
 
     setLoading(prev => ({ ...prev, draft: true }))
     setError(null)
@@ -83,6 +72,7 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
     try {
       const res = await fetch('/api/ai/draft', {
         method: 'POST',
+        signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           emailId: email.id,
@@ -95,21 +85,24 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
       if (!res.ok) throw new Error('Failed to generate draft')
 
       const data = await res.json()
-      setDraft(data)
-    } catch (err) {
-      setError('Không thể tạo bản nháp')
+      if (!controller.signal.aborted) setDraft(data)
+    } catch {
+      if (!controller.signal.aborted) setError('Không thể tạo bản nháp')
     } finally {
-      setLoading(prev => ({ ...prev, draft: false }))
+      if (!controller.signal.aborted) setLoading(prev => ({ ...prev, draft: false }))
     }
   }
 
   const fetchResearch = async () => {
+    const controller = scope.current
+    if (!controller || controller.signal.aborted) return
     setLoading(prev => ({ ...prev, research: true }))
     setError(null)
 
     try {
       const res = await fetch('/api/ai/research', {
         method: 'POST',
+        signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ emailId: email.id })
       })
@@ -117,11 +110,11 @@ export function ReplyAssistant({ email, onUseDraft, onClose }: ReplyAssistantPro
       if (!res.ok) throw new Error('Failed to research')
 
       const data = await res.json()
-      setResearch(data)
-    } catch (err) {
-      setError('Không thể tìm thông tin liên quan')
+      if (!controller.signal.aborted) setResearch(data)
+    } catch {
+      if (!controller.signal.aborted) setError('Không thể tìm thông tin liên quan')
     } finally {
-      setLoading(prev => ({ ...prev, research: false }))
+      if (!controller.signal.aborted) setLoading(prev => ({ ...prev, research: false }))
     }
   }
 

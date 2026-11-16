@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint --max-warnings=0",
     "generate-icons": "npx tsx scripts/generate-icons.ts",
     "cron:sync": "node scripts/cron-sync.js",
     "cap:sync": "npx cap sync",
@@ -91,11 +91,10 @@
     "@fontsource-variable/inter": "5.3.0",
     "@fontsource/plus-jakarta-sans": "^5.2.8",
     "@huggingface/tokenizers": "0.2.0",
-    "@sentry/nextjs": "^10.30.0",
+    "@sentry/nextjs": "^11.12.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.87.1",
     "@tanstack/react-query": "^5.90.12",
-    "@tanstack/react-virtual": "^3.13.13",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "imapflow": "^1.1.1",
@@ -130,6 +129,7 @@
     "axe-core": "4.14.0",
     "eslint": "^9",
     "eslint-config-next": "16.0.8",
+    "eslint-plugin-react-hooks": "7.0.1",
     "jsdom": "^29.1.1",
     "playwright-core": "1.65.0",
     "sharp": "^0.35.5",
@@ -140,5 +140,10 @@
   },
   "engines": {
     "node": ">=22.12.0"
+  },
+  "overrides": {
+    "@typescript-eslint/typescript-estree@8.72.2": {
+      "minimatch": "11.0.7"
+    }
   }
 }

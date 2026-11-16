@@ -19,6 +19,8 @@
 /test-results/commitment-lifecycle/
 /test-results/commitment-regression/
 /test-results/commitment-attention/
+/test-results/commitment-ui/
+/test-results/technical-debt/
 /test-results/delivery-commitments/
 /test-results/warehouse-reconciliation/
 /test-results/warehouse-correction/

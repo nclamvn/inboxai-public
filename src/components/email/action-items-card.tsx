@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   CheckCircle2, Circle, Clock, HelpCircle, Calendar,
   AlertTriangle, Loader2, ChevronDown, ChevronUp,
@@ -59,49 +59,52 @@ export function ActionItemsCard({ emailId, onViewAll }: ActionItemsCardProps) {
   const [extracting, setExtracting] = useState(false)
   const [expanded, setExpanded] = useState(true)
   const [hasLoaded, setHasLoaded] = useState(false)
+  const scope = useRef<AbortController | null>(null)
 
-  // Reset when email changes
   useEffect(() => {
+    const controller = new AbortController()
+    scope.current = controller
+    setExtracting(false)
     setActions([])
     setHasLoaded(false)
+    setLoading(true)
+    async function load() {
+      try {
+        const res = await fetch(`/api/emails/${emailId}/extract-actions`, { signal: controller.signal })
+        if (!res.ok) throw new Error('Action items unavailable')
+        const data = await res.json()
+        if (!controller.signal.aborted) setActions(data.actions || [])
+      } catch (error) {
+        if (!controller.signal.aborted) console.error('Failed to fetch actions:', error)
+      } finally {
+        if (!controller.signal.aborted) { setLoading(false); setHasLoaded(true) }
+      }
+    }
+    void load()
+    return () => controller.abort()
   }, [emailId])
 
-  useEffect(() => {
-    if (emailId && !hasLoaded) {
-      fetchActions()
-    }
-  }, [emailId, hasLoaded])
-
-  const fetchActions = async () => {
-    setLoading(true)
-    setHasLoaded(true)
-    try {
-      const res = await fetch(`/api/emails/${emailId}/extract-actions`)
-      const data = await res.json()
-      setActions(data.actions || [])
-    } catch (error) {
-      console.error('Failed to fetch actions:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const extractActions = async () => {
+    const controller = scope.current
+    if (!controller || controller.signal.aborted) return
     setExtracting(true)
     try {
       const res = await fetch(`/api/emails/${emailId}/extract-actions`, {
-        method: 'POST'
+        method: 'POST', signal: controller.signal,
       })
+      if (!res.ok) throw new Error('Action extraction failed')
       const data = await res.json()
-      setActions(data.actions || [])
+      if (!controller.signal.aborted) setActions(data.actions || [])
     } catch (error) {
-      console.error('Failed to extract actions:', error)
+      if (!controller.signal.aborted) console.error('Failed to extract actions:', error)
     } finally {
-      setExtracting(false)
+      if (!controller.signal.aborted) setExtracting(false)
     }
   }
 
   const toggleStatus = async (actionId: string, currentStatus: string) => {
+    const controller = scope.current
+    if (!controller || controller.signal.aborted) return
     const newStatus = currentStatus === 'completed' ? 'pending' : 'completed'
 
     // Optimistic update
@@ -110,12 +113,15 @@ export function ActionItemsCard({ emailId, onViewAll }: ActionItemsCardProps) {
     ))
 
     try {
-      await fetch(`/api/action-items/${actionId}`, {
+      const response = await fetch(`/api/action-items/${actionId}`, {
         method: 'PATCH',
+        signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
       })
+      if (!response.ok) throw new Error('Action status update failed')
     } catch (error) {
+      if (controller.signal.aborted) return
       // Revert on error
       setActions(prev => prev.map(a =>
         a.id === actionId ? { ...a, status: currentStatus as ActionItem['status'] } : a
@@ -145,7 +151,7 @@ export function ActionItemsCard({ emailId, onViewAll }: ActionItemsCardProps) {
     return (
       <div className="mb-4 p-4 bg-[var(--secondary)] rounded-xl border border-[var(--border)]">
         <div className="flex items-center gap-3">
-          <Loader2 className="w-5 h-5 animate-spin text-purple-500" />
+          <Loader2 className="w-5 h-5 animate-spin text-[var(--accent-foreground)]" />
           <span className="text-sm text-[var(--foreground-secondary)]">Đang tải actions...</span>
         </div>
       </div>
@@ -161,10 +167,10 @@ export function ActionItemsCard({ emailId, onViewAll }: ActionItemsCardProps) {
           disabled={extracting}
           className={cn(
             'w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl',
-            'bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-500/10 dark:to-indigo-500/10',
-            'border border-purple-100 dark:border-purple-500/20',
+            'bg-[var(--surface)]',
+            'border border-[var(--border)]',
             'text-[var(--foreground)] font-medium text-sm',
-            'hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-500/20 dark:hover:to-indigo-500/20',
+            'hover:bg-[var(--hover)]',
             'transition-all disabled:opacity-50'
           )}
         >
@@ -191,10 +197,10 @@ export function ActionItemsCard({ emailId, onViewAll }: ActionItemsCardProps) {
 
   return (
     <div className={cn(
-      'mb-4 rounded-xl border overflow-hidden transition-all duration-200',
+      'mb-4 rounded-[var(--radius-panel)] border bg-[var(--surface)] overflow-hidden transition-colors duration-150',
       hasHighPriority
-        ? 'bg-gradient-to-r from-red-50/50 to-orange-50/50 dark:from-red-500/5 dark:to-orange-500/5 border-red-100 dark:border-red-500/20'
-        : 'bg-gradient-to-r from-purple-50/50 to-indigo-50/50 dark:from-purple-500/5 dark:to-indigo-500/5 border-purple-100 dark:border-purple-500/20'
+        ? 'border-[var(--border)] border-s-2 border-s-[var(--error)]'
+        : 'border-[var(--border)]'
     )}>
       {/* Header */}
       <button
@@ -253,6 +259,9 @@ export function ActionItemsCard({ emailId, onViewAll }: ActionItemsCardProps) {
               >
                 {/* Checkbox */}
                 <button
+                  type="button"
+                  aria-label={`${isCompleted ? 'Mở lại' : 'Hoàn thành'}: ${action.title}`}
+                  aria-pressed={isCompleted}
                   onClick={() => toggleStatus(action.id, action.status)}
                   className={cn(
                     'flex-shrink-0 mt-0.5 transition-colors',

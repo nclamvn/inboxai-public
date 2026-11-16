@@ -24,3 +24,14 @@ it('upgraded Sharp encodes/decodes a synthetic image in memory', async () => {
   expect(metadata.height).toBe(4)
   expect(metadata.format).toBe('png')
 })
+
+it('the scoped minimatch security override preserves the parser project allowlist API', async () => {
+  const { createRequire } = await import('node:module')
+  const require = createRequire(import.meta.url)
+  const parserRequire = createRequire(require.resolve('@typescript-eslint/typescript-estree'))
+  const { minimatch } = parserRequire('minimatch') as { minimatch: (file: string, pattern: string, options: { dot: boolean }) => boolean }
+  expect(minimatch('config.ts','*.ts',{ dot:true })).toBe(true)
+  expect(minimatch('.config.ts','*.ts',{ dot:true })).toBe(true)
+  expect(minimatch('config.js','*.ts',{ dot:true })).toBe(false)
+  expect(minimatch('nested/config.ts','*.ts',{ dot:true })).toBe(false)
+})

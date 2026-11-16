@@ -181,6 +181,24 @@ export async function rehearseDesign({ app, cookies, admin, userId, record, acti
         mailLabels[key] = { ...colors, contrast: Number(contrast.toFixed(2)) }
       }
       assert.equal(new Set(Object.values(mailLabels).map(label => label.background)).size, 5)
+      // The mark at the start of the row must carry the same meaning as the text,
+      // including urgent transaction mail, without relying on the category color.
+      const signals = {}
+      for (const [tone, message] of [
+        ['important',subject], ['urgent','Giao dịch bất thường ở tài khoản nhận tiền'],
+        ['transaction','Xác nhận giao dịch tháng 11'], ['promotion','Ưu đãi tháng 11'], ['newsletter','Tin vận tải tuần này'],
+      ]) {
+        const row = page.getByRole('button',{name:new RegExp(`^Mở thư: ${message},`)}).locator('..')
+        const tile = row.locator('.neo-signal-tile')
+        assert.equal(await tile.getAttribute('data-mail-tone'),tone)
+        assert.equal(await tile.locator('svg').count(),1)
+        const paint = await tile.evaluate(element=>({ink:getComputedStyle(element).color,fill:getComputedStyle(element).backgroundColor}))
+        assert.ok(contrastRatio(paint.ink,paint.fill)>=3, `${name} ${tone} icon contrast`)
+        const rail = await row.evaluate(element=>({width:getComputedStyle(element,'::after').width,fill:getComputedStyle(element,'::after').backgroundColor}))
+        assert.deepEqual(rail,{width:'2px',fill:paint.fill})
+        signals[tone]=paint
+      }
+      assert.equal(new Set(Object.values(signals).map(signal=>signal.fill)).size,5)
       const receipt = page.getByRole('button', { name: /^Mở thư: Xác nhận giao dịch tháng 11,/ })
       assert.equal(await receipt.locator('..').locator('[data-priority]').count(), 0)
       const violations = await audit(page)
@@ -193,9 +211,10 @@ export async function rehearseDesign({ app, cookies, admin, userId, record, acti
         await screenshot(page, 'mobile-categories')
       }
       await later.evaluate(button => button.click())
-      results.push({ name, viewport: options.viewport, styles, mailLabels, axe: violations, runtimeErrors })
+      results.push({ name, viewport: options.viewport, styles, mailLabels, signals, axe: violations, runtimeErrors })
       record(`${name} Inbox renders tokens, Inter and current navigation without horizontal overflow`, true)
       record(`${name} Inbox distinguishes important, urgent, transaction, promotion and newsletter mail with readable labels`, true)
+      record(`${name} semantic icons and two-pixel rails distinguish five meanings, with urgent mail overriding its category and icon contrast at least 3:1`, true)
 
       if (name === 'desktop') {
         await page.keyboard.press('Tab')
@@ -246,7 +265,7 @@ export async function rehearseDesign({ app, cookies, admin, userId, record, acti
         await toggle.click()
         await page.getByRole('button', { name: 'Thu gọn thanh điều hướng' }).waitFor()
         await page.getByRole('button', { name: 'Thu gọn thanh điều hướng' }).click()
-        await opener.click()
+        await opener.locator('.neo-signal-tile').click()
         await page.getByRole('heading', { name: subject, exact: true }).waitFor()
         assert.equal(await page.locator('.neo-mail-row').first().isVisible(), false)
         record('tablet expands the rail and uses a single reading pane', true)

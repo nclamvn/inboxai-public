@@ -33,7 +33,7 @@ export default function LoginPage() {
 
       router.push('/inbox')
       router.refresh()
-    } catch (err) {
+    } catch {
       setError('Đã xảy ra lỗi. Vui lòng thử lại.')
     } finally {
       setLoading(false)

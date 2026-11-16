@@ -709,7 +709,7 @@ export function preprocessEmail(
 // EXPORTS
 // ===========================================
 
-export default {
+const vietnameseUtilsApi = {
   normalizeVietnameseText,
   removeVietnameseDiacritics,
   toAscii,
@@ -726,3 +726,5 @@ export default {
   VIETNAMESE_STOPWORDS,
   VIETNAMESE_CHAR_MAP,
 };
+
+export default vietnameseUtilsApi;

@@ -95,21 +95,7 @@ interface Behavior {
   created_at: string
 }
 
-interface SenderScore {
-  id: string
-  user_id: string
-  sender_email: string
-  sender_name: string | null
-  total_received: number
-  total_opened: number
-  total_replied: number
-  total_deleted: number
-  total_archived: number
-  avg_read_time: number
-  importance_score: number
-  engagement_score: number
-  annoyance_score: number
-}
+
 
 export async function generateWeeklyReport(userId: string): Promise<WeeklyReport> {
   const now = new Date()

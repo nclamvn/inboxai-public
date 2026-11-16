@@ -195,9 +195,6 @@ export function EmailDetailFull({
   }
 
   // Legacy block sender (for spam feedback)
-  const handleBlockSender = async () => {
-    handleUnsubscribe(false)
-  }
 
   const handleArchive = () => {
     setActionLoading('archive')

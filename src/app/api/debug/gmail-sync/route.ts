@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCredentialVault } from '@/lib/credential-vault/vault'
 
 // Diagnostics expose metadata only; never refresh tokens or call a mail provider.
-export async function GET(_request: NextRequest) {
+export async function GET() {
   if (process.env.NODE_ENV === 'production') return NextResponse.json({ error:'Not found' }, { status:404 })
   const supabase = await createClient()
   const { data:{ user },error } = await supabase.auth.getUser()

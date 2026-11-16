@@ -6,7 +6,6 @@ import {
   Archive, Trash2, ChevronRight, X, Loader2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { IconBox } from '@/components/ui/icon-box'
 
 interface BriefingData {
   greeting: string

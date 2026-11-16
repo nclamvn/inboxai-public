@@ -3,7 +3,7 @@ name: Phase 2 quality and security
 on:
   pull_request:
   push:
-    branches: [phase2/m0-security-baseline-20261111, codex/purchase-release-ci]
+    branches: [phase2/m0-security-baseline-20261111, 'codex/**']
   workflow_dispatch:
 
 permissions:
@@ -79,8 +79,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci --ignore-scripts
-      # Intentionally blocking until the legacy dependency debt is resolved.
-      - run: npm audit --audit-level=high
+      # Keep the reviewed dependency baseline from regressing.
+      - run: npm audit --audit-level=moderate
 
   local-auth-rehearsal:
     runs-on: ubuntu-latest
@@ -120,6 +120,8 @@ jobs:
           -f tests/local-auth/purchase-release.compose.yml
           pull
       - run: npm run test:purchase-release
+      - run: npm run test:design -- --isolated
+      - run: npm run test:platform -- --isolated
       - name: Upload synthetic Chrome evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -129,4 +131,7 @@ jobs:
             test-results/purchase-release/report.json
             test-results/purchase-release/browser.json
             test-results/purchase-release/*.png
+            test-results/m6d/design-run.json
+            test-results/m6d/design/
+            test-results/commitment-attention/platform/
           retention-days: 7

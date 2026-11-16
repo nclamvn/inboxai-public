@@ -50,8 +50,7 @@ export async function getSenderTrust(
  */
 export async function updateSenderOnReceive(
   userId: string,
-  senderEmail: string,
-  senderName?: string
+  senderEmail: string
 ): Promise<void> {
   const email = senderEmail.toLowerCase()
   const domain = email.split('@')[1] || null

@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback, useMemo, MouseEvent, TouchEvent } from 'react'
-import { Star, ListTodo, Inbox, Newspaper, ChevronDown, ChevronRight, Loader2, Paperclip, Check, X, Archive, Trash2, Mail, MailOpen, Info } from 'lucide-react'
+import { Star, ListTodo, Inbox, Newspaper, ChevronDown, ChevronRight, Loader2, Paperclip, Check, X, Archive, Trash2, Mail, MailOpen, Info, CircleAlert, Flag } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { useSelection } from '@/contexts/email-selection-context'
 import { ContextMenu } from './context-menu'
 import { CategoryPicker } from './category-picker'
 import { getMailCategoryLabel, MailCategoryLabel } from './mail-category-label'
+import { MailSignal, mailSignal } from './mail-signal'
 import type { Email } from '@/types'
 import { inboxBandLabels, type InboxRanking } from '@/lib/action-inbox/rank'
 
@@ -402,6 +403,7 @@ export function EmailListCompact({
       <div
         key={email.id}
         data-active={open || selected}
+        data-mail-tone={mailSignal(category, priority).tone}
         className={cn(
           'neo-mail-row group flex items-start gap-2 hover:bg-[var(--hover)]',
           compact ? 'px-3 py-2' : 'px-4 py-3'
@@ -428,11 +430,6 @@ export function EmailListCompact({
             </span>
           </button>
         )}
-        {!isSelecting && (
-          <span aria-hidden="true" className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-[var(--secondary)] text-xs font-semibold text-[var(--foreground-muted)] md:hidden">
-            {sender[0].toUpperCase()}
-          </span>
-        )}
         {onStar && (
           <button
             type="button" aria-label={`Gắn sao: ${subject}`} aria-pressed={email.is_starred}
@@ -449,8 +446,10 @@ export function EmailListCompact({
           onClick={event => handleTap(email, event)}
           aria-current={open ? 'true' : undefined}
           aria-label={[`${isSelecting ? 'Chọn' : 'Mở'} thư: ${subject}`, sender, !email.is_read && 'chưa đọc', priorityLabel, categoryLabel].filter(Boolean).join(', ')}
-          className="flex min-h-11 min-w-0 flex-1 flex-col items-stretch gap-1 text-start focus-visible:outline-none"
+          className="flex min-h-11 min-w-0 flex-1 items-start gap-2 text-start focus-visible:outline-none"
         >
+          {!isSelecting && <MailSignal category={category} priority={priority} />}
+          <span className="flex min-w-0 flex-1 flex-col items-stretch gap-1">
           <span className="flex items-center justify-between gap-2">
             <span className={cn('truncate text-sm leading-5', email.is_read ? 'font-medium text-[var(--foreground-secondary)]' : 'font-semibold')}>
               {sender}
@@ -464,7 +463,8 @@ export function EmailListCompact({
             {(email.attachment_count || 0) > 0 && <Paperclip size={14} className="shrink-0 text-[var(--foreground-muted)]" aria-label="Có tệp đính kèm" />}
           </span>
           <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
-            {priorityLabel && <span className="neo-mail-label" data-priority={priority}>{priorityLabel}</span>}
+            {priorityLabel && <span className="neo-mail-label" data-priority={priority}>
+              {priority === 'urgent' ? <CircleAlert size={12} aria-hidden="true" /> : <Flag size={12} aria-hidden="true" />}{priorityLabel}</span>}
             {categoryLabel && (
               <span className={hasCategoryFilter ? 'lg:hidden' : undefined}>
                 <MailCategoryLabel category={category} />
@@ -474,6 +474,7 @@ export function EmailListCompact({
               reason ? 'font-medium text-[var(--accent-foreground)]' : 'text-[var(--foreground-muted)]')}>
               {reason?.label || (email.body_text || email.snippet || '').replace(/\s+/g, ' ').slice(0, 120)}
             </span>
+          </span>
           </span>
         </button>
 
@@ -566,10 +567,11 @@ export function EmailListCompact({
                 <button
                   type="button"
                   aria-expanded={!isCollapsed}
+                  data-mail-tone={section.id === 'action' ? 'important' : section.id === 'later' ? 'newsletter' : 'work'}
                   onClick={() => setCollapsedSections(previous => ({ ...previous, [section.id]: !isCollapsed }))}
                   className={cn(
                     'flex min-h-11 w-full items-center gap-2 border-b border-[var(--border)] px-4 py-2 text-start hover:bg-[var(--hover)]',
-                    section.id === 'action' ? 'neo-section-accent' : 'bg-[var(--canvas)]',
+                    'neo-inbox-section bg-[var(--surface)]',
                   )}
                 >
                   {isCollapsed ? (
@@ -577,20 +579,14 @@ export function EmailListCompact({
                   ) : (
                     <ChevronDown className="w-4 h-4 text-[var(--muted-foreground)]" strokeWidth={1.5} />
                   )}
-                  <Icon
-                    className={cn(
-                      'w-4 h-4',
-                      section.id === 'action' ? 'text-[var(--accent-foreground)]' : 'text-[var(--muted)]'
-                    )}
-                    strokeWidth={1.5}
-                  />
+                  <span className="neo-signal-heading" aria-hidden="true"><Icon className="size-4" strokeWidth={1.8} /></span>
                   <span className={cn(
                     'text-[13px]',
                     section.id === 'action' ? 'font-semibold text-[var(--accent-foreground)]' : 'font-medium text-[var(--foreground)]'
                   )}>
                     {section.title}
                   </span>
-                  <span className="text-[12px] text-[var(--muted-foreground)]">
+                  <span className="neo-signal-count text-xs tabular-nums">
                     ({section.emails.length})
                   </span>
                 </button>

@@ -4,7 +4,7 @@
  */
 
 import { toast as showToast, type ToastType } from '@/components/ui/toast'
-import { ApiError, getErrorMessage, isApiError } from '@/lib/api/errors'
+import { getErrorMessage, isApiError } from '@/lib/api/errors'
 
 // =============================================================================
 // Toast Functions

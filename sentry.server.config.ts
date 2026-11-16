@@ -17,9 +17,6 @@ Sentry.init({
   // Performance Monitoring
   tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
-  // Profiling (optional - for performance insights)
-  profilesSampleRate: 0.1,
-
   // Filter errors before sending
   beforeSend(event, hint) {
     const error = hint.originalException as Error

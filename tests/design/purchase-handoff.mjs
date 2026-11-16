@@ -51,13 +51,15 @@ export async function rehearsePurchaseHandoff({ app,page,deliver,request,account
     const { rehearsePurchaseRelease } = await import('../eval/purchase-release/browser.mjs')
     const { rehearsePurchaseApprovalFreshness } = await import('./purchase-approval-freshness.mjs')
     const { rehearseSupplementProgress } = await import('./purchase-supplement-progress.mjs')
+    const { rehearsePurchaseEvidenceRequests } = await import('./purchase-evidence-requests.mjs')
     const reviewerMailbox = await connectMailbox('ke-toan-release',reviewerId)
     const options = { app,page,reviewer,outsider,deliver,request,accounts,
-      fileAction,assign,invoice,receipts,warehouse,capture,record,output,sql,reviewerId,reviewerMailbox,restartNext }
+      fileAction,assign,invoice,receipts,warehouse,capture,record,output,sql,reviewerId,reviewerMailbox,restartNext,googleProvider }
     await rehearsePurchaseRelease(options)
     await rehearsePurchaseApprovalFreshness(options)
     await rehearseSupplementProgress(options)
     assert.equal(googleProvider.calls.sendAttempts,0)
+    await rehearsePurchaseEvidenceRequests(options)
     assert.deepEqual(runtimeErrors,[])
     return
   }

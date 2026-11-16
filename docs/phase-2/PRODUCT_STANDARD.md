@@ -31,6 +31,13 @@ No purple, gradients, glassmorphism, glow, decorative AI glyphs, curved accents
 or large color blocks that fragment the canvas. Refinement comes from hierarchy,
 alignment, spacing, readable density, precise states and consistent interactions.
 
+Owner direction on 2026-11-16 adds stronger semantic color and standard icons
+for quick scanning. Use the [visual signals contract](VISUAL_SIGNALS.md):
+colored icon tiles, labels, counts and straight 2px information rails on neutral
+surfaces. Navigation/selection stays navy; critical status overrides category
+without changing ranking, evidence or user choices. Always pair color with a
+label and icon. A cancelled commitment must not look successfully completed.
+
 Mail rows show category and priority as separate labels. Use navy for important
 mail, red for an actionable alert supported by email evidence, teal for
 transactions, terracotta for promotions, and slate for newsletters. Keep the

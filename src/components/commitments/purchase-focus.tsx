@@ -1,12 +1,13 @@
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, FileUp, Clock3, ClipboardCheck, CircleAlert } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import type { PurchaseFocusItem } from '@/lib/commitments/purchase-focus'
 import { handoffHref } from '@/lib/commitments/purchase-handoff'
 import { paymentHref } from '@/lib/commitments/purchase-payment'
 import { supplementScan, type SupplementScan } from '@/lib/commitments/purchase-supplement'
 import { PurchaseSupplement } from './purchase-supplement'
+import { PurchaseEvidenceRequest } from './purchase-evidence-request'
 
 const link = 'neo-target inline-flex min-h-11 min-w-0 items-center gap-2 break-words text-sm font-medium text-[var(--accent-foreground)] underline underline-offset-4'
 const labels = {
@@ -27,21 +28,28 @@ const updates = {
   resupply: 'Đã có hóa đơn mới hơn bản đã bàn giao.',
   stale: 'Căn cứ của bản bàn giao đã thay đổi. Hãy kiểm tra hồ sơ trước khi duyệt.',
 }
+const visuals = {
+  supply: { tone: 'important', Icon: FileUp }, resupply: { tone: 'important', Icon: FileUp },
+  waiting: { tone: 'work', Icon: Clock3 }, review: { tone: 'important', Icon: ClipboardCheck },
+  stale: { tone: 'urgent', Icon: CircleAlert },
+}
 
-function FocusRow({ item, scan, scanUnavailable, refresh }: {
-  item: PurchaseFocusItem; scan?: SupplementScan; scanUnavailable: boolean; refresh: () => Promise<unknown>
+function FocusRow({ item, userId, scan, scanUnavailable, refresh }: {
+  item: PurchaseFocusItem; userId: string; scan?: SupplementScan; scanUnavailable: boolean; refresh: () => Promise<unknown>
 }) {
   const detail = item.orderId && item.invoiceId
     ? paymentHref(item.orderId,item.invoiceId)
     : item.handoffId ? handoffHref(item.handoffId) : null
   const source = item.emailId ? '/inbox?email='+item.emailId : null
   const file = item.fileId && item.handoffId ? '/api/commitments/handoffs?' + new URLSearchParams({ id:item.handoffId,file:item.fileId }) : null
+  const { tone, Icon } = visuals[item.task]
 
-  return <li className="grid min-w-0 gap-x-6 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:px-5">
+  return <li data-mail-tone={tone} className="neo-work-item grid min-w-0 gap-x-6 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:px-5">
     <div className="min-w-0">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span className="neo-signal-heading" aria-hidden="true"><Icon size={16} strokeWidth={1.8} /></span>
         <h4 className="text-sm font-semibold">{item.reference} · {item.invoice}</h4>
-        <Badge variant={item.task==='waiting'?'secondary':'warning'}>{labels[item.task]}</Badge>
+        <Badge variant={item.task==='waiting'?'info':item.task==='stale'?'error':'warning'}>{labels[item.task]}</Badge>
       </div>
       <p className="mt-2 break-words text-sm">{item.reason}</p>
       <p className="mt-1 break-all text-xs text-[var(--foreground-muted)]">
@@ -57,6 +65,7 @@ function FocusRow({ item, scan, scanUnavailable, refresh }: {
         {item.openCount>1 && <Link href="/commitments/dues" prefetch={false} className={link}>Xem {item.openCount-1} việc khác của PO</Link>}
       </div>
       {item.orderId && <PurchaseSupplement scan={scan} unavailable={scanUnavailable} refresh={refresh} />}
+      {item.orderId && <PurchaseEvidenceRequest caseId={item.id} userId={userId} />}
     </div>
     {detail && <Link href={detail} prefetch={false} className={link}>
       {actions[item.task]}<ArrowRight size={16} className="shrink-0" aria-hidden="true" />
@@ -88,7 +97,7 @@ export function PurchaseFocus({ userId, items, unavailable }: {
       <h3 className="py-2 text-sm font-semibold">Hồ sơ mua hàng cần xử lý</h3>
       <Link href="/commitments/dues" prefetch={false} className={link}>Xem bảng công nợ</Link>
     </div>
-    <ul className="divide-y divide-[var(--border)]">{items.map(item => <FocusRow key={item.id} item={item} scan={scan.data?.find(candidate=>candidate.caseId===item.id)}
+    <ul className="divide-y divide-[var(--border)]">{items.map(item => <FocusRow key={item.id} item={item} userId={userId} scan={scan.data?.find(candidate=>candidate.caseId===item.id)}
       scanUnavailable={scan.isError} refresh={scan.refetch} />)}</ul>
   </section>
 }

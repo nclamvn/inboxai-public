@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-
 const APP_URL = process.env.RENDER_EXTERNAL_URL || process.env.APP_URL;
 const CRON_SECRET = process.env.CRON_SECRET;
 
@@ -48,7 +47,7 @@ async function triggerSync() {
               console.log(`  - ${r.email}: ${status} (${r.synced || 0} new)`);
             });
           }
-        } catch (e) {
+        } catch {
           console.log(`[CRON] Response: ${data}`);
         }
 

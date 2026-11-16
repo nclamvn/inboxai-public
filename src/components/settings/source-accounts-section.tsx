@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Plus, RefreshCw, Trash2, Mail, AlertCircle, CheckCircle, Loader2, Sparkles, ChevronDown, Star, Edit2 } from 'lucide-react'
+import Image from 'next/image'
+import { Plus, RefreshCw, Trash2, Mail, AlertCircle, CheckCircle, Loader2, Sparkles, ChevronDown, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AddAccountModal } from './add-account-modal'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
@@ -279,8 +280,9 @@ export function SourceAccountsSection() {
               {/* Account avatar/icon with color indicator */}
               <div className="relative">
                 {account.avatar_url ? (
-                  <img
+                  <Image
                     src={account.avatar_url}
+                    width={40} height={40} unoptimized referrerPolicy="no-referrer"
                     alt={account.display_name || account.email_address}
                     className="w-10 h-10 rounded-lg object-cover"
                   />

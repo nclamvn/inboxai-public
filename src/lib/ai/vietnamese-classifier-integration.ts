@@ -3,34 +3,11 @@
  * Combines all Vietnamese NLP modules for email classification
  */
 
-import {
-  VIETNAMESE_SYSTEM_PROMPT,
-  VIETNAMESE_EXAMPLES,
-  buildClassificationPrompt,
-  buildFewShotPrompt,
-  type ClassificationExample
-} from './prompts/vietnamese-classifier';
+import { VIETNAMESE_SYSTEM_PROMPT, buildClassificationPrompt, buildFewShotPrompt } from './prompts/vietnamese-classifier';
 
-import {
-  preprocessEmail,
-  expandAbbreviations,
-  isVietnamese,
-  getLanguageConfidence,
-  detectFormality,
-  cleanEmailBody,
-  type PreprocessedEmail,
-} from './vietnamese-utils';
+import { preprocessEmail, getLanguageConfidence, detectFormality, type PreprocessedEmail } from './vietnamese-utils';
 
-import {
-  extractAllEntities,
-  detectBanks,
-  detectEWallets,
-  detectECommerce,
-  identifySenderEntity,
-  detectMoneyAmounts,
-  type ExtractedEntities,
-  type DetectedEntity,
-} from './vietnamese-entities';
+import { extractAllEntities, identifySenderEntity, type ExtractedEntities } from './vietnamese-entities';
 
 // ===========================================
 // TYPES
@@ -583,10 +560,12 @@ function applyPostProcessing(
 // EXPORTS
 // ===========================================
 
-export default {
+const vietnameseClassifierIntegrationApi = {
   analyzeEmailContext,
   buildVietnameseClassificationPrompt,
   parseClassificationResponse,
   tryRuleBasedClassification,
   classifyVietnameseEmail,
 };
+
+export default vietnameseClassifierIntegrationApi;

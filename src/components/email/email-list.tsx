@@ -1,10 +1,12 @@
 'use client'
 
 import { Star, AlertCircle } from 'lucide-react'
+import { useId } from 'react'
 import { cn, formatDate, truncate } from '@/lib/utils'
 import { useOptionalSelection } from '@/contexts/email-selection-context'
 import type { Email } from '@/types'
 import { getMailCategoryLabel, MailCategoryLabel } from './mail-category-label'
+import { MailSignal, mailSignal } from './mail-signal'
 
 interface EmailListProps {
   emails: Email[]
@@ -16,6 +18,7 @@ interface EmailListProps {
 
 export function EmailList({ emails, selectedId, onSelect, onStar, selectable }: EmailListProps) {
   const selection = useOptionalSelection()
+  const labelPrefix = useId()
   if (emails.length === 0) {
     return null
   }
@@ -30,9 +33,11 @@ export function EmailList({ emails, selectedId, onSelect, onStar, selectable }: 
         return (
           <div
             key={email.id}
+            data-mail-tone={mailSignal(email.category).tone}
+            data-active={isSelected}
             onClick={() => onSelect(email)}
             className={cn(
-              'flex items-start gap-3 p-4 cursor-pointer transition-colors',
+              'neo-mail-row flex items-start gap-3 p-4 cursor-pointer transition-colors',
               isSelected
                 ? 'bg-[var(--secondary)]'
                 : email.is_read
@@ -65,8 +70,9 @@ export function EmailList({ emails, selectedId, onSelect, onStar, selectable }: 
               />
             </button>
 
+            <MailSignal category={email.category} />
             {/* Content */}
-            <button type="button" aria-label={subject} aria-description={categoryLabel}
+            <button type="button" aria-label={subject} aria-describedby={categoryLabel ? labelPrefix+email.id : undefined}
               className="focus-ring min-h-11 min-w-0 flex-1 text-start">
               <span className="mb-1 flex items-center gap-2">
                 <span className={cn(
@@ -88,7 +94,7 @@ export function EmailList({ emails, selectedId, onSelect, onStar, selectable }: 
                 {subject}
               </span>
               <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
-                <MailCategoryLabel category={email.category} />
+                <MailCategoryLabel category={email.category} id={labelPrefix+email.id} />
                 <span className="min-w-0 basis-20 flex-1 truncate text-[13px] text-[var(--muted-foreground)]">
                   {email.summary || truncate(email.snippet || '', 80)}
                 </span>

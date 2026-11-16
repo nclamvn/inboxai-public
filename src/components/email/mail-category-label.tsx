@@ -1,4 +1,5 @@
 import type { Category } from '@/types'
+import { mailSignal } from './mail-signal'
 
 export const mailCategoryLabels: Record<Category, string> = {
   work: 'Công việc',
@@ -17,9 +18,10 @@ export function getMailCategoryLabel(category: string | null) {
     : undefined
 }
 
-export function MailCategoryLabel({ category }: { category: string | null }) {
+export function MailCategoryLabel({ category, id }: { category: string | null; id?: string }) {
   const label = getMailCategoryLabel(category)
   if (!label) return null
 
-  return <span className="neo-mail-label" data-category={category}>{label}</span>
+  const { Icon } = mailSignal(category)
+  return <span id={id} className="neo-mail-label" data-category={category}><Icon size={12} strokeWidth={1.8} aria-hidden="true" />{label}</span>
 }

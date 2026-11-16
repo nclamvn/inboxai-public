@@ -38,6 +38,11 @@ change cost. Consolidate one boundary at a time after its behavior is captured.
 
 ## Risk matrix and technical debt register
 
+The table below records the original baseline, not today's open findings.
+For the 2026-11-16 lint/dependency disposition and deliberately deferred lifecycle
+work, see [technical-debt cleanup](TECHNICAL_DEBT_CLEANUP.md). Hosted and real-mail
+release decisions remain governed by [the security gate](SECURITY_GATE.md).
+
 Likelihood is qualitative source-based exposure, not observed exploit frequency.
 
 | ID | Severity / likelihood | Evidence at baseline | Action / dependency |

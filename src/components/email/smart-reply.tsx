@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   FilePenLine, Check, Calendar, HelpCircle, Heart,
   Send, ChevronDown, ChevronUp, Loader2,
@@ -43,38 +43,36 @@ export function SmartReply({ emailId, onReply }: SmartReplyProps) {
   const [showComposer, setShowComposer] = useState(false)
   const [tone, setTone] = useState<'formal' | 'casual'>('formal')
   const [hasLoaded, setHasLoaded] = useState(false)
+  const scope = useRef<AbortController | null>(null)
 
-  // Reset when email changes
   useEffect(() => {
+    const controller = new AbortController()
+    scope.current = controller
     setSuggestions([])
     setSelectedSuggestion(null)
     setCustomBullets('')
     setShowComposer(false)
     setHasLoaded(false)
-  }, [emailId])
-
-  useEffect(() => {
-    if (emailId && !hasLoaded) {
-      fetchSuggestions()
-    }
-  }, [emailId, hasLoaded])
-
-  const fetchSuggestions = async () => {
+    setTone('formal')
+    setComposing(false)
     setLoading(true)
-    setHasLoaded(true)
-    try {
-      const res = await fetch(`/api/ai/smart-reply?emailId=${emailId}&tone=auto`)
-      const data = await res.json()
-      setSuggestions(data.suggestions || [])
-      if (data.detectedTone) {
-        setTone(data.detectedTone)
+    async function load() {
+      try {
+        const res = await fetch(`/api/ai/smart-reply?emailId=${emailId}&tone=auto`, { signal: controller.signal })
+        if (!res.ok) throw new Error('Reply suggestions unavailable')
+        const data = await res.json()
+        if (controller.signal.aborted) return
+        setSuggestions(data.suggestions || [])
+        if (data.detectedTone) setTone(data.detectedTone)
+      } catch (error) {
+        if (!controller.signal.aborted) console.error('Failed to fetch suggestions:', error)
+      } finally {
+        if (!controller.signal.aborted) { setLoading(false); setHasLoaded(true) }
       }
-    } catch (error) {
-      console.error('Failed to fetch suggestions:', error)
-    } finally {
-      setLoading(false)
     }
-  }
+    void load()
+    return () => controller.abort()
+  }, [emailId])
 
   const handleSuggestionClick = (suggestion: ReplySuggestion) => {
     setSelectedSuggestion(suggestion)
@@ -88,12 +86,15 @@ export function SmartReply({ emailId, onReply }: SmartReplyProps) {
 
   const handleComposeFromBullets = async () => {
     if (!customBullets.trim()) return
+    const controller = scope.current
+    if (!controller || controller.signal.aborted) return
 
     setComposing(true)
     try {
       const res = await fetch('/api/ai/smart-reply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           emailId,
           bullets: customBullets,
@@ -101,14 +102,14 @@ export function SmartReply({ emailId, onReply }: SmartReplyProps) {
         })
       })
       const data = await res.json()
-
+      if (controller.signal.aborted) return
       if (data.reply) {
         onReply(data.reply, data.subject)
       }
     } catch (error) {
-      console.error('Failed to compose:', error)
+      if (!controller.signal.aborted) console.error('Failed to compose:', error)
     } finally {
-      setComposing(false)
+      if (!controller.signal.aborted) setComposing(false)
     }
   }
 

@@ -83,7 +83,7 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
       trackedEmailRef.current = email.id
       openTimeRef.current = Date.now()
     }
-  }, [email?.id, trackOpen, trackRead])
+  }, [email, trackOpen, trackRead])
 
   // Track read duration when component unmounts or closes
   useEffect(() => {
@@ -153,7 +153,6 @@ export function EmailDetail({ email, onClose, onStar, onArchive, onDelete, onRep
     offerReplyText(email.id, body)
     router.push(replyHref(email.id))
   }
-
 
   return (
     <div className="h-full flex flex-col bg-[var(--card)]">

@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Trash2, RotateCcw, X, AlertTriangle } from 'lucide-react'
+import { Trash2, RotateCcw, X } from 'lucide-react'
 import { useEmails } from '@/hooks/use-emails'
 import { EmailList } from '@/components/email/email-list'
-import { EmailDetail } from '@/components/email/email-detail'
+
 import type { Email } from '@/types'
 
 export default function TrashPage() {

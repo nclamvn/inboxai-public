@@ -4,7 +4,6 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { chromium } from 'playwright-core'
 import { audit } from './browser.mjs'
 
-const output = 'docs/phase-2/evidence/m3b'
 const collection = '/api/commitments'
 const primaryTitle = 'Xác nhận lịch giao 200 bộ linh kiện'
 const waitingTitle = 'Nhà cung cấp gửi biên bản nghiệm thu'
@@ -79,7 +78,8 @@ function group(page, name) {
 const item = (page, title) => page.getByRole('link', { name: new RegExp(`^${title}`) })
 const edit = page => page.getByRole('button', { name: 'Xác nhận thay đổi', exact: true })
 
-export async function rehearseCommitmentUi({ app, appFetch, cookies, admin, userId, record }) {
+export async function rehearseCommitmentUi({ app, appFetch, cookies, admin, userId, record,
+  output = 'docs/phase-2/evidence/m3b' }) {
   mkdirSync(output, { recursive: true })
   const fixture = await seed(appFetch, admin, userId)
   const browser = await chromium.launch(process.env.INBOXAI_CHROMIUM_PATH
@@ -164,6 +164,7 @@ export async function rehearseCommitmentUi({ app, appFetch, cookies, admin, user
         await history.getByRole('link', { name: proposedSubject }).waitFor()
         await history.getByText(fixture.old.body_text, { exact: true }).first().waitFor()
         await history.getByText(fixture.proposed.body_text, { exact: true }).waitFor()
+        assert.equal(await page.locator('.neo-mail-row[aria-current="location"]').getAttribute('data-mail-tone'),'important')
         await capture(page, 'desktop-history')
         const source = history.getByRole('link', { name: oldSubject }).first()
         assert.equal(await source.getAttribute('href'), `/inbox?email=${fixture.old.id}`)
@@ -256,6 +257,7 @@ export async function rehearseCommitmentUi({ app, appFetch, cookies, admin, user
         await page.getByRole('navigation', { name: 'Điều hướng di động' }).getByRole('link', { name: 'Cam kết' }).tap()
         await group(page, 'Quá hạn').tap()
         await item(page, 'Đối chiếu số lượng giao thiếu').waitFor()
+        assert.ok(await page.locator('.neo-mail-row[data-mail-tone="urgent"]').count()>0)
         await capture(page, 'mobile-groups')
         await item(page, 'Đối chiếu số lượng giao thiếu').tap()
         await page.getByRole('heading', { name: 'Đối chiếu số lượng giao thiếu' }).waitFor()

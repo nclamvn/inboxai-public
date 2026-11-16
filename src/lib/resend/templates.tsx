@@ -61,7 +61,7 @@ interface WaitlistApprovedEmailProps {
   name?: string
 }
 
-export function WaitlistApprovedEmail({ email, name }: WaitlistApprovedEmailProps) {
+export function WaitlistApprovedEmail({ name }: WaitlistApprovedEmailProps) {
   const userName = name || 'bạn'
   const signupUrl = process.env.NEXT_PUBLIC_APP_URL
     ? `${process.env.NEXT_PUBLIC_APP_URL}/signup`

@@ -6,6 +6,7 @@
  */
 
 import { mailCategoryLabels } from '@/components/email/mail-category-label';
+import { mailSignal } from '@/components/email/mail-signal';
 import { memo, useState, useCallback, useRef, useEffect } from 'react';
 import {
   Search,
@@ -13,13 +14,6 @@ import {
   Check,
   Inbox,
   ListTodo,
-  Briefcase,
-  User,
-  CreditCard,
-  Newspaper,
-  Gift,
-  Users,
-  AlertOctagon,
   X,
   ClipboardList,
   Settings,
@@ -30,15 +24,15 @@ import { ThemeToggle } from '@/components/theme/theme-toggle';
 
 // Category definitions
 const CATEGORIES = [
-  { id: 'all', label: 'Tất cả', icon: Inbox },
-  { id: 'needs_action', label: 'Cần xử lý', icon: ListTodo, dividerAfter: true },
-  { id: 'work', label: mailCategoryLabels.work, icon: Briefcase },
-  { id: 'personal', label: mailCategoryLabels.personal, icon: User },
-  { id: 'transaction', label: mailCategoryLabels.transaction, icon: CreditCard },
-  { id: 'newsletter', label: mailCategoryLabels.newsletter, icon: Newspaper },
-  { id: 'promotion', label: mailCategoryLabels.promotion, icon: Gift },
-  { id: 'social', label: mailCategoryLabels.social, icon: Users, dividerAfter: true },
-  { id: 'spam', label: mailCategoryLabels.spam, icon: AlertOctagon },
+  { id: 'all', label: 'Tất cả' },
+  { id: 'needs_action', label: 'Cần xử lý', dividerAfter: true },
+  { id: 'work', label: mailCategoryLabels.work },
+  { id: 'personal', label: mailCategoryLabels.personal },
+  { id: 'transaction', label: mailCategoryLabels.transaction },
+  { id: 'newsletter', label: mailCategoryLabels.newsletter },
+  { id: 'promotion', label: mailCategoryLabels.promotion },
+  { id: 'social', label: mailCategoryLabels.social, dividerAfter: true },
+  { id: 'spam', label: mailCategoryLabels.spam },
 ];
 
 interface BriefingItem {
@@ -85,6 +79,8 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
 
   // Get current category info
   const currentCategory = CATEGORIES.find(c => c.id === currentFilter) || CATEGORIES[0];
+  const { tone: filterTone, Icon: FilterIcon } = currentCategory.id==='all' ? { tone:'work', Icon:Inbox }
+    : currentCategory.id==='needs_action' ? { tone:'important', Icon:ListTodo } : mailSignal(currentCategory.id);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -235,7 +231,7 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
             isDropdownOpen && 'bg-[var(--hover)]'
           )}
         >
-          <currentCategory.icon className="size-4 text-[var(--accent-foreground)]" />
+          <span className="neo-signal-heading" data-mail-tone={filterTone} aria-hidden="true"><FilterIcon size={16} strokeWidth={1.8} /></span>
           <span className="text-sm font-semibold text-[var(--foreground)] hidden sm:inline">
             {currentCategory.label}
           </span>
@@ -253,7 +249,10 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
             'border border-[var(--border)]',
             'animate-in fade-in slide-in-from-top-2 duration-200'
           )}>
-            {CATEGORIES.map((category) => (
+            {CATEGORIES.map((category) => {
+              const { tone, Icon } = category.id==='all' ? { tone:'work', Icon:Inbox }
+                : category.id==='needs_action' ? { tone:'important', Icon:ListTodo } : mailSignal(category.id)
+              return (
               <div key={category.id}>
                 <button
                   type="button"
@@ -265,7 +264,7 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
                     currentFilter === category.id && 'bg-[var(--accent)]'
                   )}
                 >
-                  <category.icon className="size-4 text-[var(--foreground-muted)]" />
+                  <span className="neo-signal-heading" data-mail-tone={tone} aria-hidden="true"><Icon size={16} strokeWidth={1.8} /></span>
                   <span className="flex-1 text-sm font-medium text-[var(--foreground)]">
                     {category.label}
                   </span>
@@ -282,7 +281,7 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
                   <div className="my-1 border-t border-[var(--border)]" />
                 )}
               </div>
-            ))}
+            )})}
           </div>
         )}
       </div>

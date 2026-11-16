@@ -2,11 +2,13 @@
 
 ## Authority and scope
 - Product owner instructions and `docs/phase-2/PRODUCT_STANDARD.md` govern Phase 2.
-- Owner direction through M6-B (2026-11-12): local implementation and verification only.
-  Do not push, create remote PRs, run hosted deployments or modify hosted settings.
-  Prepare PR drafts locally; report local evidence separately from unrun remote CI.
-- Work on `phase2/m0-security-baseline-20261111` for current local Phase 2 work. Never modify main,
-  deploy production, connect real mailboxes, or send real mail before the security gate.
+- Local implementation and synthetic verification remain the default. On 2026-11-16
+  the owner explicitly authorized technical-debt cleanup, commit and push of the pending
+  work to a separate `codex/` branch. This does not authorize merging main, hosted
+  deployments, changing hosted settings or connecting real mailboxes.
+- Use a `codex/` feature branch from the verified main baseline for an authorized push.
+  Preserve unrelated local changes, and report local evidence separately from remote CI.
+  Never modify main, deploy production or send real mail before the security gate.
 - Reuse verified code. Prefer small, reviewable PRs with explicit dependencies,
   acceptance criteria, regression tests, rollback notes and evidence.
 - Missing design documents require owner input before design changes. The current

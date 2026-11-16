@@ -841,7 +841,7 @@ export async function shouldAutoEnableFeature(
 // EXPORTS
 // ===========================================
 
-export default {
+const featureAllocationApi = {
   AIFeatureAllocationService,
   getAIFeatureAllocationService,
   getFeatureAllocationForEmail,
@@ -849,3 +849,5 @@ export default {
   FEATURE_COSTS,
   DEFAULT_ALLOCATIONS,
 };
+
+export default featureAllocationApi;

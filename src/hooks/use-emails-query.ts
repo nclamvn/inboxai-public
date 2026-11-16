@@ -242,7 +242,7 @@ export function useMarkAsRead() {
 
 // Toggle star
 export function useToggleStar() {
-  const queryClient = useQueryClient()
+
   const mutation = useUpdateEmailMutation()
 
   return (emailId: string, currentStarred: boolean) => {

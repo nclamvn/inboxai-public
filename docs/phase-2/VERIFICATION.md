@@ -1,5 +1,168 @@
 # Verification record
 
+## Technical-debt cleanup and authorized branch checkpoint
+
+2026-11-16, macOS arm64, Node 24.14.1, Next.js 16.4.6, Chrome
+157.0.8103.79 and disposable PostgreSQL 16 fixtures. Owner authorized commit
+and push on a separate branch; no main merge, deploy or real mail.
+
+| Command | Observed local result |
+| --- | --- |
+| `npm run lint` | Exit 0; zero errors and warnings, down from 92 warnings; `--max-warnings=0` now enforced. |
+| `npm run typecheck` | Exit 0. |
+| `npm run test:unit` | Exit 0; 260 tests in 24 files. |
+| `npm run test:integration` | Exit 0; 200 tests in 16 files. |
+| `npm run test:db` | Exit 0; 48 SQL assertion groups. |
+| `npm audit --audit-level=moderate --json` | Exit 0; zero reported vulnerabilities, down from 11 moderate. This is the observed npm advisory scan, not a security certification. |
+| `npm ls @sentry/nextjs glob minimatch eslint-plugin-react-hooks --depth=5` | Exit 0; Sentry 11.12.0, glob 14.0.6, scoped ESTree minimatch 11.0.7, existing Hooks rule baseline 7.0.1. |
+| `npm run test:design -- --isolated` | Exit 0; 33 checks across desktop, tablet, mobile and dark mode, including icon and label contrast. |
+| `npm run test:platform -- --isolated` | Exit 0; 19 browser performance/accessibility checks. Native devices were not retested. |
+| `npm run test:purchase-release` (fresh fixture rerun) | Exit 0; 29 checks, including approval freshness, interrupted review progress and evidence-request follow-through to closure. |
+| `npm run test:reply-workflow` | Exit 0; 23 checks including two mailboxes, mobile draft restore, lost acknowledgement and application restart. |
+| `npm run test:compose-attachments` | Exit 0; 21 checks including exact duplicate-name bytes, Sent downloads, tenant isolation and lost-response recovery. |
+| `npm run test:staging -- --isolated` | Exit 0; 31 upgrade, rollback, backup/restore and alert checks. The injected division-by-zero is the expected rollback probe. |
+
+The browser/staging commands above each completed an optimized production-mode
+Next build with the new Sentry configuration. Local/CI synthetic configuration
+does not upload sourcemaps. No standalone root build was run over the live
+preview's `.next` directory.
+
+New unit cases cover late responses after switching source emails, abort on
+unmount, rejected action-status writes, and validated SSR-safe briefing storage.
+The optional newer lint-config probe was not adopted: its additional lifecycle
+rules require a separate legacy-screen migration. No lint rule was suppressed.
+
+The first purchase-release run stopped with a loopback `ECONNRESET` after the
+four frozen cases. It is retained as a failed attempt in
+`test-results/technical-debt/purchase.log`; passing earlier cases does not make
+that run pass. Transport diagnostics now include method/path and retain the
+original cause without automatically retrying writes.
+The complete fresh-fixture rerun exited 0 with 29 checks; the reset did not
+recur. Its log is `test-results/technical-debt/purchase-recheck.log` and its
+final report is `test-results/purchase-release/report.json`.
+
+Logs: `test-results/technical-debt/`. See [cleanup scope, remaining debt and
+rollback](TECHNICAL_DEBT_CLEANUP.md). Remote CI is separate evidence from these
+local commands.
+Removed the reusable `.next-build` after testing. No outside project copy or
+venv was created. `docker image prune -f` reclaimed 0 B; the harness removed
+its disposable fixture containers and networks. The existing preview and its
+`.next` were retained.
+
+## Nâng cấp nhận diện bằng màu và icon
+
+Ngày 16/11/2026, local macOS arm64, Node 24.14.1, Next.js 16.4.6,
+Chrome 157.0.8103.79. Giữ navy/canvas/surface gốc, tăng màu ngữ nghĩa
+ở icon đầu dòng, nhãn, count và vạch 2 px. Áp dụng vào Inbox, bộ lọc,
+nhãn tìm kiếm/màn đọc, sổ cam kết, hồ sơ mua hàng và hồi đáp/bản nháp.
+
+Thư giao dịch có cảnh báo giữ nhãn Giao dịch teal nhưng icon/vạch đỏ;
+cam kết có nguồn mâu thuẫn dùng hổ phách, quá hạn đỏ, đã hủy trung tính.
+Các nguồn, ranking và thao tác nghiệp vụ không bị thay đổi bởi màu sắc.
+Nền tiêu đề sổ cam kết chuyển về surface trắng, giữ vạch navy thẳng.
+
+| Lệnh | Kết quả local |
+| --- | --- |
+| `npm run lint` | Exit 0; 0 lỗi, 92 cảnh báo cũ. |
+| `npm run typecheck` | Exit 0. |
+| `npm run test:unit` | Exit 0; 252 test. |
+| `npm run test:integration` | Exit 0; 200 test. |
+| `npm run test:db` | Exit 0; 48 nhóm assertion SQL. |
+| `npm run test:design -- --isolated` | Exit 0; 33 nhóm kiểm tra, có build production local. |
+| `npm run test:commitment-ui -- --isolated` | Exit 0; 23 nhóm kiểm tra trên desktop, tablet, mobile, dark. |
+| `npm run test:purchase-release` | Exit 0; 29 nhóm gồm luồng yêu cầu chứng từ đến duyệt xong, không gửi lặp. |
+
+Bộ design kiểm trực tiếp năm màu icon/vạch khác nhau, có SVG và icon
+contrast >= 3:1. Nhãn chữ đạt tối thiểu 5,18:1 ở light và 7,11:1 ở dark
+trên các mẫu kiểm; kiểm axe không có vi phạm tại các màn đã chụp.
+Tablet kiểm click vào chính ô icon để mở thư; desktop kiểm bàn phím,
+focus/selection và đọc chia đôi. Có ảnh bộ lọc, compose, lỗi/trống và
+ảnh mobile có quảng cáo/bản tin. Cam kết kiểm màu hổ phách cho dòng
+nguồn mâu thuẫn đang mở và màu đỏ của nhóm quá hạn.
+
+Chế độ commitment UI biệt lập mới ghi artifact vào
+`test-results/commitment-ui/`, không ghi đè baseline trong docs hoặc dùng
+`.next` của preview đang chạy. Không thêm dependency, ảnh raster hay
+animation. Lượt build đầu dừng do type của icon section chưa nhận prop
+size; đã dùng class kích thước đúng interface và chạy lại thành công.
+
+`npm run test:platform -- --isolated` cuối exit 0, 19 nhóm kiểm tra
+trên bản đã chỉnh vùng bấm icon. Các màn đã chụp không tràn ngang;
+keyboard, đọc chia đôi và mở thư bằng ô icon đều qua.
+Chỉ dùng dữ liệu giả lập, không push/deploy, không dùng email thật và
+không tuyên bố tốc độ quét đã được đo với người dùng thật hoặc native.
+
+Ảnh: `test-results/m6d/design/`, `test-results/commitment-ui/` và
+`test-results/purchase-release/PO-9992-*.png`. Log lần này dùng tiền tố
+`test-results/purchase-release/visual-`.
+Xem [quy ước màu và icon](VISUAL_SIGNALS.md).
+Đã dọn `.next-build`; `docker image prune -f` thu hồi 0 B. Giữ nguyên
+preview cũ và các thay đổi local của milestone chứng từ trước đó.
+
+## Yêu cầu bổ sung chứng từ và theo dõi đến khi duyệt xong
+
+Ngày 16/11/2026, local macOS arm64, Node 24.14.1, Next.js 16.4.6,
+Chrome 157.0.8103.79 và PostgreSQL 16. Hồ sơ mới PO-9992 dùng hai
+Gmail giả lập cho Mua hàng và Kế toán; người ngoài hồ sơ không có mailbox.
+
+Luồng nối trực tiếp thẻ hồ sơ trong Action Inbox với bản nháp Reply,
+Sent, lịch theo dõi và rà chứng từ. Hồi đáp thiếu hạn thanh toán vẫn
+để ngoại lệ mở; yêu cầu tiếp trả lời đúng email hồi đáp. Bàn giao chặn
+nhắc cũ, và Kế toán duyệt bản đính chính mới dừng theo dõi.
+
+| Lệnh | Kết quả local |
+| --- | --- |
+| `npm run lint` | Exit 0, không có lỗi; 92 cảnh báo ở các file ngoài thay đổi này. |
+| `npm run typecheck` | Exit 0. |
+| `npm run test:unit` | Exit 0, 252 test. |
+| `npm run test:integration` | Exit 0, 200 test. |
+| `npm run test:db` | Exit 0, 48 dòng kết quả PASS; đây là nhóm assertion SQL, không phải 48 ca người dùng. |
+
+Kiểm SQL mới xác nhận tạo lại cùng bản nháp, đúng nguồn, cách ly tài
+khoản, phản hồi xác nhận chưa có chứng từ không khép ngoại lệ, chặn
+lượt gửi sau bàn giao/khép và giữ receipt chưa rõ kết quả ở danh sách
+đối chiếu dù hồ sơ đã khép. Quyền bảng private và RPC được kiểm trực tiếp.
+
+Hồi quy trên bản cuối đã hoàn tất:
+
+| Lệnh | Kết quả local |
+| --- | --- |
+| `npm run test:reply-workflow` | Exit 0, 23 nhóm kiểm tra. |
+| `npm run test:reply-followup` | Exit 0, 20 nhóm kiểm tra. |
+| `npm run test:design -- --isolated` | Exit 0, 29 nhóm kiểm tra. |
+| `npm run test:platform -- --isolated` | Exit 0, 19 nhóm kiểm tra trình duyệt. |
+| `npm run test:staging -- --isolated` | Exit 0, 31 nhóm kiểm tra nâng cấp, backup, restore và cảnh báo. |
+
+`npm run test:purchase-release` cuối cùng exit 0, 29 nhóm kiểm tra,
+gồm bốn nhóm mới của PO-9992. Build Next production local tạo 122
+trang/route. Assertion kết thúc chờ Inbox tải các hồ sơ còn mở trước
+khi xác nhận PO-9992 đã biến mất, tránh PASS trên màn chưa tải dữ liệu.
+
+Ba thư trong kịch bản mới: yêu cầu đầu, một thư nhắc đã duyệt, yêu cầu
+bổ sung tiếp. Mất phản hồi tạo bản nháp, mất receipt của Gmail giả lập,
+mất phản hồi của trình duyệt và hai lần khởi động lại Next không tạo
+thêm lượt gửi. Nhắc ngày mới chỉ xuất hiện sau dời hẹn và đổi đồng hồ
+kiểm thử. Hồi đáp ở hộp Kế toán không đáp ứng yêu cầu ở Mua hàng.
+Tệp thiếu hạn không được ghi, bản sửa hợp lệ trỏ đúng email và phần
+đính kèm; sau Kế toán duyệt, ngoại lệ khép và lịch theo dõi được dừng.
+Bốn ảnh mới và 10 ảnh hồi quy đã qua axe và kiểm tra không tràn ngang.
+Đã kiểm ảnh desktop, dialog nhắc, mobile 390 px và màn Kế toán duyệt xong.
+
+Lượt đầu dừng do bộ chọn chữ trong bài test tìm nhãn thiếu hạn thanh toán
+không đúng với chi tiết đang thu gọn. Đã mở đúng chi tiết và dùng nhãn
+hiện hành; không thay đổi điều kiện chặn tệp thiếu hạn để làm test qua.
+
+Chỉ dùng loopback và fixture, không push, deploy, email thật hay gọi model
+thương mại. Không có số đo mới từ người dùng thật hoặc bằng chứng về
+production, native device hay tính tương thích Gmail thật. Bốn hồ sơ
+benchmark và nhãn đã khóa giữ nguyên; PO-9992 là kịch bản tích hợp mới.
+
+Xem [phạm vi và tiêu chí nghiệm thu](PURCHASE_EVIDENCE_REQUESTS.md).
+Log và ảnh nằm trong `test-results/purchase-release/` với tiền tố
+`request-` và `PO-9992-`. Đã xóa `.next-build` sinh trong lượt này;
+`docker image prune -f` thu hồi 0 B. Không prune container hoặc volume
+của người dùng, không tạo bản sao dự án hay scratch ngoài repository.
+
 ## Rà soát chứng từ có thể tiếp tục sau gián đoạn
 
 Ngày 15/11/2026 trên macOS arm64, Node 24.14.1, Next.js 16.4.6,

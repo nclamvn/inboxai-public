@@ -273,7 +273,7 @@ export const executorMap: Record<AIFeatureKey, FeatureExecutor> = {
   translate: translatorExecutor,
 };
 
-export default {
+const featureExecutorsApi = {
   registerAllExecutors,
   executorMap,
   summaryExecutor,
@@ -283,3 +283,5 @@ export default {
   sentimentExecutor,
   translatorExecutor,
 };
+
+export default featureExecutorsApi;

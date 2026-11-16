@@ -79,25 +79,27 @@ export default function ActionsPage() {
   const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
-    fetchActions()
-  }, [statusFilter, typeFilter])
-
-  const fetchActions = async () => {
+    const controller = new AbortController()
     setLoading(true)
-    try {
-      const params = new URLSearchParams()
-      if (statusFilter) params.set('status', statusFilter)
-      if (typeFilter) params.set('type', typeFilter)
+    async function load() {
+      try {
+        const params = new URLSearchParams()
+        if (statusFilter) params.set('status', statusFilter)
+        if (typeFilter) params.set('type', typeFilter)
 
-      const res = await fetch(`/api/action-items?${params.toString()}`)
-      const data = await res.json()
-      setActions(data.actions || [])
-    } catch (error) {
-      console.error('Failed to fetch actions:', error)
-    } finally {
-      setLoading(false)
+        const res = await fetch(`/api/action-items?${params.toString()}`, { signal: controller.signal })
+        if (!res.ok) throw new Error('Action items unavailable')
+        const data = await res.json()
+        if (!controller.signal.aborted) setActions(data.actions || [])
+      } catch (error) {
+        if (!controller.signal.aborted) console.error('Failed to fetch actions:', error)
+      } finally {
+        if (!controller.signal.aborted) setLoading(false)
+      }
     }
-  }
+    void load()
+    return () => controller.abort()
+  }, [statusFilter, typeFilter])
 
   const toggleStatus = async (actionId: string, currentStatus: string) => {
     const newStatus = currentStatus === 'completed' ? 'pending' : 'completed'
@@ -330,7 +332,6 @@ interface ActionSectionProps {
 function ActionSection({
   title,
   icon: Icon,
-  iconBg,
   iconColor,
   actions,
   onToggle,

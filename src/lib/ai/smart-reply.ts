@@ -44,12 +44,10 @@ export interface SmartReplyResult {
 // Detect relationship from email patterns
 function detectRelationship(
   fromAddress: string,
-  fromName: string | null,
   bodyText: string | null,
   category?: string | null
 ): 'boss' | 'colleague' | 'client' | 'friend' | 'service' | 'unknown' {
   const body = (bodyText || '').toLowerCase()
-  const from = (fromName || fromAddress).toLowerCase()
 
   // Service/automated emails
   if (fromAddress.includes('noreply') || fromAddress.includes('no-reply') || fromAddress.includes('notification')) {
@@ -106,7 +104,6 @@ export async function generateSmartReplies(
 
   const relationship = detectRelationship(
     originalEmail.from_address,
-    originalEmail.from_name,
     originalEmail.body_text,
     category
   )
@@ -236,7 +233,6 @@ export async function composeFromBullets(
 
   const relationship = detectRelationship(
     originalEmail.from_address,
-    originalEmail.from_name,
     originalEmail.body_text,
     category
   )

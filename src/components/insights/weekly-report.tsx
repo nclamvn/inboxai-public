@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { StatCard } from '@/components/ui/stat-card'
-import { IconBox } from '@/components/ui/icon-box'
+
 import { Badge } from '@/components/ui/badge'
 
 interface WeeklyReport {
@@ -232,15 +232,7 @@ export function WeeklyReportView() {
           </h3>
           <div className="space-y-2">
             {report.suggestions.map((suggestion, index) => {
-              const getVariant = () => {
-                switch (suggestion.type) {
-                  case 'unsubscribe': return 'red'
-                  case 'vip': return 'amber'
-                  case 'rule': return 'blue'
-                  case 'habit': return 'emerald'
-                  default: return 'default'
-                }
-              }
+
               return (
                 <div
                   key={index}

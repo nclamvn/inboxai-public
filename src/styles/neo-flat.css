@@ -31,10 +31,18 @@
   --accent: #EDF4F8;
   --accent-foreground: var(--navy);
   --workspace-tint: #E8F1F7;
-  --category-transaction: #17635F;
-  --category-transaction-bg: #E8F4F2;
-  --category-promotion: #85482F;
-  --category-promotion-bg: #F8EDE6;
+  --category-work: #174A72;
+  --category-work-bg: #E5EFF8;
+  --category-personal: #285F9E;
+  --category-personal-bg: #E5EEFC;
+  --category-transaction: #126D60;
+  --category-transaction-bg: #DFF3EB;
+  --category-promotion: #98431E;
+  --category-promotion-bg: #FFE7D9;
+  --category-newsletter: #526477;
+  --category-newsletter-bg: #E9EDF2;
+  --category-social: #116A80;
+  --category-social-bg: #DEF1F6;
   --selection-line: var(--navy);
   --card: var(--surface);
   --card-foreground: var(--ink);
@@ -47,12 +55,12 @@
   --focus-ring: var(--selection-line);
   --muted: var(--foreground-muted);
   --muted-foreground: var(--foreground-muted);
-  --success: #21644D;
-  --success-bg: #EDF6F1;
-  --warning: #794A13;
-  --warning-bg: #FAF3E8;
-  --error: #A0353D;
-  --error-bg: #FBF0F0;
+  --success: #166A4A;
+  --success-bg: #DFF3E8;
+  --warning: #82500C;
+  --warning-bg: #FFF0CE;
+  --error: #AC303D;
+  --error-bg: #FCE5E8;
   --info: var(--accent-foreground);
   --info-bg: var(--accent);
   --status-on-fill: #FFFFFF;
@@ -78,10 +86,18 @@
   --accent: #233C4D;
   --accent-foreground: #AED5EF;
   --workspace-tint: #243B4B;
+  --category-work: #AED5EF;
+  --category-work-bg: #233C4D;
+  --category-personal: #AECCFA;
+  --category-personal-bg: #253A54;
   --category-transaction: #9CD8CE;
   --category-transaction-bg: #203936;
   --category-promotion: #F2BA9E;
   --category-promotion-bg: #402F29;
+  --category-newsletter: #B8C8D9;
+  --category-newsletter-bg: #2A3745;
+  --category-social: #9EDDEA;
+  --category-social-bg: #203C46;
   --selection-line: #A5CCE7;
   --hover: #223440;
   --success: #9BD5BA;
@@ -95,19 +111,48 @@
 }
 
 :root, .dark, [data-theme="dark"] {
-  --category-work: var(--accent-foreground);
-  --category-work-bg: var(--accent);
-  --category-personal: var(--foreground-muted);
-  --category-personal-bg: var(--secondary);
-  --category-newsletter: var(--foreground-muted);
-  --category-newsletter-bg: var(--secondary);
-  --category-social: var(--foreground-muted);
-  --category-social-bg: var(--secondary);
   --category-spam: var(--error);
   --category-spam-bg: var(--error-bg);
 }
 
 @layer components {
+  [data-mail-tone] { --signal-ink: var(--foreground-muted); --signal-fill: var(--secondary); }
+  [data-mail-tone="work"] { --signal-ink: var(--category-work); --signal-fill: var(--category-work-bg); }
+  [data-mail-tone="personal"] { --signal-ink: var(--category-personal); --signal-fill: var(--category-personal-bg); }
+  [data-mail-tone="transaction"] { --signal-ink: var(--category-transaction); --signal-fill: var(--category-transaction-bg); }
+  [data-mail-tone="promotion"] { --signal-ink: var(--category-promotion); --signal-fill: var(--category-promotion-bg); }
+  [data-mail-tone="newsletter"] { --signal-ink: var(--category-newsletter); --signal-fill: var(--category-newsletter-bg); }
+  [data-mail-tone="social"] { --signal-ink: var(--category-social); --signal-fill: var(--category-social-bg); }
+  [data-mail-tone="important"] { --signal-ink: var(--warning); --signal-fill: var(--warning-bg); }
+  [data-mail-tone="urgent"], [data-mail-tone="spam"] { --signal-ink: var(--error); --signal-fill: var(--error-bg); }
+  [data-mail-tone="complete"] { --signal-ink: var(--success); --signal-fill: var(--success-bg); }
+
+  .neo-signal-tile {
+    display: inline-flex;
+    width: 32px; height: 32px;
+    flex: none; align-items: center; justify-content: center;
+    border-radius: var(--radius-control);
+    background: var(--signal-ink);
+    color: var(--status-on-fill);
+  }
+  .neo-signal-heading {
+    display: inline-flex; flex: none; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: var(--radius-control);
+    background: var(--signal-fill); color: var(--signal-ink);
+  }
+  .neo-signal-count {
+    display: inline-flex; min-width: 24px; min-height: 24px;
+    align-items: center; justify-content: center; padding-inline: 4px;
+    border-radius: var(--radius-control); background: var(--signal-fill);
+    color: var(--signal-ink); font-weight: 650;
+  }
+  .neo-inbox-section { border-top: 1px solid var(--border); }
+  .neo-work-item { position: relative; }
+  .neo-work-item::before, .neo-mail-row[data-mail-tone]::after {
+    content: ''; position: absolute; inset-block: 12px; inset-inline-start: 0;
+    width: var(--accent-width); background: var(--signal-ink); pointer-events: none;
+  }
+  .neo-mail-row[data-active="true"]::after { display: none; }
   .neo-title {
     font-size: 24px;
     line-height: 32px;
@@ -198,6 +243,7 @@
     flex: none;
     align-items: center;
     white-space: nowrap;
+    gap: 4px;
     border-radius: var(--radius-control);
     padding-inline: 6px;
     font-size: 11px;
@@ -206,11 +252,14 @@
     color: var(--mail-label-ink, var(--foreground-muted));
     background: var(--mail-label-fill, var(--secondary));
   }
-  .neo-mail-label[data-category="work"],
-  .neo-mail-label[data-priority="important"] {
-    --mail-label-ink: var(--accent-foreground);
-    --mail-label-fill: var(--accent);
+  .neo-mail-label[data-category="work"] {
+    --mail-label-ink: var(--category-work);
+    --mail-label-fill: var(--category-work-bg);
   }
+  .neo-mail-label[data-category="personal"] { --mail-label-ink: var(--category-personal); --mail-label-fill: var(--category-personal-bg); }
+  .neo-mail-label[data-category="newsletter"] { --mail-label-ink: var(--category-newsletter); --mail-label-fill: var(--category-newsletter-bg); }
+  .neo-mail-label[data-category="social"] { --mail-label-ink: var(--category-social); --mail-label-fill: var(--category-social-bg); }
+  .neo-mail-label[data-priority="important"] { --mail-label-ink: var(--warning); --mail-label-fill: var(--warning-bg); }
   .neo-mail-label[data-priority="important"],
   .neo-mail-label[data-priority="urgent"] {
     border-inline-start: 2px solid currentColor;

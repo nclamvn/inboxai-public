@@ -1022,7 +1022,7 @@ export function getCategoryHints(entities: ExtractedEntities): {
 // EXPORTS
 // ===========================================
 
-export default {
+const vietnameseEntitiesApi = {
   // Data
   VIETNAMESE_BANKS,
   VIETNAMESE_EWALLETS,
@@ -1045,3 +1045,5 @@ export default {
   extractAllEntities,
   getCategoryHints,
 };
+
+export default vietnameseEntitiesApi;

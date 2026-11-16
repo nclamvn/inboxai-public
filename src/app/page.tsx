@@ -2,12 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import {
-  Mail, Sparkles, Shield, Zap, Clock, Brain,
-  ChevronRight, Check, Moon, Sun, Menu, X,
-  Inbox, Tag, Trash2, Star, ArrowRight,
-  Smartphone, Lock, RefreshCw
-} from 'lucide-react'
+import { Mail, Sparkles, Shield, Zap, Clock, Brain, ChevronRight, Moon, Sun, Menu, X, Inbox, Tag, Trash2, Star, ArrowRight, Smartphone, Lock, RefreshCw } from 'lucide-react'
 import { useTheme } from '@/contexts/theme-context'
 
 export default function LandingPage() {

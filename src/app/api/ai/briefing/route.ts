@@ -55,13 +55,6 @@ export async function GET(request: NextRequest) {
 
   // === URGENT ITEMS ===
 
-  // Emails cần trả lời (needs_reply = true, chưa đọc)
-  const needsReply = emails.filter(e =>
-    e.needs_reply &&
-    !e.is_read &&
-    e.direction === 'inbound'
-  )
-
   // Emails quan trọng chưa đọc (priority >= 4)
   const urgentUnread = emails.filter(e =>
     !e.is_read &&

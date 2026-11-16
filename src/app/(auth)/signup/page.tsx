@@ -57,7 +57,7 @@ export default function SignupPage() {
         setWaitlistStatus('not_found')
         setStep('waitlist_form')
       }
-    } catch (err) {
+    } catch {
       setError('Không thể kết nối. Vui lòng thử lại.')
     } finally {
       setLoading(false)
@@ -97,7 +97,7 @@ export default function SignupPage() {
       setPassword('')
       setMessage(data.message || 'Vui lòng xác minh email trước khi đăng nhập.')
       setStep('success')
-    } catch (err) {
+    } catch {
       setError('Có lỗi xảy ra. Vui lòng thử lại.')
     } finally {
       setLoading(false)
@@ -125,7 +125,7 @@ export default function SignupPage() {
       } else {
         setError(data.error || 'Có lỗi xảy ra. Vui lòng thử lại.')
       }
-    } catch (err) {
+    } catch {
       setError('Không thể kết nối. Vui lòng thử lại.')
     } finally {
       setLoading(false)

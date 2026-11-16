@@ -65,9 +65,11 @@ export function getAIModuleStatus(): {
   };
 }
 
-export default {
+const setupApi = {
   initializeAIModule,
   isAIModuleInitialized,
   ensureAIModuleInitialized,
   getAIModuleStatus,
 };
+
+export default setupApi;

@@ -8,6 +8,7 @@ import { Loader2, X, ListFilter, ListChecks } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
 import { useEmails } from '@/hooks/use-emails'
+import { useBriefingFilter } from '@/hooks/use-briefing-filter'
 import { useEmail } from '@/hooks/use-email'
 import { useIsMobile } from '@/hooks/use-media-query'
 // FilterChips removed - replaced by UnifiedTopBar dropdown
@@ -67,12 +68,6 @@ const MailRulesDialog = dynamic(() => import('@/components/email/personal-mail-r
 
 type ViewMode = 'list' | 'split' | 'full'
 
-interface BriefingFilter {
-  type: string
-  title: string
-  emailIds: string[]
-}
-
 function InboxContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -102,11 +97,10 @@ function InboxContent() {
 
   // Local UI state only
   const [viewMode, setViewMode] = useState<ViewMode>(selectedId ? 'split' : 'list')
-  const [activeFilter, setActiveFilter] = useState<string | null>(null)
+  const [selectedCategory, setActiveFilter] = useState<string | null>(null)
   const [mobileSegment, setMobileSegment] = useState('all')
-  const [briefingFilter, setBriefingFilter] = useState<BriefingFilter | null>(null)
-  const [classifying, setClassifying] = useState(false)
-  const [reclassifying, setReclassifying] = useState(false)
+  const { filter: briefingFilter, clear: clearBriefingFilter } = useBriefingFilter(briefingType)
+  const activeFilter = briefingFilter ? null : selectedCategory
   const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false)
   const [snoozeTarget, setSnoozeTarget] = useState<Email | null>(null)
   const [snoozeNotice, setSnoozeNotice] = useState(false)
@@ -122,28 +116,6 @@ function InboxContent() {
   }, [])
 
   const rankings = useMemo(() => rankActionInbox(emails, now), [emails, now])
-
-  // Read briefing filter from sessionStorage when URL has briefing param
-  useEffect(() => {
-    if (briefingType) {
-      try {
-        const stored = sessionStorage.getItem('briefing_filter')
-        if (stored) {
-          const data = JSON.parse(stored) as BriefingFilter
-          if (data.type === briefingType) {
-            setBriefingFilter(data)
-            setActiveFilter(null) // Clear category filter when using briefing filter
-          }
-        }
-      } catch (e) {
-        console.error('Failed to parse briefing filter:', e)
-      }
-    } else {
-      // Clear briefing filter when URL doesn't have briefing param
-      setBriefingFilter(null)
-      sessionStorage.removeItem('briefing_filter')
-    }
-  }, [briefingType])
 
   // ALWAYS fetch full email when selectedId is set (list only has preview, not body)
   const { email: fetchedEmail, loading: fetchingEmail, error: sourceError, refetch: refetchEmail } = useEmail(selectedId)
@@ -167,57 +139,6 @@ function InboxContent() {
   const effectiveViewMode = selectedId
     ? lookupReturn ? 'full' : viewMode === 'list' ? 'split' : viewMode
     : 'list'
-
-  const handleClassify = async () => {
-    setClassifying(true)
-    try {
-      const res = await fetch('/api/ai/classify-batch', {
-        method: 'POST'
-      })
-      const data = await res.json()
-
-      if (res.ok) {
-        alert(data.message || `Đã phân loại ${data.classified}/${data.total} email`)
-        refetch()
-      } else {
-        alert(data.error || 'Phân loại thất bại')
-      }
-    } catch (error) {
-      console.error('Classify error:', error)
-      alert('Phân loại thất bại')
-    } finally {
-      setClassifying(false)
-    }
-  }
-
-  // Handle reclassify spam emails with AI
-  const handleReclassify = useCallback(async (category: string) => {
-    setReclassifying(true)
-    try {
-      const res = await fetch('/api/ai/reclassify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category, limit: 50 })
-      })
-      const data = await res.json()
-
-      if (data.success) {
-        if (data.updated > 0) {
-          alert(`Đã sửa ${data.updated}/${data.total} emails bị gán sai!\n\n${data.changes?.slice(0, 5).map((c: { subject: string; from: string; to: string }) => `• ${c.subject}: ${c.from} → ${c.to}`).join('\n') || ''}`)
-          refetch()
-        } else {
-          alert(`Đã kiểm tra ${data.total} emails - không có email nào cần sửa`)
-        }
-      } else {
-        alert(data.error || 'Lỗi khi phân loại lại')
-      }
-    } catch (error) {
-      console.error('Reclassify error:', error)
-      alert('Lỗi khi phân loại lại')
-    } finally {
-      setReclassifying(false)
-    }
-  }, [refetch])
 
   // Calculate filter counts
   const filterCounts = useMemo(() => {
@@ -258,68 +179,12 @@ function InboxContent() {
     return counts
   }, [emails, rankings])
 
-  // Categories quan trọng cần warning
-  const IMPORTANT_CATEGORIES = ['work', 'personal', 'transaction', 'needsAction', 'needs_action']
-
   // Category labels
   const CATEGORY_LABELS: Record<string, string> = {
     ...mailCategoryLabels,
     needsAction: 'Cần xử lý',
     needs_action: 'Cần xử lý'
   }
-
-  // Handle delete all in category - với SMART WARNING
-  const handleDeleteAllInCategory = useCallback(async (category: string) => {
-    const count = (filterCounts as Record<string, number>)[category] || 0
-    if (count === 0) return
-
-    const label = CATEGORY_LABELS[category] || category
-    const isImportant = IMPORTANT_CATEGORIES.includes(category)
-
-    // Smart warning dựa trên importance
-    if (isImportant) {
-      // Categories quan trọng → Double confirm
-      const confirmed = confirm(
-        `⚠️ CẢNH BÁO: Bạn sắp xóa ${count} email "${label}"!\n\n` +
-        `Đây là danh mục QUAN TRỌNG. Hành động này không thể hoàn tác.\n\n` +
-        `Bạn có chắc chắn muốn tiếp tục?`
-      )
-
-      if (!confirmed) return
-
-      // Second confirmation for important categories
-      const doubleConfirmed = confirm(
-        `🔴 XÁC NHẬN LẦN CUỐI:\n\n` +
-        `Xóa tất cả ${count} email "${label}"?\n\n` +
-        `Nhấn OK để xóa vĩnh viễn.`
-      )
-
-      if (!doubleConfirmed) return
-    }
-    // Categories không quan trọng (spam, newsletter, promotion) → Không cần confirm
-
-    try {
-      const res = await fetch('/api/emails/bulk-action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'delete',
-          filter: { category }
-        })
-      })
-
-      const data = await res.json()
-      if (data.success) {
-        refetch()
-        setActiveFilter(null)
-      } else {
-        alert(data.error || 'Xóa thất bại')
-      }
-    } catch (error) {
-      console.error('Delete all failed:', error)
-      alert('Xóa thất bại')
-    }
-  }, [filterCounts, refetch])
 
   // Filtered emails
   const filteredEmails = useMemo(() => {
@@ -382,10 +247,6 @@ function InboxContent() {
     target?.focus()
   }, [selectedId, loading])
 
-  const handleMaximize = () => {
-    setViewMode(viewMode === 'full' ? 'split' : 'full')
-  }
-
   const handleArchive = useCallback((id: string) => {
     void archiveEmail(id, fetchedEmail?.id === id ? fetchedEmail : undefined)
     router.push('/inbox', { scroll: false })
@@ -400,8 +261,7 @@ function InboxContent() {
   const handleCategoryClick = (category: string) => {
     // Clear briefing filter when selecting category filter
     if (briefingFilter) {
-      setBriefingFilter(null)
-      sessionStorage.removeItem('briefing_filter')
+      clearBriefingFilter()
       router.push('/inbox', { scroll: false })
     }
     setActiveFilter(category)
@@ -411,12 +271,11 @@ function InboxContent() {
   const handleFilterChange = useCallback((filter: string) => {
     // Clear briefing filter when changing category
     if (briefingFilter) {
-      setBriefingFilter(null)
-      sessionStorage.removeItem('briefing_filter')
+      clearBriefingFilter()
       router.push('/inbox', { scroll: false })
     }
     setActiveFilter(filter === 'all' ? null : filter)
-  }, [briefingFilter, router])
+  }, [briefingFilter, router, clearBriefingFilter])
 
   // Handle search
   const handleSearch = useCallback((query: string) => {
@@ -427,10 +286,9 @@ function InboxContent() {
 
   // Clear briefing filter
   const handleClearBriefingFilter = useCallback(() => {
-    setBriefingFilter(null)
-    sessionStorage.removeItem('briefing_filter')
+    clearBriefingFilter()
     router.push('/inbox', { scroll: false })
-  }, [router])
+  }, [router, clearBriefingFilter])
 
   // Handle bulk actions from context menu or selection toolbar
   const handleBulkAction = useCallback(async (action: string, emailIds: string[], data?: Record<string, unknown>) => {

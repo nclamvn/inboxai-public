@@ -2,11 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  ChevronLeft, Star, MoreVertical, Reply, Forward,
-  Archive, Clock, Trash2, Mail, AlertCircle, Loader2,
-  Tag, Flag, MailOpen, Ban, Check, ListTodo
-} from 'lucide-react'
+import { ChevronLeft, Star, MoreVertical, Reply, Forward, Archive, Clock, Trash2, Mail, Loader2, Tag, Flag, MailOpen, Ban, ListTodo } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EmailConversation } from './email-conversation'
 import { SaveOfflineEmail } from '@/components/offline/save-offline-email'
@@ -41,11 +37,14 @@ interface EmailDetailMobileProps {
   categoryNotice?: string
 }
 
-export function EmailDetailMobile({
+export function EmailDetailMobile(props: EmailDetailMobileProps) {
+  return <EmailDetailMobileContent key={props.email.id} {...props} />
+}
+
+function EmailDetailMobileContent({
   email,
   onBack,
   closeLabel = 'Về hộp thư',
-  onRefresh,
   onStar,
   onArchive,
   onSnooze,
@@ -59,38 +58,26 @@ export function EmailDetailMobile({
   const [isStarred, setIsStarred] = useState(email.is_starred)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [attachments, setAttachments] = useState<Attachment[]>([])
-  const previousId = useRef<string | null>(null)
   const heading = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => { heading.current?.focus({ preventScroll: true }) }, [email.id])
 
-  // Fetch attachments - defined before useEffect to fix variable access order
-  const fetchAttachments = async (emailId: string) => {
-    try {
-      const res = await fetch(`/api/emails/${emailId}/attachments`)
-      const data = await res.json()
-      setAttachments(data.attachments || [])
-    } catch (error) {
-      console.error('Failed to fetch attachments:', error)
-    }
-  }
-
-  // Reset on email change
   useEffect(() => {
-    if (email.id !== previousId.current) {
-      setShowActions(false)
-      setIsStarred(email.is_starred)
-      setActionLoading(null)
-      setAttachments([])
-      previousId.current = email.id
-
-      // Fetch attachments if email has them
-      if (email.attachment_count && email.attachment_count > 0) {
-        fetchAttachments(email.id)
+    if (!email.attachment_count) return
+    const controller = new AbortController()
+    async function load() {
+      try {
+        const res = await fetch(`/api/emails/${email.id}/attachments`, { signal: controller.signal })
+        if (!res.ok) throw new Error('Attachments unavailable')
+        const data = await res.json()
+        if (!controller.signal.aborted) setAttachments(data.attachments || [])
+      } catch (error) {
+        if (!controller.signal.aborted) console.error('Failed to fetch attachments:', error)
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [email.id, email.is_starred, email.attachment_count])
+    void load()
+    return () => controller.abort()
+  }, [email.id, email.attachment_count])
 
   const toggleStar = async () => {
     const newValue = !isStarred

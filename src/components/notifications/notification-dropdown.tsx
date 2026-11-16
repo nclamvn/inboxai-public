@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Bell, CalendarClock, FileText, Mail, PlugZap } from 'lucide-react'
 import { GmailReconnectButton } from '@/components/gmail/gmail-reconnect'
@@ -22,6 +22,7 @@ const types = {
 }
 
 export function NotificationDropdown({ owner }: { owner: string }) {
+  const descriptionId = useId()
   const [open, setOpen] = useState(false)
   const [ready, setReady] = useState(false)
   const [available, setAvailable] = useState(true)
@@ -105,7 +106,7 @@ export function NotificationDropdown({ owner }: { owner: string }) {
   return <>
     <button type="button" aria-label="Thông báo cần hành động" title="Thông báo cần hành động"
       aria-haspopup="dialog" aria-expanded={open} disabled={!available}
-      aria-description={unread ? `${unread} thông báo chưa xem` : undefined}
+      aria-describedby={unread ? descriptionId : undefined}
       className="neo-icon-button relative" onClick={() => {
         setFailed(false)
         setOpen(true)
@@ -114,6 +115,7 @@ export function NotificationDropdown({ owner }: { owner: string }) {
       <Bell size={20} strokeWidth={1.5} aria-hidden="true" />
       {unread > 0 && <span aria-hidden="true" className="absolute end-1 top-1 size-2 bg-[var(--accent)]" />}
     </button>
+    {unread > 0 && <span id={descriptionId} className="sr-only">{unread} thông báo chưa xem</span>}
     <Modal open={open && available} title="Thông báo cần hành động" size="xl" onClose={() => setOpen(false)}>
       {query.isPending && query.fetchStatus === 'fetching' && <p role="status" className="py-4 text-sm">Đang tải thông báo…</p>}
       {(query.isError || query.fetchStatus === 'paused') && <Alert variant="warning" title="Chưa làm mới được thông báo">

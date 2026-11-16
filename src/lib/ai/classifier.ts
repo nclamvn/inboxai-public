@@ -7,11 +7,7 @@ import {
   isSameDomain,
   type SenderTrust
 } from './sender-trust'
-import {
-  getDomainCategory,
-  getEmailPatternHint,
-  VIETNAMESE_DOMAINS
-} from './vietnamese-domains'
+import { getDomainCategory } from './vietnamese-domains'
 import {
   calculateKeywordScores,
   getTopKeywordCategory,
@@ -24,17 +20,8 @@ import {
   suggestAction
 } from './priority-rules'
 import { applyLearnedRules } from './feedback-learner'
-import {
-  getReputation,
-  updateReputation,
-  resolveCategory,
-  type ReputationLookupResult
-} from './sender-reputation'
-import {
-  detectPhishing,
-  updateEmailPhishingStatus,
-  type PhishingResult
-} from './phishing-detector'
+import { getReputation, updateReputation, type ReputationLookupResult } from './sender-reputation'
+import { detectPhishing } from './phishing-detector'
 import { logClassification } from './classification-logger'
 import { updateDomainCategory } from './domain-reputation'
 import { aiLogger } from '@/lib/logger'
@@ -107,7 +94,6 @@ function classifyByRules(email: ClassifyEmailInput): {
   reasoning: string
 } | null {
   const domain = email.from_address.split('@')[1]?.toLowerCase() || ''
-  const fromLower = email.from_address.toLowerCase()
   const subjectLower = (email.subject || '').toLowerCase()
   const bodyLower = (email.body_text || '').toLowerCase()
 

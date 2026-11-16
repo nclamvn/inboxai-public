@@ -23,7 +23,6 @@ interface AIFeatureButtonProps {
 
 export function AIFeatureButton({
   featureKey,
-  emailId,
   onTrigger,
   disabled = false,
   size = 'sm',

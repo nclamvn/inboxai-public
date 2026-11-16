@@ -70,6 +70,7 @@ const journeyE2E = warehouseReconciliation || deliveryCommitments || offlineComp
 const journey = interactivePreview || journeyE2E
 const commitmentBenchmark = process.argv.includes('--m6g')
 const isolatedCommitment = commitmentDetection && process.argv.includes('--isolated')
+const isolatedCommitmentUi = commitmentUi && process.argv.includes('--isolated')
 const isolatedAskAnswer = askAnswer && process.argv.includes('--isolated')
 const commitmentOutput = commitmentBenchmark ? (await import('../tests/eval/commitments/benchmark.mjs')).output : null
 const isolatedDesign = design && process.argv.includes('--isolated')
@@ -77,7 +78,7 @@ const isolatedPlatform = m6 && !m6Native && process.argv.includes('--isolated')
 const isolatedStaging = staging && process.argv.includes('--isolated')
 const isolatedAuth = process.argv.includes('--isolated-auth')
 const platformOutput = isolatedPlatform ? 'test-results/commitment-attention/platform' : undefined
-const isolated = journeyE2E || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedAskAnswer || isolatedPlatform || isolatedAuth
+const isolated = journeyE2E || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedCommitmentUi || isolatedAskAnswer || isolatedPlatform || isolatedAuth
 const isolatedBuild = isolated || isolatedStaging
 const productionMode = m6 || staging || journey || isolated
 const journeyOutput = purchaseRelease ? 'test-results/purchase-release' : purchaseSupplements ? 'test-results/purchase-supplements' : purchaseFocus ? 'test-results/purchase-focus' : purchaseBatches ? 'test-results/purchase-batches' : purchaseExceptions ? 'test-results/purchase-exceptions' : purchaseDues ? 'test-results/purchase-dues' : purchaseReturn ? 'test-results/purchase-return' : purchaseSettlement ? 'test-results/purchase-settlement' : purchaseHandoff ? 'test-results/purchase-handoff' : purchaseInstallments ? 'test-results/purchase-installments' : purchasePayment ? 'test-results/purchase-payment' : purchaseCsv ? 'test-results/purchase-csv' : multilinePurchase ? 'test-results/multiline-purchase' : warehouseCorrection ? 'test-results/warehouse-correction' : warehouseReconciliation ? 'test-results/warehouse-reconciliation' : deliveryCommitments ? 'test-results/delivery-commitments' : offlineCompose ? 'test-results/offline-compose' : draftContinuity ? 'test-results/draft-continuity' : composeRecipients ? 'test-results/compose-recipients' : actionNotifications ? 'test-results/action-notifications' : offlineReply ? 'test-results/offline-reply' : mailLookup ? 'test-results/mail-lookup' : personalMailRules ? 'test-results/personal-mail-rules' : conversation ? 'test-results/inbox-conversation' : gmailReconnect ? 'test-results/gmail-reconnect' : scheduledSend ? 'test-results/scheduled-send' : emailSnoozes ? 'test-results/email-snoozes' : gmailTriage ? 'test-results/gmail-triage' : composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
@@ -85,6 +86,7 @@ const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.te
 const evidenceFile = journey ? `${journeyOutput}/report.json`
   : isolatedAuth ? 'test-results/local-auth/report.json'
   : commitmentOutput ? commitmentOutput + '/local-run.json'
+  : isolatedCommitmentUi ? 'test-results/commitment-ui/run.json'
   : isolatedDesign ? `${journeyOutput}/design-run.json`
   : m6c ? `docs/phase-2/evidence/m6c-${staging ? 'staging' : 'auth'}-run.json`
   : staging ? (isolatedStaging ? 'test-results/staging/run.json' : 'docs/phase-2/evidence/m6b-run.json')
@@ -123,10 +125,15 @@ const ports = isolated ? { proxy: 57321, app: 57300, auth: 57999, rest: 57400, m
 const base = 'http://127.0.0.1:' + ports.proxy, app = 'http://127.0.0.1:' + ports.app
 // The live guide opens the app on localhost so its cookies are separate from the earlier 127.0.0.1 preview.
 const dayApp = 'http://localhost:' + ports.app
-const loopbackFetch = (input, init) => {
+const loopbackFetch = async (input, init) => {
   const url = new URL(typeof input === 'string' ? input : input.url ?? input)
   assert.equal(url.hostname, '127.0.0.1', 'test attempted non-loopback fetch')
-  return fetch(input, { ...init, ...(staging && { redirect: 'manual' }), signal: init?.signal ?? AbortSignal.timeout(10_000) })
+  try {
+    return await fetch(input, { ...init, ...(staging && { redirect: 'manual' }), signal: init?.signal ?? AbortSignal.timeout(10_000) })
+  } catch (cause) {
+    // Diagnose transport loss without retrying a possibly committed write.
+    throw new Error(`Loopback ${init?.method ?? 'GET'} ${url.pathname} failed`, { cause })
+  }
 }
 const admin = createClient(base, service, { auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: loopbackFetch } })
 const outcomes = []
@@ -201,7 +208,7 @@ try {
     const rest = req.url.startsWith('/rest/v1/')
     if (!auth && !rest) { res.writeHead(404); res.end(); return }
     const origin = req.headers.origin
-    const localCors = (m6 || journey || isolatedDesign) && (origin === app || (day && origin === dayApp))
+    const localCors = (m6 || journey || isolatedDesign || isolatedCommitmentUi) && (origin === app || (day && origin === dayApp))
     const cors = { 'access-control-allow-origin': origin, 'access-control-allow-methods': 'GET,POST,PATCH,DELETE,OPTIONS',
       'access-control-allow-headers': req.headers['access-control-request-headers'] ?? '',
       'access-control-expose-headers': 'content-range, location', vary: 'Origin' }
@@ -540,7 +547,8 @@ try {
       foreignToken: foreignSession.data.session.access_token, loopbackFetch, record })
   } else if (commitmentUi) {
     const { rehearseCommitmentUi } = await import('../tests/design/commitments.mjs')
-    await rehearseCommitmentUi({ app, appFetch, cookies, admin, userId, record })
+    await rehearseCommitmentUi({ app, appFetch, cookies, admin, userId, record,
+      output: isolatedCommitmentUi ? 'test-results/commitment-ui' : undefined })
   } else if (commitments) {
     const legacyLogin = createClient(base, anon, { auth: { persistSession: false, autoRefreshToken: false } })
     const legacySession = await legacyLogin.auth.signInWithPassword({ email: 'preupgrade@example.test', password })
@@ -638,7 +646,7 @@ try {
 } catch (error) {
   if ((journeyE2E || commitmentBenchmark) && started) {
     writeFileSync(evidenceFile, JSON.stringify({ date: new Date().toISOString(), status: 'FAIL',
-      error: error.message, outcomes }, null, 2) + '\n')
+      error: error.stack ?? error.message, outcomes }, null, 2) + '\n')
   }
   if (!interactivePreview || !shutdown.signal.aborted) throw error
 } finally {

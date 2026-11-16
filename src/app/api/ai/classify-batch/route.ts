@@ -45,7 +45,7 @@ export async function POST() {
   for (const email of emails) {
     try {
       // Update sender trust data
-      await updateSenderOnReceive(user.id, email.from_address, email.from_name)
+      await updateSenderOnReceive(user.id, email.from_address)
 
       // Classify with full context (user_id for sender trust lookup)
       const classification = await classifyEmail({

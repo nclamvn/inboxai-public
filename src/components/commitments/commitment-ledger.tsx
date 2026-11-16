@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { ChevronRight, ClipboardList, FileText, RotateCw } from 'lucide-react'
+import { ChevronRight, ClipboardList, FileText, FileSearch, RotateCw, CircleAlert, Clock3, ListTodo, UserRound, CircleCheck, CircleSlash } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -21,8 +21,16 @@ import { WarehouseReview, type WarehouseAccount } from './warehouse-reconciliati
 import { CommitmentProposals } from './commitment-proposals'
 
 const groups = Object.entries(groupLabels) as [CommitmentGroup, string][]
+const groupVisuals = {
+  mine: { tone: 'work', Icon: ListTodo }, waiting: { tone: 'personal', Icon: Clock3 },
+  overdue: { tone: 'urgent', Icon: CircleAlert }, unassigned: { tone: 'important', Icon: UserRound },
+  closed: { tone: 'complete', Icon: CircleCheck },
+}
 
 function CommitmentRow({ item, group, active }: { item: BoardItem; group: CommitmentGroup; active: boolean }) {
+  const { tone, Icon } = group === 'overdue' ? groupVisuals.overdue
+    : group === 'closed' ? item.state.status === 'cancelled' ? { tone: 'newsletter', Icon: CircleSlash } : groupVisuals.closed
+    : item.state.review ? { tone: 'important', Icon: FileSearch } : groupVisuals[group]
   return (
     <li>
       <Link
@@ -30,8 +38,10 @@ function CommitmentRow({ item, group, active }: { item: BoardItem; group: Commit
         scroll={false} prefetch={false}
         aria-current={active ? 'location' : undefined}
         data-active={active}
+        data-mail-tone={tone}
         className="neo-mail-row flex min-w-0 items-start gap-3 px-4 py-4 hover:bg-[var(--hover)] sm:px-5"
       >
+        <span className="neo-signal-heading" aria-hidden="true"><Icon size={16} strokeWidth={1.8} /></span>
         <div className="min-w-0 flex-1">
           <p className="break-words text-sm font-semibold leading-5">{item.state.title}</p>
           <p className="mt-1 break-words text-xs text-[var(--foreground-muted)]">
@@ -127,7 +137,7 @@ export function CommitmentLedger({ userId, accounts: warehouseAccounts }: { user
 
   return (
     <div className="flex min-h-full min-w-0 flex-col bg-[var(--canvas)] lg:h-full lg:overflow-hidden">
-      <header className="neo-section-accent flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-4 sm:px-6">
+      <header className="neo-section-accent flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-4 sm:px-6">
         <div className="min-w-0">
           <h1 className="neo-title" ref={listHeading} tabIndex={-1}>Cam kết</h1>
           <p className="mt-1 text-xs text-[var(--foreground-muted)]">Hạn chót theo giờ Việt Nam (UTC+7)</p>
@@ -164,13 +174,17 @@ export function CommitmentLedger({ userId, accounts: warehouseAccounts }: { user
           load={() => { if (detections.isFetchNextPageError || !detections.isError) void detections.fetchNextPage(); else void detections.refetch() }} />
       ) : <>
       <nav aria-label="Nhóm cam kết" className={cn('grid grid-cols-3 gap-x-1 border-b border-[var(--border)] bg-[var(--surface)] px-3 sm:px-5 md:flex md:flex-wrap', id && 'hidden md:hidden lg:flex')}>
-        {groups.map(([key, label]) => (
+        {groups.map(([key, label]) => {
+          const { tone, Icon } = groupVisuals[key]
+          return (
           <Link key={key} href={commitmentsHref(key)} scroll={false} prefetch={false} aria-current={key === group ? 'page' : undefined}
+            data-mail-tone={tone}
             className="neo-nav-item neo-nav-inline neo-target min-h-11 shrink-0 gap-2 px-2 text-xs sm:px-3 sm:text-sm">
+            <Icon size={15} className="text-[var(--signal-ink)]" aria-hidden="true" />
             {label}
-            {totals && <span className="tabular-nums text-[var(--foreground-muted)]">{totals[key]}</span>}
+            {totals && <span className="neo-signal-count tabular-nums">{totals[key]}</span>}
           </Link>
-        ))}
+        )})}
       </nav>
 
       <div className="min-w-0 lg:grid lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(300px,2fr)_minmax(0,3fr)]">

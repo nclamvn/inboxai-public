@@ -9,10 +9,12 @@ the preceding product/design discussion in this chat. PRODUCT_STANDARD records
 those decisions, not an independently retrieved Library document or concept pack.
 
 - [Product and design authority](PRODUCT_STANDARD.md)
+- [Màu và icon để nhận diện nhanh](VISUAL_SIGNALS.md)
 - [Audit, dependency map, debt and risk matrix](AUDIT.md)
 - [Ordered PR plan and acceptance criteria](IMPLEMENTATION_PLAN.md)
 - [Security gate](SECURITY_GATE.md)
 - [Actual verification](VERIFICATION.md)
+- [Technical-debt cleanup and remaining work](TECHNICAL_DEBT_CLEANUP.md)
 - [M1-A credential vault and maintenance](CREDENTIAL_VAULT.md)
 - [Sync contracts and recovery](SYNC_CONTRACTS.md)
 - [Action Inbox daily commitments local acceptance](ACTION_INBOX_DAILY_LOCAL_HANDOFF.md)
@@ -27,6 +29,7 @@ those decisions, not an independently retrieved Library document or concept pack
 - [Lập và duyệt đợt thanh toán](PURCHASE_BATCHES.md)
 - [Inbox dẫn việc từ yêu cầu bổ sung đến duyệt xong](PURCHASE_FOCUS.md)
 - [Tìm thư bổ sung cho hồ sơ đang chờ](PURCHASE_SUPPLEMENTS.md)
+- [Yêu cầu bổ sung chứng từ và theo dõi đến khi duyệt xong](PURCHASE_EVIDENCE_REQUESTS.md)
 - [Chốt bản local và đối chứng luồng duyệt lại](PURCHASE_LOCAL_RELEASE.md)
 - [M6-F adversarial security rehearsal](VERIFICATION.md#m6-f-adversarial-security-rehearsal)
 - [M6-E Gmail consent and synthetic browser evidence](VERIFICATION.md#m6-e-gmail-consent)

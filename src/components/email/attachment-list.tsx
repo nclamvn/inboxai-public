@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import NextImage from 'next/image'
 import { useState } from 'react'
 import {
   Paperclip, FileText, Image, FileSpreadsheet,
@@ -185,9 +186,10 @@ export function AttachmentList({ attachments, purchaseEmailId }: AttachmentListP
 
           {/* Preview content */}
           <div className="max-w-full max-h-full overflow-auto">
-            <img
+            <NextImage
               src={`${previewUrl}?preview=1`}
               alt={previewName}
+              width={1200} height={900} unoptimized style={{ width: 'auto', height: 'auto' }}
               className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg"
             />
           </div>

@@ -5,15 +5,7 @@
  * Merge vao file classifier.ts hien tai.
  */
 
-import {
-  analyzeEmailContext,
-  buildVietnameseClassificationPrompt,
-  parseClassificationResponse,
-  tryRuleBasedClassification,
-  classifyVietnameseEmail,
-  type VietnameseClassificationInput,
-  type VietnameseClassificationResult,
-} from './vietnamese-classifier-integration';
+import { analyzeEmailContext, buildVietnameseClassificationPrompt, parseClassificationResponse, tryRuleBasedClassification, classifyVietnameseEmail, type VietnameseClassificationInput } from './vietnamese-classifier-integration';
 
 import { getLanguageConfidence } from './vietnamese-utils';
 

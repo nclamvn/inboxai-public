@@ -9,6 +9,7 @@ import { readReplyWork, replyRequest } from '@/lib/replies/client'
 import { replyHref, type ReplyWork } from '@/lib/replies/contracts'
 import { ReplyFollowupDialog } from './reply-followup-dialog'
 import { actionNotificationsKey } from '@/lib/notifications/action-contracts'
+import { Clock3, MessageSquare, FilePenLine, Send, MailCheck, CircleAlert, MessagesSquare } from 'lucide-react'
 
 const labels: Record<ReplyWork['status'], string> = {
   reply: 'Có hồi đáp', due: 'Đến hẹn', waiting: 'Đang chờ', draft: 'Bản nháp', sending: 'Cần kiểm tra lượt gửi', sent: 'Đã gửi',
@@ -16,6 +17,11 @@ const labels: Record<ReplyWork['status'], string> = {
 const reminderLabels = {
   dispatching: 'Đang gửi thư nhắc', unknown: 'Chờ xác minh thư nhắc', accepted: 'Đã gửi thư nhắc',
   partial: 'Thư nhắc chỉ gửi được một phần', rejected: 'Gửi thư nhắc thất bại',
+}
+const workVisuals = {
+  reply: { tone: 'work', Icon: MessageSquare }, due: { tone: 'important', Icon: Clock3 },
+  waiting: { tone: 'personal', Icon: Clock3 }, draft: { tone: 'newsletter', Icon: FilePenLine },
+  sending: { tone: 'important', Icon: Send }, sent: { tone: 'complete', Icon: MailCheck },
 }
 
 export function ReplyInbox({ userId, accounts, focus }: { userId: string; accounts: string[]; focus?: string }) {
@@ -55,9 +61,12 @@ export function ReplyInbox({ userId, accounts, focus }: { userId: string; accoun
         {rows.map(item => {
           const verifying = item.reminderState === 'unknown' || item.reminderState === 'dispatching'
           const waiting = item.status === 'waiting' || item.status === 'due'
+          const { tone, Icon } = verifying ? { tone: 'important', Icon: CircleAlert } : workVisuals[item.status]
           return <li key={item.id} id={'followup-' + item.id} tabIndex={-1}
-            className="scroll-mt-4 px-4 py-3 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--accent)] sm:px-5">
-            <p className="text-xs font-medium text-[var(--foreground-secondary)]">
+            data-mail-tone={tone}
+            className="neo-work-item scroll-mt-4 px-4 py-3 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--accent)] sm:px-5">
+            <p className="flex items-center gap-2 text-xs font-semibold text-[var(--signal-ink)]">
+              <span className="neo-signal-heading" aria-hidden="true"><Icon size={15} strokeWidth={1.8} /></span>
               {labels[item.status]}
               {item.followupOn && <span> · {formatCommitmentDue({ dueOn: item.followupOn, dueAt: null })}</span>}
             </p>
@@ -90,7 +99,7 @@ export function ReplyInbox({ userId, accounts, focus }: { userId: string; accoun
   return (
     <section aria-label="Hồi đáp và bản nháp" className="border-b border-[var(--border)] bg-[var(--surface)]">
       <header className="flex flex-wrap items-center justify-between gap-2 border-s-2 border-[var(--accent)] px-4 py-2 sm:px-5">
-        <h2 className="text-sm font-semibold">Hồi đáp và bản nháp</h2>
+        <h2 className="flex items-center gap-2 text-sm font-semibold"><MessagesSquare size={18} className="text-[var(--accent-foreground)]" aria-hidden="true" />Hồi đáp và bản nháp</h2>
         {items.length > 3 && <Button type="button" variant="ghost" size="sm" className="min-h-11" aria-expanded={expanded}
           onClick={() => setExpanded(value => !value)}>{expanded ? 'Thu gọn' : 'Xem thêm'}</Button>}
       </header>

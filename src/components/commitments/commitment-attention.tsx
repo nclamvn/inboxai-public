@@ -3,7 +3,7 @@
 import { useId, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { RotateCw } from 'lucide-react'
+import { RotateCw, ClipboardCheck, CircleAlert, Clock3, PackageCheck, MessageSquare, FileSearch } from 'lucide-react'
 import { Badge, type BadgeProps } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -30,6 +30,12 @@ const reasons = {
 }
 const reasonTones: Record<AttentionItem['reason'], BadgeProps['variant']> = {
   today: 'warning', overdue: 'error', review: 'warning', receiving: 'warning', purchase_discrepancy: 'warning', receiving_ready: 'success', reply: 'info',
+}
+const reasonVisuals = {
+  today: { tone: 'important', Icon: Clock3 }, overdue: { tone: 'urgent', Icon: CircleAlert },
+  receiving: { tone: 'important', Icon: FileSearch }, purchase_discrepancy: { tone: 'important', Icon: FileSearch },
+  receiving_ready: { tone: 'complete', Icon: PackageCheck }, review: { tone: 'important', Icon: FileSearch },
+  reply: { tone: 'work', Icon: MessageSquare },
 }
 const reminderLabels = {
   accepted: 'Đã gửi lời nhắc',
@@ -226,7 +232,8 @@ export function CommitmentAttention({ userId, accounts, onSynced }: {
       {hasAttention && (
         <section aria-labelledby={title} className="border-b border-[var(--border)] bg-[var(--surface)]">
           <div className="neo-section-accent flex min-w-0 items-center justify-between gap-3 px-4 sm:px-5">
-            <h2 id={title} ref={heading} tabIndex={-1} className="py-3 text-sm font-semibold">Cam kết cần chú ý</h2>
+            <h2 id={title} ref={heading} tabIndex={-1} className="flex items-center gap-2 py-3 text-sm font-semibold">
+              <ClipboardCheck size={18} className="text-[var(--accent-foreground)]" aria-hidden="true" />Cam kết cần chú ý</h2>
             <button type="button" onClick={refresh} className="neo-icon-button" disabled={query.isFetching}
               aria-label="Làm mới cam kết cần chú ý" title="Làm mới cam kết cần chú ý">
               <RotateCw size={16} aria-hidden="true" />
@@ -247,12 +254,13 @@ export function CommitmentAttention({ userId, accounts, onSynced }: {
               const eligible = (item.state.purchaseOrder ? purchaseDeficit :
                 item.reason === 'today' || item.reason === 'overdue' || item.reason === 'receiving') && item.responsibility === 'waiting'
               const unresolved = item.reminderState === 'unknown' || item.reminderState === 'dispatching'
+              const { tone, Icon } = item.reply?.correction ? reasonVisuals.review : reasonVisuals[item.reason]
               return (
-                <li key={item.id} className="flex min-w-0 flex-wrap items-start justify-between gap-x-5 px-4 pt-3 sm:px-5">
+                <li key={item.id} data-mail-tone={tone} className="neo-work-item flex min-w-0 flex-wrap items-start justify-between gap-x-5 px-4 pt-3 sm:px-5">
                   <div className="min-w-0 flex-[1_1_15rem]">
                     <p className="break-words text-sm font-semibold">{item.state.title}</p>
                     <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--foreground-secondary)]">
-                      <Badge variant={item.reply?.correction ? 'warning' : reasonTones[item.reason]} className="py-0.5">{item.reply?.correction ? 'Đính chính kho chờ duyệt' : reasons[item.reason]}</Badge>
+                      <Badge variant={item.reply?.correction ? 'warning' : reasonTones[item.reason]} className="py-0.5"><Icon size={13} aria-hidden="true" />{item.reply?.correction ? 'Đính chính kho chờ duyệt' : reasons[item.reason]}</Badge>
                       <span>{formatCommitmentDue(item.state)} · {item.responsibility === 'mine' ? 'Tôi phải làm' : ownerLabel(item.state)}</span>
                     </div>
                     {item.state.purchaseOrder && <div className="mt-2"><PurchaseLines lines={item.state.purchaseOrder.lines} /></div>}

@@ -10,12 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClientForRequest } from '@/lib/supabase/server';
-import {
-  getFeatureAllocationForEmail,
-  getAIFeatureAllocationService,
-  AIFeatureKey,
-  FEATURE_COSTS,
-} from '@/lib/ai/feature-allocation';
+import { getFeatureAllocationForEmail, AIFeatureKey } from '@/lib/ai/feature-allocation';
 import { getAIFeatureRunner } from '@/lib/ai/feature-runner';
 import { ensureAIModuleInitialized } from '@/lib/ai/setup';
 import { aiLogger } from '@/lib/logger';
@@ -227,7 +222,6 @@ export async function POST(
 
     if (featuresToRun.length > 0) {
       const runner = getAIFeatureRunner();
-      const service = getAIFeatureAllocationService();
 
       // DEBUG: Log registered executors
       aiLogger.debug('[BatchAPI] Registered executors:', runner.getRegisteredFeatures());

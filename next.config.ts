@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 import bundleAnalyzer from '@next/bundle-analyzer';
-import { withSentryConfig } from '@sentry/nextjs';
+import { withSentryConfig, type SentryBuildOptions } from '@sentry/nextjs/config';
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
@@ -37,7 +37,6 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [
       'lucide-react',
       '@tanstack/react-query',
-      '@tanstack/react-virtual',
       'recharts',
       'framer-motion',
     ],
@@ -45,7 +44,7 @@ const nextConfig: NextConfig = {
 };
 
 // Sentry configuration options
-const sentryWebpackPluginOptions = {
+const sentryBuildOptions: SentryBuildOptions = {
   // Organization and project in Sentry
   org: process.env.SENTRY_ORG || 'prismy-b4',
   project: process.env.SENTRY_PROJECT || 'inboxai-web',
@@ -56,18 +55,18 @@ const sentryWebpackPluginOptions = {
   // Suppresses source map uploading logs during build
   silent: true,
 
-  // Hide source maps from being served to the client
-  hideSourceMaps: true,
+  // No authenticated upload is available in local/CI fixtures. Avoid generating
+  // maps there, and delete SDK-generated maps after an authorized release upload.
+  sourcemaps: {
+    disable: process.env.NODE_ENV !== 'production' || !process.env.SENTRY_AUTH_TOKEN,
+    deleteSourcemapsAfterUpload: true,
+  },
 
   // Widen the upload scope to include more files
   widenClientFileUpload: true,
-
-  // Disable source map uploading in development
-  disableServerWebpackPlugin: process.env.NODE_ENV !== 'production',
-  disableClientWebpackPlugin: process.env.NODE_ENV !== 'production',
 };
 
 // Apply bundle analyzer, then Sentry
 const configWithAnalyzer = withBundleAnalyzer(nextConfig);
 
-export default withSentryConfig(configWithAnalyzer, sentryWebpackPluginOptions);
+export default withSentryConfig(configWithAnalyzer, sentryBuildOptions);

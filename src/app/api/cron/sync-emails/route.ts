@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { syncAccount } from '@/lib/sync/account'
 import { processCommitmentCatchup } from '@/lib/commitments/catchup-worker'
-import { getUnsubscribeService } from '@/lib/email/unsubscribe-service'
 import { classifyEmail } from '@/lib/ai/classifier'
 import { notifySyncComplete, notifyAiClassified } from '@/lib/notifications/create'
 
@@ -131,8 +130,6 @@ export async function GET(request: NextRequest) {
     }
 
     console.log(`[CRON] Syncing ${accounts.length} accounts`)
-
-    const unsubscribeService = getUnsubscribeService(supabase)
 
     // Process each account
     for (const account of accounts) {

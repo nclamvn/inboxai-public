@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import Image from 'next/image'
 import { ChevronDown, Check, Mail } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -160,8 +161,9 @@ export function AccountSwitcher({
               >
                 <div className="relative">
                   {account.avatar_url ? (
-                    <img
+                    <Image
                       src={account.avatar_url}
+                      width={24} height={24} unoptimized referrerPolicy="no-referrer"
                       alt={account.display_name || account.email_address}
                       className="w-6 h-6 rounded-full object-cover"
                     />

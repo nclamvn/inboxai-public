@@ -224,7 +224,12 @@ export class FetchClient {
   }
 
   private async buildRequestInit(options: RequestOptions): Promise<RequestInit> {
-    const { timeout: _timeout, retries: _retries, params: _params, body, ...rest } = options
+    const { body, ...rest } = options
+    // Only transport options belong in fetch; retry policy and query construction
+    // stay in this client rather than leaking as nonstandard RequestInit keys.
+    delete rest.timeout
+    delete rest.retries
+    delete rest.params
 
     let init: RequestInit = {
       ...rest,

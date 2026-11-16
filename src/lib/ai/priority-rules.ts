@@ -21,7 +21,7 @@ interface PriorityInput {
  * Determine email priority based on category and signals
  */
 export function determinePriority(input: PriorityInput): Priority {
-  const { category, subject, fromAddress, bodyText, hasAttachment, isRepliedThread, senderTrustLevel } = input
+  const { category, subject, bodyText, hasAttachment, isRepliedThread, senderTrustLevel } = input
   const subjectLower = subject.toLowerCase()
   const textLower = `${subject} ${bodyText}`.toLowerCase()
 

@@ -3,13 +3,7 @@
  * Executes AI features based on allocation
  */
 
-import {
-  AIFeatureKey,
-  AllocationResult,
-  TriggerType,
-  getAIFeatureAllocationService,
-  FEATURE_COSTS,
-} from './feature-allocation';
+import { AIFeatureKey, AllocationResult, getAIFeatureAllocationService, FEATURE_COSTS } from './feature-allocation';
 
 // ===========================================
 // TYPES
@@ -249,7 +243,9 @@ runner.registerExecutor('action_items', {
 });
 */
 
-export default {
+const featureRunnerApi = {
   AIFeatureRunner,
   getAIFeatureRunner,
 };
+
+export default featureRunnerApi;

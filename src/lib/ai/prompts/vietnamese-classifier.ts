@@ -845,7 +845,7 @@ export const CATEGORY_KEYWORDS = {
 // EXPORTS
 // ===========================================
 
-export default {
+const vietnameseClassifierApi = {
   systemPrompt: VIETNAMESE_SYSTEM_PROMPT,
   examples: VIETNAMESE_EXAMPLES,
   categoryKeywords: CATEGORY_KEYWORDS,
@@ -854,3 +854,5 @@ export default {
   getExamplesByCategory,
   getRandomExamples,
 };
+
+export default vietnameseClassifierApi;

@@ -210,13 +210,14 @@ export function useEmails({ folder = 'inbox', pageSize = 50, accountIds }: UseEm
     }
   }, [ascending, buildQuery, hasMore, orderField, pageSize, supabase])
 
+  const invalidateRequests = useCallback(() => {
+    requestGeneration.current++
+    if (wakeTimer.current !== null) clearTimeout(wakeTimer.current)
+  }, [])
   useEffect(() => {
     void fetchEmails()
-    return () => {
-      requestGeneration.current++
-      if (wakeTimer.current !== null) clearTimeout(wakeTimer.current)
-    }
-  }, [fetchEmails])
+    return invalidateRequests
+  }, [fetchEmails, invalidateRequests])
 
   useEffect(() => {
     if (!triageEnabled && !managesSnoozes) return

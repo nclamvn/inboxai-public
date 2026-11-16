@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Mail, Loader2, CheckCircle, AlertCircle, Eye, EyeOff, Server } from 'lucide-react'
+import { X, Mail, Loader2, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ConnectGoogleButton } from './connect-google'
 

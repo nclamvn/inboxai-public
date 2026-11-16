@@ -104,6 +104,6 @@ it('server-provisioned admin role can list whitelist data', async () => {
 })
 it('production debug endpoint is unavailable before credential or provider access', async () => {
   vi.stubEnv('NODE_ENV', 'production')
-  expect((await debugGmail(new NextRequest('http://localhost/api/debug/gmail-sync'))).status).toBe(404)
+  expect((await debugGmail()).status).toBe(404)
   expect(mocks.from).not.toHaveBeenCalled()
 })
