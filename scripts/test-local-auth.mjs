@@ -33,8 +33,13 @@ const dayTest = process.argv.includes('--day-test')
 const pilotPreview = process.argv.includes('--pilot-preview')
 const pilotTest = process.argv.includes('--pilot-test')
 const pilot = pilotPreview || pilotTest
+const livingReview = process.argv.includes('--living-review') || process.argv.includes('--living-review-preview')
+const livingCoverage = process.argv.includes('--living-coverage') || process.argv.includes('--living-coverage-preview')
+const livingTest = process.argv.includes('--living-review') || process.argv.includes('--living-test') || process.argv.includes('--living-coverage')
+const livingPreview = process.argv.includes('--living-review-preview') || process.argv.includes('--living-preview') || process.argv.includes('--living-coverage-preview')
+const living = livingTest || livingPreview
 const day = dayPreview || dayTest
-const interactivePreview = journeyPreview || dayPreview || pilotPreview
+const interactivePreview = journeyPreview || dayPreview || pilotPreview || livingPreview
 const warehouseCorrection = process.argv.includes('--warehouse-correction')
 const purchaseRelease = process.argv.includes('--purchase-release')
 const purchaseHandoff = purchaseRelease || process.argv.includes('--purchase-handoff')
@@ -69,7 +74,7 @@ const actionNotifications = process.argv.includes('--action-notifications')
 const draftContinuity = process.argv.includes('--draft-continuity')
 const composeRecipients = process.argv.includes('--compose-recipients')
 const composeAttachments = process.argv.includes('--compose-attachments')
-const journeyE2E = pilotTest || warehouseReconciliation || deliveryCommitments || offlineCompose || draftContinuity || composeRecipients || actionNotifications || offlineReply || mailLookup || personalMailRules || gmailReconnect || scheduledSend || emailSnoozes || gmailTriage || composeAttachments || followups || replies || catchup || process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
+const journeyE2E = livingTest || pilotTest || warehouseReconciliation || deliveryCommitments || offlineCompose || draftContinuity || composeRecipients || actionNotifications || offlineReply || mailLookup || personalMailRules || gmailReconnect || scheduledSend || emailSnoozes || gmailTriage || composeAttachments || followups || replies || catchup || process.argv.includes('--m6d-e2e') || dailyCommitments || dayTest
 const journey = interactivePreview || journeyE2E
 const commitmentBenchmark = process.argv.includes('--m6g')
 const isolatedCommitment = commitmentDetection && process.argv.includes('--isolated')
@@ -81,10 +86,10 @@ const isolatedPlatform = m6 && !m6Native && process.argv.includes('--isolated')
 const isolatedStaging = staging && process.argv.includes('--isolated')
 const isolatedAuth = process.argv.includes('--isolated-auth')
 const platformOutput = isolatedPlatform ? 'test-results/commitment-attention/platform' : undefined
-const isolated = journeyE2E || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedCommitmentUi || isolatedAskAnswer || isolatedPlatform || isolatedAuth
+const isolated = journeyE2E || livingPreview || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedCommitmentUi || isolatedAskAnswer || isolatedPlatform || isolatedAuth
 const isolatedBuild = isolated || isolatedStaging
 const productionMode = m6 || staging || journey || isolated
-const journeyOutput = pilot ? 'test-results/local-pilot' : purchaseRelease ? 'test-results/purchase-release' : purchaseSupplements ? 'test-results/purchase-supplements' : purchaseFocus ? 'test-results/purchase-focus' : purchaseBatches ? 'test-results/purchase-batches' : purchaseExceptions ? 'test-results/purchase-exceptions' : purchaseDues ? 'test-results/purchase-dues' : purchaseReturn ? 'test-results/purchase-return' : purchaseSettlement ? 'test-results/purchase-settlement' : purchaseHandoff ? 'test-results/purchase-handoff' : purchaseInstallments ? 'test-results/purchase-installments' : purchasePayment ? 'test-results/purchase-payment' : purchaseCsv ? 'test-results/purchase-csv' : multilinePurchase ? 'test-results/multiline-purchase' : warehouseCorrection ? 'test-results/warehouse-correction' : warehouseReconciliation ? 'test-results/warehouse-reconciliation' : deliveryCommitments ? 'test-results/delivery-commitments' : offlineCompose ? 'test-results/offline-compose' : draftContinuity ? 'test-results/draft-continuity' : composeRecipients ? 'test-results/compose-recipients' : actionNotifications ? 'test-results/action-notifications' : offlineReply ? 'test-results/offline-reply' : mailLookup ? 'test-results/mail-lookup' : personalMailRules ? 'test-results/personal-mail-rules' : conversation ? 'test-results/inbox-conversation' : gmailReconnect ? 'test-results/gmail-reconnect' : scheduledSend ? 'test-results/scheduled-send' : emailSnoozes ? 'test-results/email-snoozes' : gmailTriage ? 'test-results/gmail-triage' : composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
+const journeyOutput = livingReview ? (livingPreview ? 'test-results/living-review/preview' : 'test-results/living-review') : livingCoverage ? (livingPreview ? 'test-results/living-coverage/preview' : 'test-results/living-coverage') : livingPreview ? 'test-results/living-commitments/preview' : livingTest ? 'test-results/living-commitments' : pilot ? 'test-results/local-pilot' : purchaseRelease ? 'test-results/purchase-release' : purchaseSupplements ? 'test-results/purchase-supplements' : purchaseFocus ? 'test-results/purchase-focus' : purchaseBatches ? 'test-results/purchase-batches' : purchaseExceptions ? 'test-results/purchase-exceptions' : purchaseDues ? 'test-results/purchase-dues' : purchaseReturn ? 'test-results/purchase-return' : purchaseSettlement ? 'test-results/purchase-settlement' : purchaseHandoff ? 'test-results/purchase-handoff' : purchaseInstallments ? 'test-results/purchase-installments' : purchasePayment ? 'test-results/purchase-payment' : purchaseCsv ? 'test-results/purchase-csv' : multilinePurchase ? 'test-results/multiline-purchase' : warehouseCorrection ? 'test-results/warehouse-correction' : warehouseReconciliation ? 'test-results/warehouse-reconciliation' : deliveryCommitments ? 'test-results/delivery-commitments' : offlineCompose ? 'test-results/offline-compose' : draftContinuity ? 'test-results/draft-continuity' : composeRecipients ? 'test-results/compose-recipients' : actionNotifications ? 'test-results/action-notifications' : offlineReply ? 'test-results/offline-reply' : mailLookup ? 'test-results/mail-lookup' : personalMailRules ? 'test-results/personal-mail-rules' : conversation ? 'test-results/inbox-conversation' : gmailReconnect ? 'test-results/gmail-reconnect' : scheduledSend ? 'test-results/scheduled-send' : emailSnoozes ? 'test-results/email-snoozes' : gmailTriage ? 'test-results/gmail-triage' : composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
 const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.test'
 const evidenceFile = journey ? `${journeyOutput}/report.json`
   : isolatedAuth ? 'test-results/local-auth/report.json'
@@ -120,7 +125,7 @@ const token = role => {
   const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url')
   // Leave-running preview API keys outlive a one-hour test. User sessions still
   // use GoTrue's normal expiry. These keys belong only to the loopback fixture.
-  const lifetime = pilotPreview ? 7 * 86_400 : 3600
+  const lifetime = interactivePreview ? 7 * 86_400 : 3600
   const payload = Buffer.from(JSON.stringify({ role, iss: 'supabase', iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + lifetime })).toString('base64url')
   return `${header}.${payload}.${createHmac('sha256', secret).update(`${header}.${payload}`).digest('base64url')}`
 }
@@ -296,7 +301,7 @@ try {
   record('direct Auth API cannot bypass closed registration policy', Boolean(blocked))
   sql("UPDATE public.registration_policy SET enabled=true, max_users=100; NOTIFY pgrst, 'reload schema';")
   await delay(1000)
-  if ((journeyE2E || pilotPreview) && !dailyCommitments && !day) googleProvider = await startGoogleOAuthFixture()
+  if ((journeyE2E || pilotPreview || livingPreview) && !dailyCommitments && !day) googleProvider = await startGoogleOAuthFixture()
   if (!staging) {
     if (!journey) mailProvider = await startMailProvider()
     smtpWire = await startSmtpWire(journey ? {
@@ -310,6 +315,7 @@ try {
   const nextEnv = { ...Object.fromEntries(['PATH','HOME','LANG','TMPDIR', ...(askInbox ? ['ASK_INBOX_MODEL_DIR'] : [])]
         .filter(key => process.env[key]).map(key => [key,process.env[key]])),
       ...(isolatedBuild ? { INBOXAI_E2E_BUILD: '1' } : {}),
+      ...(living ? { INBOXAI_LIVING_LOCAL: '1' } : {}),
       ...(pilot ? { INBOXAI_TEST_LOCAL_PILOT: '1', INBOXAI_LOCAL_PILOT_VERSION: JSON.stringify(pilotVersion), INBOXAI_LOCAL_PILOT_GUIDE: 'http://127.0.0.1:57343' } : {}),
       ...(gmailTriage ? { INBOXAI_GMAIL_TRIAGE_ENABLED: '1' } : {}),
       ...(googleProvider ? { INBOXAI_TEST_GOOGLE_OAUTH_URL: googleProvider.url, GOOGLE_CLIENT_ID: googleClientId,
@@ -417,7 +423,15 @@ try {
   record('admin revocation is enforced on the next request', (await appFetch('/api/admin/whitelist')).status === 403)
   sql("UPDATE public.registration_policy SET enabled=false;")
   record('closed policy rejects subsequent Next signups', (await appFetch('/api/signup-whitelist', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({email:'later@example.test',password,fullName:'Later'}) })).status === 503)
-  if (pilot) {
+  if (livingPreview) {
+    const { seedLivingCommitments } = await import('../tests/design/living-commitments.mjs')
+    await seedLivingCommitments({userId,previousId,previousEmail,admin,appFetch,sql,googleProvider,record,...(livingReview?{evaluation:await import('../tests/eval/living-review/evaluation.mjs')} : livingCoverage?{evaluation:await import('../tests/eval/living-coverage/evaluation.mjs')}:{})})
+    console.log('\nCam kết sống: '+app+'/commitments/living\nTài khoản: '+email+'\nMật khẩu giả lập: '+password+'\n')
+    await new Promise(resolve=>shutdown.signal.addEventListener('abort',resolve,{once:true}))
+  } else if (livingTest) {
+    const { rehearseLivingCommitments } = await import('../tests/design/living-commitments.mjs')
+    await rehearseLivingCommitments({ app,base,email,password,userId,previousId,previousEmail,admin,appFetch,sql,googleProvider,restartNext,record,output:journeyOutput,...(livingReview?{evaluation:await import('../tests/eval/living-review/evaluation.mjs')} : livingCoverage?{evaluation:await import('../tests/eval/living-coverage/evaluation.mjs')}:{}) })
+  } else if (pilot) {
     mkdirSync(journeyOutput, { recursive: true })
     const { startLocalPilot } = await import('../tests/design/local-pilot/server.mjs')
     dayGuide = await startLocalPilot({ app, base, email, previousEmail, password, userId, previousId, admin, appFetch,

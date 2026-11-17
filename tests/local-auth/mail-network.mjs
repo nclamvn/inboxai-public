@@ -16,6 +16,9 @@ if (journey && !['http://127.0.0.1:55321', 'http://127.0.0.1:57321'].includes(da
 }
 globalThis.fetch = async (input, init) => {
   const url = new URL(input instanceof Request ? input.url : input)
+  if(process.env.INBOXAI_LIVING_LOCAL==='1'&&url.origin==='http://127.0.0.1:57340'&&url.pathname==='/v1/chat/completions') {
+    return nativeFetch(input,{...init,redirect:'error'})
+  }
   if (oauthFixture && ((url.origin === 'https://oauth2.googleapis.com' && url.pathname === '/token') ||
     (url.origin === 'https://www.googleapis.com' && url.pathname === '/oauth2/v2/userinfo') ||
     (url.origin === 'https://gmail.googleapis.com' && url.pathname.startsWith('/gmail/v1/users/me/')))) {

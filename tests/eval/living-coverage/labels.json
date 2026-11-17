@@ -1,0 +1,985 @@
+[
+  {
+    "id": "CV-01",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "sơ đồ chỗ ngồi"
+      }
+    ]
+  },
+  {
+    "id": "CV-02",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "bộ ảnh địa điểm"
+      }
+    ]
+  },
+  {
+    "id": "CV-03",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "kịch bản đón khách"
+      }
+    ]
+  },
+  {
+    "id": "CV-04",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "phụ lục thuê phòng"
+      }
+    ]
+  },
+  {
+    "id": "CV-05",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "danh sách học viên"
+      }
+    ]
+  },
+  {
+    "id": "CV-06",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "bản đồ khu vực"
+      }
+    ]
+  },
+  {
+    "id": "CV-07",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "bảng định mức in"
+      }
+    ]
+  },
+  {
+    "id": "CV-08",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "thể lệ cuộc thi"
+      }
+    ]
+  },
+  {
+    "id": "CV-09",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "speaker biography"
+      }
+    ]
+  },
+  {
+    "id": "CV-10",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "venue checklist"
+      }
+    ]
+  },
+  {
+    "id": "CV-11",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": null,
+        "anchor": "bản phân vai"
+      }
+    ]
+  },
+  {
+    "id": "CV-12",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": null,
+        "anchor": "danh mục suất ăn"
+      }
+    ]
+  },
+  {
+    "id": "CV-13",
+    "group": "date",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-11",
+        "anchor": "sơ đồ sân khấu"
+      }
+    ]
+  },
+  {
+    "id": "CV-14",
+    "group": "date",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-12",
+        "anchor": "nội dung lời dẫn"
+      }
+    ]
+  },
+  {
+    "id": "CV-15",
+    "group": "date",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-13",
+        "anchor": "danh sách vật tư trang trí"
+      }
+    ]
+  },
+  {
+    "id": "CV-16",
+    "group": "date",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "danh sách đơn vị đón tiếp"
+      }
+    ]
+  },
+  {
+    "id": "CV-17",
+    "group": "date",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-18",
+        "anchor": "lịch quay phim"
+      }
+    ]
+  },
+  {
+    "id": "CV-18",
+    "group": "date",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-13",
+        "anchor": "danh sách ca trực"
+      }
+    ]
+  },
+  {
+    "id": "CV-19",
+    "group": "date",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": null,
+        "anchor": "bảng phân bổ thẻ"
+      }
+    ]
+  },
+  {
+    "id": "CV-20",
+    "group": "date",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": null,
+        "anchor": "kết quả khảo sát chỗ ngồi"
+      }
+    ]
+  },
+  {
+    "id": "CV-21",
+    "group": "lifecycle",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "bảng tên đại biểu"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "owner": null,
+        "due": "2027-01-18",
+        "anchor": "bảng tên đại biểu"
+      }
+    ]
+  },
+  {
+    "id": "CV-22",
+    "group": "lifecycle",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "bản kê thiết bị âm thanh"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "owner": null,
+        "due": "2027-01-19",
+        "anchor": "bản kê thiết bị âm thanh"
+      }
+    ]
+  },
+  {
+    "id": "CV-23",
+    "group": "lifecycle",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "mẫu giấy mời"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "completed",
+        "owner": null,
+        "due": null,
+        "anchor": "mẫu giấy mời"
+      }
+    ]
+  },
+  {
+    "id": "CV-24",
+    "group": "lifecycle",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "nội quy hội trường"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "completed",
+        "owner": null,
+        "due": null,
+        "anchor": "nội quy hội trường"
+      }
+    ]
+  },
+  {
+    "id": "CV-25",
+    "group": "lifecycle",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "sổ tay tình nguyện viên"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "cancelled",
+        "owner": null,
+        "due": null,
+        "anchor": "sổ tay tình nguyện viên"
+      }
+    ]
+  },
+  {
+    "id": "CV-26",
+    "group": "lifecycle",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "danh sách khách mời"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "cancelled",
+        "owner": null,
+        "due": null,
+        "anchor": "danh sách khách mời"
+      }
+    ]
+  },
+  {
+    "id": "CV-27",
+    "group": "lifecycle",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "session agenda"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "owner": null,
+        "due": "2027-01-19",
+        "anchor": "session agenda"
+      }
+    ]
+  },
+  {
+    "id": "CV-28",
+    "group": "lifecycle",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "registration guide"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "completed",
+        "owner": null,
+        "due": null,
+        "anchor": "registration guide"
+      }
+    ]
+  },
+  {
+    "id": "CV-29",
+    "group": "owner",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "phương án xe đưa đón"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "owner",
+        "owner": "linh.le@vendor.example.test",
+        "due": null,
+        "anchor": "phương án xe đưa đón"
+      },
+      {
+        "source": "m3",
+        "origin": "m1",
+        "item": 1,
+        "kind": "completed",
+        "owner": null,
+        "due": null,
+        "anchor": "phương án xe đưa đón"
+      }
+    ]
+  },
+  {
+    "id": "CV-30",
+    "group": "owner",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "bảng mã vé"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "owner",
+        "owner": "linh.le@vendor.example.test",
+        "due": null,
+        "anchor": "bảng mã vé"
+      },
+      {
+        "source": "m3",
+        "origin": "m1",
+        "item": 1,
+        "kind": "completed",
+        "owner": null,
+        "due": null,
+        "anchor": "bảng mã vé"
+      }
+    ]
+  },
+  {
+    "id": "CV-31",
+    "group": "owner",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "lịch bố trí gian hàng"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "owner",
+        "owner": "linh.le@vendor.example.test",
+        "due": null,
+        "anchor": "lịch bố trí gian hàng"
+      },
+      {
+        "source": "m3",
+        "origin": "m1",
+        "item": 1,
+        "kind": "completed",
+        "owner": null,
+        "due": null,
+        "anchor": "lịch bố trí gian hàng"
+      }
+    ]
+  },
+  {
+    "id": "CV-32",
+    "group": "owner",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "danh mục vật dụng lưu niệm"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "owner",
+        "owner": "linh.le@vendor.example.test",
+        "due": null,
+        "anchor": "danh mục vật dụng lưu niệm"
+      },
+      {
+        "source": "m3",
+        "origin": "m1",
+        "item": 1,
+        "kind": "completed",
+        "owner": null,
+        "due": null,
+        "anchor": "danh mục vật dụng lưu niệm"
+      }
+    ]
+  },
+  {
+    "id": "CV-33",
+    "group": "multiple",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "bảng phân bổ micro"
+      },
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 2,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-18",
+        "anchor": "bảng phân bổ đèn"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "owner": null,
+        "due": "2027-01-19",
+        "anchor": "bảng phân bổ micro"
+      }
+    ]
+  },
+  {
+    "id": "CV-34",
+    "group": "multiple",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "sơ đồ khu triển lãm"
+      },
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 2,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-18",
+        "anchor": "danh sách biển chỉ dẫn"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "owner": null,
+        "due": "2027-01-19",
+        "anchor": "sơ đồ khu triển lãm"
+      }
+    ]
+  },
+  {
+    "id": "CV-35",
+    "group": "multiple",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "mẫu chứng nhận tham dự"
+      },
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 2,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-18",
+        "anchor": "mẫu thẻ nhân sự"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "owner": null,
+        "due": "2027-01-19",
+        "anchor": "mẫu chứng nhận tham dự"
+      }
+    ]
+  },
+  {
+    "id": "CV-36",
+    "group": "multiple",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "hướng dẫn ghi danh"
+      },
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 2,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-18",
+        "anchor": "hướng dẫn thanh toán vé"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "owner": null,
+        "due": "2027-01-19",
+        "anchor": "hướng dẫn ghi danh"
+      }
+    ]
+  },
+  {
+    "id": "CV-37",
+    "group": "late",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "bảng phân nhóm khách"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "owner": null,
+        "due": "2027-01-20",
+        "anchor": "bảng phân nhóm khách"
+      }
+    ]
+  },
+  {
+    "id": "CV-38",
+    "group": "late",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "chương trình giao lưu"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "owner": null,
+        "due": "2027-01-20",
+        "anchor": "chương trình giao lưu"
+      }
+    ]
+  },
+  {
+    "id": "CV-39",
+    "group": "late",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "tệp phụ đề video"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "owner": null,
+        "due": "2027-01-20",
+        "anchor": "tệp phụ đề video"
+      }
+    ]
+  },
+  {
+    "id": "CV-40",
+    "group": "authority",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "bảng liên lạc khẩn"
+      }
+    ]
+  },
+  {
+    "id": "CV-41",
+    "group": "authority",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "bảng kiểm an toàn sân khấu"
+      }
+    ]
+  },
+  {
+    "id": "CV-42",
+    "group": "authority",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "bản hướng dẫn ghi hình"
+      }
+    ]
+  },
+  {
+    "id": "CV-43",
+    "group": "quoted",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "hồ sơ địa điểm dự phòng"
+      }
+    ]
+  },
+  {
+    "id": "CV-44",
+    "group": "duplicate",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "owner": "huy.ngo@vendor.example.test",
+        "due": "2027-01-15",
+        "anchor": "danh mục quà tặng"
+      }
+    ]
+  },
+  {
+    "id": "CV-45",
+    "group": "request",
+    "events": []
+  },
+  {
+    "id": "CV-46",
+    "group": "request",
+    "events": []
+  },
+  {
+    "id": "CV-47",
+    "group": "request",
+    "events": []
+  },
+  {
+    "id": "CV-48",
+    "group": "request",
+    "events": []
+  },
+  {
+    "id": "CV-49",
+    "group": "tentative",
+    "events": []
+  },
+  {
+    "id": "CV-50",
+    "group": "tentative",
+    "events": []
+  },
+  {
+    "id": "CV-51",
+    "group": "tentative",
+    "events": []
+  },
+  {
+    "id": "CV-52",
+    "group": "negation",
+    "events": []
+  },
+  {
+    "id": "CV-53",
+    "group": "quoted",
+    "events": []
+  },
+  {
+    "id": "CV-54",
+    "group": "quoted",
+    "events": []
+  },
+  {
+    "id": "CV-55",
+    "group": "injection",
+    "events": []
+  },
+  {
+    "id": "CV-56",
+    "group": "injection",
+    "events": []
+  },
+  {
+    "id": "CV-57",
+    "group": "none",
+    "events": []
+  },
+  {
+    "id": "CV-58",
+    "group": "none",
+    "events": []
+  },
+  {
+    "id": "CV-59",
+    "group": "none",
+    "events": []
+  },
+  {
+    "id": "CV-60",
+    "group": "none",
+    "events": []
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "provenance": "Exact bounded v1 source snapshot before Cam ket song 2 changes; no project copy.",
+  "sha256": {
+    "living-contracts.ts": "7a2c2cdd4af2b3cf463e839a149a872a8d19795f935ad9cb2f759c788537a4f3",
+    "living-interpret.ts": "bdc8b5b10d1c72badb2142b669e050b194961fd7ef9b149b2ee49227ed788e57",
+    "living-model.ts": "4d105ec6395beb59268297beabcd31223c6e9acb60bc6df29b8ec8610c21c7a8"
+  }
+}

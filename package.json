@@ -76,7 +76,17 @@
     "test:draft-continuity": "npm run test:local-auth -- --draft-continuity",
     "test:offline-compose": "npm run test:local-auth -- --offline-compose",
     "preview:local": "node scripts/preview-local.mjs",
-    "test:local-pilot": "npm run test:local-auth -- --pilot-test"
+    "test:local-pilot": "npm run test:local-auth -- --pilot-test",
+    "test:living-commitments": "npm run test:local-auth -- --living-test",
+    "bench:living-commitments": "node --import tsx tests/eval/living/models.mjs",
+    "living:model": "node scripts/living-model.mjs",
+    "preview:living": "npm run test:local-auth -- --living-preview",
+    "test:living-coverage": "npm run test:local-auth -- --living-coverage",
+    "bench:living-coverage": "node --import tsx tests/eval/living-coverage/run.mjs",
+    "preview:living-coverage": "npm run test:local-auth -- --living-coverage-preview",
+    "test:living-review": "npm run test:local-auth -- --living-review",
+    "bench:living-review": "node --import tsx tests/eval/living-review/run.mjs",
+    "preview:living-review": "npm run test:local-auth -- --living-review-preview"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

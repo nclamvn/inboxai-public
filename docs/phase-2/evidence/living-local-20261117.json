@@ -1,0 +1,249 @@
+{
+  "date": "2026-11-17T04:36:54.139Z",
+  "branch": "codex/living-commitments",
+  "baseCommit": "fb229f97972f1866b2ee31c70a10dcf99e0617c8",
+  "scope": "Local only; no push, deploy, real mailbox or email send",
+  "environment": {
+    "os": "macOS arm64",
+    "hardware": "Apple M1 Max, 32 GiB RAM",
+    "node": "v24.14.1",
+    "next": "16.4.6",
+    "chrome": "157.0.8103.79"
+  },
+  "corpus": {
+    "conversations": 40,
+    "messages": 61,
+    "events": 53,
+    "digest": "101ca72bca96bb29246a01cdb743ef0552e49d7b717e6337dbb1479dcf8e8f1a",
+    "provenance": "Assistant-authored synthetic labels, frozen before first measurement; no independent annotator."
+  },
+  "model": {
+    "name": "Qwen3-4B-Instruct-2507 Q4_K_M",
+    "runtime": "llama.cpp b12242",
+    "sha256": "85e4a5b7b8ef0e48af0e8658f5aaab9c2324c76c1641493f4d1e25fce54b18b9",
+    "runtimeArchiveSha256": "d58f23da84befb84b7d07590e7fd18ea68a3f1df59f9808b52370255aa60f20b",
+    "context": 8192,
+    "parallel": 1,
+    "temperature": 0,
+    "seed": 82,
+    "requestPromptCache": false,
+    "prompt": "living-v1",
+    "finalGuard": "guard-v2"
+  },
+  "workflow": {
+    "status": "PASS",
+    "assertionGroups": 22,
+    "scriptedOracleApprovals": 40,
+    "interruption": {
+      "ledgerId": "c675ea7a-fbc8-464b-ae2d-280aa6090fcb",
+      "replay": true,
+      "staleManifestRejected": true,
+      "staleLedgerRejected": true,
+      "closedVersion": 4
+    },
+    "externalSends": 0,
+    "finalPreviewSmoke": "PASS",
+    "coverageNote": "Full Chrome run preceded final receipt-reuse SQL and small UI wording changes; those changes passed the fresh SQL suite and the current preview desktop/mobile smoke. No new model-quality measurement was claimed for that smoke."
+  },
+  "checks": [
+    {
+      "command": "npm run lint",
+      "exit": 0
+    },
+    {
+      "command": "npm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "npm run test:unit",
+      "exit": 0,
+      "tests": 287,
+      "files": 28
+    },
+    {
+      "command": "npm run test:integration",
+      "exit": 0,
+      "tests": 209,
+      "files": 17
+    },
+    {
+      "command": "npm run test:db",
+      "exit": 0,
+      "assertionGroups": 49
+    },
+    {
+      "name": "design",
+      "command": "npm run test:design -- --isolated",
+      "start": "2026-11-17T04:29:26.454Z",
+      "end": "2026-11-17T04:30:07.327Z",
+      "exit": 0,
+      "log": "test-results/living-commitments/regression-design.log"
+    },
+    {
+      "name": "platform",
+      "command": "npm run test:platform -- --isolated",
+      "start": "2026-11-17T04:30:07.330Z",
+      "end": "2026-11-17T04:30:41.799Z",
+      "exit": 0,
+      "log": "test-results/living-commitments/regression-platform.log"
+    },
+    {
+      "name": "purchase-release",
+      "command": "npm run test:purchase-release",
+      "start": "2026-11-17T04:30:41.800Z",
+      "end": "2026-11-17T04:32:43.039Z",
+      "exit": 0,
+      "log": "test-results/living-commitments/regression-purchase-release.log"
+    },
+    {
+      "name": "staging",
+      "command": "npm run test:staging -- --isolated",
+      "start": "2026-11-17T04:32:43.040Z",
+      "end": "2026-11-17T04:33:23.973Z",
+      "exit": 0,
+      "log": "test-results/living-commitments/regression-staging.log"
+    }
+  ],
+  "measurements": {
+    "primaryProduct": {
+      "name": "product",
+      "conversations": 40,
+      "correct": 37,
+      "predicted": 39,
+      "expected": 53,
+      "elapsedMs": 221631.62395499996,
+      "modelMs": 221631.62395499996,
+      "calls": 40,
+      "inputTokens": 23574,
+      "outputTokens": 4347,
+      "errors": 0,
+      "precision": 0.9487179487179487,
+      "recall": 0.6981132075471698,
+      "falseProposals": 2,
+      "missed": 16,
+      "estimatedReviewActions": 55,
+      "caveat": "Estimated approval/discard/missing tasks from synthetic labels, not measured human effort. Titles not scored; exact source/origin/slot/kind/applicable owner/due and verbatim evidence are required."
+    },
+    "primaryModelMs": 197197,
+    "repeatMethods": [
+      {
+        "name": "rules",
+        "conversations": 40,
+        "correct": 17,
+        "predicted": 20,
+        "expected": 53,
+        "elapsedMs": 28.68233299989106,
+        "modelMs": 28.68233299989106,
+        "calls": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "errors": 0,
+        "precision": 0.85,
+        "recall": 0.32075471698113206,
+        "falseProposals": 3,
+        "missed": 36,
+        "estimatedReviewActions": 56,
+        "caveat": "Estimated approval/discard/missing tasks from synthetic labels, not measured human effort. Titles not scored; exact source/origin/slot/kind/applicable owner/due and verbatim evidence are required."
+      },
+      {
+        "name": "product",
+        "conversations": 40,
+        "correct": 40,
+        "predicted": 42,
+        "expected": 53,
+        "elapsedMs": 132121.269501,
+        "modelMs": 128330,
+        "calls": 40,
+        "inputTokens": 23632,
+        "outputTokens": 4748,
+        "errors": 0,
+        "precision": 0.9523809523809523,
+        "recall": 0.7547169811320755,
+        "falseProposals": 2,
+        "missed": 13,
+        "estimatedReviewActions": 55,
+        "caveat": "Estimated approval/discard/missing tasks from synthetic labels, not measured human effort. Titles not scored; exact source/origin/slot/kind/applicable owner/due and verbatim evidence are required."
+      },
+      {
+        "name": "direct",
+        "conversations": 40,
+        "correct": 39,
+        "predicted": 51,
+        "expected": 53,
+        "elapsedMs": 205992.04158399988,
+        "modelMs": 205992.04158399988,
+        "calls": 40,
+        "inputTokens": 21067,
+        "outputTokens": 5763,
+        "errors": 0,
+        "precision": 0.7647058823529411,
+        "recall": 0.7358490566037735,
+        "falseProposals": 12,
+        "missed": 14,
+        "estimatedReviewActions": 65,
+        "caveat": "Estimated approval/discard/missing tasks from synthetic labels, not measured human effort. Titles not scored; exact source/origin/slot/kind/applicable owner/due and verbatim evidence are required."
+      },
+      {
+        "name": "agent",
+        "conversations": 40,
+        "correct": 33,
+        "predicted": 42,
+        "expected": 53,
+        "elapsedMs": 245092.2657080001,
+        "modelMs": 245092.2657080001,
+        "calls": 80,
+        "inputTokens": 48978,
+        "outputTokens": 4973,
+        "errors": 0,
+        "precision": 0.7857142857142857,
+        "recall": 0.6226415094339622,
+        "falseProposals": 9,
+        "missed": 20,
+        "estimatedReviewActions": 62,
+        "caveat": "Estimated approval/discard/missing tasks from synthetic labels, not measured human effort. Titles not scored; exact source/origin/slot/kind/applicable owner/due and verbatim evidence are required."
+      }
+    ]
+  },
+  "quality": {
+    "proposedHistoricalRecallTarget": 0.9,
+    "status": "NOT_MET",
+    "notAReleaseCertification": true,
+    "knownFalseCases": [
+      "LC-05: tomorrow due date omitted",
+      "LC-31: a request misclassified as a promise"
+    ],
+    "humanReview": "No actual human timing or independent semantic review; approvals are oracle-assisted simulation.",
+    "effort": "Counts assume approval/discard/create each cost one action; actual time to repair missing events is unknown.",
+    "limitations": [
+      "Repeat uses already-seen corpus, not another holdout. Prompt unchanged; guard and UX hardened after primary.",
+      "Product/direct have equivalent message content but different account metadata and JSON formatting.",
+      "Primary product elapsed includes UI/cached checks; final product measures API response only. Do not compare these as an optimization effect.",
+      "One baseline run; order mostly direct then agent. Latency and hardware cost advantage not established.",
+      "Titles are not semantically scored. Exact quotes do not by themselves prove entailment.",
+      "Analysis is user-initiated per thread; no model background sweep.",
+      "Restart means Next with PostgreSQL retained, then a new browser session; native/device and disk-loss recovery not tested.",
+      "Local llama-server is loopback but not authenticated; no claim that real-mailbox security gate is open."
+    ]
+  },
+  "artifacts": {
+    "test-results/living-commitments/chrome-final.log": "39b6a7377d091de81d522e0d1dc54de5c97d7529cf074da068a2210093eef431",
+    "test-results/living-commitments/report.json": "5167151f78dc2e1d823e1227a94f3cf87d363e80026764be095d2b745c6497cd",
+    "test-results/living-commitments/browser.json": "bbcf5be48686cb9806190955b08018c53213cb1eece9be10417bfa1800dc7bb8",
+    "test-results/living-commitments/product-primary.json": "fd6292c925f233f128f341ebe9f50333b28eafec0d5fdb407e37e2c98969dd29",
+    "test-results/living-commitments/product.json": "c1d6a6587951d41f57f6ebbb689001e45b3658e08537899bac3acfbf6618f521",
+    "test-results/living-commitments/direct.json": "b88b0c188fd93f194d26942de4ea8946ac0cfd179a287dc18bb3d19d99ff9080",
+    "test-results/living-commitments/agent.json": "5bd96840ca7ce02468cea9f6f2e0dcb577b6f2869f3732db5b41e6f06632a0fe",
+    "test-results/living-commitments/rules.json": "8c667c965bb957d11cb3a53c7861b4a3bbd0768fcaf722b490883a7945d39277",
+    "test-results/living-commitments/comparison-primary.json": "0887e3241488357c37783a085739eed6a1cb2ede9f36e97852375bad84096b2b",
+    "test-results/living-commitments/comparison.json": "3c09d250f9feff8f6382139713c0b67089218e93ff8024deed2ed5e0b460ed64",
+    "test-results/living-commitments/analyses.json": "6b838256599ebd254b691d599e7c1cb10b1a1f4483a36f0e17076f2847c32463",
+    "test-results/living-commitments/regressions.json": "f934e208ff12e927be61018706ad9721747f3c87b582580c03b766865f152499",
+    "test-results/living-commitments/final-lint.log": "584ee5ac5cd3adedbad46b59c129a16e3b570a99e1cc2be54de724baccf643c8",
+    "test-results/living-commitments/final-types.log": "bf01d2860d576eb10c8bf7049c59902ca618a7ba612d0c8790b37f43ba079e19",
+    "test-results/living-commitments/final-unit.log": "7ce01d91a36564fe1bd89511a40fac176ecb176743b6e0b654773d2d669f48ac",
+    "test-results/living-commitments/final-integration.log": "845932a3221639dcf68f47a14624a6d235e2f5d2863b2570f76501b5cd966dbe",
+    "test-results/living-commitments/final-db.log": "b2bcafd2eb6179701cdc412e78882d60d5716892091adfe01e9d5566e77cfe50",
+    "test-results/living-commitments/preview-smoke.json": "78c968bc568f67f9d3815e105903cedb1c65e0158ff605305f6cbb74faa19c70",
+    "test-results/living-commitments/model-cache-verified.log": "a20fe2c6a59822778c83efbb2323d0156a5667872d18692ab2e7af0e0aa56e9e"
+  }
+}

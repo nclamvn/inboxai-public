@@ -1,0 +1,22 @@
+{
+  "precisionTarget": 0.98,
+  "recallTarget": 0.9,
+  "match": [
+    "source",
+    "origin",
+    "item",
+    "kind",
+    "applicable owner",
+    "applicable due",
+    "verbatim quote containing task anchor"
+  ],
+  "comparisons": [
+    "frozen-v2",
+    "product-v3",
+    "direct-local-llm",
+    "read-only-agent"
+  ],
+  "review": "Raw extraction before user decisions; default actionable queue and secondary blocked queue reported separately. Three reopen cycles; unchanged dismissal must require zero repeat decisions. Material source changes resurface.",
+  "humanEffort": "Scripted oracle counts and browser wall time, not human cognitive effort.",
+  "limits": "Assistant-authored synthetic labels; no independent annotation, no market or production certification."
+}

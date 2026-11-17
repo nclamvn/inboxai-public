@@ -107,7 +107,7 @@ export function CommitmentDetail({
   const totals = receivingTotals(state)
   const reference = state.purchaseOrder?.reference ?? (state.delivery
     ? history.flatMap(revision => revision.sources).map(source => subjectReference(source.subject)).find(code => code?.startsWith('PO-'))
-    : detail.referenceKey)
+    : detail.referenceKey.startsWith('living:') ? 'Cam kết từ hội thoại' : detail.referenceKey)
   return (
     <section aria-labelledby="commitment-heading" className="min-h-full min-w-0 bg-[var(--surface)]">
       <header className="border-b border-[var(--border)] px-4 pb-5 pt-3 sm:px-6">

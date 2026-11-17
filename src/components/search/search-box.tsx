@@ -184,7 +184,7 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
   }
 
   return (
-    <div className={cn('relative', className)}>
+    <div className={cn('relative min-w-0', className)}>
       {/* Search Input */}
       <div className={cn(
         'flex items-center gap-2 h-10 px-4 rounded-lg border transition-all',
@@ -215,7 +215,7 @@ export function SearchBox({ defaultValue = '', onSearch, autoFocus = false, clas
           }}
           onKeyDown={handleKeyDown}
           placeholder="Tìm thư với Ask Inbox"
-          className="flex-1 bg-transparent text-[14px] text-[var(--foreground)] placeholder-[var(--muted-foreground)] outline-none"
+          className="min-w-0 flex-1 bg-transparent text-[14px] text-[var(--foreground)] placeholder-[var(--muted-foreground)] outline-none"
           autoFocus={autoFocus}
         />
         {query && (

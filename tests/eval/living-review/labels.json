@@ -1,0 +1,810 @@
+[
+  {
+    "id": "RV-01",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "bảng chọn vật liệu",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-02",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "ảnh mẫu vải",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-03",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "bản vẽ quầy",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-04",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "mẫu nhãn thùng",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-05",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "bảng màu in",
+        "due": "2027-03-09",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-06",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "bản kiểm tra kích thước",
+        "due": "2027-03-08",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-07",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "danh sách cửa hàng",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-08",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "ảnh nghiệm thu",
+        "due": "2027-03-15",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-09",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "packaging checklist",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-10",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "label proof",
+        "due": "2027-03-09",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-11",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "bộ ảnh sản phẩm",
+        "due": null,
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-12",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "hướng dẫn bảo quản",
+        "due": null,
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-13",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "bảng tên hạng mục",
+        "due": null,
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-14",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "báo cáo thử màu",
+        "due": null,
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-15",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "phương án bao bì",
+        "due": null,
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-16",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "bảng kiểm kho",
+        "due": null,
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-17",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "sơ đồ trưng bày",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-18",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "lịch giao mẫu",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-19",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "phiếu đóng gói",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-20",
+    "group": "promise",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "danh mục máy in",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-21",
+    "group": "deadline",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "bản mẫu hộp",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "anchor": "bản mẫu hộp",
+        "due": "2027-03-16",
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "RV-22",
+    "group": "deadline",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "thẻ sản phẩm",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "anchor": "thẻ sản phẩm",
+        "due": "2027-03-16",
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "RV-23",
+    "group": "deadline",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "tờ hướng dẫn lắp",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "anchor": "tờ hướng dẫn lắp",
+        "due": "2027-03-16",
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "RV-24",
+    "group": "completion",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "bộ nhãn kiện",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "completed",
+        "anchor": "bộ nhãn kiện",
+        "due": null,
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "RV-25",
+    "group": "completion",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "bảng dự toán in",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "completed",
+        "anchor": "bảng dự toán in",
+        "due": null,
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "RV-26",
+    "group": "cancellation",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "mẫu tem bảo hành",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "cancelled",
+        "anchor": "mẫu tem bảo hành",
+        "due": null,
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "RV-27",
+    "group": "cancellation",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "hồ sơ xưởng",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "cancelled",
+        "anchor": "hồ sơ xưởng",
+        "due": null,
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "RV-28",
+    "group": "owner",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "lịch đo đạc",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "owner",
+        "anchor": "lịch đo đạc",
+        "due": null,
+        "owner": "quynh.vo@studio.example.test"
+      },
+      {
+        "source": "m3",
+        "origin": "m1",
+        "item": 1,
+        "kind": "completed",
+        "anchor": "lịch đo đạc",
+        "due": null,
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "RV-29",
+    "group": "owner",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "bảng phí thiết kế",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "owner",
+        "anchor": "bảng phí thiết kế",
+        "due": null,
+        "owner": "quynh.vo@studio.example.test"
+      },
+      {
+        "source": "m3",
+        "origin": "m1",
+        "item": 1,
+        "kind": "completed",
+        "anchor": "bảng phí thiết kế",
+        "due": null,
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "RV-30",
+    "group": "late",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "bản kiểm màu cuối",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "anchor": "bản kiểm màu cuối",
+        "due": "2027-03-17",
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "RV-31",
+    "group": "no-new-event",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "mẫu túi giấy",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-32",
+    "group": "no-new-event",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "mẫu khay mút",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-33",
+    "group": "no-new-event",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "sổ tay vật liệu",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-34",
+    "group": "no-new-event",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "bảng thử keo",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-35",
+    "group": "no-new-event",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "bản in mặt ngoài",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-36",
+    "group": "no-new-event",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "sơ đồ khuôn",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-37",
+    "group": "no-new-event",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "hồ sơ máy cắt",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-38",
+    "group": "no-new-event",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "phiếu chọn giấy",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-39",
+    "group": "no-new-event",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "bảng định mức",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-40",
+    "group": "no-new-event",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "anchor": "hướng dẫn gấp hộp",
+        "due": "2027-03-12",
+        "owner": "binh.tran@studio.example.test"
+      }
+    ]
+  },
+  {
+    "id": "RV-41",
+    "group": "forward",
+    "events": []
+  },
+  {
+    "id": "RV-42",
+    "group": "forward",
+    "events": []
+  },
+  {
+    "id": "RV-43",
+    "group": "forward",
+    "events": []
+  },
+  {
+    "id": "RV-44",
+    "group": "forward",
+    "events": []
+  },
+  {
+    "id": "RV-45",
+    "group": "forward",
+    "events": []
+  },
+  {
+    "id": "RV-46",
+    "group": "request",
+    "events": []
+  },
+  {
+    "id": "RV-47",
+    "group": "request",
+    "events": []
+  },
+  {
+    "id": "RV-48",
+    "group": "request",
+    "events": []
+  },
+  {
+    "id": "RV-49",
+    "group": "tentative",
+    "events": []
+  },
+  {
+    "id": "RV-50",
+    "group": "tentative",
+    "events": []
+  },
+  {
+    "id": "RV-51",
+    "group": "tentative",
+    "events": []
+  },
+  {
+    "id": "RV-52",
+    "group": "negation",
+    "events": []
+  },
+  {
+    "id": "RV-53",
+    "group": "none",
+    "events": []
+  },
+  {
+    "id": "RV-54",
+    "group": "none",
+    "events": []
+  },
+  {
+    "id": "RV-55",
+    "group": "none",
+    "events": []
+  },
+  {
+    "id": "RV-56",
+    "group": "none",
+    "events": []
+  },
+  {
+    "id": "RV-57",
+    "group": "none",
+    "events": []
+  },
+  {
+    "id": "RV-58",
+    "group": "injection",
+    "events": []
+  },
+  {
+    "id": "RV-59",
+    "group": "injection",
+    "events": []
+  },
+  {
+    "id": "RV-60",
+    "group": "none",
+    "events": []
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "precisionTarget": 0.95,
+  "recallTarget": 0.9,
+  "match": [
+    "source",
+    "origin",
+    "item",
+    "kind",
+    "applicable owner",
+    "applicable due",
+    "verbatim quote containing task anchor"
+  ],
+  "detectionRecall": "Same event match excluding owner/due; reported separately from strict correctness.",
+  "comparisons": [
+    "frozen-v1",
+    "product-v2",
+    "direct-local-llm",
+    "read-only-agent"
+  ],
+  "humanEffort": "Simulated oracle review and repair counts, not human timing.",
+  "limits": "Assistant-authored synthetic data, no independent annotator. Titles not semantically scored. No claims of market or production readiness."
+}

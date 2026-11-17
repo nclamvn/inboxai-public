@@ -1,0 +1,828 @@
+{
+  "date": "2026-11-17T09:32:19.940Z",
+  "branch": "codex/living-commitments",
+  "baseCommit": "fb229f97972f1866b2ee31c70a10dcf99e0617c8",
+  "scope": {
+    "localOnly": true,
+    "realMailboxes": false,
+    "push": false,
+    "commit": false,
+    "deploy": false
+  },
+  "environment": {
+    "node": "v24.14.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M1 Max",
+    "memoryGiB": 32,
+    "macOS": "27.2.1",
+    "next": "16.4.6",
+    "chrome": "157.0.8103.79"
+  },
+  "model": {
+    "name": "Qwen3-4B-Instruct-2507 Q4_K_M",
+    "alias": "qwen3-4b-living",
+    "sha256": "85e4a5b7b8ef0e48af0e8658f5aaab9c2324c76c1641493f4d1e25fce54b18b9",
+    "runtime": "llama.cpp b12242",
+    "runtimeArchiveSha256": "d58f23da84befb84b7d07590e7fd18ea68a3f1df59f9808b52370255aa60f20b",
+    "context": 8192,
+    "gpuLayers": 99,
+    "parallel": 1,
+    "temperature": 0,
+    "seed": 82,
+    "maxOutputTokens": 1800,
+    "cachePromptRequest": false
+  },
+  "corpus": {
+    "digest": "4c8029935cfc2013c436cc66706fc3d1037a057696d1dc4a0497953fcebb7243",
+    "conversations": 60,
+    "events": 52,
+    "createdAt": "2026-11-17T08:37:16.115Z",
+    "provenance": "Assistant-authored synthetic corpus frozen before v3 inference implementation or model evaluation."
+  },
+  "candidate": {
+    "digest": "4c8029935cfc2013c436cc66706fc3d1037a057696d1dc4a0497953fcebb7243",
+    "sha256": [
+      [
+        "living-model.ts",
+        "d7bc26eaff32248db4983b536f1999427d408dbb3a5b7a716d559069b329f865"
+      ],
+      [
+        "living-extraction.ts",
+        "5491cc4990b079143c3235a0d871eac5e76dd1509bc06b9184f545ca44b277a1"
+      ],
+      [
+        "living-interpret.ts",
+        "109fd5c61638ee54dc42f24a50e6c4130fa484d824e6b807ef6904e949c9a77d"
+      ],
+      [
+        "living-dates.ts",
+        "698e6212bc4fdeeef0ef4f9433319ff83848274b720bf1f8bf3efba4cea549b5"
+      ],
+      [
+        "living-contracts.ts",
+        "ce2cec73c6145af6497234f26bf7049ff39d29e37052a2f4fb8eeb9be1c2d45a"
+      ],
+      [
+        "../email/plain-text.ts",
+        "63adec4858bfacd925d4210073310d5121e6599129df3513f00e53155335de07"
+      ]
+    ],
+    "createdAt": "2026-11-17T08:46:43.122Z"
+  },
+  "quality": {
+    "status": "MET_ON_SYNTHETIC_PROTOCOL",
+    "methods": [
+      {
+        "name": "v2",
+        "correct": 50,
+        "predicted": 60,
+        "rawCandidates": 67,
+        "otherCandidates": 7,
+        "expected": 52,
+        "detected": 52,
+        "elapsedMs": 304923.22441900003,
+        "calls": 60,
+        "inputTokens": 49878,
+        "outputTokens": 4975,
+        "errors": 0,
+        "negativeCases": 20,
+        "negativeFalseAlarmCases": 2,
+        "negativeAttentionCases": 6,
+        "inputMismatches": 0,
+        "groups": {
+          "promise": {
+            "correct": 18,
+            "predicted": 21,
+            "expected": 20
+          },
+          "deadline": {
+            "correct": 6,
+            "predicted": 6,
+            "expected": 6
+          },
+          "completion": {
+            "correct": 4,
+            "predicted": 4,
+            "expected": 4
+          },
+          "cancellation": {
+            "correct": 4,
+            "predicted": 4,
+            "expected": 4
+          },
+          "owner": {
+            "correct": 6,
+            "predicted": 6,
+            "expected": 6
+          },
+          "late": {
+            "correct": 2,
+            "predicted": 2,
+            "expected": 2
+          },
+          "no-new-event": {
+            "correct": 10,
+            "predicted": 15,
+            "expected": 10
+          },
+          "forward": {
+            "correct": 0,
+            "predicted": 2,
+            "expected": 0
+          },
+          "request": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "tentative": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "negation": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "none": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "injection": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          }
+        },
+        "p50Ms": 4193.225458,
+        "p95Ms": 10236.548042000039,
+        "precision": 0.8333333333333334,
+        "recall": 0.9615384615384616,
+        "detectionRecall": 1,
+        "wrong": 10,
+        "missing": 2,
+        "estimatedReview": {
+          "approve": 50,
+          "discard": 10,
+          "createOrRepair": 2,
+          "otherCandidatesToInspect": 7,
+          "sourceChecks": 67
+        }
+      },
+      {
+        "name": "pipeline",
+        "correct": 52,
+        "predicted": 52,
+        "rawCandidates": 68,
+        "otherCandidates": 16,
+        "expected": 52,
+        "detected": 52,
+        "elapsedMs": 353173.55500200007,
+        "calls": 60,
+        "inputTokens": 55848,
+        "outputTokens": 5242,
+        "errors": 0,
+        "negativeCases": 20,
+        "negativeFalseAlarmCases": 0,
+        "negativeAttentionCases": 6,
+        "inputMismatches": 0,
+        "groups": {
+          "promise": {
+            "correct": 20,
+            "predicted": 20,
+            "expected": 20
+          },
+          "deadline": {
+            "correct": 6,
+            "predicted": 6,
+            "expected": 6
+          },
+          "completion": {
+            "correct": 4,
+            "predicted": 4,
+            "expected": 4
+          },
+          "cancellation": {
+            "correct": 4,
+            "predicted": 4,
+            "expected": 4
+          },
+          "owner": {
+            "correct": 6,
+            "predicted": 6,
+            "expected": 6
+          },
+          "late": {
+            "correct": 2,
+            "predicted": 2,
+            "expected": 2
+          },
+          "no-new-event": {
+            "correct": 10,
+            "predicted": 10,
+            "expected": 10
+          },
+          "forward": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "request": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "tentative": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "negation": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "none": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "injection": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          }
+        },
+        "p50Ms": 4609.434249999991,
+        "p95Ms": 12213.63170899998,
+        "precision": 1,
+        "recall": 1,
+        "detectionRecall": 1,
+        "wrong": 0,
+        "missing": 0,
+        "estimatedReview": {
+          "approve": 52,
+          "discard": 0,
+          "createOrRepair": 0,
+          "otherCandidatesToInspect": 16,
+          "sourceChecks": 68
+        }
+      },
+      {
+        "name": "direct",
+        "correct": 37,
+        "predicted": 59,
+        "rawCandidates": 60,
+        "otherCandidates": 1,
+        "expected": 52,
+        "detected": 42,
+        "elapsedMs": 304561.1220440004,
+        "calls": 60,
+        "inputTokens": 25348,
+        "outputTokens": 7086,
+        "errors": 0,
+        "negativeCases": 20,
+        "negativeFalseAlarmCases": 5,
+        "negativeAttentionCases": 5,
+        "inputMismatches": 0,
+        "groups": {
+          "promise": {
+            "correct": 12,
+            "predicted": 20,
+            "expected": 20
+          },
+          "deadline": {
+            "correct": 4,
+            "predicted": 6,
+            "expected": 6
+          },
+          "completion": {
+            "correct": 4,
+            "predicted": 4,
+            "expected": 4
+          },
+          "cancellation": {
+            "correct": 4,
+            "predicted": 4,
+            "expected": 4
+          },
+          "owner": {
+            "correct": 2,
+            "predicted": 6,
+            "expected": 6
+          },
+          "late": {
+            "correct": 2,
+            "predicted": 3,
+            "expected": 2
+          },
+          "no-new-event": {
+            "correct": 9,
+            "predicted": 11,
+            "expected": 10
+          },
+          "forward": {
+            "correct": 0,
+            "predicted": 3,
+            "expected": 0
+          },
+          "request": {
+            "correct": 0,
+            "predicted": 1,
+            "expected": 0
+          },
+          "tentative": {
+            "correct": 0,
+            "predicted": 1,
+            "expected": 0
+          },
+          "negation": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "none": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "injection": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          }
+        },
+        "p50Ms": 4275.204832999996,
+        "p95Ms": 11198.89049999998,
+        "precision": 0.6271186440677966,
+        "recall": 0.7115384615384616,
+        "detectionRecall": 0.8076923076923077,
+        "wrong": 22,
+        "missing": 15,
+        "estimatedReview": {
+          "approve": 37,
+          "discard": 22,
+          "createOrRepair": 15,
+          "otherCandidatesToInspect": 1,
+          "sourceChecks": 60
+        }
+      },
+      {
+        "name": "agent",
+        "correct": 33,
+        "predicted": 51,
+        "rawCandidates": 57,
+        "otherCandidates": 6,
+        "expected": 52,
+        "detected": 37,
+        "elapsedMs": 424597.26996299956,
+        "calls": 120,
+        "inputTokens": 63967,
+        "outputTokens": 6903,
+        "errors": 0,
+        "negativeCases": 20,
+        "negativeFalseAlarmCases": 2,
+        "negativeAttentionCases": 2,
+        "inputMismatches": 0,
+        "groups": {
+          "promise": {
+            "correct": 9,
+            "predicted": 16,
+            "expected": 20
+          },
+          "deadline": {
+            "correct": 5,
+            "predicted": 5,
+            "expected": 6
+          },
+          "completion": {
+            "correct": 4,
+            "predicted": 4,
+            "expected": 4
+          },
+          "cancellation": {
+            "correct": 2,
+            "predicted": 2,
+            "expected": 4
+          },
+          "owner": {
+            "correct": 2,
+            "predicted": 6,
+            "expected": 6
+          },
+          "late": {
+            "correct": 1,
+            "predicted": 3,
+            "expected": 2
+          },
+          "no-new-event": {
+            "correct": 10,
+            "predicted": 13,
+            "expected": 10
+          },
+          "forward": {
+            "correct": 0,
+            "predicted": 1,
+            "expected": 0
+          },
+          "request": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "tentative": {
+            "correct": 0,
+            "predicted": 1,
+            "expected": 0
+          },
+          "negation": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "none": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "injection": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          }
+        },
+        "p50Ms": 5497.58183400007,
+        "p95Ms": 16297.343125000014,
+        "precision": 0.6470588235294118,
+        "recall": 0.6346153846153846,
+        "detectionRecall": 0.7115384615384616,
+        "wrong": 18,
+        "missing": 19,
+        "estimatedReview": {
+          "approve": 33,
+          "discard": 18,
+          "createOrRepair": 19,
+          "otherCandidatesToInspect": 6,
+          "sourceChecks": 57
+        }
+      },
+      {
+        "name": "product",
+        "correct": 52,
+        "predicted": 52,
+        "rawCandidates": 68,
+        "otherCandidates": 16,
+        "expected": 52,
+        "detected": 52,
+        "elapsedMs": 304772.10899900005,
+        "calls": 60,
+        "inputTokens": 55848,
+        "outputTokens": 5242,
+        "errors": 0,
+        "negativeCases": 20,
+        "negativeFalseAlarmCases": 0,
+        "negativeAttentionCases": 6,
+        "inputMismatches": 0,
+        "groups": {
+          "promise": {
+            "correct": 20,
+            "predicted": 20,
+            "expected": 20
+          },
+          "deadline": {
+            "correct": 6,
+            "predicted": 6,
+            "expected": 6
+          },
+          "completion": {
+            "correct": 4,
+            "predicted": 4,
+            "expected": 4
+          },
+          "cancellation": {
+            "correct": 4,
+            "predicted": 4,
+            "expected": 4
+          },
+          "owner": {
+            "correct": 6,
+            "predicted": 6,
+            "expected": 6
+          },
+          "late": {
+            "correct": 2,
+            "predicted": 2,
+            "expected": 2
+          },
+          "no-new-event": {
+            "correct": 10,
+            "predicted": 10,
+            "expected": 10
+          },
+          "forward": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "request": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "tentative": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "negation": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "none": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          },
+          "injection": {
+            "correct": 0,
+            "predicted": 0,
+            "expected": 0
+          }
+        },
+        "p50Ms": 4811.753666999997,
+        "p95Ms": 9267.295082999975,
+        "precision": 1,
+        "recall": 1,
+        "detectionRecall": 1,
+        "wrong": 0,
+        "missing": 0,
+        "estimatedReview": {
+          "approve": 52,
+          "discard": 0,
+          "createOrRepair": 0,
+          "otherCandidatesToInspect": 16,
+          "sourceChecks": 68
+        }
+      }
+    ],
+    "protocol": {
+      "precisionTarget": 0.98,
+      "recallTarget": 0.9,
+      "match": [
+        "source",
+        "origin",
+        "item",
+        "kind",
+        "applicable owner",
+        "applicable due",
+        "verbatim quote containing task anchor"
+      ],
+      "comparisons": [
+        "frozen-v2",
+        "product-v3",
+        "direct-local-llm",
+        "read-only-agent"
+      ],
+      "review": "Raw extraction before user decisions; default actionable queue and secondary blocked queue reported separately. Three reopen cycles; unchanged dismissal must require zero repeat decisions. Material source changes resurface.",
+      "humanEffort": "Scripted oracle counts and browser wall time, not human cognitive effort.",
+      "limits": "Assistant-authored synthetic labels; no independent annotation, no market or production certification."
+    }
+  },
+  "workflow": {
+    "metrics": {
+      "actualSourceOpens": 1,
+      "fieldEdits": 0,
+      "decisionWrites": 4,
+      "reopenCycles": 3,
+      "repeatedReviewWithMemory": 0,
+      "repeatedReviewWithoutMemory": 3
+    },
+    "elapsedMs": 19905.24991700001,
+    "replay": {
+      "active": true,
+      "reason": "not_relevant",
+      "version": 1,
+      "replayed": true
+    },
+    "sourceBound": true,
+    "ledger": {
+      "id": "396f25bf-e5ea-45f7-9829-ca9a92c361ae",
+      "version": 2
+    },
+    "provenance": "Actual Chrome actions on real local-model proposals. Simulated role relevance/oracle decisions, not human time or model false-positive measurement.",
+    "corpusApprovals": 52,
+    "actualExternalSends": 0,
+    "timing": {
+      "analysisApiMs": 304772.10899900005,
+      "scriptedReviewMs": 17396.02970799996,
+      "journeyMs": 403260.733083
+    },
+    "interruption": {
+      "ledgerId": "e1fb22ac-4ff8-4c2c-b44e-7a2dd2c1420c",
+      "replay": true,
+      "staleManifestRejected": true,
+      "staleLedgerRejected": true,
+      "chromeRelaunched": true,
+      "closedVersion": 4
+    }
+  },
+  "checks": [
+    {
+      "command": "npm run lint",
+      "exit": 0
+    },
+    {
+      "command": "npm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "npm run test:unit",
+      "exit": 0,
+      "tests": 342,
+      "files": 33
+    },
+    {
+      "command": "npm run test:integration",
+      "exit": 0,
+      "tests": 211,
+      "files": 17
+    },
+    {
+      "command": "npm run test:db",
+      "exit": 0,
+      "groups": 51
+    },
+    {
+      "command": "npm run test:living-review",
+      "exit": 0,
+      "groups": 29,
+      "optimizedProductionBuild": true
+    },
+    {
+      "name": "platform",
+      "command": "npm run test:platform -- --isolated",
+      "start": "2026-11-17T09:17:39.952Z",
+      "end": "2026-11-17T09:18:19.562Z",
+      "exit": 0,
+      "log": "test-results/living-review/regression-platform.log",
+      "groups": 19
+    },
+    {
+      "name": "purchase-release",
+      "command": "npm run test:purchase-release",
+      "start": "2026-11-17T09:18:19.565Z",
+      "end": "2026-11-17T09:20:45.834Z",
+      "exit": 0,
+      "log": "test-results/living-review/regression-purchase-release.log",
+      "groups": 29
+    },
+    {
+      "name": "staging",
+      "command": "npm run test:staging -- --isolated",
+      "start": "2026-11-17T09:20:45.835Z",
+      "end": "2026-11-17T09:21:31.356Z",
+      "exit": 0,
+      "log": "test-results/living-review/regression-staging.log",
+      "groups": 33
+    },
+    {
+      "name": "design-final",
+      "command": "npm run test:design -- --isolated",
+      "start": "2026-11-17T09:28:12.654Z",
+      "end": "2026-11-17T09:29:28.125Z",
+      "exit": 0,
+      "log": "test-results/living-review/regression-design-final.log",
+      "groups": 33
+    },
+    {
+      "name": "platform-final",
+      "command": "npm run test:platform -- --isolated",
+      "start": "2026-11-17T09:29:28.127Z",
+      "end": "2026-11-17T09:30:15.361Z",
+      "exit": 0,
+      "log": "test-results/living-review/regression-platform-final.log",
+      "groups": 19
+    },
+    {
+      "command": "node --import tsx --conditions=react-server tests/design/living-review-preview.mjs",
+      "exit": 0,
+      "viewports": [
+        "1440x960",
+        "390x844"
+      ],
+      "at": "2026-11-17T09:32:08.611Z",
+      "chrome": "157.0.8103.79",
+      "preview": "http://127.0.0.1:57300/commitments/living?analysis=2b629450-c177-42b4-8844-57bdba61a3b9",
+      "uncertainAnalysis": "e66db4a3-35bf-42f1-9369-708f06e3ca2f",
+      "secondaryDismissedAndRestored": true,
+      "unsupportedApprovalBlocked": true,
+      "focusRestored": true,
+      "iconsAligned": true,
+      "axeViolations": 0,
+      "provenance": "Actual Qwen local inference, authenticated database and Chrome desktop/mobile; simulated reviewer. Additional final-render acceptance, not another 60-case quality run."
+    }
+  ],
+  "preview": {
+    "at": "2026-11-17T09:32:08.611Z",
+    "chrome": "157.0.8103.79",
+    "preview": "http://127.0.0.1:57300/commitments/living?analysis=2b629450-c177-42b4-8844-57bdba61a3b9",
+    "uncertainAnalysis": "e66db4a3-35bf-42f1-9369-708f06e3ca2f",
+    "secondaryDismissedAndRestored": true,
+    "unsupportedApprovalBlocked": true,
+    "focusRestored": true,
+    "iconsAligned": true,
+    "axeViolations": 0,
+    "provenance": "Actual Qwen local inference, authenticated database and Chrome desktop/mobile; simulated reviewer. Additional final-render acceptance, not another 60-case quality run."
+  },
+  "chronology": {
+    "broadChrome": "29 groups before final rendering adjustments and full-subject identity strengthening. Inference candidate unchanged.",
+    "postAcceptance": [
+      "Full-subject identity is covered by final SQL and the upgraded backup/restore rehearsal.",
+      "Final rendering corrects icon props, omits confirmed before/after and prevents focus scroll jumps.",
+      "Visual inspection caught nested header clipping despite initial axe/root-width success. Original preview evidence retained; header/search flex sizing fixed.",
+      "Shared design/platform rerun and final preview explicitly check nested frames, control alignment, authenticated dismiss/undo and unsupported-approval denial. No second 60-case quality run is claimed for these rendering changes."
+    ]
+  },
+  "measurementLimitations": [
+    "Assistant-authored frozen synthetic labels and simulated oracle reviewer; no independent human semantic annotation or real human effort measurement.",
+    "Precision/recall apply to eligible extracted events before dismissal, not the raw LLM or all future mail. Titles and general entailment are not independently scored.",
+    "Sixteen secondary proposals remain visible in a separate section; their work is not erased from the report.",
+    "V3 CLI is 15.8% slower and uses 11.4% more tokens than frozen v2. Timing boundaries/cache/load vary; no general latency or total-effort superiority claim.",
+    "Direct/agent use English instructions and nine-field output; product uses Vietnamese instructions, six fields and deterministic derivation. V2 is the closer architecture comparison.",
+    "Three-reopen memory comparison is a paired current-product ablation using two equivalent account scopes, not a v2 UI human trial.",
+    "Browser viewports do not certify physical native devices, hosted OAuth/Gmail or production safety. Fixture teardown recreates synthetic DB; only app/Chrome restart inside a fixture preserves it.",
+    "Known older-corpus indirect/unclear-year formulations and changed canonical quote boundaries remain limitations."
+  ],
+  "resources": {
+    "modelCacheReused": true,
+    "distDir": ".next-build",
+    "outsideRepoScratchCopies": 0,
+    "freeDiskGiB": 56,
+    "dockerPruneLog": "test-results/living-review/docker-prune.log"
+  },
+  "codeSha256": {
+    "src/lib/commitments/living-contracts.ts": "ce2cec73c6145af6497234f26bf7049ff39d29e37052a2f4fb8eeb9be1c2d45a",
+    "src/lib/commitments/living-extraction.ts": "5491cc4990b079143c3235a0d871eac5e76dd1509bc06b9184f545ca44b277a1",
+    "src/lib/commitments/living-dates.ts": "698e6212bc4fdeeef0ef4f9433319ff83848274b720bf1f8bf3efba4cea549b5",
+    "src/lib/commitments/living-interpret.ts": "109fd5c61638ee54dc42f24a50e6c4130fa484d824e6b807ef6904e949c9a77d",
+    "src/lib/commitments/living-model.ts": "d7bc26eaff32248db4983b536f1999427d408dbb3a5b7a716d559069b329f865",
+    "src/app/api/commitments/living/route.ts": "86e334638e40843b7be9fe3e604407a8eff54a490869fa058e5c43db9b15634b",
+    "src/components/commitments/living-workspace.tsx": "675962c9c6600fe86257cf7e1d28bb3765a12c888480a9911f51646fb30c1aa1",
+    "src/components/layout/header.tsx": "e6bb7669edd57695a50d5c5535a0f4e1bc6dba40bcefc3fe11db22b12b7f3bcd",
+    "src/components/search/search-box.tsx": "429bf65a6b4b7923cdf764514d98fe7fa822a5ebf207518dff95a967f1792025",
+    "supabase/migrations/20261117030000_living_review_memory.sql": "026d659d92f2012ca7a0a552093e8f14b5a468c4e71dc42f40a9ead61cfcc1ed",
+    "tests/design/living-review.mjs": "a87b11f9fc4e34edf2e219d92dab7101dc3ffbe45e0c373920fcaff7ec166111",
+    "tests/design/living-review-preview.mjs": "3602287a42be7cbd91d2f3e6d199dc59bbc5e975cb945e0c2f4fb758bdc4773f",
+    "tests/local-auth/staging.mjs": "3cceaa43fb48ae15fa0e8d2a5742354ffd1df89cfcf405008433c326a6ca3297",
+    "tests/db/living-review.sql": "bde9828f8a54482a9ea67ed0e5fb8b0046c0839c29c49adac54161b7ea44ea06"
+  },
+  "artifactSha256": {
+    "test-results/living-review/CANDIDATE.json": "5fbf36c8a5d873d47318f6b7a9492fec6c60cbab441d3077e5d799acd3ad2ee8",
+    "test-results/living-review/comparison.json": "976fb445606898bca434178ffd77703354c6d31b7a3518a7a4af143fae5931e5",
+    "test-results/living-review/comparison.log": "080c416aa556ec0193531e94a33ed251099c1925ca4219892e9f799f9cb6868a",
+    "test-results/living-review/cli-comparison.json": "3be6e00784a1b160d8c383cff7e2cee52d98f78a01b9a7b5da891c28636c37ec",
+    "test-results/living-review/v2.json": "b5817d30b9aac3739522f77fc3fc83666fef9da16cd75efa9a7d46344cb09cf1",
+    "test-results/living-review/pipeline.json": "9173a855addfca8c63bef967736b995306452e2f7dfd5335f3490ce125e8be69",
+    "test-results/living-review/direct.json": "595f8532222c92d33ae7b94c22fee7f5f4d5a759d2d174a83fabdba66cee61c5",
+    "test-results/living-review/agent.json": "f18bb4f9ac2ce23ed14d4fbc373c9d2dd4d854516543fc5f95d8112408aea41e",
+    "test-results/living-review/product.json": "1e9bd0cb4da94642b6cf2da50007c3df6f5e172fe998b354dd6d183b22fc8954",
+    "test-results/living-review/report.json": "40e19f30d2cdbc649897d7e181e7cbb95605726c65990984603bae8072cc7b1d",
+    "test-results/living-review/browser.json": "4d46dc173f094b0036b57ed26cf6282585ee9898c2e2d7156c10162746664f9b",
+    "test-results/living-review/review-memory.json": "87d13a414d97989522a076645d7617e05055d2a022925d243547a8c7e6e103eb",
+    "test-results/living-review/chrome-acceptance.log": "54008e82ea88fec4f137bdd1b36ee595bffedf5a483440944a9d7b00c0ee190a",
+    "test-results/living-review/benchmark.log": "63f06360d7c6be0e92156ceb4b4d3b4226fd1e84331466b64bcce8496718e812",
+    "test-results/living-review/benchmark-bootstrap-failure.log": "5b64b09779662696ac39b06f93c48c65bfac6d3f70e2969c8acb1e29ae8e1f5f",
+    "test-results/living-review/unit-first.log": "9ef9556c5b5a7376261054e4d64ebea2439802fefc7eb14b4aec70304f66e313",
+    "test-results/living-review/unit.log": "83ef2fd58695b4adda30a7fa1967590a687f0efa19b794ceb84b44aa434ea7c1",
+    "test-results/living-review/integration.log": "372eab9f6ac22855f34c5881916c1890d57d45b02c2e55d066adef89fc4183e7",
+    "test-results/living-review/lint-first.log": "d1baa46f3d3d48be8217ff50e6ffd42b1b2edbbf7cde8dc911d4b0af9f25984f",
+    "test-results/living-review/lint.log": "584ee5ac5cd3adedbad46b59c129a16e3b570a99e1cc2be54de724baccf643c8",
+    "test-results/living-review/typecheck.log": "bf01d2860d576eb10c8bf7049c59902ca618a7ba612d0c8790b37f43ba079e19",
+    "test-results/living-review/db.log": "f8c87f4dd41eedbbc088b31208334298f0b490a5a10ef3105bbc2ed75c2c1581",
+    "test-results/living-review/design.log": "04eec8166d37a0bf8fde902c0e74e968c7fb4c279d1ff0b1286abe2ffb203f0b",
+    "test-results/living-review/regressions.json": "0cdfde0d2f2b93d3423e7c292600060542c86aca5f72f6e93a4f6cfb9d7962d6",
+    "test-results/living-review/regression-platform.log": "09f4afb2b074d4dd2f690c8a670b80512971a214992a2fff6a2fa9357d893826",
+    "test-results/living-review/regression-purchase-release.log": "e377c3713249a8fe87fe45d46ab80cf584b4ed647be4d733aad978b2ae0b4b86",
+    "test-results/living-review/regression-staging.log": "daeeafd871c1dc2c63dce8700920a11aa9b426c995f0bddc78e3c3e37b5e0449",
+    "test-results/living-review/regression-design-final.log": "1d10c0856cacf233341434466bdec1e6a6fd16605a697ace099bc60ecb18604c",
+    "test-results/living-review/regression-platform-final.log": "347f4c1a4e3aedc113319683c098d39f62f2719f2509ac867473388ed86cd242",
+    "test-results/living-review/model-cache-verified.log": "a20fe2c6a59822778c83efbb2323d0156a5667872d18692ab2e7af0e0aa56e9e",
+    "test-results/living-review/integrity.json": "3c572de959557073337eab19735897ed370b26a71614c6e162311de00c9572df",
+    "test-results/living-review/preview-smoke.json": "9baea6ece9d288b397cb65e98c7a71e475a438e97e926688138529a23f63b681",
+    "test-results/living-review/preview-smoke.log": "108fa314de7710e410139ddae4cdb462f4a43355f597d2e82627b0053dd454a7",
+    "test-results/living-review/first-preview-smoke.json": "9b2771cb92968455fa71f55d52f234a279000a944474e8db5fd325d9af656ad7",
+    "test-results/living-review/first-preview-smoke.log": "6f0efcad72ef309a6ac5f5c7400d52b234f2655f2de26a244f92ce05dd09c43e",
+    "test-results/living-review/first-final-preview-mobile.png": "26e053a831d646022bdd48b4c6b6be70fbe97ee54a3e5b1694c5685267933445",
+    "test-results/living-review/final-preview-mobile.png": "7a00ea92d1d977e1b085f45937db15441ce90f6b5e30e2e6c8a84d9831bd5df0",
+    "test-results/living-review/final-preview-desktop.png": "ff3ba6278b60fa1ab0a848f11632b9b5e1cfc78fd6bf11d5c56f293d6bc59e8a",
+    "test-results/living-review/secondary-dismissed-mobile.png": "2426dadacf56bd88a2e14d2fa96c628d5709f136e6f28198cb32486f76e8dc7c",
+    "test-results/living-review/secondary-restored-mobile.png": "d191efc955baba93d6c69432445cf8c3b1a6a1c456fbdbda27cca3996196d1ad",
+    "test-results/living-review/remembered-dismissal-desktop.png": "6fec3e347854c7f5ce47959fb033e146d1678058918c6cc0131732e14983907d",
+    "test-results/living-review/new-evidence-confirmed-desktop.png": "79d548116a9618e6e26f9255cf38859ad9de3f27bb3087c8c632f5c8ec08d921",
+    "test-results/living-review/conversation-RV-24-mobile.png": "dd70533bd3c78ec07a26a115268d04fce59f99b62d22e14106a5fb00af944931"
+  }
+}

@@ -22,6 +22,8 @@
 /test-results/commitment-ui/
 /test-results/technical-debt/
 /test-results/local-pilot/
+/test-results/living-commitments/
+/test-results/living-coverage/
 /test-results/delivery-commitments/
 /test-results/warehouse-reconciliation/
 /test-results/warehouse-correction/
@@ -103,3 +105,5 @@ credentials/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/test-results/living-review/

@@ -1,0 +1,9 @@
+{
+  "sha256": {
+    "living-contracts.ts": "ab95e80028ce4e994a43a507b2a51523c929ec8300f38da017d3399c2eab023b",
+    "living-model.ts": "46557b96e29bbe5f882aa412ba500340a88be2a24a587a3fab27cab0e5fd7460",
+    "living-extraction.ts": "79769dcad45aaae123c9e3a210b2a95dfd04f3e1f372dd04fff0fffee64bf5d0",
+    "living-interpret.ts": "6fbb3a9d152eaad5cc0a51ebb78ff2a3d75bd821edcb0b2d433723e943c77f8d",
+    "living-dates.ts": "3d10c61eec840c4081573fc73aecffbbd2afaf03ce0c0b1d342069b02dbb459f"
+  }
+}

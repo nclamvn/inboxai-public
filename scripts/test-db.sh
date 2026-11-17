@@ -108,3 +108,6 @@ psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/purchase-return.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/purchase-dues.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/purchase-due-exceptions.sql
 psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/purchase-batches.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/living-commitments.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/living-coverage.sql
+psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f tests/db/living-review.sql

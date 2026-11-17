@@ -59,6 +59,7 @@ export async function readCommitmentJson(request: NextRequest): Promise<unknown>
 }
 
 export async function ledgerRpc(client: LedgerSession, name: 'save_commitment' | 'list_commitments' | 'list_commitment_board' | 'read_commitment'
+  | 'decide_living_review' | 'read_living_scope' | 'read_living_review' | 'confirm_living_event'
   | 'scan_commitment_mail' | 'read_commitment_lifecycle_targets' | 'confirm_commitment_detection'
   | 'read_purchase_handoff' | 'list_purchase_handoffs' | 'read_purchase_handoff_owner' | 'read_purchase_handoff_receipt'
   | 'resolve_purchase_handoff_files' | 'confirm_purchase_handoff' | 'read_purchase_approval_scan'
@@ -81,7 +82,9 @@ export async function ledgerRpc(client: LedgerSession, name: 'save_commitment' |
     case '42501':
       throw new CommitmentRequestError(401, 'Yêu cầu đăng nhập.')
     case 'PT413':
-      throw new CommitmentRequestError(413, 'Tệp CSV vượt giới hạn dung lượng.')
+      throw new CommitmentRequestError(413, name.startsWith('read_living_')
+        ? 'Hội thoại vượt giới hạn phân tích local. Chưa có phần nào được coi là đã đọc hết.'
+        : 'Tệp CSV vượt giới hạn dung lượng.')
     case 'PT431':
       throw new CommitmentRequestError(422, error.message)
     case 'PT432':

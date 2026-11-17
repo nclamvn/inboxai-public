@@ -1,0 +1,619 @@
+[
+  {
+    "id": "LC-01",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-02",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-03",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-04",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-05",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-18",
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-06",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-17",
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-07",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-08",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-09",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-10",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-11",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "due": "2026-11-23",
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "LC-12",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "due": "2026-11-24",
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "LC-13",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "completed",
+        "due": null,
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "LC-14",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "cancelled",
+        "due": null,
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "LC-15",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "due": "2026-11-23",
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "LC-16",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "completed",
+        "due": null,
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "LC-17",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "due": "2026-11-24",
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "LC-18",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-19",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "owner",
+        "due": null,
+        "owner": "huong.ncc@example.test"
+      },
+      {
+        "source": "m3",
+        "origin": "m1",
+        "item": 1,
+        "kind": "completed",
+        "due": null,
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "LC-20",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      }
+    ],
+    "note": "Unknown recipient name must not be converted into an invented email."
+  },
+  {
+    "id": "LC-21",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "owner",
+        "due": null,
+        "owner": "huong.ncc@example.test"
+      },
+      {
+        "source": "m3",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "due": "2026-11-25",
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "LC-22",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "owner",
+        "due": null,
+        "owner": "huong.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-23",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "owner",
+        "due": null,
+        "owner": "huong.ncc@example.test"
+      },
+      {
+        "source": "m3",
+        "origin": "m1",
+        "item": 1,
+        "kind": "completed",
+        "due": null,
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "LC-24",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 2,
+        "kind": "create",
+        "due": "2026-11-24",
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-25",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 2,
+        "kind": "create",
+        "due": "2026-11-23",
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-26",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 2,
+        "kind": "create",
+        "due": "2026-11-24",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "deadline",
+        "due": "2026-11-23",
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "LC-27",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 2,
+        "kind": "create",
+        "due": "2026-11-24",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m2",
+        "origin": "m1",
+        "item": 1,
+        "kind": "completed",
+        "due": null,
+        "owner": null
+      }
+    ]
+  },
+  {
+    "id": "LC-28",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      },
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 2,
+        "kind": "create",
+        "due": "2026-11-25",
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-29",
+    "events": []
+  },
+  {
+    "id": "LC-30",
+    "events": []
+  },
+  {
+    "id": "LC-31",
+    "events": []
+  },
+  {
+    "id": "LC-32",
+    "events": []
+  },
+  {
+    "id": "LC-33",
+    "events": []
+  },
+  {
+    "id": "LC-34",
+    "events": []
+  },
+  {
+    "id": "LC-35",
+    "events": []
+  },
+  {
+    "id": "LC-36",
+    "events": []
+  },
+  {
+    "id": "LC-37",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": null,
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-38",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": null,
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-39",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  },
+  {
+    "id": "LC-40",
+    "events": [
+      {
+        "source": "m1",
+        "origin": "m1",
+        "item": 1,
+        "kind": "create",
+        "due": "2026-11-20",
+        "owner": "minh.ncc@example.test"
+      }
+    ]
+  }
+]

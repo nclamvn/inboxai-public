@@ -10,6 +10,22 @@
   pilot checkpoint on `codex/local-pilot`, based on the verified technical-debt
   branch. This does not authorize the proposed natural-language commitment work,
   a main merge, deployment or real mailbox access.
+- Owner authorization on 2026-11-17 now includes the Living Commitments milestone:
+  actual local-model inference, synthetic 40-conversation evaluation and Chrome
+  desktop/mobile acceptance. Work only on `codex/living-commitments`, no push,
+  deployment or real-mailbox access. This supersedes the earlier scope exclusion.
+- The owner also authorized Living Commitments 2: reduce omissions with real local
+  inference, a frozen new 60-conversation synthetic evaluation, comparators and
+  Chrome desktop/mobile interruption tests. Preserve the first milestone evidence;
+  continue locally on this branch, without push, deploy or real mailbox access.
+- The owner also authorized Living Commitments 3: reduce review noise, persist
+  source-bound dismissals and explicit undo, use a new frozen 60-conversation
+  synthetic corpus, real local LLM/comparators and Chrome desktop/mobile fault
+  acceptance. Remain local on this branch; no push, deploy or real mail.
+- The owner subsequently authorized committing and pushing the completed Living
+  Commitments 1–3 checkpoint on `codex/living-commitments`. This supersedes the
+  local-only push restriction for that checkpoint; no main merge, hosted changes,
+  deployment or real mailbox access is authorized.
 - Use a `codex/` feature branch from the verified main baseline for an authorized push.
   Preserve unrelated local changes, and report local evidence separately from remote CI.
   Never modify main, deploy production or send real mail before the security gate.
@@ -48,6 +64,11 @@
   expected version and idempotency key while retrying an uncertain write.
 - Commitment detection is read-only until confirmation. Verify the source snapshot
   and version at approval, and keep unmatched or out-of-order changes outside the ledger.
+- Living review dismissals append private, tenant-bound decisions, never ledger
+  revisions. Bind exact owned evidence and proposed effects; require fresh source,
+  ledger and review versions for dismiss/undo. Preserve unchanged decisions across
+  reload/model-title changes while surfacing genuinely new evidence. Never promote
+  blocked evidence through undo or use a dismissal as approval.
 - Ask Inbox applies authenticated ownership and account filters before ranking.
   Cite exact source text, invalidate vectors when indexed content changes or a
   source is deleted, and show whether semantic retrieval is available.

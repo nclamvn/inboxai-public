@@ -141,12 +141,12 @@ function DashboardHeader({ pathname, owner }: { pathname: string; owner: string 
   return (
     <header className="h-14 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4 ">
       {/* Search */}
-      <div className="flex-1 max-w-xl">
+      <div className="min-w-0 flex-1 max-w-xl">
         {pathname !== '/search' && pathname !== '/search/mail' && <SearchBox />}
       </div>
 
       {/* Right Actions */}
-      <div className="flex items-center gap-1 ml-4">
+      <div className="flex shrink-0 items-center gap-1 ml-2 sm:ml-4">
         {/* Theme Toggle */}
         <ThemeToggle />
 

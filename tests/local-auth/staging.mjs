@@ -11,7 +11,8 @@ import { vaultKeys } from './vault.mjs'
 const beforeTables = ['auth.users', 'auth.identities', 'public.profiles', 'public.source_accounts', 'public.emails']
 const afterTables = [...beforeTables, 'public.registration_policy', 'private.account_credentials', 'private.legacy_account_credentials',
   'private.commitments', 'private.commitment_revisions', 'private.operator_plans', 'private.operator_events',
-  'private.operator_effects', 'private.operator_outcome_events']
+  'private.operator_effects', 'private.operator_outcome_events', 'private.living_analyses',
+  'private.living_decisions', 'private.living_review_history']
 const stagingDatabase = 'inboxai_security_test'
 const recoveryBefore = 'inboxai_recovery_before'
 const recoveryAfter = 'inboxai_recovery_after'
@@ -108,7 +109,7 @@ export function createStagingRehearsal({ docker, sql, record, loopbackFetch }) {
     const sender = 'staging-sender@example.test'
     const subject = 'Staging evidence'
     const update = await admin.from('emails').update({ from_address: sender, subject, direction: 'inbound',
-      is_read: false, is_archived: false, is_deleted: false, body_fetched: true }).eq('id', ownEmailId).eq('user_id', userId)
+      is_read: false, is_archived: false, is_deleted: false, body_fetched: true, body_text: 'I will send the staging checklist tomorrow.' }).eq('id', ownEmailId).eq('user_id', userId)
     assert.equal(update.error, null)
     const rpc = async (name, args) => {
       const result = await login.rpc(name, args)
@@ -132,6 +133,16 @@ export function createStagingRehearsal({ docker, sql, record, loopbackFetch }) {
     })
     assert.equal(executed.status, 'executed')
     record('staging stores an AEAD credential, a cited commitment and a verified Operator action before backup', true)
+
+    // Structural fixture for persistence/recovery, not a model quality claim.
+    const livingScope = await rpc('read_living_scope', {p_source:ownEmailId})
+    const stored = await admin.rpc('store_living_analysis', {p_actor:userId,p_source:ownEmailId,p_fingerprint:livingScope.fingerprint,
+      p_model:'staging-structural-fixture',p_metrics:{},p_events:[{source:ownEmailId,origin:ownEmailId,item:1,kind:'create',certainty:'firm',
+        title:'Staging checklist',quote:'I will send the staging checklist tomorrow.',owner:sender,due:null,blocked:null,referenceKey:'living:staging-memory'}]})
+    assert.equal(stored.error,null)
+    const reviewArgs={p_analysis:stored.data,p_index:0,p_version:0,p_ledger_version:null,p_request:randomUUID(),p_action:'dismiss',p_reason:'not_relevant'}
+    await rpc('decide_living_review',reviewArgs)
+    record('staging stores a source-bound synthetic dismissal before the post-upgrade backup',true)
 
     const expected = fingerprints(sql, afterTables)
     const archive = backup('after-upgrade')
@@ -203,6 +214,15 @@ export function createStagingRehearsal({ docker, sql, record, loopbackFetch }) {
       assert.equal(restoredPlan.outcome.events[0].event, 'verified')
       assert.equal(restoredPlan.outcome.events[0].matched, 1)
       record('restored application reads the same commitment source and Operator verification receipt', true)
+
+      const restoredReview=await rpc('read_living_review',{p_analysis:stored.data})
+      assert.equal(restoredReview.events[0].disposition.active,true)
+      assert.equal(restoredReview.events[0].disposition.version,1)
+      assert.equal((await rpc('decide_living_review',reviewArgs)).replayed,true)
+      await rpc('decide_living_review',{...reviewArgs,p_version:1,p_request:randomUUID(),p_action:'restore',p_reason:null})
+      assert.equal((await rpc('read_living_review',{p_analysis:stored.data})).events[0].disposition.active,false)
+      assert.equal(sql(`SELECT count(*) FROM private.living_review_history WHERE user_id='${userId}';`).trim(),'1')
+      record('restored review history replays the same receipt and supports explicit undo without changing the source database',true)
 
       const otherOnly = new CredentialVault(admin, parseKeyring(JSON.stringify({ local2: '22'.repeat(32) }), 'local2'))
       await assert.rejects(otherOnly.read(scope), { code: 'integrity' })

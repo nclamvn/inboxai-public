@@ -1,5 +1,342 @@
 # Verification record
 
+## 2026-11-17: Living Commitments 3, local review memory
+
+Completed locally on `codex/living-commitments`, HEAD `fb229f97972f`. No commit, push, merge, deploy or real mailbox. See [design and limits](LIVING_REVIEW.md) and [hashed evidence](evidence/living-review-20261117.json).
+
+60 new frozen conversations / 83 mails / 52 gold events, two synthetic Gmail accounts. Corpus SHA-256 `4c8029935cfc2013c436cc66706fc3d1037a057696d1dc4a0497953fcebb7243`, frozen before v3 inference changes. Frozen v2 and all prior evidence remain intact (51 protected artifacts verified). Actual local Qwen inference, never a fixture response. Candidate source hashes remain unchanged throughout both quality runs.
+
+| Configuration | Correct / eligible | Precision | Strict recall | Calls | Seconds |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| v2 | 50/60 | 83.33% | 96.15% | 60 | 304.9 |
+| pipeline | 52/52 | 100.00% | 100.00% | 60 | 353.2 |
+| direct | 37/59 | 62.71% | 71.15% | 60 | 304.6 |
+| agent | 33/51 | 64.71% | 63.46% | 120 | 424.6 |
+| product | 52/52 | 100.00% | 100.00% | 60 | 304.8 |
+
+Targets >=98% precision / >=90% strict recall met on this synthetic protocol. Raw v3 candidates 68, including 16 secondary/unsupported; v2 raw 67 including 7 secondary. Wrong eligible proposals 10 → 0; strict misses 2 → 0. Negative attention 6/20 in both, so secondary effort is not hidden in the score. V3 CLI costs +15.8% time and +11.4% tokens. Do not attribute API-repeat timing differences to an optimization or equate eligible correctness with a flawless raw model.
+
+Actual Chrome 157 desktop/mobile: 29 assertion groups, all 60 input digests match CLI facts, 52 oracle-assisted corpus approvals. Source and ledger stale tabs reject; dropped acknowledgement replays one write; Next/Chrome restart retains results; new evidence attaches to the existing ledger. Review story: four append-only decisions, one real source opening, zero field edits; 0 repeat reviews across 3 reopens versus 3 for an equivalent not-dismissed account scope. Undo does not write the ledger; later explicit approvals append versions 1 and 2. No external sends. This is simulated relevance/oracle review, not human timing.
+
+| Check | Observed result |
+| --- | --- |
+| lint | exit 0, zero warnings |
+| TypeScript | exit 0 |
+| unit | 342 tests / 33 files, exit 0 |
+| integration | 211 tests / 17 files, exit 0 |
+| SQL fresh/upgrade contracts | 51 groups, exit 0 |
+| production build + living Chrome | 29 groups, exit 0 |
+| final design | 33 groups, exit 0 |
+| final platform | 19 groups, exit 0 |
+| purchase-release Chrome regression | 29 groups, exit 0 |
+| local staging backup/recovery | 33 groups, exit 0; review audit preserved, replay and undo work in restored DB |
+| final preview Chrome | desktop/mobile, zero axe violations, no nested clipping, aligned icons, focus restored, unsupported approval denied |
+
+Chronology: full Chrome run precedes small rendering corrections and stronger full-subject review identity. Final SQL/recovery tests cover identity changes. The first preview's root-width and axe checks missed nested horizontal header clipping; visual QA caught it. That evidence remains under `first-*`. Header/search flex shrinking and scroll-preserving focus were fixed; shared design/platform suites rerun. Final preview additionally checks header/main/container/heading bounds and scroll widths, exercises actual-model secondary dismissal/undo (still not approvable) and leaves a sourced deadline change ready to review. No second full quality run is claimed for rendering-only changes.
+
+Initial failures were retained: one test-helper server-only import prevented benchmark boot before any held-out call; two guard compatibility tests, a test typing error and an unused authoring variable were repaired without muting checks. No independent annotator, real user-effort study, real provider, physical native or production validation is claimed. Older indirect/unclear-year formulations remain known coverage limits.
+
+Preview: [open local case](http://127.0.0.1:57300/commitments/living?analysis=2b629450-c177-42b4-8844-57bdba61a3b9). Synthetic login: `mai.nguyen@example.test` / `Synthetic-passphrase-123`. Login first, then reopen the case link if redirected. Start with `npm run living:model` and `npm run preview:living-review`; stop preview before rebuilding acceptance suites. Bench resumes completed pairs; preserve its artifacts. Fixture teardown resets synthetic DB; app/Chrome restart preserves it inside the running fixture.
+
+
+## Cam kết sống 2: giảm bỏ sót có kiểm chứng, 2026-11-17
+
+Đã triển khai local trên `codex/living-commitments`, không commit/push,
+merge, deploy, đổi hosted schema hoặc dùng hộp thư thật. Giữ lại bằng
+chứng milestone đầu và ba module v1 nguyên byte để đối chứng. Preview
+trước được backup database giả lập trước khi thay fixture. Hash các
+artifact milestone đầu đã được kiểm lại và còn khớp.
+
+**Đạt mục tiêu thử nghiệm đã đề xuất trên tập giả lập giữ riêng:** precision
+95,7%, strict recall 94,4% (67/71 sự kiện). Đây không phải chứng nhận sản
+phẩm/production hoặc phép đánh giá độc lập. Tập phát triển 40 hội thoại cũ
+được dùng để chỉnh prompt, đạt 51/53 trong lượt phát triển cuối; số đó không
+được trộn vào 60 hội thoại mới.
+
+### Dữ liệu và phương pháp
+
+60 hội thoại mới, 91 thư, 71 sự kiện theo nhãn, hai Gmail loopback. Dữ liệu,
+nhãn và protocol khóa trước khi thay inference; digest
+`146fa9ae63053797bdeae0a50aea5f83de1b3fd1273cf525b591cc6cf9add907`.
+Có lời hứa gián tiếp/không hạn, ngày tương đối, nhiều việc trong một thư,
+đổi người/hạn, hoàn tất/hủy, thư cũ đến muộn, sai người, quote và injection.
+16 hội thoại không có sự kiện gold. Dữ liệu do Codex viết, có các nhóm cùng
+mẫu cấu trúc, chưa được người độc lập gán nhãn; ngày năm 2027 là thời gian
+trong email giả lập. Đầu vào mới so với vòng trước không đồng nghĩa mẫu
+đại diện cho hộp thư thật.
+
+Inference được khóa bằng source hash trước ca held-out đầu tiên. Không
+sửa bộ đọc sau khi xem kết quả mới. Qwen3-4B-Instruct-2507 Q4_K_M và
+llama.cpp b12242 như milestone trước, macOS arm64/M1 Max 32 GiB, Node
+24.14.1, Next 16.4.6, Chrome 157.0.8103.79, context 8.192, một slot,
+reasoning off, temperature 0, seed 82, request `cache_prompt:false`.
+Không gọi cloud model. Weights SHA-256
+`85e4a5b7b8ef0e48af0e8658f5aaab9c2324c76c1641493f4d1e25fce54b18b9`;
+runtime archive
+`d58f23da84befb84b7d07590e7fd18ea68a3f1df59f9808b52370255aa60f20b`.
+Cache được xác minh lại cuối nhiệm vụ, không tải thêm bản sao.
+
+Model mới tìm câu và quan hệ bằng schema sáu trường. Code giữ quote,
+chuẩn hóa item theo vị trí câu, lấy sender/new owner rõ ràng, xử lý các
+dạng ngày được hỗ trợ theo thời điểm gửi ở Việt Nam, kiểm nguồn/quyền/thứ
+tự và tạo reference. Vẫn một lời gọi/thread, tối đa 60 giây, không thêm
+agent/reviewer/repair loop mặc định. Metadata UUID không còn làm đổi input
+model: hash payload của 60 ca Chrome khớp cả 60 ca pipeline CLI.
+
+### Kết quả trước khi reviewer sửa hoặc duyệt
+
+| Nhánh, cùng 60 hội thoại | Đúng / đề xuất đủ điều kiện | Precision | Strict recall | Tổng thời gian | Lượt model |
+| --- | --- | --- | --- | --- | --- |
+| V1 giữ nguyên | 52/55 | 94,5% | 73,2% | 268,7 giây | 60 |
+| V2 pipeline CLI | 67/70 | 95,7% | 94,4% | 324,3 giây | 60 |
+| LLM trực tiếp local | 44/70 | 62,9% | 62,0% | 314,8 giây | 60 |
+| Agent công cụ chỉ đọc local | 45/70 | 64,3% | 63,4% | 433,8 giây | 120 |
+| V2 qua API trong Chrome, lượt đầy đủ đạt | 67/70 | 95,7% | 94,4% | 207,3 giây | 60 |
+
+Strict match gồm source/origin/item/kind, owner/due khi áp dụng, quote có
+trong nguồn và chứa task anchor đã định trước. Detection recall bỏ qua
+owner/due: V1 54/71 (76,1%), V2 68/71 (95,8%). Tức là bỏ sót hoàn toàn
+17 xuống 3; thiếu/sai trường theo strict metric 19 xuống 4. V2 vẫn có ba
+đề xuất sai, không được bỏ khỏi bảng. Chưa chấm ngữ nghĩa tiêu đề hoặc
+entailment bằng người độc lập.
+
+Bốn nhánh CLI luân phiên thứ tự mỗi ca, không chạy consumer model khác
+đồng thời. Direct tự trả owner/due và nhận cả phần trích lại; product có
+code xử lý lịch và lọc quoted text. Agent thực sự gọi công cụ đọc, tối đa
+hai batch/ba lời gọi, không có quyền ghi. Cùng facts/model/hardware nhưng
+prompt/schema/preprocessing là các workflow khác nhau; kết quả không
+chứng minh hơn model hoặc agent tổng quát mạnh hơn.
+
+Thời gian CLI là từ gọi pipeline đến đề xuất, không gồm build, model load,
+duyệt/sửa và tạo bù. V2 CLI chậm hơn V1 trong lượt này, token input/output
+57.487 so với 39.229; direct 34.940, agent 75.260. Mỗi baseline chỉ một lượt.
+Lượt Chrome đầu ghi 357,2 giây cho 60 API responses, sau đó fail UI; lượt
+chạy lại 207,3 giây với cùng điểm và input hash. Không gọi chênh lệch đó là
+hiệu quả tối ưu inference, không suy rằng mọi tầng cache backend đã tắt
+chỉ vì request đặt false. Chưa tách tải máy/nhiệt/cache hoặc đo năng lượng,
+khấu hao phần cứng. P50/P95 API lượt đạt: 2,49/5,97 giây, chỉ trên tập này.
+
+Reviewer ước tính: V1 duyệt 52/không duyệt 3/tạo hoặc sửa bù 19/đọc 9 ứng
+viên còn lại; V2 là 67/3/4/14. Lượt đối chiếu câu nguồn 64 lên 84, không
+phải số email duy nhất. Trong 16 hội thoại âm tính, số ca vẫn có thẻ cần
+xem tăng 2 lên 6; số ca có đề xuất firm sai đều là 1. Vì vậy chưa chứng
+minh tiết kiệm công người thật. Script biết gold chỉ duyệt các đề xuất
+khớp nhãn; 67 revision được xác nhận qua mobile UI. 17,1 giây reviewer
+script không phải thời gian người đọc. Hành trình cuối khoảng 274,5 giây,
+bao gồm UI và các ca gián đoạn, không gồm build/seed.
+
+Tổng phép đo CLI dùng 300 lời gọi. Ngoài bảng còn 96 lời gọi phát triển,
+hai lượt Chrome mỗi lượt 60 ca, các ca lỗi/gián đoạn riêng và preview.
+Không coi chi phí inference trong bảng là toàn bộ công phát triển hoặc
+coi local là không có chi phí.
+
+### Luồng và kiểm thử
+
+Chrome thật qua Auth/PostgREST/PostgreSQL và hai Gmail loopback, không mock
+model. Kiểm offline trước phân tích, không biến lỗi thành kết quả rỗng;
+response cache đến muộn không đè hội thoại mới; cùng title/thread ID ở
+account khác không ghép nguồn. Source đến sau lúc mở dialog chặn snapshot
+cũ. Cắt phản hồi sau ghi, ngắt mạng, restart Next, replay cùng key chỉ có
+một revision. Đóng/mở lại tiến trình Chrome và phiên mobile mới vẫn đọc
+được lịch sử và Ask Inbox. Tab khác đổi sổ chặn version cũ; rà lại áp dụng
+hạn mới, giữ title sửa tay, khép cùng cam kết ở version 4.
+
+Một ca riêng tạo sổ từ quote ngắn đã duyệt, model mới chọn cả câu đầy đủ,
+nguồn khớp duy nhất nối đúng ledger; đổi hạn append version 2, giữ sửa tay.
+SQL còn kiểm tenant/account, nhiều task cùng nguồn phải chặn khi mơ hồ,
+và nguồn tạo đã thay đổi không được âm thầm sinh thêm một task mới.
+Axe/tràn ngang ở ảnh đã chụp đều qua và có xem lại trực quan. Đây là Chrome
+viewport, không phải native device hoặc chứng cứ provider thật. Không có
+Gmail send và không mở cổng dùng dữ liệu thật.
+
+| Lệnh | Kết quả thực tế |
+| --- | --- |
+| `npm run lint` | Exit 0; zero errors/warnings. |
+| `npm run typecheck` | Exit 0. |
+| `npm run test:unit` | Exit 0; 319 tests / 31 files. |
+| `npm run test:integration` | Exit 0; 210 tests / 17 files. |
+| `npm run test:db` | Exit 0; 50 nhóm SQL fresh, gồm nâng cấp và relink evidence. |
+| `npm run bench:living-coverage` | Exit 0; bốn nhánh đủ 60 ID, không có protocol error, candidate giữ nguyên. |
+| `npm run test:living-coverage` | Lượt đầy đủ sau sửa UI exit 0; 25 nhóm, optimized Next build; 60 live inferences và các ca gián đoạn riêng. |
+| `npm run bench:living-coverage -- --compare` | Exit 0; đúng digest/đủ ID; target precision/recall đề xuất đạt trong phạm vi protocol. |
+| `npm run test:design -- --isolated` | Exit 0; 33 nhóm. |
+| `npm run test:platform -- --isolated` | Exit 0; 19 nhóm browser performance/a11y. |
+| `npm run test:purchase-release` | Exit 0; 29 nhóm hồi quy chứng từ. |
+| `npm run test:staging -- --isolated` | Exit 0; 31 nhóm nâng cấp/backup/restore/alert. |
+| `npm run living:model -- --prepare-only` | Exit 0; checksum cache khớp. |
+| `npm run preview:living-coverage` | Đang phục vụ local; smoke Chrome bản cuối exit 0, model thật và một sửa ngày có xác nhận. |
+
+Lượt Chrome đầu đã đọc đủ 60 nhưng fail ở race dialog bị đóng khi URL bắt
+kịp analysis mới. Log/report/product đầu được giữ `first-*`. Đã sửa binding
+dialog theo analysis ID và chạy lại toàn bộ Chrome đạt. Các guard UI cuối
+cho URL nguồn bắt kịp và unmount được kiểm riêng bằng unit và preview;
+không đổi inference. Lint warning generator, import bridge của snapshot,
+relink nhầm đọc quote trực tiếp từ anchor (anchor chỉ giữ vị trí/hash), và
+thiếu dialog API ở jsdom đã được sửa, không tắt check. Các lượt lỗi setup
+còn trong artifact. Microcopy date cảnh báo khả năng bộ phân giải, không
+đổ lỗi rằng câu nguồn nhất thiết thiếu ngày.
+
+### Mục còn mở
+
+CV-03: chưa đọc được ngày trong dạng “hạn 15 tháng 1 năm 2027”; CV-16,
+CV-19, CV-20: bỏ lời hứa có weekday/ngày viết bằng chữ chưa đủ năm/không
+hạn. CV-43: nhận nhầm “chưa có cập nhật mới” thành hủy. CV-54: định dạng
+`Forwarded message:` chưa được lọc đúng, sinh cam kết từ nội dung cũ. Không
+vá các ca này rồi báo lại chúng là held-out đã đạt. Cần dữ liệu mới để
+đánh giá các lần sửa tiếp. Calendar parser không bao phủ mọi cấu trúc ngày
+mơ hồ; user vẫn cần kiểm tra nguồn. Không có worker LLM quét nền, tìm/đọc
+attachment hoặc tự xác minh hoàn tất ngoài email trong milestone này.
+
+Tài liệu phạm vi/rollback: [LIVING_COVERAGE.md](LIVING_COVERAGE.md).
+Bằng chứng tổng hợp có hash: [evidence/living-coverage-20261117.json](evidence/living-coverage-20261117.json).
+Raw output, log và ảnh ở `test-results/living-coverage/`. Security gate
+vẫn đóng; không có kiểm chứng user thật, native device, provider thật,
+hosted cutover hoặc production từ các kết quả trên.
+
+Preview bản cuối có 60 hội thoại/91 thư trên hai Gmail giả lập. Smoke trên
+Chrome desktop/mobile trì hoãn URL chọn nguồn rồi bấm phân tích ngay,
+kiểm kết quả không bị mất. Với CV-03, model thật trả due=null; reviewer
+giả lập nhập 2027-01-15 trước khi duyệt. Sổ version 1 và Ask Inbox đọc lại
+đúng ngày cùng câu nguồn. Đây là sửa bù theo gold, không cộng vào điểm
+model. Đã xem lại ảnh, axe/tràn ngang qua. Link thử:
+`http://127.0.0.1:57300/commitments/living?analysis=b1aad916-d076-4674-93f7-fbb11ca6efae`.
+Tài khoản `mai.nguyen@example.test`, password giả lập `Synthetic-passphrase-123`.
+Model/server preview giữ chạy; `.next-build` là build dùng lại duy nhất,
+không có project copy hoặc scratch ngoài repo. Không có push/deploy.
+
+
+## Cam kết sống, LLM local chạy thật, 2026-11-17
+
+Nhánh local `codex/living-commitments`, base
+`fb229f97972f1866b2ee31c70a10dcf99e0617c8`. Không commit/push, merge,
+deploy, migration hosted hoặc dùng hộp thư thật trong milestone này.
+Đã triển khai đọc hội thoại bằng LLM, xem/sửa đề xuất, xác nhận có nguồn,
+lưu revision và hỏi trạng thái đã xác nhận. **Luồng kỹ thuật đã được nghiệm
+thu trên giả lập; chất lượng nhận diện chưa đạt mục tiêu recall đề xuất.**
+
+Môi trường: macOS arm64, Apple M1 Max 32 GiB, Node 24.14.1, Next 16.4.6,
+Chrome 157.0.8103.79. Suy luận thật bằng Qwen3-4B-Instruct-2507 Q4_K_M,
+llama.cpp b12242, Metal, context 8.192, một slot, temperature 0, seed 82,
+request `cache_prompt:false`, reasoning off. Model SHA-256
+`85e4a5b7b8ef0e48af0e8658f5aaab9c2324c76c1641493f4d1e25fce54b18b9`;
+archive runtime
+`d58f23da84befb84b7d07590e7fd18ea68a3f1df59f9808b52370255aa60f20b`.
+Không gọi API model cloud. Launcher mới dùng thêm `--no-context-shift`;
+đã khởi động và kiểm Chrome với launcher đó sau phép đo.
+
+### Hành trình được kiểm chứng
+
+40 hội thoại mới, 61 thư, 53 sự kiện theo nhãn, qua hai Gmail loopback và
+sync checkpoint thật của sản phẩm. Corpus/nhãn được khóa trước lượt đo đầu,
+digest `101ca72bca96bb29246a01cdb743ef0552e49d7b717e6337dbb1479dcf8e8f1a`.
+Codex viết dữ liệu/nhãn; chưa có gán nhãn độc lập. Không sửa prompt sau khi
+xem kết quả. Một thư thử riêng trước đo phát hiện model chép nhầm tháng;
+code đã đổi ngày số duy nhất từ chính câu nguồn trước cả hai lượt đo.
+
+Mỗi hội thoại được mở và gọi model trên Chrome desktop/mobile luân phiên.
+Phân tích đã lưu được đọc lại không cần gọi model. Reviewer **giả lập dùng
+nhãn chuẩn** duyệt 40 sự kiện đúng ở lượt lặp, không tự coi đó là đánh giá
+người dùng hoặc giấu các đề xuất sai. Mỗi revision giữ email/câu nguyên văn.
+Một hội thoại bổ sung có cùng tiêu đề và Gmail thread ID ở tài khoản thứ
+hai vẫn tách scope; tenant khác và anonymous không đọc được nguồn/cache.
+
+Hành trình gián đoạn mở dialog rồi nhận thư đổi hạn: RPC từ chối snapshot
+cũ và không ghi quyết định. Lượt mới sửa được nội dung trước khi duyệt;
+server đã ghi nhưng phản hồi bị cắt, browser mất mạng và Next restart.
+Thử lại đúng key chỉ có một quyết định, `replayed:true`. Một phiên mobile
+mới đọc lại lịch sử và Ask Inbox với nguồn riêng cho người/hạn/trạng thái.
+Tab cũ bị chặn tiếp khi phiên bản sổ thay đổi dù email giữ nguyên. Rà soát
+lại cập nhật đúng hạn, giữ nội dung người dùng sửa, rồi thư hoàn tất mới
+được model liên kết vào cùng cam kết và khép phiên bản 4. Không gửi email.
+
+Axe và kiểm tràn ngang được chạy ở các màn đã chụp, có xem lại ảnh desktop,
+mobile, dialog duyệt và câu trả lời đã xác nhận. Đây là Chrome viewport,
+không phải chứng cứ native device. Restart giữ PostgreSQL và khởi động lại
+Next, sau đó mở phiên browser mới; không phải mất đĩa hoặc xóa fixture.
+Sau lượt Chrome đầy đủ, biên nhận dùng lại giữa các analysis được bổ sung
+và kiểm bằng SQL fresh; sửa câu chữ/gộp thông tin kỹ thuật trong UI được
+kiểm thêm ở preview hiện tại. Smoke preview gọi model thật từ cache pin,
+duyệt trên mobile, đọc Ask Inbox và mở đúng nội dung email nguồn.
+
+| Lệnh | Kết quả thực tế |
+| --- | --- |
+| `npm run lint` | Exit 0; zero errors/warnings. |
+| `npm run typecheck` | Exit 0. |
+| `npm run test:unit` | Exit 0; 287 tests / 28 files. |
+| `npm run test:integration` | Exit 0; 209 tests / 17 files. |
+| `npm run test:db` | Exit 0; 49 nhóm SQL, gồm quyền private, tenant, scope, biên nhận qua phân tích mới, retry và nguồn đổi. |
+| `npm run test:living-commitments` | Exit 0; 22 nhóm (14 nền + 8 hành trình); optimized Next build. Lượt đầu 20 nhóm, sau đó mở rộng ca cùng tiêu đề và khép phiên bản 4. |
+| `npm run bench:living-commitments` | Exit 0; rules/direct/agent đủ 40 ca, direct 40 và agent 80 lời gọi model thật; không có lỗi giao thức. |
+| `npm run bench:living-commitments -- compare` | Exit 0; đúng digest và đủ 40 ID ở cả bốn nhánh, lỗi/thiếu vẫn được tính. |
+| `npm run test:design -- --isolated` | Exit 0; 33 nhóm desktop/tablet/mobile/dark. |
+| `npm run test:platform -- --isolated` | Exit 0; 19 nhóm performance/accessibility, 600 thư, không tính native. |
+| `npm run test:purchase-release` | Exit 0; 29 nhóm hồi quy luồng chứng từ. |
+| `npm run test:staging -- --isolated` | Exit 0; 31 nhóm nâng cấp/backup/restore/alert, gồm lỗi rollback cố ý. |
+| `npm run living:model -- --prepare-only` | Exit 0; xác minh checksum cache đã chuyển, không tải thêm bản sao. |
+| `npm run preview:living` | Đang phục vụ local 57300; smoke Chrome riêng exit 0 sau model cache launch, không tính thêm vào phép đo. |
+
+### Đối chứng và giới hạn chất lượng
+
+| Nhánh | Đúng / đề xuất | Precision | Recall trên 53 sự kiện | Tổng thời gian trả kết quả | Lượt model |
+| --- | --- | --- | --- | --- | --- |
+| Rules hiện có + liên kết đơn giản | 17/20 | 85,0% | 32,1% | 0,029 giây | 0 |
+| InboxAI lượt lặp guard-v2 | 40/42 | 95,2% | 75,5% | 132,1 giây | 40 |
+| LLM trực tiếp | 39/51 | 76,5% | 73,6% | 206,0 giây | 40 |
+| Agent công cụ chỉ đọc | 33/42 | 78,6% | 62,3% | 245,1 giây | 80 |
+
+Lượt InboxAI đầu đúng **37/39 (94,9%), recall 37/53 (69,8%)**; không thay
+số đó bằng lượt đẹp hơn. Lượt đầu dùng guard-v1; sau đó guard-v2 bỏ phụ thuộc
+vào chỉ mục việc khi tạo khóa và chặn đổi người sang null. Prompt không đổi.
+LC-17/LC-27 đổi output trong lượt lặp với metadata account UUID mới. Lượt
+lặp là hồi quy trên tập đã thấy, không phải phép đo độc lập chưa thấy.
+
+Thời gian bảng là tổng thời gian chờ kết quả cho 40 ca, không gồm khởi
+động model/build, duyệt, sửa hoặc tạo bù. InboxAI lượt lặp đo đến API trả
+kết quả (128,3 giây là số đo riêng quanh lời gọi model), chưa tính mở màn,
+chụp ảnh hoặc xác nhận. Lượt đầu ghi 221,6 giây gồm cả thao tác UI/cache;
+197,2 giây quanh model được phục hồi từ cache metrics, không so trực tiếp
+221,6 với 132,1 rồi gọi là tối ưu. Direct/agent đo vòng gọi và xử lý công cụ.
+Agent dùng JSON protocol đọc email, tối đa hai batch/ba lượt model; không
+có quyền ghi. Cùng weights/hardware nhưng input sản phẩm có UUID/metadata
+PostgreSQL, baseline dùng tên account; không giống từng byte. Chỉ một lượt
+mỗi baseline, phần lớn direct chạy trước agent. Không khẳng định ưu thế
+latency ổn định từ các số trên. Tổng token input/output: InboxAI 28.380,
+direct 26.830, agent 53.951. Chi phí năng lượng/khấu hao chưa đo.
+
+InboxAI lượt lặp cần duyệt 40, loại 2, tạo bù 13 sự kiện và kiểm 42 nguồn;
+direct tương ứng 39/12/14/51, agent 33/9/20/42, rules 17/3/36/20. Đây là
+**ước tính công từ nhãn**, chưa phải click/time của người thật. Không coi
+một lần tạo bù tốn bằng một lần duyệt để khẳng định tiết kiệm công. Không
+đo lại đọc thư thủ công bằng script đóng vai con người. Tính đúng tiêu đề
+về ngữ nghĩa và entailment của câu nguồn chưa được chấm độc lập.
+
+Hai lỗi vẫn còn ở cả hai lượt sản phẩm: LC-05 bỏ hạn “ngày mai”, LC-31 nhận
+nhầm câu hỏi nhờ gửi thành cam kết. Nhiều lời hứa gián tiếp và biến đổi vẫn
+bị bỏ sót. Chưa đạt mục tiêu recall 90% đề xuất lịch sử, và chưa có bằng
+chứng thị trường hoặc người thật để tuyên bố hơn LLM/agent. Giá trị được
+chứng minh trong phạm vi này là lưu trạng thái có xác nhận, nguồn, chống
+lặp và chặn quyết định cũ; không phải model tự hiểu đúng mọi thư.
+
+Bằng chứng nhỏ có hash artifact được lưu tại
+[evidence/living-local-20261117.json](evidence/living-local-20261117.json).
+Log, raw output và ảnh ở `test-results/living-commitments/`. Một số lỗi
+setup ban đầu (trigger cần SECURITY DEFINER, fixture thiếu from_address,
+prop Modal, smoke thiếu tsx loader) được giữ trong log; lint warning biến
+không dùng đã được sửa, không tắt check. Xem phạm vi/rollback và lệnh tái lập
+trong [LIVING_COMMITMENTS.md](LIVING_COMMITMENTS.md).
+
+Preview: `http://127.0.0.1:57300/commitments/living`, account giả lập
+`mai.nguyen@example.test`, password `Synthetic-passphrase-123`. Preview
+riêng không sửa bản pilot cũ. `.next-build` là output duy nhất đang dùng
+cho preview này; `.next` của pilot trước được giữ. Model/runtime được chuyển,
+không copy, sang cache repo `node_modules/.cache/inboxai-living-model`
+(khoảng 2,4 GiB); thư mục runtime cũ đã bỏ. `docker image prune -f` thu 0B,
+không prune volume/container, đĩa còn khoảng 59 GiB. Model server chỉ loopback
+nhưng chưa có auth riêng; real-mailbox/security gate vẫn đóng. Phân tích cần
+người dùng yêu cầu theo thread, chưa có worker LLM quét nền. Không phát sinh
+push/deploy, không có chứng cứ provider/native/production từ milestone này.
+
+
 ## Bản dùng thử local liền mạch desktop/mobile, 2026-11-17
 
 Milestone nối các bề mặt sản phẩm hiện có vào một bản thử tương tác, chạy

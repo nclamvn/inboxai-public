@@ -16,6 +16,8 @@ those decisions, not an independently retrieved Library document or concept pack
 - [Actual verification](VERIFICATION.md)
 - [Technical-debt cleanup and remaining work](TECHNICAL_DEBT_CLEANUP.md)
 - [Bản dùng thử local liền mạch desktop/mobile](LOCAL_PILOT.md)
+- [Cam kết sống: LLM local, bằng chứng và phép đo](LIVING_COMMITMENTS.md)
+- [Cam kết sống 2: giảm bỏ sót có kiểm chứng](LIVING_COVERAGE.md)
 - [M1-A credential vault and maintenance](CREDENTIAL_VAULT.md)
 - [Sync contracts and recovery](SYNC_CONTRACTS.md)
 - [Action Inbox daily commitments local acceptance](ACTION_INBOX_DAILY_LOCAL_HANDOFF.md)
@@ -52,3 +54,5 @@ those decisions, not an independently retrieved Library document or concept pack
 - [Previous M0-E local handoff](M0E_LOCAL_HANDOFF.md)
 
 Implementation status is evidence-driven. M0 does not authorize M1-M6 shortcuts.
+
+- [Living Commitments 3: review memory and noise](LIVING_REVIEW.md)
