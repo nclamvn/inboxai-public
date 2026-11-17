@@ -9,6 +9,7 @@ import { gmailTriageEnabled } from '@/lib/gmail-triage/server'
 import { GmailTriageProvider, GmailTriageStatus } from '@/components/email/gmail-triage'
 import { AIIntroTooltip } from '@/components/onboarding/ai-intro-tooltip'
 import { OfflineWorkspaceProvider } from '@/components/offline/offline-provider'
+import { LocalTrialBanner } from '@/components/layout/local-trial-banner'
 
 export default async function DashboardLayout({
   children,
@@ -33,6 +34,7 @@ export default async function DashboardLayout({
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <LocalTrialBanner />
           <Header owner={user.id} />
           <GmailTriageStatus />
           <main id="main-content" tabIndex={-1} className="min-h-0 flex-1 overflow-auto pb-[calc(var(--mobile-nav-height)+env(safe-area-inset-bottom))] md:pb-0">

@@ -1,5 +1,99 @@
 # Verification record
 
+## Bản dùng thử local liền mạch desktop/mobile, 2026-11-17
+
+Milestone nối các bề mặt sản phẩm hiện có vào một bản thử tương tác, chạy
+qua hai Gmail loopback, các phiên Chrome độc lập và PostgreSQL local.
+Không push, deploy, sửa main hay dùng hộp thư thật. Môi trường macOS arm64,
+Node 24.14.1, Next 16.4.6 và Chrome 157.0.8103.79.
+
+PO-81724 bắt đầu ở yêu cầu bổ sung hạn thanh toán. Người mua lưu nháp
+trên desktop, tiếp tục bằng phiên mobile độc lập, ngắt mạng, khởi động
+lại Next và mở lại phiên. Ask Inbox giữ hai hạn mâu thuẫn và đối chiếu
+60.000 VND với trích dẫn có phiên bản trên hai tài khoản. Gửi trên mobile
+chỉ xảy ra sau xem trước/phê duyệt; mất phản hồi được đối chiếu thành một
+lượt gửi. Hồi đáp thiếu hạn giữ hóa đơn gốc. Bản hợp lệ được nạp lặp,
+ghi nhận, bàn giao và Kế toán duyệt qua một phiên mobile riêng. Khép ngoại
+lệ và quyết định giữ sau restart, không khẳng định toàn bộ PO đã nhận đủ
+hàng hoặc tiền đã chuyển. Operator xem trước, duyệt phạm vi, thực thi,
+xác minh và hoàn tác lưu trữ các thư quảng cáo trong cùng bộ dữ liệu.
+
+Trang điều khiển được kiểm chặn Origin/token sai, reset chưa xác nhận và
+nạp hồi đáp trước lúc gửi. Reset từ nút thật trong Chrome, sau khi nhập
+`ĐẶT LẠI`, xác minh snapshot và khôi phục database/provider riêng; một
+phiên đăng nhập mới mở lại đúng yêu cầu ban đầu, không còn lượt gửi thử.
+Kiểm tra mất mạng/phục hồi ở trang hướng dẫn xác nhận thông báo lỗi cũ
+được thay bằng trạng thái đã kết nối lại. Các ảnh được kiểm axe, tràn ngang
+và xem lại trực quan. Chúng là Chrome viewport, không phải native device.
+
+| Lệnh | Kết quả thực tế |
+| --- | --- |
+| `npm run lint` | Exit 0; zero errors/warnings. |
+| `npm run typecheck` | Exit 0. |
+| `npm run test:unit` | Exit 0; 267 tests in 25 files, gồm 7 ca cho banner local và chặn metadata/origin không hợp lệ, kể cả JSON null. |
+| `npm run test:integration` | Exit 0; 200 tests in 16 files. |
+| `npm run test:local-pilot` | Exit 0; 23 nhóm assertion (14 nhóm Auth/RLS nền và 9 nhóm hành trình), có optimized Next build; log `final-pilot.log`. |
+| `npm run test:db` | Exit 0; 48 nhóm assertion SQL. |
+| `npm run test:design -- --isolated` | Exit 0; 33 nhóm, optimized build và kiểm desktop/tablet/mobile/dark. |
+| `npm run test:platform -- --isolated` | Exit 0; 19 nhóm browser performance/accessibility; không tính là kiểm native. |
+| `npm run test:purchase-release` | Exit 0; 29 nhóm hồi quy cả luồng yêu cầu chứng từ đến duyệt xong. |
+| `npm run test:staging -- --isolated` | Exit 0; 31 nhóm nâng cấp, backup, khôi phục và cảnh báo. |
+
+Các lượt đầu được giữ thành `attempt-*.log`: Docker ban đầu chưa chạy;
+fingerprint từ chối bản đang thay đổi source trong lúc dựng; một vai
+outsider của fixture thiếu whitelist; và kiểm tra Operator đọc checkbox
+trước khi preview tải xong. Đã bổ sung đúng admission fixture và chờ trạng
+thái preview, không tắt kiểm tra quyền hoặc bỏ assertion nghiệp vụ. Một
+lượt trọn luồng đã qua, sau đó sửa trạng thái thông báo phục hồi kết nối
+và chạy lại toàn bộ luồng thành công.
+
+Log/ảnh/JSON: `test-results/local-pilot/`. `workflow.json` ghi commit nền,
+fingerprint, Chrome, hóa đơn trước/sau, quyết định được duyệt, số gửi và
+thế hệ reset; `checks.json` ghi các lượt hồi quy cuối. Các giá trị do
+fixture sinh không phải dữ liệu khách hàng hay benchmark người dùng.
+Ask Inbox ở đường nghiệm thu dùng tổng hợp xác định. Không gọi LLM/agent
+thật trong milestone này, không thêm phép đo hay tuyên bố lợi thế AI.
+
+Xem [cách chạy, phạm vi reset và giới hạn](LOCAL_PILOT.md). Cold restart
+cả supervisor/Docker không nằm trong cam kết lưu tiến độ; chạy mới tạo
+phiên giả lập mới. Gate dữ liệu thật tiếp tục đóng.
+
+Kiểm tra trên preview phát hiện bước chuẩn bị ban đầu chỉ gọi một lượt
+sync, nên 104 thư nền mới chỉ có 60 thư ghi vào database. Đã thêm vòng
+drain có giới hạn qua API checkpoint và đếm thực tế theo tenant/UID,
+không insert thư trực tiếp để lách sync. Bộ mới chỉ sẵn sàng khi đủ 104
+thư nền; tổng là 110 thư Gmail đã đồng bộ trong hai tài khoản. Một bản
+ghi Auth/RLS nền không thuộc Gmail được loại khỏi số hiển thị này.
+Browser kiểm số thực tế >100 và dòng số lượng trên trang hướng dẫn.
+
+Sau các kiểm tra bổ sung, lượt `test:local-pilot` cuối chạy lại exit 0,
+23 nhóm, fingerprint `03b3c7be23d6` trên commit nền `38c4767`. Các thay đổi
+milestone vẫn là working tree local. Đã xóa `.next-build` trước khi dựng
+bản tương tác riêng bằng `.next`; không tạo distDir hay bản sao project khác.
+
+Bản tương tác cuối đã khởi động bằng `npm run preview:local`. `/version`
+xác nhận fingerprint build và mã nguồn đều là `03b3c7be23d6`; `/config`
+và truy vấn PostgreSQL cùng xác nhận 2 Gmail, 110 thư Gmail đã đồng bộ.
+`/state` ở `buyer`, INV-41724, chưa có nháp yêu cầu và 0 lượt gửi: người
+dùng nhận bộ ban đầu, không phải trạng thái sau bài test. Trang hướng dẫn
+`http://127.0.0.1:57343/`, ứng dụng `http://127.0.0.1:55300/inbox`.
+Metadata tại `test-results/local-pilot/live-readiness.json`, log server
+`preview.log`. Đã mở trang hướng dẫn trong Chrome native và quan sát đúng
+phiên bản ở lượt mở đầu; trình duyệt điều khiển trực tiếp qua extension
+không khả dụng nên dùng AX native. Nghiệm thu đầy đủ dùng Chrome qua harness.
+Giữ server `.next` và fixture chạy để dùng thử, xóa `.next-build`; Docker
+image prune cuối thu hồi 0 B. Không tạo scratch/venv ngoài repo, không
+prune volume/container hay dừng các project Docker khác.
+
+Ngày 17/11/2026, owner yêu cầu commit/push trước khi làm milestone tiếp theo.
+Checkpoint `codex/local-pilot` kế thừa `38c4767` (nhánh technical-debt đã qua
+CI), không merge main/deploy. Trước commit, tính lại fingerprint source và
+đối chiếu `workflow.json`: cùng `03b3c7be23d6`, không có thay đổi hành vi
+sau lượt nghiệm thu cuối. Chỉ cập nhật tài liệu về quyền lưu checkpoint.
+Log, snapshot database và cấu hình cá nhân `.codex/` không đưa lên Git.
+Remote CI của checkpoint là bằng chứng riêng, không coi các lượt local
+trên đây là kết quả CI.
+
 ## Technical-debt cleanup and authorized branch checkpoint
 
 2026-11-16, macOS arm64, Node 24.14.1, Next.js 16.4.6, Chrome

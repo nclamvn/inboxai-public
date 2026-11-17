@@ -8,7 +8,8 @@ const fixture = journey ? null : new URL(process.env.INBOXAI_TEST_GMAIL_URL)
 if (fixture && (fixture.hostname !== '127.0.0.1' || fixture.protocol !== 'http:')) throw new Error('Expected loopback Gmail fixture')
 const database = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL)
 const oauthFixture = process.env.INBOXAI_TEST_GOOGLE_OAUTH_URL && new URL(process.env.INBOXAI_TEST_GOOGLE_OAUTH_URL)
-if (oauthFixture && (database.origin !== 'http://127.0.0.1:57321' || oauthFixture.hostname !== '127.0.0.1' ||
+const pilotDatabase = process.env.INBOXAI_TEST_LOCAL_PILOT === '1' && database.origin === 'http://127.0.0.1:55321'
+if (oauthFixture && ((!pilotDatabase && database.origin !== 'http://127.0.0.1:57321') || oauthFixture.hostname !== '127.0.0.1' ||
   oauthFixture.protocol !== 'http:')) throw new Error('Expected an isolated Google OAuth fixture')
 if (journey && !['http://127.0.0.1:55321', 'http://127.0.0.1:57321'].includes(database.origin)) {
   throw new Error('Expected the journey database gateway')

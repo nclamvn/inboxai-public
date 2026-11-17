@@ -15,6 +15,7 @@ those decisions, not an independently retrieved Library document or concept pack
 - [Security gate](SECURITY_GATE.md)
 - [Actual verification](VERIFICATION.md)
 - [Technical-debt cleanup and remaining work](TECHNICAL_DEBT_CLEANUP.md)
+- [Bản dùng thử local liền mạch desktop/mobile](LOCAL_PILOT.md)
 - [M1-A credential vault and maintenance](CREDENTIAL_VAULT.md)
 - [Sync contracts and recovery](SYNC_CONTRACTS.md)
 - [Action Inbox daily commitments local acceptance](ACTION_INBOX_DAILY_LOCAL_HANDOFF.md)

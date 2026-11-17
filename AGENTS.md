@@ -6,6 +6,10 @@
   the owner explicitly authorized technical-debt cleanup, commit and push of the pending
   work to a separate `codex/` branch. This does not authorize merging main, hosted
   deployments, changing hosted settings or connecting real mailboxes.
+- On 2026-11-17 the owner authorized committing and pushing the completed local
+  pilot checkpoint on `codex/local-pilot`, based on the verified technical-debt
+  branch. This does not authorize the proposed natural-language commitment work,
+  a main merge, deployment or real mailbox access.
 - Use a `codex/` feature branch from the verified main baseline for an authorized push.
   Preserve unrelated local changes, and report local evidence separately from remote CI.
   Never modify main, deploy production or send real mail before the security gate.

@@ -74,7 +74,9 @@
     "test:action-notifications": "npm run test:local-auth -- --action-notifications",
     "test:compose-recipients": "npm run test:local-auth -- --compose-recipients",
     "test:draft-continuity": "npm run test:local-auth -- --draft-continuity",
-    "test:offline-compose": "npm run test:local-auth -- --offline-compose"
+    "test:offline-compose": "npm run test:local-auth -- --offline-compose",
+    "preview:local": "node scripts/preview-local.mjs",
+    "test:local-pilot": "npm run test:local-auth -- --pilot-test"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
