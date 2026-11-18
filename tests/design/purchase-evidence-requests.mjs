@@ -147,10 +147,34 @@ export async function rehearsePurchaseEvidenceRequests(options) {
   await button(panel,'Dời ngày kiểm tra').click()
   let modal = page.getByRole('dialog',{name:'Ngày kiểm tra lại',exact:true})
   await modal.getByLabel(dateLabel).fill(day(2))
-  await button(modal,'Lưu ngày kiểm tra').click()
-  await modal.waitFor({state:'hidden'})
-  assert.equal((await context()).request.work.status,'waiting')
-  assert.equal(await button(panel,'Xem trước thư nhắc chứng từ').count(),0)
+  // Hold the browser's background read after the successful schedule mutation.
+  // Server state can already be waiting while the previous due UI is still mounted.
+  const refreshPattern = '**'+endpoint+'?case='+setup.handoffId
+  const refreshGate = Promise.withResolvers()
+  const refreshStarted = page.waitForRequest(req=>req.method()==='GET' && req.url()===app+endpoint+'?case='+setup.handoffId,{timeout:20_000})
+  const refreshFinished = page.waitForResponse(res=>res.request().method()==='GET' && res.url()===app+endpoint+'?case='+setup.handoffId,{timeout:20_000})
+  await page.route(refreshPattern,async route=>{
+    const response = await route.fetch({maxRetries:0})
+    await refreshGate.promise
+    await route.fulfill({response})
+  })
+  try {
+    await button(modal,'Lưu ngày kiểm tra').click()
+    await modal.waitFor({state:'hidden'})
+    await refreshStarted
+    assert.equal((await context()).request.work.status,'waiting')
+    refreshGate.resolve()
+    // Closing the dialog acknowledges the write, not the async context refresh.
+    // Observe the newly rendered date before asserting the old due action is gone.
+    await panel.locator('time[datetime="'+day(2)+'"]').waitFor({state:'visible'})
+    await button(panel,'Xem trước thư nhắc chứng từ').waitFor({state:'hidden'})
+    assert.equal(await button(panel,'Xem trước thư nhắc chứng từ').count(),0)
+  } finally {
+    refreshGate.resolve()
+    await refreshFinished
+    await page.unroute(refreshPattern)
+  }
+  record('A delayed context refresh after postponing the evidence check renders the new appointment and removes the old reminder action before continuing.',true)
   await clock(2)
   await inbox()
   await button(panel,'Xem trước thư nhắc chứng từ').click()

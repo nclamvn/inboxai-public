@@ -1,5 +1,18 @@
 # Verification record
 
+## 2026-11-18: purchase-release Chrome refresh race
+
+Owner authorized a CI repair, local verification, commit/push on `codex/living-commitments` and monitoring all CI jobs. No main merge, deployment or real mailbox access.
+
+- Original remote evidence: [run 44057783359](https://github.com/nclamvn/inboxai-public/actions/runs/44057783359), commit `f57ee0c`. Eight jobs passed; `purchase-release-chrome` failed after deferring the evidence-check appointment (`1 !== 0` reminder buttons). Subsequent design/platform steps in that job were skipped.
+- Cause: closing the follow-up dialog acknowledges the schedule mutation, while its parent context refresh is asynchronous. The old test immediately counted DOM nodes after independently verifying the database. It could observe the previous due action before React committed the refreshed appointment.
+- Reproduction: hold the browser's context-read response after the successful mutation. The original immediate assertion fails locally with the same `1 !== 0`, despite server status `waiting`. This is controlled transport ordering, not a fixed sleep.
+- Repair: retain the held-read regression, release the response, wait for the actual new `<time datetime>` to be visible and the prior action to disappear, then retain the strict zero-node assertion. The next simulated day must still expose the reminder and preserve preview/approval/send-once checks. No application logic, API, migrations, dependencies, quality gate or global timeout was changed.
+- Local: `npm run test:purchase-release` exit 0, **30 groups**, including its optimized production build and real Chrome with synthetic Gmail, auth and PostgreSQL. `npm run lint`, `npm run typecheck`, `npm run test:unit` (**342 / 33 files**), `npm run test:integration` (**211 / 17 files**) and `npm run test:db` (**51 groups**) exited 0.
+- Local logs and preserved before-fix failure are under ignored `test-results/living-review/ci-repair/`. An orphaned prior synthetic preview was backed up there before its own Compose fixture was stopped; no global container/volume pruning was used. Reused `.next-build` and existing pinned images, with about 30 GiB free. No outside-repository scratch copy or install.
+- This entry records local results before the repair push. The new commit's GitHub Actions run is authoritative for remote CI; no remote PASS is inferred from local success.
+
+
 ## 2026-11-17: Living Commitments 3, local review memory
 
 Completed locally on `codex/living-commitments`, HEAD `fb229f97972f`. No commit, push, merge, deploy or real mailbox. See [design and limits](LIVING_REVIEW.md) and [hashed evidence](evidence/living-review-20261117.json).
