@@ -79,6 +79,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci --ignore-scripts
+      # Private backports require exact-source, regression and upstream-advisory checks.
+      - run: npm run audit:picomatch
       # Keep the reviewed dependency baseline from regressing.
       - run: npm audit --audit-level=moderate
 

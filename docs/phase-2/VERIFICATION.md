@@ -1,5 +1,34 @@
 # Verification record
 
+## 2026-11-18: picomatch security backport and unchanged audit gate
+
+Owner authorized remediation, local verification, commit/push on the current `codex/living-commitments` branch and monitoring every CI job. No main merge, hosted changes, deployment or real mailbox access.
+
+- Prior remote [run 44290566401](https://github.com/nclamvn/inboxai-public/actions/runs/44290566401), commit `6da812d`: eight jobs passed, including purchase-release/design/platform; dependency-audit failed on GHSA-fc5q-39xc-vjpf (CVE-2026-112366). Its 19 High package findings propagated one underlying picomatch advisory. npm latest remained 4.0.7 with no official fixed release; forced Vitest downgrade would not fix all affected copies.
+- Qualified application-owned backports for official 2.3.2 and 4.0.7, preserving MIT licenses and explicit private identities. Only parser and package metadata differ from original archive hashes. Source, archive integrity, scope, intentional compatibility limits and upstream proposal provenance are recorded in [PicoMatch security notes](../../vendor/PICOMATCH_SECURITY.md). These are temporary local remediations, not upstream-approved releases or production/security certification.
+- Official upstream suites: **1,972 + 1,983 tests**, zero failures. Frozen original matcher corpus: **272,994 unchanged comparisons**, with the single explicitly tested safety exception per version for separator-crossing bash repetition. **480** bounded adversarial pattern/option/input combinations. Former nested-quantifier negative control times out as expected; patched regressions finish. Security suite: **9 groups**, including unknown advisory, source drift and reintroduced vulnerable installed-copy rejection.
+- Published only qualified sources/tarballs first at `0d5f3fcdf452ca827986c71ebd7703308c1627ba`; final overrides use raw repository URLs bound to that immutable SHA and SHA-512 lockfile integrities. No npm registry publish, install scripts or untrusted external fork. Final `npm install --ignore-scripts --no-audit` deduplicates six original locations to two verified patched copies. `npm ls picomatch --all` exits 0 with both major lines correctly resolved; no original vulnerable copy remains.
+- The exact `npm audit --audit-level=moderate` command is retained in CI and exits 0 locally (zero registry findings). Private package identities are not analyzed as upstream by npm audit. Therefore the same CI job now **also** requires `npm run audit:picomatch`: hash every source/archive/installed copy, validate lock entries, run security regressions and request the advisory feed for the original identities/versions. New or changed advisories, malformed/unavailable feed, failed regression or byte drift fail closed. No audit threshold, dependency scope or existing check was relaxed. Third-party vendor style is excluded from first-party ESLint; exact source and security checks are mandatory instead.
+
+Local environment: macOS 27.2, Apple M1 Max / 32 GiB, Node 24.14.1, npm 11.11.0, Next.js 16.4.6, Chrome 157. Synthetic loopback Gmail/Auth/PostgREST/PostgreSQL only.
+
+| Local command | Actual result |
+| --- | --- |
+| `npm run audit:picomatch` | Exit 0; 9 groups, final two installed copies and original advisory coverage verified. |
+| `npm audit --audit-level=moderate` | Exit 0; zero registry findings, subject to the private-fork limitation above. |
+| `npm run lint` | Exit 0; zero warnings. |
+| `npm run typecheck` | Exit 0. |
+| `npm run test:unit` | Exit 0; 342 tests / 33 files. |
+| `npm run test:integration` | Exit 0; 211 tests / 17 files. |
+| `npm run test:db` | Exit 0; 51 fresh/upgrade/isolation contract groups. |
+| `npm run test:purchase-release` | Exit 0; optimized production build and 30 Chrome groups. |
+| `npm run test:design -- --isolated` | Exit 0; production build and 33 groups. |
+| `npm run test:platform -- --isolated` | Exit 0; production build and 19 performance/accessibility groups. |
+
+Application Chrome/build checks exercised exactly these backported source bytes via local tarball overrides before immutable URL pinning. Final pinning and deduplication were followed by a fresh integrity/advisory gate, audit, lint, TypeScript, unit and integration run. Hosted CI must separately prove clean `npm ci --ignore-scripts` and all nine jobs, including Chrome; this local record does not predeclare remote success.
+
+Local evidence is retained under ignored `test-results/living-review/picomatch-repair/`. Used the existing checkout and reusable `.next-build`, with 26 GiB free before builds. Removed the small upstream test checkouts and override-resolution probes after qualification. Preserved existing model caches, user data and unrelated `.codex/`; no outside-repository scratch copy/install. Own synthetic fixtures were cleaned by their harnesses. Real-mailbox and production gates remain closed.
+
 ## 2026-11-18: purchase-release Chrome refresh race
 
 Owner authorized a CI repair, local verification, commit/push on `codex/living-commitments` and monitoring all CI jobs. No main merge, deployment or real mailbox access.

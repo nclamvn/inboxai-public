@@ -86,7 +86,8 @@
     "preview:living-coverage": "npm run test:local-auth -- --living-coverage-preview",
     "test:living-review": "npm run test:local-auth -- --living-review",
     "bench:living-review": "node --import tsx tests/eval/living-review/run.mjs",
-    "preview:living-review": "npm run test:local-auth -- --living-review-preview"
+    "preview:living-review": "npm run test:local-auth -- --living-review-preview",
+    "audit:picomatch": "node scripts/security/picomatch.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
@@ -156,6 +157,8 @@
   "overrides": {
     "@typescript-eslint/typescript-estree@8.72.2": {
       "minimatch": "11.0.7"
-    }
+    },
+    "picomatch@2": "https://raw.githubusercontent.com/nclamvn/inboxai-public/0d5f3fcdf452ca827986c71ebd7703308c1627ba/vendor/releases/inboxai-picomatch-v2-2.3.2-inboxai.1.tgz",
+    "picomatch@4": "https://raw.githubusercontent.com/nclamvn/inboxai-public/0d5f3fcdf452ca827986c71ebd7703308c1627ba/vendor/releases/inboxai-picomatch-v4-4.0.7-inboxai.1.tgz"
   }
 }
