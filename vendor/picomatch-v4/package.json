@@ -1,0 +1,80 @@
+{
+  "name": "@inboxai/picomatch-v4",
+  "description": "InboxAI security backport of picomatch 4.0.7; see vendor/PICOMATCH_SECURITY.md",
+  "version": "4.0.7-inboxai.1",
+  "homepage": "https://github.com/micromatch/picomatch",
+  "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "funding": "https://github.com/sponsors/jonschlinkert",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nclamvn/inboxai-public.git",
+    "directory": "vendor/picomatch-v4"
+  },
+  "bugs": {
+    "url": "https://github.com/micromatch/picomatch/issues"
+  },
+  "license": "MIT",
+  "files": [
+    "index.js",
+    "posix.js",
+    "lib"
+  ],
+  "sideEffects": false,
+  "main": "index.js",
+  "engines": {
+    "node": ">=12"
+  },
+  "keywords": [
+    "glob",
+    "match",
+    "picomatch"
+  ],
+  "nyc": {
+    "reporter": [
+      "html",
+      "lcov",
+      "text-summary",
+      "cobertura"
+    ]
+  },
+  "verb": {
+    "toc": {
+      "render": true,
+      "method": "preWrite",
+      "maxdepth": 3
+    },
+    "layout": "empty",
+    "tasks": [
+      "readme"
+    ],
+    "plugins": [
+      "gulp-format-md"
+    ],
+    "lint": {
+      "reflinks": true
+    },
+    "related": {
+      "list": [
+        "braces",
+        "micromatch"
+      ]
+    },
+    "reflinks": [
+      "braces",
+      "expand-brackets",
+      "extglob",
+      "fill-range",
+      "micromatch",
+      "minimatch",
+      "nanomatch",
+      "picomatch"
+    ]
+  },
+  "private": true,
+  "x-upstream": {
+    "name": "picomatch",
+    "version": "4.0.7",
+    "integrity": "sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==",
+    "advisory": "GHSA-fc5q-39xc-vjpf"
+  }
+}

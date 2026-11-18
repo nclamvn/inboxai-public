@@ -1,0 +1,53 @@
+{
+  "packages": [
+    {
+      "name": "@inboxai/picomatch-v2",
+      "version": "2.3.2-inboxai.1",
+      "directory": "vendor/picomatch-v2",
+      "upstream": {
+        "name": "picomatch",
+        "version": "2.3.2",
+        "integrity": "sha512-V7+vQEJ06Z+c5tSye8S+nHUfI51xoXIXjHQ99cQtKUkQqqO1kO/KCJUfZXuB47h/YBlDhah2H3hdUGXn8ie0oA==",
+        "advisory": "GHSA-fc5q-39xc-vjpf"
+      },
+      "files": {
+        "LICENSE": "d0cd141b0c322fded5dfad1d4645bb2fedfc05b7321fe1009469638190d59ef9",
+        "README.md": "f4653b68a1883a32f852083c1b93381ce87f44c6855ce1f01854d39d0563c98c",
+        "package.json": "ad6bf9978ba5bc9afaced6694d9686ab65ec99eb228528621e90de3198f81149",
+        "index.js": "5695ff5dfcd5a338a40630bd506056f2950bcb08fe1cc068519cbbfe60add480",
+        "lib/constants.js": "980225ab847a88a784f6d315557b8434f7742b2551ce20e354455c61b938c0a5",
+        "lib/parse.js": "2538ef9da446ea2bc58cc75b2604562eee092249346aa73a41d273fde9710f46",
+        "lib/picomatch.js": "2cb169cbe17d356036c5f62a377318b85e30817877e59797842aec9d8b15f54b",
+        "lib/scan.js": "227fcc994a477ea95c5a0435d32783566334c6bd0dcc4a103029735ad8c9c535",
+        "lib/utils.js": "809fc29cf35ab0aa76b99cad29182f62c0ae598902481d10f9868eaef71981ee"
+      },
+      "archive": "vendor/releases/inboxai-picomatch-v2-2.3.2-inboxai.1.tgz",
+      "archiveIntegrity": "sha512-OWAUGseTH7pW4IOi6EJ5sX0oX6Acm3WKvxw/7dEkcreg0vtjbg4XpLETTtDJNPZnTy4tKrrs0E/BnSZR2mVBdw=="
+    },
+    {
+      "name": "@inboxai/picomatch-v4",
+      "version": "4.0.7-inboxai.1",
+      "directory": "vendor/picomatch-v4",
+      "upstream": {
+        "name": "picomatch",
+        "version": "4.0.7",
+        "integrity": "sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==",
+        "advisory": "GHSA-fc5q-39xc-vjpf"
+      },
+      "files": {
+        "LICENSE": "d0cd141b0c322fded5dfad1d4645bb2fedfc05b7321fe1009469638190d59ef9",
+        "README.md": "a69b87120fe2b9cb8f9057eaef6b9f9887f803e02185ca2f431e8162f6312220",
+        "package.json": "6d0b2470ecdf43abff25fab6e5daacea5b978955f069542b4e6c97286b741235",
+        "index.js": "02ae26406508e28f9ba0865be16cf77f0b33de6c4d4d49c212c4176df1d5625a",
+        "posix.js": "5695ff5dfcd5a338a40630bd506056f2950bcb08fe1cc068519cbbfe60add480",
+        "lib/constants.js": "c28f952d2758261fe5428a121add485cc25b03e0193633f649de903dc0e5e222",
+        "lib/parse.js": "9744ec52e3468e8938410870ee950e86cf17a3c16d734fdff9158ad475ee6582",
+        "lib/picomatch.js": "fdd249d7ffff853f3bb1c77eafc8baa1a437bea85a94c35877b83c6a40d9ca94",
+        "lib/scan.js": "6457a1764e5c2e543cc3a0c00ce12ebb3764097628868198370b64d4e642aaae",
+        "lib/utils.js": "f04604f70cd1a3f6ace80b84766468674ff38b4bb83818d2ef1d81fc6355f935"
+      },
+      "archive": "vendor/releases/inboxai-picomatch-v4-4.0.7-inboxai.1.tgz",
+      "archiveIntegrity": "sha512-n3jF8HIaEFFGa0jIJUZ4EYOMojxNolzNOMagvmIt0osqM/wDADH4kmD9QLBVGARyXS2TghL6XieXpHz2t44lng=="
+    }
+  ]
+}

@@ -14,6 +14,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "vendor/picomatch-v*/**", // Third-party style; exact sources and security tests gate these backports.
   ]),
 ]);
 

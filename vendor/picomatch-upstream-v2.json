@@ -1,0 +1,16 @@
+{
+  "name": "picomatch",
+  "version": "2.3.2",
+  "integrity": "sha512-V7+vQEJ06Z+c5tSye8S+nHUfI51xoXIXjHQ99cQtKUkQqqO1kO/KCJUfZXuB47h/YBlDhah2H3hdUGXn8ie0oA==",
+  "files": {
+    "LICENSE": "d0cd141b0c322fded5dfad1d4645bb2fedfc05b7321fe1009469638190d59ef9",
+    "index.js": "5695ff5dfcd5a338a40630bd506056f2950bcb08fe1cc068519cbbfe60add480",
+    "README.md": "f4653b68a1883a32f852083c1b93381ce87f44c6855ce1f01854d39d0563c98c",
+    "package.json": "63264d817e856a4bff57d4304f2b38d2964a4f6df520eb169e7bcdb619f13e9a",
+    "lib/constants.js": "980225ab847a88a784f6d315557b8434f7742b2551ce20e354455c61b938c0a5",
+    "lib/parse.js": "3a91656f440069aa8f8e15c9d695b9f6b2209df1eab2be8127c72cbcca45ff5f",
+    "lib/picomatch.js": "2cb169cbe17d356036c5f62a377318b85e30817877e59797842aec9d8b15f54b",
+    "lib/utils.js": "809fc29cf35ab0aa76b99cad29182f62c0ae598902481d10f9868eaef71981ee",
+    "lib/scan.js": "227fcc994a477ea95c5a0435d32783566334c6bd0dcc4a103029735ad8c9c535"
+  }
+}
