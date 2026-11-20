@@ -26,6 +26,15 @@
       <a id="login" href="#" target="_blank" rel="noopener">Mở đăng nhập InboxAI</a>
     </details>
     <p id="notice" class="notice" role="status"></p>
+    <form id="enrollment" class="study-panel" aria-labelledby="team-title" hidden>
+      <h2 id="team-title">Nhóm dùng thử</h2>
+      <p>Dùng mã ẩn danh. Ghi công cụ đã dùng để đối soát ở phần đối chứng.</p>
+      <label for="team-code">Mã nhóm</label>
+      <input id="team-code" required minlength="2" maxlength="20" pattern="[A-Z0-9\-]{2,20}" placeholder="NHOM-A">
+      <label for="team-tools">Công cụ đối chứng và phiên bản</label>
+      <input id="team-tools" required maxlength="120" placeholder="Chrome và bảng tính local">
+      <button type="submit" class="primary">Ghi thông tin nhóm</button>
+    </form>
     <section id="task" class="study-panel" aria-labelledby="task-title" hidden>
       <p id="method" class="mode"></p>
       <h2 id="task-title" tabindex="-1"></h2>
@@ -66,7 +75,8 @@
         </form>
         <div class="actions finish">
           <button type="button" id="verify" class="primary" data-action="finish" hidden>Ghi nhận kết quả đã duyệt</button>
-          <button type="button" id="abandon" data-action="abandon">Kết thúc hồ sơ chưa duyệt</button>
+          <button type="button" id="hold" data-action="hold" hidden>Ghi quyết định giữ chờ</button>
+          <button type="button" id="abandon" data-action="abandon">Dừng hồ sơ</button>
         </div>
       </div>
     </section>
@@ -74,6 +84,18 @@
       <h2 id="results-title" tabindex="-1">Kết quả phiên đối soát</h2>
       <p id="provenance"></p>
       <div id="summary"></div>
+      <form id="feedback" aria-labelledby="feedback-title" hidden>
+        <h3 id="feedback-title">Bạn có muốn dùng thử tiếp với quy trình này?</h3>
+        <label for="willing">Phản hồi của nhóm</label>
+        <select id="willing" required>
+          <option value="">Chọn phản hồi</option>
+          <option value="yes">Có</option>
+          <option value="no">Không</option>
+          <option value="unsure">Chưa chắc</option>
+        </select>
+        <button type="submit">Ghi phản hồi</button>
+      </form>
+      <p id="feedback-receipt" hidden></p>
       <a id="download" download="inboxai-doi-soat.json">Tải báo cáo JSON</a>
     </section>
   </main>

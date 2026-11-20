@@ -7,6 +7,8 @@ const handoffPage = '/commitments/handoffs'
 const button = (page,name) => page.getByRole('button',{name,exact:true})
 const link = (page,name) => page.getByRole('link',{name,exact:true})
 const status = (page,text) => page.getByRole('status').filter({hasText:text}).waitFor()
+const syncPending='Hộp thư Gmail nguồn chưa đồng bộ xong. Mua hàng cần đồng bộ trước khi Kế toán thử lại.'
+const sourceUnavailable='Chưa kiểm tra được Gmail nguồn. Mua hàng cần kiểm tra kết nối rồi đồng bộ lại.'
 const blockText = 'Có chứng từ đính chính mới. Mua hàng cần kiểm tra và bàn giao lại trước khi duyệt.'
 
 export async function prepareSupplementalHandoff(options,{po,original,current,supplier,due}) {
@@ -61,11 +63,19 @@ export async function rehearsePurchaseApprovalFreshness(options) {
     prepareSupplementalHandoff(options,{po,original,current,supplier,due})
 
   const control = await pendingCase('PO-9974','INV-9074','INV-9174')
-  sql(`DO $$ BEGIN
-    PERFORM public.confirm_purchase_handoff('${reviewerId}',gen_random_uuid(),
-      jsonb_build_object('action','approve','handoffId','${control.target}'));
-    RAISE EXCEPTION 'Legacy RPC approved a supplemental handoff without a checked shortlist';
-  EXCEPTION WHEN SQLSTATE 'PT433' THEN NULL;
+  sql(`DO $$
+  DECLARE checked jsonb:=public.read_purchase_approval_scan('${reviewerId}','${control.target}');
+    command jsonb:=jsonb_build_object('action','approve','handoffId','${control.target}');
+  BEGIN
+    IF checked#>>'{scope,syncHistoryId}' IS NULL THEN RAISE EXCEPTION 'Fixture Gmail cursor is not complete'; END IF;
+    BEGIN
+      PERFORM public.confirm_purchase_handoff('${reviewerId}',gen_random_uuid(),command,checked->>'token');
+      RAISE EXCEPTION 'Old caller approved a supplemental handoff without a checked Gmail cursor';
+    EXCEPTION WHEN SQLSTATE 'PT433' THEN NULL; END;
+    BEGIN
+      PERFORM public.confirm_purchase_handoff('${reviewerId}',gen_random_uuid(),command,checked->>'token','1');
+      RAISE EXCEPTION 'Mismatched source cursor approved a supplemental handoff';
+    EXCEPTION WHEN SQLSTATE 'PT433' THEN NULL; END;
   END $$;`)
   assert.equal((await control.scope()).decisionId,null)
   await control.mail('same-bytes',control.bytes,1)
@@ -83,6 +93,24 @@ export async function rehearsePurchaseApprovalFreshness(options) {
   assert.equal(reviewerSync.status(),200,await reviewerSync.text())
   const synced = await reviewerSync.json()
   assert.deepEqual([synced.success,synced.synced],[true,1])
+  // A second Gmail mailbox can have unapplied changes without blocking this case.
+  reviewerMailbox.deliver([{id:'PO-9974-reviewer-unseen',subject:'Tin riêng của Kế toán',
+    from:'thong-bao@example.test',at:new Date().toISOString(),body:'Không thuộc hồ sơ.'}])
+  const ownerMailbox=accounts['mua-hang']
+  const buyerBefore=ownerMailbox.box.profileReads, reviewerBefore=reviewerMailbox.box.profileReads
+  ownerMailbox.box.profileUnavailable=true
+  try {
+    const blocked=reviewer.waitForResponse(response=>response.url()===app+handoffs&&response.request().method()==='POST')
+    await approve()
+    assert.equal((await blocked).status(),409)
+    await status(reviewer,sourceUnavailable)
+    assert.equal((await control.scope()).decisionId,null)
+  } finally {
+    ownerMailbox.box.profileUnavailable=false
+  }
+  assert.equal(ownerMailbox.box.profileReads,buyerBefore+1)
+  assert.equal(reviewerMailbox.box.profileReads,reviewerBefore)
+  record('An unavailable Gmail profile leaves the supplemental approval pending and checks only the original source mailbox.',true)
   await approve()
   await status(reviewer,'Đã duyệt hồ sơ.')
   assert.equal((await control.scope()).invoice.number,'INV-9174')
@@ -92,6 +120,27 @@ export async function rehearsePurchaseApprovalFreshness(options) {
   const live = await pendingCase('PO-9978','INV-9078','INV-9178')
   const duplicateUid = 'PO-9978-same-bytes'
   await live.mail('same-bytes',live.bytes,1)
+  const pendingUid='PO-9978-b'
+  ownerMailbox.deliver([{
+    id:pendingUid,subject:'[PO-9978] Bổ sung hóa đơn',from:supplier,
+    at:new Date(Date.now()-0.5*86_400_000).toISOString(),body:'Bản thay thế chưa đồng bộ.',
+    attachments:[{filename:'dinh-chinh.csv',contentType:'text/csv',
+      data:Buffer.from(live.csv('INV-9178','INV-9278',laterDue)).toString('base64')}],
+  }])
+  const lookup=()=>sql("SELECT id FROM public.emails WHERE source_account_id='"+ownerMailbox.id+"' AND original_uid='"+pendingUid+"'").trim()
+  assert.equal(lookup(),'')
+  const unseen=reviewer.waitForResponse(response=>response.url()===app+handoffs&&response.request().method()==='POST')
+  await approve()
+  assert.equal((await unseen).status(),409)
+  await status(reviewer,syncPending)
+  assert.equal(lookup(),'')
+  assert.equal((await live.scope()).decisionId,null)
+  assert.deepEqual((await detail(live.target)).exception.events.map(event=>event.action),['request_evidence','submit'])
+  await reviewer.setViewportSize({width:390,height:844})
+  await capture('PO-9978-gmail-chua-dong-bo',reviewer)
+  await reviewer.setViewportSize({width:1380,height:920})
+  record('The reviewer sees a source sync hold on mobile while the new correction is still in Gmail only. No decision, receipt or sync write is made by the reviewer.',true)
+
   const pause = accounts['mua-hang'].pauseAttachment(duplicateUid)
   const oldAttempt = reviewer.waitForResponse(response=>response.url()===app+handoffs && response.request().method()==='POST')
   let timer, newEmail
@@ -100,7 +149,9 @@ export async function rehearsePurchaseApprovalFreshness(options) {
     await Promise.race([pause.entered,new Promise((_,reject)=>{
       timer = setTimeout(()=>reject(new Error('Chrome approval did not reach the duplicate attachment after reading the shortlist')),6500)
     })])
-    newEmail = await live.mail('b',live.csv('INV-9178','INV-9278',laterDue),0.5)
+    await request('/api/source-accounts/sync',{method:'POST',headers:{'content-type':'application/json'},body:'{"refresh":true}'})
+    newEmail=lookup()
+    assert.match(newEmail,/^[0-9a-f-]{36}$/)
   } finally {
     clearTimeout(timer)
     pause.release()
@@ -149,7 +200,10 @@ export async function rehearsePurchaseApprovalFreshness(options) {
     if (route.request().method()!=='POST' || route.request().postDataJSON().action!=='approve') return route.continue()
     const response = await route.fetch({maxRetries:0})
     attempts.push({key:route.request().headers()['idempotency-key'],status:response.status(),receipt:await response.json()})
-    if (attempts.length===1 && response.ok()) return route.abort()
+    if (attempts.length===1 && response.ok()) {
+      ownerMailbox.box.profileUnavailable=true
+      return route.abort()
+    }
     return route.fulfill({response})
   })
   try {
@@ -157,6 +211,7 @@ export async function rehearsePurchaseApprovalFreshness(options) {
     await button(reviewer,'Thử lại cùng yêu cầu').click()
     await status(reviewer,'Đã duyệt hồ sơ.')
   } finally {
+    ownerMailbox.box.profileUnavailable=false
     await reviewer.unroute(pattern)
   }
   assert.deepEqual(attempts.map(attempt=>[attempt.status,attempt.receipt.replayed]),[[200,false],[200,true]])

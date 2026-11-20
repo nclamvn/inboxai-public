@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { chromium } from 'playwright-core'
 import { audit } from '../browser.mjs'
 import { button, signIn } from './fixture.mjs'
+import { cases, corpusId, decisionFields, loadLabels } from '../../eval/purchase-value/corpus.mjs'
 
 const require=createRequire(import.meta.url)
 const axeScript=readFileSync(require.resolve('axe-core/axe.min.js'),'utf8')
@@ -32,9 +33,12 @@ export async function rehearsePurchaseStudy({guide,app,base,record,output}) {
     }
     await meter.goto(guide.origin+'/study')
     const state=()=>meter.request.get(guide.origin+'/study/state').then(response=>response.json())
-    await button(meter,'Bắt đầu đo').waitFor()
+    await meter.getByText('0/6 hồ sơ',{exact:true}).waitFor()
     assert.ok(guide.seed.mailCount>100)
     const initial=await state()
+    const {value}=initial
+    const fixture=po=>cases.find(item=>item.po===po)
+    const labels=value?loadLabels():null
     assert.equal(initial.initialOrder.length,6)
     assert.equal(new Set(initial.initialOrder.map(item=>item.po)).size,6)
     assert.equal(await meter.locator('#mail details').count(),0)
@@ -51,6 +55,23 @@ export async function rehearsePurchaseStudy({guide,app,base,record,output}) {
       assert.equal(response.status(),200,await response.text())
       return response.json()
     }
+    if (value) {
+      const premature=await meter.request.post(guide.origin+'/study/event',{
+        headers:{Origin:guide.origin,'X-Demo-Token':initial.token},data:{action:'start',revision:initial.revision},
+      })
+      assert.equal(premature.status(),409)
+      await meter.getByLabel('Mã nhóm',{exact:true}).fill(initial.initialOrder[0].mode==='manual'?'SIM-A':'SIM-B')
+      await meter.getByLabel('Công cụ đối chứng và phiên bản').fill('Chrome và quy tắc CSV · giả lập')
+      await operation('Ghi thông tin nhóm','enroll')
+      await meter.reload()
+      assert.ok((await state()).team.code.startsWith('SIM-'))
+    }
+    await button(meter,'Bắt đầu đo').waitFor()
+    const fillDecision=async(part,values)=>{
+      await meter.getByLabel('Mã hóa đơn',{exact:true}).fill(values[1])
+      await meter.getByLabel('Hạn thanh toán',{exact:true}).fill(values.at(-1))
+      await meter.getByLabel('Chứng từ nguồn',{exact:true}).selectOption(part.id)
+    }
     const source=async() => operation('Mở nguồn · 0','source')
     const close=async i => {
       await meter.getByText(i+'/6 hồ sơ',{exact:true}).waitFor()
@@ -65,11 +86,12 @@ export async function rehearsePurchaseStudy({guide,app,base,record,output}) {
       await reviewer.goto(await handoff.getAttribute('href'))
       await button(reviewer,'Duyệt bản bổ sung').waitFor()
     }
+    const purchaseRow=po=>buyer.getByRole('region',{name:'Hồ sơ mua hàng cần xử lý'}).getByRole('listitem').filter({
+      has:buyer.getByRole('heading',{name:new RegExp('^'+po+' ·')}),
+    })
     const submit=async (po,number,{wrongPo=false,competing=false}={})=>{
       await buyer.goto(app+'/inbox')
-      const row=buyer.getByRole('region',{name:'Hồ sơ mua hàng cần xử lý'}).getByRole('listitem').filter({
-        has:buyer.getByRole('heading',{name:new RegExp('^'+po+' ·')}),
-      })
+      const row=purchaseRow(po)
       if(wrongPo) {
         await row.locator('summary').filter({hasText:'tệp cần đối chiếu'}).click()
         await row.getByText('Mã PO trong tệp không khớp · hoa-don.csv',{exact:true}).waitFor()
@@ -93,6 +115,7 @@ export async function rehearsePurchaseStudy({guide,app,base,record,output}) {
       assert.equal(active.index,index)
       assert.equal(task.po,descriptor.po)
       const slot=index%3
+      const frozen=value?fixture(task.po):null
       if(descriptor.mode==='manual') {
         if(slot===0) {
           const before=await state()
@@ -110,27 +133,50 @@ export async function rehearsePurchaseStudy({guide,app,base,record,output}) {
           assert.equal((await state()).active.activeMs,paused)
           assert.equal((await state()).active.counts.source,1)
           await operation('Tiếp tục đo','resume')
-          await meter.locator('#mail summary').click()
+          await meter.locator('#mail summary').first().click()
           await capture(meter,'01-doi-chung-mobile')
         }
         if(active.latePending) {
+          if(value) {
+            const initialPart=(await state()).active.messages[0].parts[0]
+            await fillDecision(initialPart,initialPart.contents.split('\n')[1].split(','))
+          }
           await operation('Nạp thư đến khi đang duyệt','release')
           await operation('Sửa quyết định · 0','revision')
         }
         const packet=(await state()).active.messages
-        const latest=[...packet].sort((a,b)=>a.age-b.age).find(message=>
-          message.parts.some(part=>part.contents.split('\n')[1].startsWith(task.po+',')))
-        const part=latest.parts.find(part=>part.contents.split('\n')[1].startsWith(task.po+','))
-        const values=part.contents.split('\n')[1].split(',')
-        await meter.getByLabel('Mã hóa đơn',{exact:true}).fill(values[1])
-        await meter.getByLabel('Hạn thanh toán',{exact:true}).fill(values.at(-1))
-        await meter.getByLabel('Chứng từ nguồn',{exact:true}).selectOption(part.id)
-        await operation('Ghi nhận quyết định','finish')
+        const eligible=packet.flatMap(message=>message.parts.map(part=>({
+          part,age:message.age,from:message.from??task.supplier,values:part.contents.split('\n')[1].split(','),
+        }))).filter(({values,from})=>values[0]===task.po&&values.at(-1)&&from===task.supplier)
+          .sort((left,right)=>left.age-right.age)
+        if(!eligible.length) {
+          await operation('Ghi quyết định giữ chờ','hold')
+        } else {
+          const {part,values}=eligible[0]
+          await fillDecision(part,values)
+          await operation('Ghi nhận quyết định','finish')
+        }
       } else {
         const item=guide.seed.studySetups.get(task.po)
         const code=Number(task.po.slice(3))
         await source()
-        await submit(task.po,'INV-'+(code*10+2),{wrongPo:slot===0,competing:slot===1})
+        if(frozen?.kind==='hold') {
+          await buyer.goto(app+'/inbox')
+          const row=purchaseRow(task.po)
+          await row.locator('summary').filter({hasText:'tệp cần đối chiếu'}).click()
+          await row.getByText('Tệp chưa có hạn thanh toán được yêu cầu · hoa-don.csv',{exact:true}).waitFor()
+          assert.equal(await link(row,'Xem trước chứng từ mới').count(),0)
+          const before=await guide.seed.caseState(item)
+          assert.equal(before.evidence.stage,'buyer')
+          assert.equal(before.payment.invoice.number,task.original)
+          await operation('Ghi quyết định giữ chờ','hold')
+          const after=await guide.seed.caseState(item)
+          assert.deepEqual(after,before,'Holding must preserve the existing invoice, approval and send state')
+          await capture(buyer,'06-giu-cho-dung-nguon')
+          await close(index+1)
+          continue
+        }
+        await submit(task.po,frozen?.candidate??'INV-'+(code*10+2),{wrongPo:slot===0,competing:!value&&slot===1})
         assert.equal((await reviewer.request.get(app+'/api/commitments/payment?id='+item.orderId)).status(),404)
         if(slot===2) {
           const oldUrl=reviewer.url()
@@ -146,7 +192,7 @@ export async function rehearsePurchaseStudy({guide,app,base,record,output}) {
           await meter.reload()
           await meter.getByText('Đã nạp thư đến khi đang duyệt.',{exact:true}).waitFor()
           assert.equal((await state()).active.counts.revision,1)
-          await submit(task.po,'INV-'+(code*10+3))
+          await submit(task.po,frozen?labels[frozen.po].number:'INV-'+(code*10+3))
           assert.notEqual(reviewer.url(),oldUrl)
         }
         await button(reviewer,'Duyệt bản bổ sung').click()
@@ -158,14 +204,20 @@ export async function rehearsePurchaseStudy({guide,app,base,record,output}) {
     }
 
     await meter.getByRole('heading',{name:'Kết quả phiên đối soát'}).waitFor()
+    if(value) {
+      await meter.getByLabel('Phản hồi của nhóm',{exact:true}).selectOption('unsure')
+      await operation('Ghi phản hồi','feedback')
+      await meter.reload()
+      await meter.getByText('Phản hồi của nhóm · Chưa chắc',{exact:true}).waitFor()
+    }
     const {report}=await state()
     assert.equal(report.session,'chrome-automation')
     assert.equal(report.completed,true)
     assert.equal(report.rows.length,6)
     assert.equal(report.rows.filter(row=>row.outcome.correct).length,6)
     assert.equal(report.rows.filter(row=>row.outcome.wrongApproval).length,0)
-    const decisions=report.rows.filter(row=>row.mode==='inbox').map(row=>row.outcome.result.decision)
-    assert.equal(new Set(decisions).size,3)
+    const decisions=report.rows.filter(row=>row.mode==='inbox'&&row.outcome.action==='finish').map(row=>value?row.outcome.result.decisionId:row.outcome.result.decision)
+    assert.equal(new Set(decisions).size,value?2:3)
     assert.ok(decisions.every(Boolean))
     const downloadEvent=meter.waitForEvent('download')
     await link(meter,'Tải báo cáo JSON').click()
@@ -177,7 +229,17 @@ export async function rehearsePurchaseStudy({guide,app,base,record,output}) {
     await meter.setViewportSize({width:1440,height:960})
     await capture(meter,'05-bao-cao-desktop')
     assert.deepEqual(errors,[])
-    record('Both methods complete all six Chrome cases with the exact invoice, due date and attachment, including same-name files and late older mail.',true)
+    if(value) {
+      assert.equal(report.schema,2)
+      assert.equal(report.corpusId,corpusId)
+      for(const row of report.rows) {
+        assert.deepEqual(decisionFields(row.outcome.result),decisionFields(labels[row.po]))
+        if(row.kind==='stale') assert.deepEqual(row.provisional,labels[row.po].before)
+      }
+      assert.equal(report.rows.filter(row=>row.outcome.action==='hold').length,2)
+      writeFileSync(output+'/browser.json',JSON.stringify({chrome:browser.version(),report},null,2)+'\n')
+      record('Both value-study methods match the frozen approve/hold decisions and exact sources. Holding preserves the product ledger and sends, with anonymous enrollment and feedback retained.',true)
+    } else record('Both methods complete all six Chrome cases with the exact invoice, due date and attachment, including same-name files and late older mail.',true)
     record('A stale mobile reviewer receives 409 with no decision written. After an app restart and a new handoff, PostgreSQL contains one decision for the corrected source.',true)
     record('A replay cannot increment the source tally again. Paused time and moderator counts survive reload. The JSON download matches the server report, and axe and viewport checks pass on desktop and mobile.',true)
   } catch(error) {

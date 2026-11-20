@@ -1,5 +1,84 @@
 # Verification record
 
+## 2026-11-20: Kiểm tra độ mới của Gmail trước khi duyệt
+
+Các ca Chrome dùng hai Gmail giả lập, Next.js 16.4.6, PostgreSQL local và
+Chrome 157.0.8103.80 trên macOS 27.2.1, Node 24.14.1. Migration mới
+ràng buộc checkpoint đã ghi xong với phạm vi file và giao dịch duyệt bổ sung.
+Chỉ service role được gọi chữ ký RPC mới. RPC cũ có thể đọc lại biên nhận
+và chạy thao tác trước đây, nhưng không thể tạo phê duyệt bổ sung mới.
+[Thiết kế và giới hạn](PURCHASE_LOCAL_RELEASE.md#kiểm-tra-độ-mới-của-gmail-trước-khi-duyệt)
+
+| Lệnh | Kết quả local |
+| --- | --- |
+| `npm run lint`, `npm run typecheck` | Exit 0. |
+| `npm run test:unit`, `npm run test:integration` | Exit 0, 347 và 211 kiểm thử. |
+| `npm run test:db` | Exit 0, 51 nhóm, gồm quyền RPC mới. |
+| `npm run test:purchase-release` | Exit 0, 32 nhóm Chrome và production build. [Report](../../test-results/purchase-release/report.json). |
+| `npm run test:purchase-value` và `-- --bundle-b` | Exit 0, 17 nhóm Chrome mỗi thứ tự. Cả hai dùng fingerprint `d028984fb7f1` và chấm khớp cả sáu hồ sơ InboxAI. |
+| `npm run test:staging -- --isolated` | Exit 0, 33 nhóm, gồm nâng cấp, sao lưu, khôi phục và cảnh báo local. |
+
+Phản hồi getProfile bị lỗi khiến hồ sơ giữ chờ. Thư đính chính chỉ có
+ở Gmail giả lập chặn duyệt trên Chrome mobile trước khi thư có trong
+PostgreSQL. Khi Mua hàng đồng bộ trong lúc Kế toán duyệt, bản cũ vẫn
+bị chặn. Đính chính đúng nguồn được bàn giao lại và duyệt đúng một lần.
+Lần thử lại sau mất phản hồi trả cùng quyết định ngay cả khi nguồn mất
+kết nối. Thay đổi ở tài khoản Gmail riêng của Kế toán không chặn hồ sơ.
+Lưu log ở `test-results/local-pilot/study/value/checkpoint-gate/`.
+
+Chốt duyệt dựa trên mốc Gmail quan sát được trước lúc ghi. Tình trạng Gmail
+thật, hộp thư production và tác động lên thời gian xử lý của người dùng
+chưa được đo trong lượt này. Security gate vẫn đóng.
+
+## 2026-11-20: Pilot giá trị duyệt đúng chứng từ
+
+Trên macOS 27.2.1, Apple M1 Max, Node 24.14.1, Next.js 16.4.6 và Chrome
+157.0.8103.80. Hai bộ giả lập, mỗi bộ ba hồ sơ, có dữ liệu và nhãn khóa
+SHA-256. Preview, đối chứng và chấm người tham gia dùng giao thức trong
+[Pilot giá trị](PURCHASE_VALUE.md).
+
+| Lệnh | Kết quả thực tế |
+| --- | --- |
+| `npm run lint`, `npm run typecheck` | Exit 0. |
+| `npm run test:unit` | Exit 0, 347 kiểm thử trong 35 tệp. |
+| `npm run test:integration` | Exit 0, 211 kiểm thử trong 17 tệp. |
+| `npm run test:purchase-value` và thứ tự đảo `-- --bundle-b` | Exit 0 cho cả hai, 17 nhóm Chrome mỗi thứ tự và build chế độ production. Cùng fingerprint local `12c722a69c9a`. |
+| `npm run test:purchase-study` | Exit 0, 17 nhóm. Phiên cũ giữ định dạng xuất schema 1. |
+| `npm run test:staging -- --isolated` | Exit 0, 33 nhóm. Diễn tập nâng cấp, backup, khôi phục sang cụm độc lập và xác nhận cảnh báo local. |
+| `npm run bench:purchase-value -- models` và `-- compare` | Exit 0. 8 quyết định mỗi nhánh model, gồm 2 ảnh chụp sơ bộ. |
+| Bộ chấm người tham gia | Kiểm thử ngưỡng, bỏ dở, duyệt sai và trùng nhóm qua unit test. CLI từ chối hai JSON xuất từ Chrome tự động. |
+
+Chrome đi qua hai vai, ghi đúng hai quyết định giữ chờ mà không đổi hóa
+đơn gốc, thử lại khi dùng trạng thái cũ, khởi động lại InboxAI giữa ca đính
+chính và lưu quyết định mới có đúng nguồn. Bàn điều phối lưu mã nhóm giả
+lập, phản hồi, thời gian và bộ đếm. JSON tải về khớp dữ liệu máy chủ.
+Mẫu Chrome desktop và viewport mobile qua axe và kiểm tra tràn ngang.
+
+| Phương án | Kết quả cuối khớp nhãn | Duyệt hoặc đề xuất duyệt sai | Số trường cần sửa |
+| --- | ---: | ---: | ---: |
+| InboxAI trên Chrome | 6/6 | 0 | 0 |
+| Cách hiện tại, mô phỏng bằng quy tắc qua Chrome | 6/6 | 0 | 0 |
+| Qwen3 4B trực tiếp | 2/6 | 4 | 12 |
+| Agent Qwen3 4B có công cụ chỉ đọc | 0/6 | 6 | 20 |
+
+Duyệt sai ở đây gồm cả kết luận trỏ sai nguồn. Cả hai nhánh model đề xuất
+duyệt hai hồ sơ cần giữ chờ. Tổng thời gian máy cho sáu ảnh chụp cuối
+là 17,49 giây ở LLM và 21,92 giây ở agent, chưa tính lần chạy sơ bộ và
+làm nóng. Model chạy trên localhost qua llama.cpp b12242, cache prompt
+tắt, seed 82, temperature 0. Lượt làm nóng đầu vướng regex ngày trong
+schema đầu ra. Lượt đo dùng chuỗi ngày, chấm khớp ngày và nguồn bằng nhãn
+khóa. [Bảng điểm và từng sai lệch](../../test-results/local-pilot/study/value/comparison.json)
+
+Lượt Chrome đảo sớm tải hai mô-đun hai phiên bản giữa lúc nâng định dạng
+báo cáo. Cả hai thứ tự cuối được chạy lại trên cùng fingerprint. Các log
+nằm trong `test-results/local-pilot/study/value/`. Cụm local cũ giữ cổng
+đã được xác nhận thuộc fixture, sao lưu và kiểm tra mục lục archive trước
+khi thay phiên. Dữ liệu thử và kết quả nghiệm thu chỉ dùng ở local.
+
+Phiên người tham gia thật chưa có dữ liệu. Thời gian tự động không đưa
+vào ngưỡng tiết kiệm 25% và hai nhóm muốn dùng thử tiếp. Security gate
+cho hộp thư thật và production vẫn đóng.
+
 ## 2026-11-20: Dọn nợ kỹ thuật trước khi push Workspace
 
 Bàn điều phối từ chối thao tác dựa trên phiên bản cũ. Sau lỗi phản hồi,

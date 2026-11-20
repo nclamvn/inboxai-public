@@ -133,11 +133,38 @@ Danh sách đã kiểm tra được đối chiếu trong cùng giao dịch ghi q
 tối đa một lần với cùng mã yêu cầu. Khi Mua hàng xác nhận và bàn giao
 bản mới, bản cũ bị thay thế qua cơ chế bàn giao hiện có.
 
-Phạm vi là đính chính CSV đã vào Inbox qua nguồn Gmail của hồ sơ.
-Mỗi lượt kiểm tra tối đa sáu tệp trong tám giây. Nếu chưa kiểm tra
-đủ, yêu cầu duyệt dừng và báo rõ để kiểm tra lại. Bản chưa đồng bộ
-chưa có mặt trong danh sách kiểm tra. Biên nhận đã ghi thành công
-được trả lại khi thử lại cùng yêu cầu.
+Danh sách ứng viên gồm đính chính CSV đã đồng bộ qua nguồn Gmail
+của hồ sơ. Mỗi lượt kiểm tra tối đa sáu tệp trong tám giây. Nếu
+chưa kiểm tra đủ, yêu cầu dừng để Mua hàng tiếp tục rà soát.
+Biên nhận đã ghi thành công được trả lại khi thử lại cùng yêu cầu.
+
+### Kiểm tra độ mới của Gmail trước khi duyệt
+
+Khi Kế toán duyệt bản bổ sung, máy chủ đọc mốc lịch sử Gmail
+`historyId` từ đúng hộp thư nguồn sau khi kiểm tra các chứng từ
+trong danh sách. Mốc này phải trùng với checkpoint đã ghi xong của
+InboxAI. Checkpoint chưa hoàn tất phân trang, không có mốc hợp lệ,
+hay chưa bắt kịp Gmail làm hồ sơ tiếp tục chờ. Khi không đọc được
+mốc từ Gmail, Kế toán nhận hướng dẫn để Mua hàng kiểm tra kết nối.
+[Định nghĩa mốc lịch sử Gmail](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users/getProfile)
+
+Giao dịch duyệt kiểm tra lại checkpoint và danh sách ứng viên dưới
+cùng khóa tài khoản dùng khi ghi trang đồng bộ. Nếu một trong hai
+đổi trong khoảng kiểm tra, giao dịch hủy cả quyết định lẫn biên nhận.
+Nếu có bằng chứng hai mốc đã bắt kịp do một lần đồng bộ song song,
+máy chủ thử kiểm tra lại tối đa một lần với cùng mã yêu cầu. Biên nhận
+đã ghi được đọc trước các kiểm tra Gmail, kể cả khi nguồn mất kết nối
+sau lúc duyệt. Bản máy chủ cũ có thể đọc lại biên nhận và thực hiện
+các thao tác cũ khác. Duyệt bổ sung mới cần bản máy chủ cung cấp mốc
+Gmail đã xác minh, nên phải đưa migration và app vào cùng đợt nâng cấp.
+
+Kế toán duyệt trên bản đã được giao. Kiểm tra mốc Gmail diễn ra phía
+máy chủ với quyền đọc nguồn của Mua hàng. Mua hàng vẫn đồng bộ bằng
+luồng đã có. Kiểm tra áp dụng cho cả thay đổi không liên quan trong
+cùng hộp thư cho đến khi đồng bộ bắt kịp. Hộp thư riêng của người duyệt
+không thuộc phạm vi mốc này. Một thư đến Gmail sau lần quan sát cuối
+có thể chưa nằm trong quyết định nếu chưa được đồng bộ khi giao dịch
+chốt. Google và PostgreSQL không chia sẻ giao dịch.
 
 ## Tiếp tục rà soát sau gián đoạn
 

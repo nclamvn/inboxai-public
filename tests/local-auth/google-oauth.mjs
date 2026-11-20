@@ -113,7 +113,11 @@ export async function startGoogleOAuthFixture() {
           nextPageToken: offset + limit < rows.length ? String(offset + limit) : undefined,
         })
         const historyId = String(100 + box.history.length)
-        if (pathname === gmail + '/profile') return json({ historyId })
+        if (pathname === gmail + '/profile') {
+          box.profileReads++
+          if (box.profileUnavailable) return json({error:'fixture_profile_unavailable'},503)
+          return json({ historyId })
+        }
         if (pathname === gmail + '/messages') {
           const q = searchParams.get('q')
           if (q) return json({ messages: [...box.messages.values()].filter(item =>
@@ -194,7 +198,7 @@ export async function startGoogleOAuthFixture() {
   return {
     url: `http://127.0.0.1:${server.address().port}`, calls,
     registerMailbox(email, canSend = false, canModify = false) {
-      const box = { online: true, drops: 0, fullReads: 0, historyStarts: [], messages: new Map(), history: [],
+      const box = { online: true, drops: 0, fullReads: 0, profileReads: 0, historyStarts: [], messages: new Map(), history: [],
         attachmentPauses: new Map(), attachmentReads: [] }
       const grant = { mailbox: box, email, subject: email, scopes: [gmailReadScope, googleEmailScope, ...(canSend ? [gmailSendScope] : []), ...(canModify ? [gmailModifyScope] : [])] }
       return {

@@ -1,0 +1,58 @@
+{
+  "PO-63810": {
+    "decision": "approve",
+    "source": "PO-63810-bo-sung",
+    "number": "INV-638102",
+    "due": "2027-05-19",
+    "part": "PO-63810-bo-sung#2"
+  },
+  "PO-63811": {
+    "source": null,
+    "number": null,
+    "due": null,
+    "part": null,
+    "decision": "hold"
+  },
+  "PO-63812": {
+    "decision": "approve",
+    "source": "PO-63812-dinh-chinh",
+    "number": "INV-638123",
+    "due": "2027-05-24",
+    "part": "PO-63812-dinh-chinh#1",
+    "before": {
+      "decision": "approve",
+      "source": "PO-63812-bo-sung",
+      "number": "INV-638122",
+      "due": "2027-05-21",
+      "part": "PO-63812-bo-sung#1"
+    }
+  },
+  "PO-74920": {
+    "decision": "approve",
+    "source": "PO-74920-bo-sung",
+    "number": "INV-749202",
+    "due": "2027-05-19",
+    "part": "PO-74920-bo-sung#2"
+  },
+  "PO-74921": {
+    "source": null,
+    "number": null,
+    "due": null,
+    "part": null,
+    "decision": "hold"
+  },
+  "PO-74922": {
+    "decision": "approve",
+    "source": "PO-74922-dinh-chinh",
+    "number": "INV-749223",
+    "due": "2027-05-24",
+    "part": "PO-74922-dinh-chinh#1",
+    "before": {
+      "decision": "approve",
+      "source": "PO-74922-bo-sung",
+      "number": "INV-749222",
+      "due": "2027-05-21",
+      "part": "PO-74922-bo-sung#1"
+    }
+  }
+}

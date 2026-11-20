@@ -91,8 +91,10 @@ export async function POST(request: NextRequest) {
     if (command.data.action === 'approve') {
       const handoffId = command.data.handoffId
       async function approve() {
-        const token = await verifyPurchaseApproval(service, actor, handoffId, request.signal)
-        return ledgerRpc(service, 'confirm_purchase_handoff', { p_actor: actor, ...args, p_review_token: token })
+        const { token, verifiedHistoryId } = await verifyPurchaseApproval(service, actor, handoffId, request.signal)
+        return ledgerRpc(service, 'confirm_purchase_handoff', {
+          p_actor: actor, ...args, p_review_token: token, p_verified_history_id: verifiedHistoryId,
+        })
       }
 
       try {

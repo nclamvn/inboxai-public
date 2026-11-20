@@ -1,6 +1,8 @@
 import 'server-only'
 import { z } from 'zod'
-import { CommitmentRequestError, ledgerRpc, type LedgerSession } from './http'
+import { getValidAccessToken } from '@/lib/gmail/sync'
+import { gmailReader } from '@/lib/sync/gmail-reader'
+import { CommitmentRequestError, PurchaseReviewChangedError, ledgerRpc, type LedgerSession } from './http'
 import { purchaseCsvService, readPurchaseCsv } from './purchase-csv-server'
 import type { PaymentPreview } from './purchase-payment'
 import { supplementCheck, supplementMatch, type SupplementScan } from './purchase-supplement'
@@ -15,9 +17,10 @@ const reviewState = sourceList.extend({
   invoiceId: z.uuid(), unavailable: z.boolean(), total: z.number().int().nonnegative(),
   checked: z.number().int().nonnegative(), matches: z.array(supplementMatch).max(6), checks: z.array(supplementCheck).max(6),
 })
+const historyId = z.string().regex(/^[0-9]{1,30}$/)
 const approvalScan = z.union([
   z.object({ scope: z.null(), token: z.null() }),
-  z.object({ scope: sourceList.extend({ truncated: z.boolean() }), token: digest }),
+  z.object({ scope: sourceList.extend({ truncated: z.boolean(), accountId: z.uuid().nullable(), syncHistoryId: historyId.nullable() }), token: digest }),
 ])
 type ReviewState = z.infer<typeof reviewState>
 type Source = z.infer<typeof sourceList>['sources'][number]
@@ -27,6 +30,8 @@ type Outcome = { status: 'match'; digest: string; invoice: string; replaces: str
   | { status: 'ignore' | 'duplicate' | Check; digest: string }
 
 const incompleteReview = 'Chưa kiểm tra hết chứng từ bổ sung. Mua hàng có thể tiếp tục rà soát từ Hộp thư.'
+const syncPending = 'Hộp thư Gmail nguồn chưa đồng bộ xong. Mua hàng cần đồng bộ trước khi Kế toán thử lại.'
+const sourceUnavailable = 'Chưa kiểm tra được Gmail nguồn. Mua hàng cần kiểm tra kết nối rồi đồng bộ lại.'
 const corrected = 'Có chứng từ đính chính mới. Mua hàng cần kiểm tra và bàn giao lại trước khi duyệt.'
 
 export async function inspectSupplement(service: LedgerSession, actor: string, caseId: string, emailId: string,
@@ -68,18 +73,36 @@ async function inspectPage(service: LedgerSession, scope: z.infer<typeof sourceL
 export async function verifyPurchaseApproval(service: LedgerSession, actor: string, handoffId: string,
   requestSignal: AbortSignal) {
   const signal = AbortSignal.any([requestSignal, AbortSignal.timeout(8_000)])
-  const { scope, token } = approvalScan.parse(await ledgerRpc(service, 'read_purchase_approval_scan', {
+  const readScan = async () => approvalScan.parse(await ledgerRpc(service, 'read_purchase_approval_scan', {
     p_actor: actor, p_handoff: handoffId,
   }, signal))
-  if (!scope) return null
+  const { scope, token } = await readScan()
+  if (!scope) return { token: null, verifiedHistoryId: null }
   if (scope.hasReplacement) throw new CommitmentRequestError(409, corrected)
   if (scope.truncated) throw new CommitmentRequestError(409, incompleteReview)
+  if (!scope.accountId || !scope.syncHistoryId) throw new CommitmentRequestError(409, syncPending)
   const results = await inspectPage(service, scope, signal)
   if (results.some(({ outcome }) => outcome?.status === 'match' && outcome.replaces === scope.invoice)) {
     throw new CommitmentRequestError(409, corrected)
   }
   if (results.some(({ outcome }) => !outcome) || signal.aborted) throw new CommitmentRequestError(409, incompleteReview)
-  return token
+  let observedHistoryId: string
+  try {
+    const access = await getValidAccessToken(scope.ownerId, scope.accountId, signal)
+    if (!access) throw new Error('Gmail source is unavailable')
+    const profile = await gmailReader(access).profile(signal)
+    observedHistoryId = historyId.parse(profile.historyId)
+  } catch {
+    throw new CommitmentRequestError(409, sourceUnavailable)
+  }
+  if (observedHistoryId !== scope.syncHistoryId) {
+    const current = await readScan()
+    // A page can commit during file inspection. Retry the verification once
+    // against the new shortlist only if that page caught up to this observation.
+    if (current.scope?.syncHistoryId === observedHistoryId) throw new PurchaseReviewChangedError(syncPending)
+    throw new CommitmentRequestError(409, syncPending)
+  }
+  return { token, verifiedHistoryId: observedHistoryId }
 }
 
 async function readProgress(service: LedgerSession, actor: string, cases: string[], signal: AbortSignal) {

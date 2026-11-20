@@ -1,0 +1,246 @@
+{
+  "version": "purchase-value-v1",
+  "due": "2027-05-19",
+  "bundles": {
+    "A": [
+      {
+        "kind": "verified",
+        "po": "PO-63810",
+        "original": "INV-638101",
+        "candidate": "INV-638102",
+        "supplier": "hoadon@thiet-bi-hai-dang.example.test",
+        "messages": [
+          {
+            "id": "PO-63810-bo-sung",
+            "age": 1,
+            "from": "hoadon@thiet-bi-hai-dang.example.test",
+            "subject": "Gửi hai chứng từ rà soát",
+            "body": "Bên tôi gửi hai hồ sơ. Vui lòng đối chiếu mã PO trong từng tệp trước khi duyệt.",
+            "parts": [
+              {
+                "id": "PO-63810-bo-sung#1",
+                "name": "hoa-don.csv",
+                "contents": "po,invoice,replaces,line,quantity,unit,unit_price,currency,payment_due\nPO-63880,INV-63880,INV-638101,B,30,bộ,2000,VND,2027-05-19\n"
+              },
+              {
+                "id": "PO-63810-bo-sung#2",
+                "name": "hoa-don.csv",
+                "contents": "po,invoice,replaces,line,quantity,unit,unit_price,currency,payment_due\nPO-63810,INV-638102,INV-638101,B,30,bộ,2000,VND,2027-05-19\n"
+              }
+            ]
+          },
+          {
+            "id": "PO-63810-chuyen-tiep",
+            "age": 3,
+            "from": "hoadon@thiet-bi-hai-dang.example.test",
+            "subject": "Chuyển tiếp bản đang chờ hạn",
+            "body": "Chuyển tiếp bản lưu cũ để đối chiếu.",
+            "parts": [
+              {
+                "id": "PO-63810-chuyen-tiep#1",
+                "name": "hoa-don.csv",
+                "contents": "po,invoice,replaces,line,quantity,unit,unit_price,currency,payment_due\nPO-63810,INV-638103,INV-638101,B,30,bộ,2000,VND,\n"
+              }
+            ]
+          }
+        ],
+        "late": null
+      },
+      {
+        "kind": "hold",
+        "po": "PO-63811",
+        "original": "INV-638111",
+        "candidate": "INV-638112",
+        "supplier": "hoadon@thiet-bi-hai-dang.example.test",
+        "messages": [
+          {
+            "id": "PO-63811-thieu-han",
+            "age": 1,
+            "from": "hoadon@thiet-bi-hai-dang.example.test",
+            "subject": "Xác minh tài liệu bổ sung",
+            "body": "Hạn thanh toán đang chờ xác nhận. Tôi sẽ cập nhật khi có thông tin.",
+            "parts": [
+              {
+                "id": "PO-63811-thieu-han#1",
+                "name": "hoa-don.csv",
+                "contents": "po,invoice,replaces,line,quantity,unit,unit_price,currency,payment_due\nPO-63811,INV-638112,INV-638111,B,30,bộ,2000,VND,\n"
+              }
+            ]
+          },
+          {
+            "id": "PO-63811-ban-tham-khao",
+            "age": 0.5,
+            "from": "dieu-phoi@dich-vu.example.test",
+            "subject": "Chuyển tệp tham khảo",
+            "body": "Đây là bản tôi được chia sẻ để xem trước.",
+            "parts": [
+              {
+                "id": "PO-63811-ban-tham-khao#1",
+                "name": "hoa-don.csv",
+                "contents": "po,invoice,replaces,line,quantity,unit,unit_price,currency,payment_due\nPO-63811,INV-638113,INV-638111,B,30,bộ,2000,VND,2027-05-20\n"
+              }
+            ]
+          }
+        ],
+        "late": null
+      },
+      {
+        "kind": "stale",
+        "po": "PO-63812",
+        "original": "INV-638121",
+        "candidate": "INV-638122",
+        "supplier": "hoadon@thiet-bi-hai-dang.example.test",
+        "messages": [
+          {
+            "id": "PO-63812-bo-sung",
+            "age": 1,
+            "from": "hoadon@thiet-bi-hai-dang.example.test",
+            "subject": "Nộp bản bổ sung",
+            "body": "Bản cập nhật có hạn thanh toán, nhờ Mua hàng xem lại.",
+            "parts": [
+              {
+                "id": "PO-63812-bo-sung#1",
+                "name": "hoa-don.csv",
+                "contents": "po,invoice,replaces,line,quantity,unit,unit_price,currency,payment_due\nPO-63812,INV-638122,INV-638121,B,30,bộ,2000,VND,2027-05-21\n"
+              }
+            ]
+          }
+        ],
+        "late": {
+          "id": "PO-63812-dinh-chinh",
+          "age": 0,
+          "from": "hoadon@thiet-bi-hai-dang.example.test",
+          "subject": "Đính chính bản vừa bàn giao",
+          "body": "Hạn thanh toán đã thay đổi. Dùng bản đính chính đính kèm.",
+          "parts": [
+            {
+              "id": "PO-63812-dinh-chinh#1",
+              "name": "hoa-don.csv",
+              "contents": "po,invoice,replaces,line,quantity,unit,unit_price,currency,payment_due\nPO-63812,INV-638123,INV-638122,B,30,bộ,2000,VND,2027-05-24\n"
+            }
+          ]
+        }
+      }
+    ],
+    "B": [
+      {
+        "kind": "verified",
+        "po": "PO-74920",
+        "original": "INV-749201",
+        "candidate": "INV-749202",
+        "supplier": "hoadon@vat-tu-bac-son.example.test",
+        "messages": [
+          {
+            "id": "PO-74920-bo-sung",
+            "age": 1,
+            "from": "hoadon@vat-tu-bac-son.example.test",
+            "subject": "Gửi hai chứng từ rà soát",
+            "body": "Bên tôi gửi hai hồ sơ. Vui lòng đối chiếu mã PO trong từng tệp trước khi duyệt.",
+            "parts": [
+              {
+                "id": "PO-74920-bo-sung#1",
+                "name": "hoa-don.csv",
+                "contents": "po,invoice,replaces,line,quantity,unit,unit_price,currency,payment_due\nPO-74990,INV-74990,INV-749201,B,30,bộ,2000,VND,2027-05-19\n"
+              },
+              {
+                "id": "PO-74920-bo-sung#2",
+                "name": "hoa-don.csv",
+                "contents": "po,invoice,replaces,line,quantity,unit,unit_price,currency,payment_due\nPO-74920,INV-749202,INV-749201,B,30,bộ,2000,VND,2027-05-19\n"
+              }
+            ]
+          },
+          {
+            "id": "PO-74920-chuyen-tiep",
+            "age": 3,
+            "from": "hoadon@vat-tu-bac-son.example.test",
+            "subject": "Chuyển tiếp bản đang chờ hạn",
+            "body": "Chuyển tiếp bản lưu cũ để đối chiếu.",
+            "parts": [
+              {
+                "id": "PO-74920-chuyen-tiep#1",
+                "name": "hoa-don.csv",
+                "contents": "po,invoice,replaces,line,quantity,unit,unit_price,currency,payment_due\nPO-74920,INV-749203,INV-749201,B,30,bộ,2000,VND,\n"
+              }
+            ]
+          }
+        ],
+        "late": null
+      },
+      {
+        "kind": "hold",
+        "po": "PO-74921",
+        "original": "INV-749211",
+        "candidate": "INV-749212",
+        "supplier": "hoadon@vat-tu-bac-son.example.test",
+        "messages": [
+          {
+            "id": "PO-74921-thieu-han",
+            "age": 1,
+            "from": "hoadon@vat-tu-bac-son.example.test",
+            "subject": "Xác minh tài liệu bổ sung",
+            "body": "Hạn thanh toán đang chờ xác nhận. Tôi sẽ cập nhật khi có thông tin.",
+            "parts": [
+              {
+                "id": "PO-74921-thieu-han#1",
+                "name": "hoa-don.csv",
+                "contents": "po,invoice,replaces,line,quantity,unit,unit_price,currency,payment_due\nPO-74921,INV-749212,INV-749211,B,30,bộ,2000,VND,\n"
+              }
+            ]
+          },
+          {
+            "id": "PO-74921-ban-tham-khao",
+            "age": 0.5,
+            "from": "dieu-phoi@dich-vu.example.test",
+            "subject": "Chuyển tệp tham khảo",
+            "body": "Đây là bản tôi được chia sẻ để xem trước.",
+            "parts": [
+              {
+                "id": "PO-74921-ban-tham-khao#1",
+                "name": "hoa-don.csv",
+                "contents": "po,invoice,replaces,line,quantity,unit,unit_price,currency,payment_due\nPO-74921,INV-749213,INV-749211,B,30,bộ,2000,VND,2027-05-20\n"
+              }
+            ]
+          }
+        ],
+        "late": null
+      },
+      {
+        "kind": "stale",
+        "po": "PO-74922",
+        "original": "INV-749221",
+        "candidate": "INV-749222",
+        "supplier": "hoadon@vat-tu-bac-son.example.test",
+        "messages": [
+          {
+            "id": "PO-74922-bo-sung",
+            "age": 1,
+            "from": "hoadon@vat-tu-bac-son.example.test",
+            "subject": "Nộp bản bổ sung",
+            "body": "Bản cập nhật có hạn thanh toán, nhờ Mua hàng xem lại.",
+            "parts": [
+              {
+                "id": "PO-74922-bo-sung#1",
+                "name": "hoa-don.csv",
+                "contents": "po,invoice,replaces,line,quantity,unit,unit_price,currency,payment_due\nPO-74922,INV-749222,INV-749221,B,30,bộ,2000,VND,2027-05-21\n"
+              }
+            ]
+          }
+        ],
+        "late": {
+          "id": "PO-74922-dinh-chinh",
+          "age": 0,
+          "from": "hoadon@vat-tu-bac-son.example.test",
+          "subject": "Đính chính bản vừa bàn giao",
+          "body": "Hạn thanh toán đã thay đổi. Dùng bản đính chính đính kèm.",
+          "parts": [
+            {
+              "id": "PO-74922-dinh-chinh#1",
+              "name": "hoa-don.csv",
+              "contents": "po,invoice,replaces,line,quantity,unit,unit_price,currency,payment_due\nPO-74922,INV-749223,INV-749222,B,30,bộ,2000,VND,2027-05-24\n"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

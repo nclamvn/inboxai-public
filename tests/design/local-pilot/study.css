@@ -27,3 +27,8 @@ a, button, input, select, summary { outline-offset: 3px }
   .hero { padding-top: 20px }
   .actions button { min-height: 44px }
 }
+
+#enrollment label, #feedback label { display: block; margin-top: 8px }
+#enrollment button, #feedback button { display: block; margin-top: 8px }
+#feedback h3 { margin: 0 }
+#feedback-receipt { color: var(--muted); margin: 8px 0 }

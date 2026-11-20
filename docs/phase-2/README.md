@@ -35,6 +35,7 @@ those decisions, not an independently retrieved Library document or concept pack
 - [Yêu cầu bổ sung chứng từ và theo dõi đến khi duyệt xong](PURCHASE_EVIDENCE_REQUESTS.md)
 - [Chốt bản local và đối chứng luồng duyệt lại](PURCHASE_LOCAL_RELEASE.md)
 - [Pilot đối soát từ thiếu chứng từ đến duyệt đúng bản](PURCHASE_STUDY.md)
+- [Pilot giá trị duyệt đúng chứng từ](PURCHASE_VALUE.md)
 - [M6-F adversarial security rehearsal](VERIFICATION.md#m6-f-adversarial-security-rehearsal)
 - [M6-E Gmail consent and synthetic browser evidence](VERIFICATION.md#m6-e-gmail-consent)
 - [M6-D Codex preview and purchasing journey](M6D_LOCAL_HANDOFF.md)

@@ -26,8 +26,13 @@ function showMail(active,task) {
     const details=document.createElement('details'), summary=document.createElement('summary')
     summary.textContent=message.subject+' · '+message.id
     const meta=document.createElement('p')
-    meta.textContent=task.supplier+' · thời điểm gửi cách mốc hồ sơ '+message.age+' ngày'
+    meta.textContent=(message.from??task.supplier)+' · thời điểm gửi cách mốc hồ sơ '+message.age+' ngày'
     details.append(summary,meta)
+    if(message.body) {
+      const body=document.createElement('p')
+      body.textContent=message.body
+      details.append(body)
+    }
     for(const part of message.parts) {
       const title=document.createElement('p'), csv=document.createElement('pre'), link=document.createElement('a')
       title.textContent=part.name+' · '+part.id
@@ -48,6 +53,10 @@ function showResults(report) {
   el('provenance').textContent=report.session==='chrome-automation'
     ? 'Nghiệm thu tự động trên Chrome. Thời gian phản ánh thao tác tự động.'
     : 'Phiên trên dữ liệu giả lập. Số liệu giới hạn trong nhóm và cách làm đã ghi nhận.'
+  el('feedback').hidden=!report.corpusId||!!report.feedback
+  el('feedback-receipt').hidden=!report.feedback
+  const answers={yes:'Có',no:'Không',unsure:'Chưa chắc'}
+  el('feedback-receipt').textContent=report.feedback?'Phản hồi của nhóm · '+answers[report.feedback.willing]:''
   const summary=el('summary')
   summary.replaceChildren()
   for(const mode of ['manual','inbox']) {
@@ -61,6 +70,8 @@ function showResults(report) {
     summary.append(result)
   }
   const link=el('download')
+  link.hidden=!!report.corpusId&&!report.feedback
+  if(report.team) link.download='inboxai-doi-soat-'+report.team.code+'.json'
   if(link.href) URL.revokeObjectURL(link.href)
   link.href=download(JSON.stringify(report,null,2)+'\n','application/json')
 }
@@ -69,7 +80,9 @@ function render(next) {
   state=next
   clockSynced=performance.now()
   el('progress').textContent=state.progress+'/'+state.initialOrder.length+' hồ sơ'
-  el('task').hidden=!state.task
+  const enrollment=state.value&&!state.team
+  el('enrollment').hidden=!enrollment
+  el('task').hidden=!state.task||enrollment
   if(state.completed) {
     showResults(state.report)
     return
@@ -96,6 +109,7 @@ function render(next) {
   el('released').hidden=!active.lateReleased
   el('product').hidden=manual
   el('verify').hidden=manual
+  el('hold').hidden=!state.value
   el('mail').hidden=!manual
   el('decision').hidden=!manual
   if(manual) showMail(active,task)
@@ -124,7 +138,7 @@ async function event(action,data={}) {
     const result=await response.json()
     if(!response.ok) throw new Error(result.error)
     render(result)
-    if(['start','finish','abandon'].includes(action)) el(result.completed?'results-title':'task-title').focus()
+    if(['enroll','start','finish','hold','abandon','feedback'].includes(action)) el(result.completed?'results-title':'task-title').focus()
     if(action==='release') note('Thư mới đã tới hồ sơ.')
     if(action==='restart') note('InboxAI đã kết nối lại.')
   } catch(error) {
@@ -142,13 +156,28 @@ async function event(action,data={}) {
 }
 
 document.querySelectorAll('[data-action]').forEach(button=>button.addEventListener('click',()=>{
-  if(button.dataset.action!=='abandon'||window.confirm('Kết thúc hồ sơ mà không ghi nhận phê duyệt mới?')) event(button.dataset.action)
+  const {action}=button.dataset
+  if(action==='abandon'&&!window.confirm('Dừng hồ sơ này và ghi nhận chưa hoàn tất?')) return
+  if(action==='release'&&state.value&&state.task.mode==='manual') {
+    if(el('decision').reportValidity()) event(action,decisionFields())
+    return
+  }
+  event(action)
 }))
+el('enrollment').addEventListener('submit',submit=>{
+  submit.preventDefault()
+  event('enroll',{code:el('team-code').value,tools:el('team-tools').value})
+})
+el('feedback').addEventListener('submit',submit=>{
+  submit.preventDefault()
+  event('feedback',{willing:el('willing').value})
+})
 el('timer').addEventListener('click',()=>event(state.active.running?'pause':'resume'))
 el('refresh').addEventListener('click',()=>refresh().catch(error=>note(error.message)))
+const decisionFields=()=>Object.fromEntries(['number','due','part'].map(key=>[key,el(key).value]))
 el('decision').addEventListener('submit',submit=>{
   submit.preventDefault()
-  event('finish',Object.fromEntries(['number','due','part'].map(key=>[key,el(key).value])))
+  event('finish',decisionFields())
 })
 setInterval(tick,250)
 refresh().catch(error=>note(error.message))

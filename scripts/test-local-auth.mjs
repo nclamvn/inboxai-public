@@ -34,6 +34,7 @@ const pilotPreview = process.argv.includes('--pilot-preview')
 const pilotTest = process.argv.includes('--pilot-test')
 const pilot = pilotPreview || pilotTest
 const pilotStudy = pilot && process.argv.includes('--study')
+const valueStudy = pilotStudy && process.argv.includes('--value')
 const reverseStudy = pilotStudy && process.argv.includes('--bundle-b')
 const livingReview = process.argv.includes('--living-review') || process.argv.includes('--living-review-preview')
 const livingCoverage = process.argv.includes('--living-coverage') || process.argv.includes('--living-coverage-preview')
@@ -97,7 +98,7 @@ const journeyName = [
   [livingCoverage, livingPreview ? 'living-coverage/preview' : 'living-coverage'],
   [livingPreview, 'living-commitments/preview'],
   [livingTest, 'living-commitments'],
-  [pilotStudy, 'local-pilot/study' + (pilotPreview ? '/preview' : reverseStudy ? '/reverse' : '')],
+  [pilotStudy, 'local-pilot/study' + (valueStudy ? '/value' : '') + (pilotPreview ? '/preview' : reverseStudy ? '/reverse' : '')],
   [pilot, 'local-pilot'],
   [purchaseRelease, 'purchase-release'],
   [purchaseSupplements, 'purchase-supplements'],
@@ -480,7 +481,7 @@ try {
     mkdirSync(journeyOutput, { recursive: true })
     const { startLocalPilot } = await import('../tests/design/local-pilot/server.mjs')
     const study = pilotStudy ? (await import('../tests/design/local-pilot/study.mjs')).studyProtocol({
-      reverse: reverseStudy, automation: pilotTest,
+      reverse: reverseStudy, automation: pilotTest, value: valueStudy,
     }) : null
     dayGuide = await startLocalPilot({ app, base, email, previousEmail, password, userId, previousId, admin, appFetch,
       googleProvider, sql, docker, restartNext, waitFor, version: pilotVersion, output: journeyOutput, study })
