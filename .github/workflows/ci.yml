@@ -133,6 +133,10 @@ jobs:
       - run: npm run test:design -- --isolated
       - run: npm run test:platform -- --isolated
       - run: npm run test:purchase-study
+      - name: Purchase value pilot (manual first)
+        run: npm run test:purchase-value
+      - name: Purchase value pilot (InboxAI first)
+        run: npm run test:purchase-value -- --bundle-b
       - name: Upload synthetic Chrome evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -144,6 +148,12 @@ jobs:
             test-results/purchase-release/*.png
             test-results/local-pilot/study/report.json
             test-results/local-pilot/study/*.png
+            test-results/local-pilot/study/value/report.json
+            test-results/local-pilot/study/value/browser.json
+            test-results/local-pilot/study/value/*.png
+            test-results/local-pilot/study/value/reverse/report.json
+            test-results/local-pilot/study/value/reverse/browser.json
+            test-results/local-pilot/study/value/reverse/*.png
             test-results/m6d/design-run.json
             test-results/m6d/design/
             test-results/commitment-attention/platform/
