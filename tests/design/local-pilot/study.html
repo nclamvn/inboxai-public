@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>InboxAI · Phiên đối soát</title>
+  <link rel="stylesheet" href="/day.css">
+  <link rel="stylesheet" href="/study.css">
+  <script type="module" src="/study.js"></script>
+</head>
+<body>
+  <header class="top"><div class="frame"><span class="brand">InboxAI</span><span class="environment">Local · Dữ liệu giả lập</span></div></header>
+  <main class="frame">
+    <div class="hero">
+      <div>
+        <h1>Đối soát chứng từ</h1>
+        <p>Mua hàng kiểm tra và bàn giao. Kế toán xác nhận đúng hóa đơn, hạn thanh toán và tệp nguồn.</p>
+      </div>
+      <span class="reference" id="progress"></span>
+    </div>
+    <details class="brief">
+      <summary>Cách tổ chức phiên</summary>
+      <p>Dùng hai hồ sơ Chrome riêng để giữ phiên đăng nhập của Mua hàng và Kế toán. Đăng nhập trước khi bấm bắt đầu. Đọc dữ liệu giả lập trên trang này hoặc tải tệp để kiểm tra bằng công cụ local thường dùng. Nếu có người điều phối, người đó giữ trang này và ghi lại mỗi lượt mở nguồn, yêu cầu trợ giúp và sửa quyết định ở cả hai cách làm.</p>
+      <p>Tạm dừng đồng hồ khi nghỉ. Ghi nhận kết quả sau khi vai Kế toán quyết định. Với hồ sơ có thư đến trong lúc duyệt, người điều phối nạp thư sau khi Kế toán đã mở bản được bàn giao hoặc đã lập quyết định sơ bộ.</p>
+      <p id="roles"></p>
+      <a id="login" href="#" target="_blank" rel="noopener">Mở đăng nhập InboxAI</a>
+    </details>
+    <p id="notice" class="notice" role="status"></p>
+    <section id="task" class="study-panel" aria-labelledby="task-title" hidden>
+      <p id="method" class="mode"></p>
+      <h2 id="task-title" tabindex="-1"></h2>
+      <p id="instruction"></p>
+      <p id="scope"></p>
+      <button id="start" type="button" class="primary" data-action="start">Bắt đầu đo</button>
+      <div id="running" hidden>
+        <div class="actions controls">
+          <output id="clock" aria-label="Thời gian chủ động" aria-live="off">0:00</output>
+          <button type="button" id="timer">Tạm dừng</button>
+          <button type="button" data-action="source" id="source">Mở nguồn · 0</button>
+          <button type="button" data-action="help" id="help">Cần trợ giúp · 0</button>
+          <button type="button" data-action="revision" id="revision">Sửa quyết định · 0</button>
+        </div>
+        <div id="product" class="actions" hidden>
+          <a id="buyer" target="_blank" rel="noopener">Mở Hộp thư Mua hàng</a>
+          <a id="reviewer" target="_blank" rel="noopener">Mở hồ sơ Kế toán</a>
+          <button id="refresh" type="button">Cập nhật liên kết bàn giao</button>
+          <button type="button" data-action="restart">Khởi động lại InboxAI</button>
+        </div>
+        <div id="release" class="brief" hidden>
+          <p>Khi Kế toán đã mở bản bàn giao hoặc lập xong quyết định sơ bộ, nạp thư mới rồi kiểm tra lại trước khi xác nhận.</p>
+          <button type="button" data-action="release">Nạp thư đến khi đang duyệt</button>
+        </div>
+        <p id="released" class="mode" hidden>Đã nạp thư đến khi đang duyệt.</p>
+        <section id="mail" aria-label="Thư và tệp đối chứng" hidden></section>
+        <form id="decision" hidden>
+          <fieldset>
+            <legend>Quyết định của Kế toán</legend>
+            <label for="number">Mã hóa đơn</label>
+            <input id="number" required maxlength="32">
+            <label for="due">Hạn thanh toán</label>
+            <input id="due" type="date" required>
+            <label for="part">Chứng từ nguồn</label>
+            <select id="part" required></select>
+          </fieldset>
+          <button type="submit" class="primary">Ghi nhận quyết định</button>
+        </form>
+        <div class="actions finish">
+          <button type="button" id="verify" class="primary" data-action="finish" hidden>Ghi nhận kết quả đã duyệt</button>
+          <button type="button" id="abandon" data-action="abandon">Kết thúc hồ sơ chưa duyệt</button>
+        </div>
+      </div>
+    </section>
+    <section id="results" class="study-panel" aria-labelledby="results-title" hidden>
+      <h2 id="results-title" tabindex="-1">Kết quả phiên đối soát</h2>
+      <p id="provenance"></p>
+      <div id="summary"></div>
+      <a id="download" download="inboxai-doi-soat.json">Tải báo cáo JSON</a>
+    </section>
+  </main>
+</body>
+</html>

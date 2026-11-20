@@ -125,7 +125,7 @@ export function AccountSwitcher({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-1 w-64 bg-[var(--card)] border border-[var(--border)] rounded-[var(--radius-panel)] py-1 z-50">
+        <div className="neo-account-menu absolute top-full z-50 mt-1 w-64 rounded-[var(--radius-panel)] border border-[var(--border)] bg-[var(--card)] py-1">
           {/* All accounts option */}
           <button
             onClick={() => {

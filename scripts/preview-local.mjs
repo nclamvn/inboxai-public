@@ -33,7 +33,8 @@ const compose=['compose','-f','tests/local-auth/compose.yml']
 const images=docker([...compose,'config','--images']).trim().split('\n')
 const missing=images.some(name=>{try{docker(['image','inspect',name],{stdio:'ignore'});return false}catch{return true}})
 if(missing) docker([...compose,'pull'],{stdio:'inherit'})
-const child=spawn(process.execPath,['--import','tsx','--conditions=react-server','scripts/test-local-auth.mjs','--pilot-preview'],{env,stdio:'inherit'})
+const studyFlags=process.argv.slice(2).filter(flag=>['--study','--bundle-b'].includes(flag))
+const child=spawn(process.execPath,['--import','tsx','--conditions=react-server','scripts/test-local-auth.mjs','--pilot-preview',...studyFlags],{env,stdio:'inherit'})
 const stop=()=>child.kill('SIGTERM')
 process.once('SIGINT',stop);process.once('SIGTERM',stop)
 await new Promise((resolve,reject)=>{child.once('error',reject);child.once('exit',(code,signal)=>{

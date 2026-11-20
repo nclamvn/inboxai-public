@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowUpRight, ListChecks } from 'lucide-react'
+import { WorkspaceHeading } from '@/components/ui/workspace-heading'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -82,11 +83,14 @@ export function OperatorWorkspace({ userId, accounts, accountsFailed }: {
   return (
     <div className="min-h-full min-w-0 bg-[var(--canvas)]">
       <header className="border-b border-[var(--border)] bg-[var(--surface)]">
-        <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6"><h1 className="neo-title">AI Operator</h1></div>
+        <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6"><WorkspaceHeading title="AI Operator" description="Phạm vi rõ ràng. Chỉ thực hiện sau khi bạn phê duyệt." icon={ListChecks} /></div>
       </header>
+      <ol aria-label="Quy trình thao tác" className="neo-operator-process mx-auto flex max-w-6xl gap-4 overflow-x-auto px-4 pt-5 sm:px-6">
+        {['Lập kế hoạch', 'Xem phạm vi', 'Bạn phê duyệt', 'Thực hiện và xác minh', 'Hoàn tác khi khả thi'].map((step, index) => <li key={step}><span>{index + 1}</span>{step}</li>)}
+      </ol>
       <div className="mx-auto grid max-w-6xl gap-6 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,2fr)_minmax(250px,1fr)]">
         <div className="min-w-0 space-y-6">
-          <section aria-labelledby="operator-create" className="space-y-3 border-y border-[var(--border)] bg-[var(--surface)] px-4 py-5 sm:px-5">
+          <section aria-labelledby="operator-create" className="neo-workspace-surface space-y-3 bg-[var(--surface)] px-4 py-5 sm:px-5">
             <h2 id="operator-create" className="text-base font-semibold">Tạo kế hoạch</h2>
             <p className="text-sm text-[var(--foreground-secondary)]">Lưu trữ hoặc đánh dấu đã đọc theo mốc ngày hoặc địa chỉ người gửi.</p>
             <form onSubmit={prepare} className="space-y-3">
@@ -134,7 +138,7 @@ export function OperatorWorkspace({ userId, accounts, accountsFailed }: {
             <Alert variant="error" title="Chưa tải được lịch sử">{history.error.message}</Alert>
             <Button type="button" variant="outline" onClick={() => void history.refetch()}>Tải lại lịch sử</Button>
           </div>}
-          {history.data?.length === 0 && <EmptyState icon={<ListChecks size={24} aria-hidden="true" />} title="Chưa có kế hoạch" />}
+          {history.data?.length === 0 && <EmptyState icon={<ListChecks size={24} aria-hidden="true" />} title="Chưa có kế hoạch" description="Các phạm vi đã xem trước và kết quả đã thực hiện sẽ xuất hiện ở đây." className="py-8" />}
           {Boolean(history.data?.length) && <ul className="divide-y divide-[var(--border)] border-y border-[var(--border)] bg-[var(--surface)]">
             {history.data?.map(item => (
               <li key={item.id}>

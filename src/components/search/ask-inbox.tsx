@@ -4,7 +4,8 @@ import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
-import { Bookmark, ChevronDown, FileText, MessageSquare, Search } from 'lucide-react'
+import { Bookmark, CalendarDays, ChevronDown, FileText, MessageSquare, ReceiptText, Search } from 'lucide-react'
+import { WorkspaceHeading } from '@/components/ui/workspace-heading'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -23,7 +24,7 @@ function Citation({ hit }: { hit: AskHit }) {
   const subject = hit.subject?.trim() || '(Không có tiêu đề)'
   const at = hit.at ? Date.parse(hit.at) : NaN
   return (
-    <li className="min-w-0 space-y-2 px-4 py-4 sm:px-5">
+    <li className="neo-citation min-w-0 space-y-2 px-4 py-4 sm:px-5">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3 className="min-w-0 text-sm font-semibold leading-6">
           <Link href={'/inbox?email=' + hit.id} prefetch={false}
@@ -152,8 +153,7 @@ export function AskInbox({ userId, accounts, accountsFailed }: { userId: string;
       <header className="border-b border-[var(--border)] bg-[var(--surface)]">
         <div className="mx-auto max-w-4xl px-4 py-5 sm:px-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h1 className="neo-title">Ask Inbox</h1>
-            <Link href="/operator" prefetch={false} className="neo-target inline-flex min-h-11 items-center text-sm font-medium text-[var(--accent-foreground)] underline md:hidden">AI Operator</Link>
+            <WorkspaceHeading title="Ask Inbox" description="Tìm lại thông tin. Đối chiếu bằng chứng. Mở đúng email nguồn." icon={MessageSquare} tone="transaction" />
           </div>
           <form key={key} action="/search" method="get" onSubmit={search} role="search" aria-label="Ask Inbox" className="mt-4 space-y-3">
             <div className="grid grid-cols-2 items-end gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
@@ -227,7 +227,23 @@ export function AskInbox({ userId, accounts, accountsFailed }: { userId: string;
           </Button>}
         </div>
         {saveState && <p role="status" className="text-sm">{saveState}</p>}
-        {!answering && !started && <EmptyState type="no-results" title="Tìm trong hộp thư của bạn" description="Nhập nội dung bạn nhớ, hoặc chọn tài khoản, người gửi và khoảng ngày." />}
+        {!answering && !started && <div className="neo-ask-start">
+          <h3>Tìm trong hộp thư của bạn</h3>
+          <p>Nhập nội dung bạn nhớ, hoặc bắt đầu từ một ví dụ. Kết quả luôn dẫn về email nguồn.</p>
+          <div className="neo-ask-examples">
+            {[
+              {query:'hóa đơn',title:'Tìm một hóa đơn',description:'Nội dung, số tiền và thư đính kèm',Icon:ReceiptText},
+              {query:'lịch giao hàng',title:'Tìm lịch giao hàng',description:'Tìm lại những lần trao đổi',Icon:CalendarDays},
+              {query:'báo giá',title:'Tìm lại báo giá',description:'Đối chiếu thông tin từ nguồn',Icon:FileText},
+            ].map(({query:sample,title,description,Icon}) => {
+              const next = new URLSearchParams(params.toString()); next.set('q', sample); next.set('view','search');
+              return <Link key={sample} href={'/search?'+next} prefetch={false} className="neo-target">
+                <Icon size={20} aria-hidden="true" /><span><strong>{title}</strong><span>{description}</span></span>
+              </Link>
+            })}
+          </div>
+          <p className="text-xs">Đây là gợi ý tìm kiếm, không phải thông tin đã tìm thấy trong hộp thư.</p>
+        </div>}
         {(answering || started) && active.isPending && <p role="status" className="py-5 text-sm text-[var(--foreground-muted)]">Đang tìm và đối chiếu nguồn…</p>}
         {active.isError && <div className="my-4 space-y-3">
           <Alert variant="error" title="Chưa tải được kết quả">{active.error.message}</Alert>

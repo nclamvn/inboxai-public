@@ -261,7 +261,7 @@ function NewCompose() {
   </div>
 
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col border-x border-[var(--border)] bg-[var(--surface)]">
+    <div className="neo-compose-workspace mx-auto flex w-full max-w-5xl flex-col border-x border-[var(--border)] bg-[var(--surface)]">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--card)] p-4">
         <h1 className="neo-title">{forward ? 'Chuyển tiếp thư' : 'Soạn thư mới'}</h1>

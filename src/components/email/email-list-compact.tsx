@@ -403,10 +403,12 @@ export function EmailListCompact({
       <div
         key={email.id}
         data-active={open || selected}
+        data-compact={compact}
+        data-unread={!email.is_read}
         data-mail-tone={mailSignal(category, priority).tone}
         className={cn(
           'neo-mail-row group flex items-start gap-2 hover:bg-[var(--hover)]',
-          compact ? 'px-3 py-2' : 'px-4 py-3'
+          compact ? 'px-3' : 'px-4'
         )}
         onContextMenu={event => handleContextMenu(event, email)}
         onTouchStart={event => handleTouchStart(event, email)}
@@ -449,20 +451,20 @@ export function EmailListCompact({
           className="flex min-h-11 min-w-0 flex-1 items-start gap-2 text-start focus-visible:outline-none"
         >
           {!isSelecting && <MailSignal category={category} priority={priority} />}
-          <span className="flex min-w-0 flex-1 flex-col items-stretch gap-1">
-          <span className="flex items-center justify-between gap-2">
+          <span className="neo-mail-content min-w-0 flex-1 flex-col items-stretch gap-1">
+          <span className="neo-mail-senderline flex items-center justify-between gap-2">
             <span className={cn('truncate text-sm leading-5', email.is_read ? 'font-medium text-[var(--foreground-secondary)]' : 'font-semibold')}>
               {sender}
             </span>
-            <span className="shrink-0 text-xs leading-5 tabular-nums text-[var(--foreground-muted)]">{formatTime(email.received_at)}</span>
+            <span className="neo-mail-time shrink-0 text-xs leading-5 tabular-nums text-[var(--foreground-muted)]">{formatTime(email.received_at)}</span>
           </span>
-          <span className="flex min-w-0 items-center gap-2 text-sm leading-5">
+          <span className="neo-mail-subjectline flex min-w-0 items-center gap-2 text-sm leading-5">
             {!email.is_read && <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-[var(--selection-line)]" />}
             <span className={cn('truncate', !email.is_read && 'font-semibold')}>{subject}</span>
             {email.snoozed_until && <Badge size="xs" variant="warning" className="shrink-0 px-1.5 py-0 leading-4">Đến hẹn</Badge>}
             {(email.attachment_count || 0) > 0 && <Paperclip size={14} className="shrink-0 text-[var(--foreground-muted)]" aria-label="Có tệp đính kèm" />}
           </span>
-          <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
+          <span className="neo-mail-previewline flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
             {priorityLabel && <span className="neo-mail-label" data-priority={priority}>
               {priority === 'urgent' ? <CircleAlert size={12} aria-hidden="true" /> : <Flag size={12} aria-hidden="true" />}{priorityLabel}</span>}
             {categoryLabel && (
@@ -571,7 +573,7 @@ export function EmailListCompact({
                   onClick={() => setCollapsedSections(previous => ({ ...previous, [section.id]: !isCollapsed }))}
                   className={cn(
                     'flex min-h-11 w-full items-center gap-2 border-b border-[var(--border)] px-4 py-2 text-start hover:bg-[var(--hover)]',
-                    'neo-inbox-section bg-[var(--surface)]',
+                    'neo-inbox-section',
                   )}
                 >
                   {isCollapsed ? (

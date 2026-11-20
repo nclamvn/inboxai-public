@@ -107,3 +107,6 @@ credentials/
 next-env.d.ts
 
 /test-results/living-review/
+
+/test-results/ui-workspace/
+/test-results/ui-workspace-preview.log

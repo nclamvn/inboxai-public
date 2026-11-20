@@ -179,7 +179,7 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
 
   return (
     <div className={cn(
-      'flex min-w-0 items-center gap-2 px-4 py-2 bg-[var(--surface)]',
+      'neo-search-toolbar flex min-w-0 items-center gap-2 bg-[var(--surface)]',
       !noBorder && 'border-b border-[var(--border)]',
       className
     )}>
@@ -187,7 +187,7 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
       <form
         onSubmit={handleSearchSubmit} role="search"
         className={cn(
-          'flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-[var(--radius-control)] border border-[var(--input-border)] bg-[var(--input)] px-3',
+          'neo-search-field flex min-w-0 flex-1 items-center gap-2 rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--canvas)] px-3',
           'focus-within:outline-2 focus-within:outline-[var(--focus-ring)]'
         )}
       >
@@ -206,6 +206,7 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
           maxLength={200}
           className="min-w-0 flex-1 bg-transparent text-sm text-[var(--foreground)] placeholder-[var(--foreground-muted)] outline-none"
         />
+        <kbd className="neo-search-shortcut" aria-hidden="true">⌘ K</kbd>
         {searchQuery && (
           <button
             type="button"
@@ -286,102 +287,104 @@ export const UnifiedTopBar = memo(function UnifiedTopBar({
         )}
       </div>
 
-      <ThemeToggle />
+      <div role="group" aria-label="Tiện ích hộp thư" className="neo-inbox-utilities">
+        <ThemeToggle />
 
-      {/* AI Assistant Button */}
-      <div className="relative" ref={aiPopoverRef}>
-        <button
-          type="button"
-          aria-label="Bản tin hộp thư"
-          aria-expanded={showAIPopover}
-          onClick={() => setShowAIPopover(!showAIPopover)}
-          className="neo-icon-button relative"
-        >
-          <ClipboardList className="w-5 h-5" strokeWidth={1.5} />
-          {briefing && briefing.needsAttention > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold text-[var(--primary-foreground)] bg-[var(--primary)] rounded-full">
-              {briefing.needsAttention}
-            </span>
-          )}
-        </button>
+        {/* AI Assistant Button */}
+        <div className="relative" ref={aiPopoverRef}>
+          <button
+            type="button"
+            aria-label="Bản tin hộp thư"
+            aria-expanded={showAIPopover}
+            onClick={() => setShowAIPopover(!showAIPopover)}
+            className="neo-icon-button relative"
+          >
+            <ClipboardList className="w-5 h-5" strokeWidth={1.5} />
+            {briefing && briefing.needsAttention > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold text-[var(--primary-foreground)] bg-[var(--primary)] rounded-full">
+                {briefing.needsAttention}
+              </span>
+            )}
+          </button>
 
-        {/* AI Popover */}
-        {showAIPopover && (
-          <div className="absolute right-0 top-full mt-2 w-80 bg-[var(--card)] rounded-[var(--radius-panel)] border border-[var(--border-strong)] z-50 overflow-hidden">
-            <div className="p-4 border-b border-[var(--border)] bg-[var(--secondary)]">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ClipboardList className="w-4 h-4 text-[var(--foreground)]" strokeWidth={1.5} />
-                  <span className="text-[14px] font-medium text-[var(--foreground)]">
-                    Bản tin hộp thư
-                  </span>
+          {/* AI Popover */}
+          {showAIPopover && (
+            <div className="absolute right-0 top-full mt-2 w-80 bg-[var(--card)] rounded-[var(--radius-panel)] border border-[var(--border-strong)] z-50 overflow-hidden">
+              <div className="p-4 border-b border-[var(--border)] bg-[var(--secondary)]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ClipboardList className="w-4 h-4 text-[var(--foreground)]" strokeWidth={1.5} />
+                    <span className="text-[14px] font-medium text-[var(--foreground)]">
+                      Bản tin hộp thư
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="Đóng bản tin"
+                    onClick={() => setShowAIPopover(false)}
+                    className="p-1 rounded text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+                  >
+                    <X className="w-4 h-4" strokeWidth={1.5} />
+                  </button>
                 </div>
+                {briefing && (
+                  <p className="text-[13px] text-[var(--foreground-muted)] mt-1">
+                    {briefing.unread} chưa đọc · {briefing.needsAttention} cần chú ý
+                  </p>
+                )}
+              </div>
+              <div className="max-h-64 overflow-y-auto">
+                {briefing?.items && briefing.items.length > 0 ? (
+                  <div className="p-2">
+                    {briefing.items.map((item, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleNavigateToInbox(item)}
+                        className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--hover)] transition-colors text-left"
+                      >
+                        <span className={cn(
+                          'text-[14px] font-bold',
+                          item.type === 'urgent' && 'text-[var(--error)]',
+                          item.type === 'deadline' && 'text-[var(--warning)]',
+                          item.type === 'waiting' && 'text-[var(--accent-foreground)] dark:text-blue-400',
+                          item.type === 'vip' && 'text-[var(--accent-foreground)]',
+                          !['urgent', 'deadline', 'waiting', 'vip'].includes(item.type) && 'text-gray-500 dark:text-gray-400'
+                        )}>
+                          {item.count}
+                        </span>
+                        <span className="text-[14px] text-[var(--foreground)]">
+                          {item.title}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-6 text-center text-[var(--foreground-muted)]">
+                    <p className="text-[14px]">Không có gì cần chú ý</p>
+                  </div>
+                )}
+              </div>
+              <div className="p-2 border-t border-[var(--border)]">
                 <button
                   type="button"
-                  aria-label="Đóng bản tin"
-                  onClick={() => setShowAIPopover(false)}
-                  className="p-1 rounded text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+                  onClick={() => {
+                    setShowAIPopover(false);
+                    router.push('/insights');
+                  }}
+                  className="block w-full text-center py-2 text-[13px] text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors"
                 >
-                  <X className="w-4 h-4" strokeWidth={1.5} />
+                  Xem phân tích
                 </button>
               </div>
-              {briefing && (
-                <p className="text-[13px] text-[var(--foreground-muted)] mt-1">
-                  {briefing.unread} chưa đọc · {briefing.needsAttention} cần chú ý
-                </p>
-              )}
             </div>
-            <div className="max-h-64 overflow-y-auto">
-              {briefing?.items && briefing.items.length > 0 ? (
-                <div className="p-2">
-                  {briefing.items.map((item, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => handleNavigateToInbox(item)}
-                      className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--hover)] transition-colors text-left"
-                    >
-                      <span className={cn(
-                        'text-[14px] font-bold',
-                        item.type === 'urgent' && 'text-[var(--error)]',
-                        item.type === 'deadline' && 'text-[var(--warning)]',
-                        item.type === 'waiting' && 'text-[var(--accent-foreground)] dark:text-blue-400',
-                        item.type === 'vip' && 'text-[var(--accent-foreground)]',
-                        !['urgent', 'deadline', 'waiting', 'vip'].includes(item.type) && 'text-gray-500 dark:text-gray-400'
-                      )}>
-                        {item.count}
-                      </span>
-                      <span className="text-[14px] text-[var(--foreground)]">
-                        {item.title}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-6 text-center text-[var(--foreground-muted)]">
-                  <p className="text-[14px]">Không có gì cần chú ý</p>
-                </div>
-              )}
-            </div>
-            <div className="p-2 border-t border-[var(--border)]">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAIPopover(false);
-                  router.push('/insights');
-                }}
-                className="block w-full text-center py-2 text-[13px] text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors"
-              >
-                Xem phân tích
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      <button type="button" aria-label="Cài đặt" onClick={onProfileClick} className="neo-icon-button">
-        <Settings size={20} strokeWidth={1.5} aria-hidden="true" />
-      </button>
+        <button type="button" aria-label="Cài đặt" onClick={onProfileClick} className="neo-icon-button">
+          <Settings size={20} strokeWidth={1.5} aria-hidden="true" />
+        </button>
+      </div>
     </div>
   );
 });

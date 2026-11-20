@@ -44,7 +44,7 @@ function FocusRow({ item, userId, scan, scanUnavailable, refresh }: {
   const file = item.fileId && item.handoffId ? '/api/commitments/handoffs?' + new URLSearchParams({ id:item.handoffId,file:item.fileId }) : null
   const { tone, Icon } = visuals[item.task]
 
-  return <li data-mail-tone={tone} className="neo-work-item grid min-w-0 gap-x-6 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:px-5">
+  return <li data-mail-tone={tone} className="neo-focus-row neo-work-item grid min-w-0 gap-x-4 px-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:px-5">
     <div className="min-w-0">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className="neo-signal-heading" aria-hidden="true"><Icon size={16} strokeWidth={1.8} /></span>

@@ -42,8 +42,8 @@ export const MobileInboxHeader = memo(function MobileInboxHeader({
 
   return (
     <header className={cn('border-b border-[var(--border)] bg-[var(--surface)]', className)}>
-      <div className="flex min-h-16 flex-wrap items-center justify-between gap-x-2 px-4 py-2">
-        <h1 className="neo-title min-w-0">{title}</h1>
+      <div className="neo-mobile-inbox-heading flex flex-wrap items-center justify-between gap-x-2 px-4">
+        <div className="min-w-0"><h1 className="neo-title">{title}</h1><p className="mt-1 text-xs text-[var(--foreground-muted)]">{unreadCount} thư chưa đọc đã tải</p></div>
         <div className="flex items-center">
           <button
             ref={searchButton} type="button" aria-label="Tìm email" aria-expanded={searchOpen}

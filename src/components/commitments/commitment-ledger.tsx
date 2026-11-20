@@ -137,10 +137,13 @@ export function CommitmentLedger({ userId, accounts: warehouseAccounts }: { user
 
   return (
     <div className="flex min-h-full min-w-0 flex-col bg-[var(--canvas)] lg:h-full lg:overflow-hidden">
-      <header className="neo-section-accent flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-4 sm:px-6">
-        <div className="min-w-0">
+      <header className="neo-ledger-heading flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] bg-[var(--surface)] px-4 sm:px-6">
+        <div className="neo-workspace-heading" data-mail-tone="personal">
+          <span className="neo-workspace-emblem" aria-hidden="true"><ClipboardList size={22} strokeWidth={1.6} /></span>
+          <div className="min-w-0">
           <h1 className="neo-title" ref={listHeading} tabIndex={-1}>Cam kết</h1>
-          <p className="mt-1 text-xs text-[var(--foreground-muted)]">Hạn chót theo giờ Việt Nam (UTC+7)</p>
+          <p className="mt-1 text-xs text-[var(--foreground-muted)]">Trách nhiệm, hạn chót và thay đổi có nguồn. Giờ Việt Nam (UTC+7).</p>
+          </div>
         </div>
         <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
           <Link href="/commitments/dues" prefetch={false}

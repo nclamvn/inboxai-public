@@ -11,8 +11,8 @@ export function LocalTrialBanner() {
   if (!version || typeof version !== 'object') return null
   if (!/^[a-f0-9]{7,40}$/.test(version.commit ?? '') || !/^[a-f0-9]{12}$/.test(version.fingerprint ?? '')) return null
   return <aside aria-label="Bản dùng thử local" data-pilot-version={version.fingerprint}
-    className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-[var(--border)] border-s-2 border-s-[var(--accent)] bg-[var(--surface)] px-4 py-2 text-xs text-[var(--foreground-secondary)]">
+    className="neo-trial-banner flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-[var(--border)] border-s-2 border-s-[var(--accent)] bg-[var(--surface)] px-4 text-xs text-[var(--foreground-secondary)]">
     <span>Dữ liệu giả lập · {version.commit} / {version.fingerprint}</span>
-    <Link href={guide} className="neo-target inline-flex min-h-11 items-center text-[var(--accent-foreground)] underline underline-offset-4">Hướng dẫn và chuyển vai</Link>
+    <Link href={guide} className="neo-target inline-flex min-h-8 items-center text-[var(--accent-foreground)] underline underline-offset-4">Hướng dẫn và chuyển vai</Link>
   </aside>
 }

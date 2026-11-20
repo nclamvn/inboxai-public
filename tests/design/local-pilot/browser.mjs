@@ -3,6 +3,7 @@ import { chromium } from 'playwright-core'
 import { readFileSync,writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { audit } from '../browser.mjs'
+import { rehearseWorkspaceUI } from '../ui-workspace.mjs'
 import { button,signIn } from './fixture.mjs'
 
 const link=(page,name)=>page.getByRole('link',{name,exact:true})
@@ -46,6 +47,7 @@ export async function rehearseLocalPilot({guide,app,base,email,previousEmail,pas
     assert.equal(await desktop.locator('[data-pilot-version]').getAttribute('data-pilot-version'),guide.version.fingerprint)
     assert.ok(seed.mailCount>100,'The trial must contain more than 100 synchronized tenant-owned emails, not just fixture deliveries')
     await guidePage.getByText(seed.mailCount+' thư đã đồng bộ · 2 Gmail giả lập',{exact:true}).waitFor()
+    await rehearseWorkspaceUI({page:desktop,app,output,record})
     await capture(guidePage,'01-guide-desktop')
     record('The guide and authenticated app identify the same source fingerprint; cross-origin, unconfirmed reset and premature supplier controls are denied.',true)
 

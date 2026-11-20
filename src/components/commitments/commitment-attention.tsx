@@ -3,7 +3,7 @@
 import { useId, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { RotateCw, ClipboardCheck, CircleAlert, Clock3, PackageCheck, MessageSquare, FileSearch } from 'lucide-react'
+import { RotateCw, ChevronDown, ChevronUp, ClipboardCheck, CircleAlert, Clock3, PackageCheck, MessageSquare, FileSearch } from 'lucide-react'
 import { Badge, type BadgeProps } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -205,6 +205,8 @@ export function CommitmentAttention({ userId, accounts, onSynced }: {
   userId: string; accounts: string[]; onSynced: () => void
 }) {
   const title = useId()
+  const [collapsed, setCollapsed] = useState(false)
+  const bodyId = title + '-body'
   const [review, setReview] = useState<AttentionItem | null>(null)
   const heading = useRef<HTMLHeadingElement>(null)
   const opener = useRef<HTMLButtonElement>(null)
@@ -219,6 +221,7 @@ export function CommitmentAttention({ userId, accounts, onSynced }: {
   const focusUnavailable = query.data?.purchaseFocus === null
   const focusedInvoices = new Set(focus.map(item=>item.invoiceId))
   const invoices = (query.data?.invoices ?? []).filter(invoice=>!focusedInvoices.has(invoice.invoiceId))
+  const attentionCount = focus.length + invoices.length + items.length
   const hasAttention = items.length>0 || invoices.length>0 || status.length>0 || focus.length>0 || focusUnavailable || query.isError
   const cache = useQueryClient()
   const refresh = () => {
@@ -230,16 +233,32 @@ export function CommitmentAttention({ userId, accounts, onSynced }: {
   return (
     <>
       {hasAttention && (
-        <section aria-labelledby={title} className="border-b border-[var(--border)] bg-[var(--surface)]">
-          <div className="neo-section-accent flex min-w-0 items-center justify-between gap-3 px-4 sm:px-5">
-            <h2 id={title} ref={heading} tabIndex={-1} className="flex items-center gap-2 py-3 text-sm font-semibold">
-              <ClipboardCheck size={18} className="text-[var(--accent-foreground)]" aria-hidden="true" />Cam kết cần chú ý</h2>
-            <button type="button" onClick={refresh} className="neo-icon-button" disabled={query.isFetching}
-              aria-label="Làm mới cam kết cần chú ý" title="Làm mới cam kết cần chú ý">
-              <RotateCw size={16} aria-hidden="true" />
-            </button>
+        <section aria-labelledby={title} className="neo-attention border-b border-[var(--border)] bg-[var(--surface)]">
+          <div className="neo-attention-heading flex min-w-0 items-center justify-between gap-2 px-3 sm:px-4">
+            <div className="flex min-w-0 items-center gap-2">
+              <h2 id={title} ref={heading} tabIndex={-1} className="flex min-w-0 items-center gap-2 py-2 text-sm font-semibold">
+                <ClipboardCheck size={18} className="shrink-0 text-[var(--accent-foreground)]" aria-hidden="true" />
+                <span>Cam kết cần chú ý</span>
+              </h2>
+              {attentionCount > 0 && (
+                <span className="neo-attention-count" title="Số mục đã tải">
+                  <span className="sr-only">Số mục đã tải: </span>{attentionCount}
+                </span>
+              )}
+            </div>
+            <div className="flex shrink-0 items-center gap-1">
+              <button type="button" onClick={() => setCollapsed(value => !value)} className="neo-icon-button"
+                aria-label={collapsed ? 'Mở việc cần chú ý' : 'Thu gọn việc cần chú ý'} aria-expanded={!collapsed} aria-controls={bodyId}>
+                {collapsed ? <ChevronDown size={18} aria-hidden="true" /> : <ChevronUp size={18} aria-hidden="true" />}
+              </button>
+              <button type="button" onClick={refresh} className="neo-icon-button" disabled={query.isFetching}
+                aria-label="Làm mới cam kết cần chú ý" title="Làm mới cam kết cần chú ý">
+                <RotateCw size={16} aria-hidden="true" />
+              </button>
+            </div>
           </div>
           {query.isError && <p role="status" className="px-4 pb-3 text-sm text-[var(--error)]">Chưa cập nhật được cam kết. Thử làm mới.</p>}
+          <div id={bodyId} hidden={collapsed}>
           <PurchaseFocus userId={userId} items={focus} unavailable={focusUnavailable} />
           {invoices.length > 0 && <ul aria-label="Hóa đơn cần đối soát" className="divide-y divide-[var(--border)] border-t border-[var(--border)]">
             {invoices.map(invoice => <li key={invoice.invoiceId} className="flex flex-wrap items-center gap-x-4 px-4 sm:px-5">
@@ -294,6 +313,7 @@ export function CommitmentAttention({ userId, accounts, onSynced }: {
             })}
           </ul>
           <CatchupStatus userId={userId} accounts={status} filter={accounts} onSynced={onSynced} />
+          </div>
         </section>
       )}
       {review && (

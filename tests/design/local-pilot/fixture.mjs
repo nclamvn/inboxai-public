@@ -23,9 +23,9 @@ export async function signIn(browser,app,email,password,viewport={width:1440,hei
   return page
 }
 
-export async function seedLocalPilot({app,base,email,previousEmail,password,userId,admin,appFetch,googleProvider,sql}) {
+export async function seedLocalPilot({app,base,email,previousEmail,password,userId,admin,appFetch,googleProvider,sql,study}) {
   const {po,original,corrected,supplier,warehouse,reviewer:reviewerEmail,reason} = pilotCase
-  const due = new Date(Date.now()+6*86_400_000).toISOString().slice(0,10)
+  const due = study?.due ?? new Date(Date.now()+6*86_400_000).toISOString().slice(0,10)
   const oldDue = new Date(Date.now()+3*86_400_000).toISOString().slice(0,10)
   const vault = new CredentialVault(admin,parseKeyring(vaultKeys,'local1'))
   const accounts = {}
@@ -66,6 +66,7 @@ export async function seedLocalPilot({app,base,email,previousEmail,password,user
   }
   const browser = await chromium.launch({channel:'chrome',proxy:{server:'http://127.0.0.1:1',bypass:'127.0.0.1'}})
   let setup
+  const studySetups = new Map()
   const invoice = 'po,invoice,replaces,line,quantity,unit,unit_price,currency'
   try {
     const page = await signIn(browser,app,email,password)
@@ -80,14 +81,19 @@ export async function seedLocalPilot({app,base,email,previousEmail,password,user
       await page.getByLabel('Email tài khoản Kế toán',{exact:true}).fill(reviewerEmail)
       await button(page,'Bàn giao hồ sơ').click()
     }
-    setup = await setupPurchase({app,page,reviewer,request,deliver,accounts,fileAction,assign,
-      invoice,receipts:'po,document,corrects,line,quantity,unit',paymentDue:due,supplier,warehouse,
-      reference:po,number:original})
-    await reviewer.goto(app+'/commitments/handoffs?id='+setup.handoffId)
-    await button(reviewer,'Yêu cầu bổ sung chứng từ').click()
-    await reviewer.getByLabel('Chứng từ cần bổ sung').fill(reason)
-    await button(reviewer,'Giao yêu cầu cho Mua hàng').click()
-    await reviewer.getByRole('status').filter({hasText:'Đã giao yêu cầu bổ sung cho Mua hàng.'}).waitFor()
+    async function prepare(reference,number,sender) {
+      const started = await setupPurchase({app,page,reviewer,request,deliver,accounts,fileAction,assign,
+        invoice,receipts:'po,document,corrects,line,quantity,unit',paymentDue:due,supplier:sender,warehouse,
+        reference,number})
+      await reviewer.goto(app+'/commitments/handoffs?id='+started.handoffId)
+      await button(reviewer,'Yêu cầu bổ sung chứng từ').click()
+      await reviewer.getByLabel('Chứng từ cần bổ sung').fill(reason)
+      await button(reviewer,'Giao yêu cầu cho Mua hàng').click()
+      await reviewer.getByRole('status').filter({hasText:'Đã giao yêu cầu bổ sung cho Mua hàng.'}).waitFor()
+      return started
+    }
+    setup = await prepare(po,original,supplier)
+    for (const item of study?.productCases??[]) studySetups.set(item.po,await prepare(item.po,item.original,item.supplier))
   } finally { await browser.close() }
 
   const searchSources = []
@@ -113,18 +119,44 @@ export async function seedLocalPilot({app,base,email,previousEmail,password,user
     if(backgroundCount===104) break
   }
   assert.equal(backgroundCount,104,'All background Gmail pages must reach PostgreSQL before the trial is ready')
+  // Fresh synthetic UI stories. These labels are fixture-authored user choices,
+  // not model quality evidence. They use the same Gmail sync and manual-label API.
+  const workspaceStories = [
+    ['kho', 'ky-thuat', 'bao.kho@example.test', 'Trạm cân gián đoạn, cần xác nhận phương án nhận hàng', 'Sự cố đang xảy ra tại trạm cân. Xin xác nhận chuyển xe sang cổng B trước 14:00.', 'work', 'Bảo · Điều phối kho'],
+    ['quote', 'mua-hang', 'linh.ncc@example.test', 'Báo giá linh kiện tháng 11, chờ bạn xác nhận', 'Nhờ bạn phản hồi lựa chọn giao từng đợt. Tôi giữ báo giá đến chiều nay.', 'work', 'Linh · Nhà cung cấp'],
+    ['design', 'ky-thuat', 'minh.du-an@example.test', 'Bản vẽ B đã cập nhật, nhờ duyệt trước 15:30', 'Nhờ xác nhận bản vẽ B trước 15:30 để đội kỹ thuật tiếp tục.', 'work', 'Minh · Kỹ thuật'],
+    ['receipt', 'mua-hang', 'bien-nhan@example.test', 'Biên nhận chuyển khoản đã hoàn tất', 'Giao dịch thành công. Số tiền 2.400.000 VND. Không cần phản hồi.', 'transaction', 'Biên nhận giao dịch'],
+    ['trip', 'mua-hang', 'hanh.chinh@example.test', 'Lịch công tác Đà Nẵng đã được xác nhận', 'Lịch trình đã xác nhận. Tài liệu hành trình gửi kèm trong lần trao đổi tiếp theo.', 'personal', 'Phương · Hành chính'],
+    ['news', 'ky-thuat', 'ban-tin@example.test', 'Tuần này trong chuỗi cung ứng: 5 điểm đáng đọc', 'Bản tin tham khảo hằng tuần. Không có công việc cần phản hồi.', 'newsletter', 'Góc nhìn chuỗi cung ứng'],
+    ['offers', 'mua-hang', 'uu-dai@example.test', 'Ưu đãi thiết bị tháng 11 dành cho doanh nghiệp', 'Chương trình ưu đãi tham khảo cho thiết bị văn phòng.', 'promotion', 'Thiết bị văn phòng'],
+  ]
+  for (const [uid, department, sender, subject, body, category, name] of workspaceStories) {
+    const id = await deliver('workspace-'+uid, department, sender, 0, subject, body, [], 'WS-20261120')
+    await admin.from('emails').update({from_name:name}).eq('user_id',userId).eq('id',id).throwOnError()
+    await request('/api/personal-mail-rules', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'manual',emailId:id,category})})
+  }
+  // Persist fixture background labels as explicit account/sender rules so a
+  // provider refresh cannot make newsletters visually masquerade as work mail.
+  for (const account of Object.values(accounts)) for (const [sender, category] of [['newsletter@example.test','newsletter'],['offers@example.test','promotion']]) {
+    const selected=await admin.from('emails').select('id').eq('user_id',userId).eq('source_account_id',account.id).eq('from_address',sender).limit(1).single()
+    assert.equal(selected.error,null)
+    const scope={emailId:selected.data.id,category,includeExisting:true}
+    const preview=await request('/api/personal-mail-rules',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'preview',...scope})})
+    await request('/api/personal-mail-rules',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'confirm',...scope,id:randomUUID(),token:preview.token})})
+  }
   const total=await admin.from('emails').select('id',{head:true,count:'exact'}).eq('user_id',userId).eq('sync_namespace','gmail')
   assert.equal(total.error,null)
   const mailCount=total.count
   await admin.from('emails').update({category:'newsletter'}).eq('user_id',userId).eq('from_address','newsletter@example.test').throwOnError()
   await admin.from('emails').update({category:'promotion'}).eq('user_id',userId).eq('from_address','offers@example.test').throwOnError()
   await admin.from('emails').update({category:'work',needs_reply:true}).eq('user_id',userId).in('id',searchSources).throwOnError()
-  const state = async () => {
+  const caseState = async (setup) => {
     const evidence = await request('/api/commitments/evidence-requests?case='+setup.handoffId)
     const payment = await request('/api/commitments/payment?id='+setup.orderId)
     const assignment = await request('/api/commitments/handoffs?'+new URLSearchParams({commitment:setup.orderId,invoice:payment.invoice.id}))
     return {evidence,payment,handoff:assignment.pending?.id??setup.handoffId,sent:googleProvider.calls.sent.length}
   }
+  const state = () => caseState(setup)
   async function inject(kind) {
     const current = await state()
     if (current.evidence.stage!=='buyer' || current.evidence.request?.state!=='accepted') throw new Error('Gửi yêu cầu đã duyệt trước khi nạp hồi đáp.')
@@ -147,5 +179,5 @@ export async function seedLocalPilot({app,base,email,previousEmail,password,user
     googleProvider.calls.sent.splice(0); googleProvider.calls.sendAttempts=0
   }
   return { ...pilotCase, ...setup, due,oldDue,accounts,searchSources,reviewerId,state,inject,request,sync,
-    rewindProvider, app,base,email,password,mailCount }
+    rewindProvider, app,base,email,password,mailCount,studySetups,caseState,deliver }
 }

@@ -1,0 +1,29 @@
+main { padding-bottom: 32px }
+.hero { display: block; padding: 32px 0 16px }
+.hero p { margin: 8px 0 }
+.reference { display: inline-block; margin-top: 8px }
+.brief, .study-panel { padding: 16px; border: 1px solid var(--border); background: var(--surface); border-radius: 4px }
+.brief p + p { margin-top: 8px }
+summary, a { color: var(--navy); font-weight: 620 }
+summary { cursor: pointer }
+.study-panel { margin-top: 16px }
+.study-panel h2 { font-size: 26px; line-height: 1.25; margin-bottom: 8px }
+.mode { color: var(--navy); font-size: 13px; font-weight: 650; margin-bottom: 4px }
+#scope { color: var(--muted); margin: 4px 0 12px }
+.actions { gap: 8px; margin-top: 12px }
+.controls { display: flex; align-items: center; flex-wrap: wrap }
+#clock { min-width: 60px; font-size: 21px; font-weight: 650; font-variant-numeric: tabular-nums }
+#release, #released, #mail, form, .finish, #summary { margin-top: 12px }
+#mail details { border: 1px solid var(--border); padding: 8px 12px; margin-bottom: 8px }
+#mail pre { overflow-wrap: anywhere; white-space: pre-wrap; background: var(--canvas); padding: 8px; margin: 4px 0 }
+#mail a { display: inline-block; min-height: 32px }
+#decision fieldset { display: grid; gap: 4px; margin: 0 0 12px; padding: 12px; min-width: 0; border: 1px solid var(--border) }
+input, select { width: min(100%, 440px); font: inherit; min-height: 40px; padding: 4px 8px; background: var(--surface); border: 1px solid #758696; border-radius: 4px }
+a, button, input, select, summary { outline-offset: 3px }
+#download { display: inline-flex; align-items: center; min-height: 44px }
+#summary p { margin: 8px 0 }
+@media(max-width:580px) {
+  .frame { width: calc(100% - 32px) }
+  .hero { padding-top: 20px }
+  .actions button { min-height: 44px }
+}

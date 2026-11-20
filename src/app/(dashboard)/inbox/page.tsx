@@ -20,6 +20,7 @@ import { SelectionToolbar } from '@/components/email/selection-toolbar'
 import { UnifiedTopBar } from '@/components/layout/unified-top-bar'
 import { MobileInboxHeader } from '@/components/layout/mobile-inbox-header'
 import { CategoryFilterSheet } from '@/components/layout/category-filter-sheet'
+import { InboxLanes } from '@/components/email/inbox-lanes'
 import { AccountSwitcher } from '@/components/email/account-switcher'
 import { mailCategoryLabels } from '@/components/email/mail-category-label'
 import { InboxPriorityDialog } from '@/components/email/inbox-priority-dialog'
@@ -98,6 +99,7 @@ function InboxContent() {
   // Local UI state only
   const [viewMode, setViewMode] = useState<ViewMode>(selectedId ? 'split' : 'list')
   const [selectedCategory, setActiveFilter] = useState<string | null>(null)
+  const [dense, setDense] = useState(false)
   const [mobileSegment, setMobileSegment] = useState('all')
   const { filter: briefingFilter, clear: clearBriefingFilter } = useBriefingFilter(briefingType)
   const activeFilter = briefingFilter ? null : selectedCategory
@@ -497,8 +499,8 @@ function InboxContent() {
           notifications={notifications}
         />
       ) : (
-        <header className="border-b border-[var(--border)] bg-[var(--surface)]">
-          <div className="flex min-h-16 items-center justify-between gap-4 border-b border-[var(--border)] px-5">
+        <header className="neo-inbox-header border-b border-[var(--border)] bg-[var(--surface)]">
+          <div className="neo-inbox-heading flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-baseline gap-3">
               <h1 className="neo-title shrink-0">Hộp thư</h1>
               <span className="truncate text-xs tabular-nums text-[var(--foreground-muted)]">{filterCounts.unread || 0} chưa đọc</span>
@@ -521,11 +523,14 @@ function InboxContent() {
         </header>
       )}
 
-      {isMobile && <div className="flex items-center gap-3 border-b border-[var(--border)] px-4">
+      {isMobile && <div className="neo-mobile-tools flex flex-wrap items-center gap-x-3 border-b border-[var(--border)] px-4">
+        <AccountSwitcher selectedAccountIds={selectedAccountIds} onAccountChange={setSelectedAccountIds} />
         <Link href="/snoozed" className="neo-target flex min-h-11 items-center text-sm text-[var(--accent-foreground)] underline">Đã hẹn</Link>
         {ruleButton}
         {offlineLink}
       </div>}
+      {!isMobile && <InboxLanes current={activeFilter || 'all'} counts={filterCounts} onChange={handleFilterChange}
+        dense={dense} onDensityChange={setDense} hasMore={hasMore} />}
       {ruleStatus}
       {snoozeNotice && <p role="status" className="border-b border-[var(--border)] px-4 py-2 text-sm">
         Đã lưu lịch xử lý. <Link href="/snoozed" className="inline-flex min-h-8 items-center text-[var(--accent-foreground)] underline">Xem thư đã hẹn</Link>
@@ -555,7 +560,7 @@ function InboxContent() {
       )}
 
       {/* Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div data-mail-density={dense ? 'compact' : 'comfortable'} className="neo-inbox-content flex-1 flex overflow-hidden">
         {/* Email List - Hidden on mobile when viewing email detail */}
         {effectiveViewMode !== 'full' && (
           <div className={cn(

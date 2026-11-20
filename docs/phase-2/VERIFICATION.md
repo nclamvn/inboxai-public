@@ -1,5 +1,108 @@
 # Verification record
 
+## 2026-11-20: Dọn nợ kỹ thuật trước khi push Workspace
+
+Bàn điều phối từ chối thao tác dựa trên phiên bản cũ. Sau lỗi phản hồi,
+trang đọc lại trạng thái đã ghi. Chrome gửi lại yêu cầu ghi lượt mở nguồn
+và xác nhận bộ đếm vẫn bằng 1. Báo cáo mặc định, đảo thứ tự và phiên dùng
+thử ghi vào các thư mục riêng. So sánh 1.764 tổ hợp cờ đơn/đôi của harness
+xác nhận các đường dẫn báo cáo ngoài pilot giữ đúng thứ tự ưu tiên.
+
+| Lệnh local | Kết quả quan sát |
+| --- | --- |
+| `npm run lint`, `npm run typecheck` | Exit 0. |
+| `npm run test:unit` và `npm run test:integration` | Exit 0, lần lượt 344 và 211 kiểm thử. |
+| `npm run test:db` | Exit 0, 51 nhóm. |
+| `npm run test:purchase-study` | Exit 0, build production và 17 nhóm Chrome, bao gồm phát lại thao tác điều phối. |
+| `npm run audit:picomatch` | Exit 0 với token đọc, 11 nhóm hồi quy và hai bản đã cài khớp nguồn. |
+| `npm audit --audit-level=moderate` | Exit 0, không có phát hiện. |
+
+CI chạy bổ sung pilot Chrome sau các bước kiểm thử hiện có. Cổng picomatch
+dùng token của workflow trong truy vấn advisory công khai tới GitHub. Bản ghi
+nguồn, hash, hồi quy và kiểm tra từ chối khi thiếu bằng chứng vẫn bắt buộc.
+Log local nằm trong `test-results/ui-workspace/cleanup/`.
+
+## 2026-11-20: Pilot đối soát có đối chứng local
+
+Chạy trên macOS 27.2.1, Node 24.14.1, Next.js 16.4.6,
+Chrome 157.0.8103.80, PostgreSQL và hai Gmail giả lập qua loopback.
+Xem [giao thức, thứ tự đối chứng và cách mở bản thử](PURCHASE_STUDY.md).
+
+| Lệnh | Kết quả quan sát |
+| --- | --- |
+| `npm run lint` | Exit 0, không cảnh báo. |
+| `npm run typecheck` | Exit 0. |
+| `npm run test:unit` | Exit 0, 344 kiểm thử trong 34 tệp. |
+| `npm run test:integration` | Exit 0, 211 kiểm thử trong 17 tệp. |
+| `npm run test:purchase-study` | Exit 0, build production và 17 nhóm kiểm tra. Báo cáo máy chấm 3/3 hồ sơ mỗi cách, 0 duyệt sai. [Kết quả harness](../../test-results/local-pilot/study/default-report.json) · [Báo cáo hồ sơ](../../test-results/local-pilot/study/session-0f80be02-69a0-4e43-9c0f-f3f8073c640a.json). |
+| `npm run test:purchase-study -- --bundle-b` | Exit 0, build production và 17 nhóm kiểm tra. Đảo thứ tự và bộ hồ sơ, 3/3 hồ sơ mỗi cách, 0 duyệt sai. [Kết quả harness](../../test-results/local-pilot/study/reverse-report.json) · [Báo cáo hồ sơ](../../test-results/local-pilot/study/session-09f9724f-25ac-48bf-8ece-a606269e2c40.json). |
+| `npm run test:local-pilot` | Exit 0, 27 nhóm hồi quy bản dùng thử trước qua Chrome. [Kết quả harness](../../test-results/local-pilot/report.json). |
+
+Mã local `b0a205bbea98` chấm theo mã hóa đơn, hạn và tệp nguồn. Hai thứ tự có tổng cộng 12/12 kết quả khớp. Nguồn
+trong InboxAI khớp UUID email, UUID tệp và quyết định lưu trong PostgreSQL.
+Ca đính chính cho HTTP 409 ở tab cũ và chưa ghi quyết định. Sau khi khởi
+động lại InboxAI và bàn giao bản mới, xác minh mỗi PO có một quyết định
+duyệt bổ sung. Đồng hồ đã tạm dừng và số lần ghi nhận còn sau khi tải lại
+trang. Tệp tải về trùng với JSON máy chủ. Mẫu giao diện ở Chrome desktop
+và viewport mobile qua axe và kiểm tra tràn ngang.
+
+Lần chạy tạo fixture ban đầu dùng mã hóa đơn có hậu tố chữ và bị schema
+từ chối. Mã giả lập đã đổi sang định dạng số hiện có. Log lần lỗi và ảnh
+nghiệm thu nằm trong `test-results/local-pilot/study/`. Dữ liệu bản preview
+trước được sao lưu trong cùng thư mục. [Bản thử đang chạy](http://127.0.0.1:57343/study)
+đã nạp 129 thư qua hai Gmail giả lập, sẵn sàng từ hồ sơ đầu và dùng cùng
+fingerprint đã nghiệm thu. Docker image prune thu hồi 0 B.
+
+Thời gian, lượng mở nguồn và lượt sửa trong báo cáo tự động là thao tác
+kịch bản. Chưa đo thời gian hay công của người thật, chưa đối chứng LLM và
+agent trên hai bộ này, và chưa xác nhận hai nhóm muốn dùng thử tiếp.
+
+## 2026-11-20: Inbox spacing and right-aligned utilities
+
+The Inbox search uses available width, with theme, briefing and settings aligned to a shared 16 px right gutter. Shorter headings, filters and rows put more mail in view. Collapsed attention shows the number of loaded items in its heading. The mobile account menu opens inward.
+
+Chrome 157.0.8103.80 with synthetic Gmail and the same fixture measured the right gutter at 182 px before and 16 px after at 1440 × 960. With attention open, the first mail row starts 61 px higher and five full rows fit instead of four. With attention collapsed, its panel is 42 px tall instead of 90 px. At 390 × 844, the collapsed view displays five full rows instead of four. These counts are specific to the fixture and tested viewport.
+
+Production-mode `test:ui-workspace` passed 27 groups. It checks alignment, the briefing popup, mobile menu bounds at 320 and 390 px, and the existing journey. `test:design -- --isolated` passed 33 groups and `test:platform -- --isolated` passed 19 groups. Lint and TypeScript passed. Unit tests passed 344 across 34 files and integration tests passed 211 across 17 files. The preview serves the verified local source fingerprint `110337790756`.
+
+The before/after measurements and test logs are in ignored `test-results/ui-workspace/`. The preview was rebuilt with a fresh synthetic fixture after saving the prior local database snapshot. This pass used browser viewports on the local checkout.
+
+## 2026-11-20: Precision Workspace UI, local acceptance
+
+Owner authorized a major UI upgrade informed by established mail products. Implemented on local `codex/ui-workspace` from `e1f3e5d`, without commit, push, main changes, deployment or real mailbox access. See [design decisions, official references and reproduction](UI_WORKSPACE.md).
+
+The shared shell now gives the four pillars primary navigation, separates mail folders/utilities, and exposes all four pillars on mobile with secondary folders in a native modal. Quick navigation is searchable without accents, supports Cmd/Ctrl J and explicit Escape/focus return, navigates only, and refuses to overlay another open dialog. Cmd/Ctrl K mail search is preserved. Inbox adds visible semantic category shortcuts, explicit loaded-mail counts, compact/comfortable density, aligned desktop sender/subject/reason columns, and an account selector on mobile. Attention can be explicitly collapsed without changing any task. The source reader, Compose, ledger, Ask and Operator use the same hierarchy, boundaries and icon language. Ask example links are identified as suggestions rather than found evidence. Ranking, ledger authority, mail approval and idempotency logic are unchanged; no new model call or migration was added.
+
+Actual Chrome 157.0.8103.80, macOS 27.2, Apple M1 Max / 32 GiB, Node 24.14.1, npm 11.11.0 and Next.js 16.4.6. Local GoTrue/PostgREST/PostgreSQL and loopback Gmail only. The pilot contains **117 synchronized synthetic mails**, two accounts, buyer/accountant/outsider roles and seven new everyday stories. Categories/rules are explicit fixture-authored choices through authenticated APIs, not evidence of classifier or LLM accuracy.
+
+| Command | Actual local result |
+| --- | --- |
+| `npm run lint` | Exit 0, zero warnings. |
+| `npm run typecheck` | Exit 0. |
+| `npm run test:unit` | Exit 0, **344 tests / 34 files**. |
+| `npm run test:integration` | Exit 0, **211 tests / 17 files**. |
+| `npm run test:db` | Exit 0, **51 groups**, fresh/upgrade/isolation contracts. |
+| `npm run test:ui-workspace` | Exit 0, **27 groups**, production build and full four-pillar Chrome pilot with additional UI acceptance. |
+| `npm run test:design -- --isolated` | Exit 0, production build and **33 groups**. |
+| `npm run test:platform -- --isolated` | Exit 0, production build and **19 groups**, 600 synthetic mails / 2 accounts. |
+| `npm run test:purchase-release` | Exit 0, production build and **30 groups**, frozen exceptions, stale approval, interrupted evidence review and follow-up recovery. |
+| `npm run audit:picomatch` | Exit 0, **10 security groups**, source/archive/installed-byte integrity and independently verified advisory status. |
+| `npm audit --audit-level=moderate` | Exit 0, zero registry findings. No threshold or scope reduction. |
+
+The UI pilot verifies actual category results, density/order preservation, urgent explanation to exact email source, searchable navigation and focus, all secondary mobile folders, 834px tablet / 390px and 320px mobile, dark mode and 200% root text size. Seventeen new UI screenshots supplement the existing workflow captures. Sampled axe WCAG-tagged violations and horizontal overflow are zero. The full pilot also restores desktop drafts on mobile after offline/restart, retains contradictory Ask dates with exact source citations, reconciles one send after lost acknowledgement, rejects incomplete/wrong-owner evidence, accepts and hands off a corrected invoice, verifies and undoes an Operator scope, and restores the synthetic fixture. These are browser viewports and simulated actors, not native devices or measured human usability.
+
+Platform observations (single local runs, no speedup claim): first row **1,057 ms desktop / 936 ms tablet / 934 ms mobile**; initial JavaScript **497,890 bytes** on all three. This is 3,121 bytes (+0.63%) above the prior November 18 observation (494,769 bytes, same Chrome version and 600-mail fixture). Timings vary with local load; neither run estimates public-network/device performance. Existing 550 KiB / 5-second budgets are unchanged.
+
+During qualification, Escape in the new search input initially consumed the key to clear native search text. Fixed explicit Escape dismissal and verified focus return on Chrome. Density testing now waits for the actual smaller layout, retaining the strict height/order assertions instead of assuming click completion implies layout completion. A stopped older pilot fixture and an active preview initially blocked fresh startup; only this repository's own fixture was stopped/removed. Unrelated containers/data were preserved. Failure logs are retained, not relabeled as passing runs.
+
+### Advisory drift encountered during UI verification
+
+The existing picomatch supplemental gate initially failed because npm returned `{}`. Read-only verification found that GitHub [withdrew GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) at **2026-11-18T15:38:56Z**, with metadata updated November 19. The gate now accepts an empty npm result only after a separate public GitHub API request verifies the exact GHSA, CVE, withdrawal timestamp, original package and original affected range. Unverified/active/mismatched withdrawal data, network failure and unknown advisories still fail closed; added negative tests cover these data mismatches. Private backport byte checks, exploit regressions and the original npm audit remain required. No dependency version, tarball, immutable URL or lockfile changed. Advisory withdrawal does not erase the reproduced regex behavior; retiring the backports remains a separate reviewed dependency change. This is a bounded correction to keep the existing security gate evidence-based, not an audit exception or blanket security PASS.
+
+Local logs, observed advisory metadata and before/after screenshots are under ignored `test-results/ui-workspace/`; current UI captures and full-pilot receipt are in `test-results/local-pilot/`. Reused `.next` and `.next-build`, with 31–32 GiB free before builds. No outside-repository project copy, install or extra distDir. Existing model caches and unrelated `.codex/` remain untouched. A zero-byte failed backup artifact was removed rather than presented as a backup. Test harnesses cleaned their own fixtures; the final interactive local preview is intentionally retained for the owner.
+
+No claim of superior usability, market value, AI accuracy, native-device acceptance, hosted readiness or remote CI success is made by this UI milestone. No real mailbox, production or deployment gate is opened.
+
 ## 2026-11-18: picomatch security backport and unchanged audit gate
 
 Owner authorized remediation, local verification, commit/push on the current `codex/living-commitments` branch and monitoring every CI job. No main merge, hosted changes, deployment or real mailbox access.

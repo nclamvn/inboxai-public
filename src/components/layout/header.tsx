@@ -139,10 +139,10 @@ function DashboardHeader({ pathname, owner }: { pathname: string; owner: string 
     .slice(0, 2) || 'U'
 
   return (
-    <header className="h-14 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4 ">
+    <header className="neo-global-header h-14 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between px-4 ">
       {/* Search */}
       <div className="min-w-0 flex-1 max-w-xl">
-        {pathname !== '/search' && pathname !== '/search/mail' && <SearchBox />}
+        {pathname !== '/search' && pathname !== '/search/mail' ? <SearchBox /> : <Link href="/search/mail" className="neo-target inline-flex min-h-11 items-center text-xs font-medium text-[var(--foreground-muted)]">Tìm thư và tệp</Link>}
       </div>
 
       {/* Right Actions */}
@@ -151,10 +151,10 @@ function DashboardHeader({ pathname, owner }: { pathname: string; owner: string 
         <ThemeToggle />
 
         {/* Follow-up Badge */}
-        <FollowUpBadge />
+        <span className="hidden md:inline-flex"><FollowUpBadge /></span>
 
         {/* AI Assistant Badge */}
-        <div className="relative" ref={aiPopoverRef}>
+        <div className="relative hidden md:block" ref={aiPopoverRef}>
           <button
             type="button"
             aria-label="Bản tin hộp thư"

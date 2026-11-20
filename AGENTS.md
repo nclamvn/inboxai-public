@@ -26,6 +26,13 @@
   Commitments 1–3 checkpoint on `codex/living-commitments`. This supersedes the
   local-only push restriction for that checkpoint; no main merge, hosted changes,
   deployment or real mailbox access is authorized.
+- On 2026-11-20 the owner authorized a major UI upgrade informed by established
+  mail products. Implement and accept locally on `codex/ui-workspace`, with
+  synthetic users/mail only; no push, deployment or real mailbox access. Preserve
+  evidence and approval behavior while updating the four primary workspaces.
+- The owner subsequently authorized cleaning up, committing and pushing the
+  Workspace UI and local purchase-study checkpoint to `codex/ui-workspace`.
+  Deployment, main merges and real mailbox access remain outside this scope.
 - Use a `codex/` feature branch from the verified main baseline for an authorized push.
   Preserve unrelated local changes, and report local evidence separately from remote CI.
   Never modify main, deploy production or send real mail before the security gate.

@@ -5,11 +5,13 @@ import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
 import { seedLocalPilot } from './fixture.mjs'
 import { readPilotVersion } from './version.mjs'
+import { startStudy } from './study.mjs'
 
 const require=createRequire(import.meta.url)
 export async function startLocalPilot(options) {
   const {app,version,restartNext,docker,waitFor,output} = options
   const seed=await seedLocalPilot(options)
+  const study=options.study?startStudy(options.study,seed,options):null
   const host='127.0.0.1:57343', origin='http://'+host, token=randomBytes(24).toString('base64url')
   const assets=new Map([
     ['/', ['text/html; charset=utf-8',readFileSync(new URL('./index.html',import.meta.url))]],
@@ -19,6 +21,10 @@ export async function startLocalPilot(options) {
     ['/inter-vi.woff2',['font/woff2',readFileSync(require.resolve('@fontsource-variable/inter/files/inter-vietnamese-wght-normal.woff2'))]],
     ['/inter-latin.woff2',['font/woff2',readFileSync(require.resolve('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2'))]],
   ])
+  if(study) for (const [route,file,type] of [
+    ['/study','study.html','text/html'],['/study.js','study.js','text/javascript'],['/study.css','study.css','text/css'],
+  ]) assets.set(route,[type+'; charset=utf-8',readFileSync(new URL('./'+file,import.meta.url))])
+  if(study) assets.set('/',assets.get('/study'))
   const backup=docker(['exec','-T','db','pg_dump','-U','postgres','-d','inboxai_security_test','--format=custom'],{encoding:'buffer'})
   assert.equal(backup.subarray(0,5).toString(),'PGDMP')
   const sha=bytes=>createHash('sha256').update(bytes).digest('hex')
@@ -64,16 +70,25 @@ export async function startLocalPilot(options) {
         if(assets.has(req.url)) return write(200,...assets.get(req.url))
         if(req.url==='/config') return json(200,config())
         if(req.url==='/state') return busy ? json(503,{error:'Ứng dụng đang xử lý điều khiển local.'}) : json(200,await readState())
+        if(req.url==='/study/state' && study) {
+          if(busy) return json(503,{error:'Đợi thao tác hiện tại hoàn tất.'})
+          busy=true
+          try {
+            return json(200,{...await study.refresh(),token,app,buyer:seed.email,reviewer:seed.reviewer,password:seed.password})
+          } finally {busy=false}
+        }
         if(req.url==='/version') return json(200,{built:version,current:readPilotVersion()})
       }
-      if(req.method!=='POST'||!['/missing','/corrected','/restart','/reset','/lose-receipt'].includes(req.url)) return json(404,{error:'Không có thao tác này.'})
+      const allowed = study ? ['/study/event'] : ['/missing','/corrected','/restart','/reset','/lose-receipt']
+      if(req.method!=='POST'||!allowed.includes(req.url)) return json(404,{error:'Không có thao tác này.'})
       if(req.headers.origin!==origin||req.headers['x-demo-token']!==token) return json(403,{error:'Mở điều khiển từ trang dùng thử.'})
       if(busy) return json(409,{error:'Đang xử lý. Chờ thao tác hiện tại kết thúc.'})
-      let body=''
-      for await(const chunk of req) {body+=chunk;if(body.length>1024)return json(413,{error:'Yêu cầu quá dài.'})}
-      if(req.url==='/reset' && JSON.parse(body||'{}').confirm!=='ĐẶT LẠI') return json(400,{error:'Nhập ĐẶT LẠI để xác nhận khôi phục dữ liệu giả lập.'})
       busy=true
       try {
+        let body=''
+        for await(const chunk of req) {body+=chunk;if(body.length>2048)return json(413,{error:'Yêu cầu quá dài.'})}
+        if(req.url==='/reset' && JSON.parse(body||'{}').confirm!=='ĐẶT LẠI') return json(400,{error:'Nhập ĐẶT LẠI để xác nhận khôi phục dữ liệu giả lập.'})
+        if(req.url==='/study/event') return json(200,await study.event(JSON.parse(body||'{}')))
         if(req.url==='/restart') await restartNext()
         else if(req.url==='/reset') await reset()
         else if(req.url==='/lose-receipt') seed.accounts['mua-hang'].box.dropSendAcknowledgement=true
@@ -82,9 +97,10 @@ export async function startLocalPilot(options) {
       } finally {busy=false}
     } catch(error) {
       console.error('Local pilot control:',error.message)
-      return json(409,{error:'Chưa hoàn tất thao tác. Kiểm tra trạng thái rồi thử lại. Không có email thật được gửi.'})
+      return json(409,{error:req.url==='/study/event' && error.name==='AssertionError'
+        ? error.message.split('\n')[0] : 'Chưa hoàn tất thao tác. Kiểm tra trạng thái rồi thử lại.'})
     }
   })
   await new Promise((resolve,reject)=>server.once('error',reject).listen(57343,'127.0.0.1',resolve))
-  return {origin,seed,version,config:config(),readState,close:()=>new Promise(resolve=>{server.close(resolve);server.closeAllConnections()})}
+  return {origin,seed,study,version,config:config(),readState,close:()=>new Promise(resolve=>{server.close(resolve);server.closeAllConnections()})}
 }

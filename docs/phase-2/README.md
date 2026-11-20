@@ -34,6 +34,7 @@ those decisions, not an independently retrieved Library document or concept pack
 - [Tìm thư bổ sung cho hồ sơ đang chờ](PURCHASE_SUPPLEMENTS.md)
 - [Yêu cầu bổ sung chứng từ và theo dõi đến khi duyệt xong](PURCHASE_EVIDENCE_REQUESTS.md)
 - [Chốt bản local và đối chứng luồng duyệt lại](PURCHASE_LOCAL_RELEASE.md)
+- [Pilot đối soát từ thiếu chứng từ đến duyệt đúng bản](PURCHASE_STUDY.md)
 - [M6-F adversarial security rehearsal](VERIFICATION.md#m6-f-adversarial-security-rehearsal)
 - [M6-E Gmail consent and synthetic browser evidence](VERIFICATION.md#m6-e-gmail-consent)
 - [M6-D Codex preview and purchasing journey](M6D_LOCAL_HANDOFF.md)
@@ -56,3 +57,5 @@ those decisions, not an independently retrieved Library document or concept pack
 Implementation status is evidence-driven. M0 does not authorize M1-M6 shortcuts.
 
 - [Living Commitments 3: review memory and noise](LIVING_REVIEW.md)
+
+- [Precision Workspace UI milestone](UI_WORKSPACE.md): local desktop/mobile redesign, official-product references and acceptance scope.

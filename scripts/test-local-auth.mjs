@@ -33,6 +33,8 @@ const dayTest = process.argv.includes('--day-test')
 const pilotPreview = process.argv.includes('--pilot-preview')
 const pilotTest = process.argv.includes('--pilot-test')
 const pilot = pilotPreview || pilotTest
+const pilotStudy = pilot && process.argv.includes('--study')
+const reverseStudy = pilotStudy && process.argv.includes('--bundle-b')
 const livingReview = process.argv.includes('--living-review') || process.argv.includes('--living-review-preview')
 const livingCoverage = process.argv.includes('--living-coverage') || process.argv.includes('--living-coverage-preview')
 const livingTest = process.argv.includes('--living-review') || process.argv.includes('--living-test') || process.argv.includes('--living-coverage')
@@ -89,7 +91,50 @@ const platformOutput = isolatedPlatform ? 'test-results/commitment-attention/pla
 const isolated = journeyE2E || livingPreview || dayPreview || isolatedDesign || commitmentBenchmark || isolatedCommitment || isolatedCommitmentUi || isolatedAskAnswer || isolatedPlatform || isolatedAuth
 const isolatedBuild = isolated || isolatedStaging
 const productionMode = m6 || staging || journey || isolated
-const journeyOutput = livingReview ? (livingPreview ? 'test-results/living-review/preview' : 'test-results/living-review') : livingCoverage ? (livingPreview ? 'test-results/living-coverage/preview' : 'test-results/living-coverage') : livingPreview ? 'test-results/living-commitments/preview' : livingTest ? 'test-results/living-commitments' : pilot ? 'test-results/local-pilot' : purchaseRelease ? 'test-results/purchase-release' : purchaseSupplements ? 'test-results/purchase-supplements' : purchaseFocus ? 'test-results/purchase-focus' : purchaseBatches ? 'test-results/purchase-batches' : purchaseExceptions ? 'test-results/purchase-exceptions' : purchaseDues ? 'test-results/purchase-dues' : purchaseReturn ? 'test-results/purchase-return' : purchaseSettlement ? 'test-results/purchase-settlement' : purchaseHandoff ? 'test-results/purchase-handoff' : purchaseInstallments ? 'test-results/purchase-installments' : purchasePayment ? 'test-results/purchase-payment' : purchaseCsv ? 'test-results/purchase-csv' : multilinePurchase ? 'test-results/multiline-purchase' : warehouseCorrection ? 'test-results/warehouse-correction' : warehouseReconciliation ? 'test-results/warehouse-reconciliation' : deliveryCommitments ? 'test-results/delivery-commitments' : offlineCompose ? 'test-results/offline-compose' : draftContinuity ? 'test-results/draft-continuity' : composeRecipients ? 'test-results/compose-recipients' : actionNotifications ? 'test-results/action-notifications' : offlineReply ? 'test-results/offline-reply' : mailLookup ? 'test-results/mail-lookup' : personalMailRules ? 'test-results/personal-mail-rules' : conversation ? 'test-results/inbox-conversation' : gmailReconnect ? 'test-results/gmail-reconnect' : scheduledSend ? 'test-results/scheduled-send' : emailSnoozes ? 'test-results/email-snoozes' : gmailTriage ? 'test-results/gmail-triage' : composeAttachments ? 'test-results/compose-attachments' : followups ? 'test-results/reply-followup' : replies ? 'test-results/reply-workflow' : catchup ? 'test-results/inbox-catchup' : day ? 'test-results/day-preview' : dailyCommitments ? 'test-results/commitment-attention' : 'test-results/m6d'
+// Match the most specific journey before its inherited prerequisite flags.
+const journeyName = [
+  [livingReview, livingPreview ? 'living-review/preview' : 'living-review'],
+  [livingCoverage, livingPreview ? 'living-coverage/preview' : 'living-coverage'],
+  [livingPreview, 'living-commitments/preview'],
+  [livingTest, 'living-commitments'],
+  [pilotStudy, 'local-pilot/study' + (pilotPreview ? '/preview' : reverseStudy ? '/reverse' : '')],
+  [pilot, 'local-pilot'],
+  [purchaseRelease, 'purchase-release'],
+  [purchaseSupplements, 'purchase-supplements'],
+  [purchaseFocus, 'purchase-focus'],
+  [purchaseBatches, 'purchase-batches'],
+  [purchaseExceptions, 'purchase-exceptions'],
+  [purchaseDues, 'purchase-dues'],
+  [purchaseReturn, 'purchase-return'],
+  [purchaseSettlement, 'purchase-settlement'],
+  [purchaseHandoff, 'purchase-handoff'],
+  [purchaseInstallments, 'purchase-installments'],
+  [purchasePayment, 'purchase-payment'],
+  [purchaseCsv, 'purchase-csv'],
+  [multilinePurchase, 'multiline-purchase'],
+  [warehouseCorrection, 'warehouse-correction'],
+  [warehouseReconciliation, 'warehouse-reconciliation'],
+  [deliveryCommitments, 'delivery-commitments'],
+  [offlineCompose, 'offline-compose'],
+  [draftContinuity, 'draft-continuity'],
+  [composeRecipients, 'compose-recipients'],
+  [actionNotifications, 'action-notifications'],
+  [offlineReply, 'offline-reply'],
+  [mailLookup, 'mail-lookup'],
+  [personalMailRules, 'personal-mail-rules'],
+  [conversation, 'inbox-conversation'],
+  [gmailReconnect, 'gmail-reconnect'],
+  [scheduledSend, 'scheduled-send'],
+  [emailSnoozes, 'email-snoozes'],
+  [gmailTriage, 'gmail-triage'],
+  [composeAttachments, 'compose-attachments'],
+  [followups, 'reply-followup'],
+  [replies, 'reply-workflow'],
+  [catchup, 'inbox-catchup'],
+  [day, 'day-preview'],
+  [dailyCommitments, 'commitment-attention'],
+].find(([selected]) => selected)?.[1] ?? 'm6d'
+const journeyOutput = 'test-results/' + journeyName
 const previousEmail = journey ? 'huy.tran@example.test' : 'preupgrade@example.test'
 const evidenceFile = journey ? `${journeyOutput}/report.json`
   : isolatedAuth ? 'test-results/local-auth/report.json'
@@ -434,13 +479,19 @@ try {
   } else if (pilot) {
     mkdirSync(journeyOutput, { recursive: true })
     const { startLocalPilot } = await import('../tests/design/local-pilot/server.mjs')
+    const study = pilotStudy ? (await import('../tests/design/local-pilot/study.mjs')).studyProtocol({
+      reverse: reverseStudy, automation: pilotTest,
+    }) : null
     dayGuide = await startLocalPilot({ app, base, email, previousEmail, password, userId, previousId, admin, appFetch,
-      googleProvider, sql, docker, restartNext, waitFor, version: pilotVersion, output: journeyOutput })
-    if (pilotTest) {
+      googleProvider, sql, docker, restartNext, waitFor, version: pilotVersion, output: journeyOutput, study })
+    if (pilotTest && pilotStudy) {
+      const { rehearsePurchaseStudy } = await import('../tests/design/local-pilot/study-browser.mjs')
+      await rehearsePurchaseStudy({ guide: dayGuide, app, base, record, output: journeyOutput })
+    } else if (pilotTest) {
       const { rehearseLocalPilot } = await import('../tests/design/local-pilot/browser.mjs')
       await rehearseLocalPilot({ guide: dayGuide, app, base, email, previousEmail, password, record, output: journeyOutput })
     } else {
-      console.log('\nBản dùng thử mới: '+dayGuide.origin+'\nInboxAI: '+app+'/inbox\nDừng bằng Ctrl+C. Tiến độ giữ qua tải lại/khởi động lại ứng dụng từ trang điều khiển.\n')
+      console.log('\nBản dùng thử mới: '+dayGuide.origin+(pilotStudy?'/study':'')+'\nInboxAI: '+app+'/inbox\nDừng bằng Ctrl+C. Tiến độ giữ qua tải lại/khởi động lại ứng dụng từ trang điều khiển.\n')
       await new Promise(resolve => shutdown.signal.addEventListener('abort', resolve, { once: true }))
     }
   } else if (gmailReconnect) {

@@ -236,9 +236,9 @@ export function EmailDetailFull({
   }
 
   return (
-    <div className={cn('flex flex-col h-full', fullWidth && 'max-w-4xl mx-auto')}>
+    <div className={cn('neo-reading-view flex flex-col h-full', fullWidth && 'max-w-4xl mx-auto')}>
       {/* Action Bar */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-[var(--border)]">
+      <div className="neo-reading-toolbar flex items-center justify-between px-6 py-3 border-b border-[var(--border)]">
         <div className="flex items-center gap-1">
           <button
             type="button"
@@ -482,7 +482,7 @@ export function EmailDetailFull({
 
       {/* Email Header */}
       <div className="px-6 py-4 border-b border-[var(--border)]">
-        <h1 ref={heading} tabIndex={-1} className="mb-4 break-words text-xl font-semibold leading-7">
+        <h1 ref={heading} tabIndex={-1} className="neo-reading-subject mb-4 break-words">
           {email.subject || '(Không có tiêu đề)'}
         </h1>
 
@@ -568,7 +568,7 @@ export function EmailDetailFull({
       </div>
 
       {/* Email Body */}
-      <div role="region" aria-label="Nội dung thư" tabIndex={0} className="flex-1 overflow-y-auto px-6 py-6">
+      <div role="region" aria-label="Nội dung thư" tabIndex={0} className="neo-reading-body flex-1 overflow-y-auto px-6 py-6">
         <EmailConversation key={email.id} email={email} />
         {email.body_html && email.body_html.replace(/<[^>]*>/g, '').trim().length > 10 ? (
           <div
