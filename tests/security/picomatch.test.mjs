@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { validateAdvisories, verifySources, verifyInstalled } from '../../scripts/security/picomatch.mjs';
+import { validateAdvisories, verifyUpstreamAdvisories, verifySources, verifyInstalled } from '../../scripts/security/picomatch.mjs';
 
 const require = createRequire(import.meta.url);
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -73,4 +73,35 @@ test('installed-copy gate rejects a reintroduced official vulnerable package', (
     writeFileSync(`${fixture}/node_modules/picomatch/package.json`,JSON.stringify({name:'picomatch',version:'4.0.7'}));
     assert.throws(()=>verifyInstalled(fixture,verifySources(root)),/Unpatched or unknown/);
   } finally { rmSync(fixture,{recursive:true}); }
+});
+
+
+const withdrawal = {ghsa_id:'GHSA-fc5q-39xc-vjpf',cve_id:'CVE-2026-112366',withdrawn_at:'2026-11-18T15:38:56Z',
+    vulnerabilities:[{package:{ecosystem:'npm',name:'picomatch'},vulnerable_version_range:'<= 4.0.7'}]};
+
+test('an empty npm feed requires independently verified withdrawal of the exact advisory', () => {
+  assert.doesNotThrow(()=>validateAdvisories({},withdrawal));
+  assert.doesNotThrow(()=>validateAdvisories({picomatch:[]},withdrawal));
+  for(const change of [{withdrawn_at:null},{ghsa_id:'GHSA-other'},{vulnerabilities:[]},{cve_id:'CVE-other'}]) {
+    assert.throws(()=>validateAdvisories({},{...withdrawal,...change}));
+  }
+  assert.throws(()=>validateAdvisories({unknown:[]},withdrawal));
+  assert.throws(()=>validateAdvisories({picomatch:[{id:999,url:'unknown'}]},withdrawal));
+});
+
+test('official lookup confines its token to GitHub and fails closed if verification is unavailable', async () => {
+  const calls=[];
+  const request=async (url,options)=>{
+    calls.push({url,options});
+    return Response.json(calls.length===1 ? {} : withdrawal);
+  };
+  assert.equal(await verifyUpstreamAdvisories(['2.3.2','4.0.7'],{token:'fixture-only',request}),withdrawal.withdrawn_at);
+  assert.deepEqual(calls.map(call=>[call.url,call.options.headers.authorization]),[
+    ['https://registry.npmjs.org/-/npm/v1/security/advisories/bulk',undefined],
+    ['https://api.github.com/advisories/GHSA-fc5q-39xc-vjpf','Bearer fixture-only'],
+  ]);
+  assert.equal(calls[1].options.redirect,'error');
+  await assert.rejects(verifyUpstreamAdvisories(['4.0.7'],{request:async url=>
+    url.startsWith('https://registry.npmjs.org/') ? Response.json({}) : new Response(null,{status:403}),
+  }),/Cannot verify official advisory withdrawal: 403/);
 });

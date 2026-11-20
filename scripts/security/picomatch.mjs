@@ -5,8 +5,26 @@ import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
-export function validateAdvisories(feed) {
-  assert.ok(feed && !Array.isArray(feed) && Array.isArray(feed.picomatch), 'Invalid upstream advisory feed');
+export function validateWithdrawal(advisory) {
+  assert.equal(advisory?.ghsa_id, 'GHSA-fc5q-39xc-vjpf', 'Withdrawal must name the exact reviewed advisory');
+  assert.equal(advisory.cve_id, 'CVE-2026-112366');
+  assert.ok(typeof advisory.withdrawn_at === 'string' && Number.isFinite(Date.parse(advisory.withdrawn_at)), 'Official withdrawal has not been verified');
+  assert.ok(Array.isArray(advisory.vulnerabilities) && advisory.vulnerabilities.length === 1, 'Withdrawal package scope changed');
+  const affected = advisory.vulnerabilities[0];
+  assert.deepEqual(affected.package, { ecosystem: 'npm', name: 'picomatch' });
+  assert.equal(affected.vulnerable_version_range.replace(/\s/g, ''), '<=4.0.7', 'Withdrawal version scope changed');
+}
+const isEmptyFeed = feed => feed && typeof feed==='object' && !Array.isArray(feed) &&
+  (Object.keys(feed).length===0 || (Object.keys(feed).length===1 && Array.isArray(feed.picomatch) && feed.picomatch.length===0));
+
+export function validateAdvisories(feed, withdrawal) {
+  assert.ok(feed && typeof feed === 'object' && !Array.isArray(feed), 'Invalid upstream advisory feed');
+  assert.ok(Object.keys(feed).every(key => key === 'picomatch'), 'Unexpected upstream advisory package');
+  if (isEmptyFeed(feed)) {
+    validateWithdrawal(withdrawal);
+    return;
+  }
+  assert.ok(Array.isArray(feed.picomatch), 'Invalid upstream advisory feed');
   for (const entry of feed.picomatch) {
     assert.equal(entry.id, 1247710, `Uncovered upstream advisory: ${entry.url}`);
     assert.equal(entry.url, 'https://github.com/advisories/GHSA-fc5q-39xc-vjpf');
@@ -64,18 +82,38 @@ export function verifyInstalled(root, manifest) {
   return found.length;
 }
 
+export async function verifyUpstreamAdvisories(versions, {token, request=fetch}={}) {
+  const response=await request('https://registry.npmjs.org/-/npm/v1/security/advisories/bulk',{
+    method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({picomatch:versions}),signal:AbortSignal.timeout(20000)
+  });
+  assert.ok(response.ok,`Upstream advisory request failed: ${response.status}`);
+  const feed = await response.json();
+  let withdrawal;
+  if (isEmptyFeed(feed)) {
+    const official = await request('https://api.github.com/advisories/GHSA-fc5q-39xc-vjpf', {
+      headers: {
+        accept: 'application/vnd.github+json', 'user-agent': 'InboxAI-dependency-verification',
+        ...(token ? { authorization: 'Bearer '+token } : {}),
+      },
+      redirect:'error', signal:AbortSignal.timeout(20000),
+    });
+    assert.ok(official.ok, `Cannot verify official advisory withdrawal: ${official.status}`);
+    withdrawal = await official.json();
+  }
+  validateAdvisories(feed, withdrawal);
+  return withdrawal?.withdrawn_at;
+}
+
 async function main() {
   const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..');
   const manifest=verifySources(root);
   const count=verifyInstalled(root,manifest);
-  const regression=spawnSync(process.execPath,['--test','tests/security/picomatch.test.mjs'],{cwd:root,stdio:'inherit',timeout:30000});
+  const { INBOXAI_ADVISORY_TOKEN: advisoryToken, ...testEnv }=process.env;
+  const regression=spawnSync(process.execPath,['--test','tests/security/picomatch.test.mjs'],{cwd:root,env:testEnv,stdio:'inherit',timeout:30000});
   assert.equal(regression.error,undefined,String(regression.error));
   assert.equal(regression.status,0,'Backport regression gate failed');
-  const response=await fetch('https://registry.npmjs.org/-/npm/v1/security/advisories/bulk',{
-    method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({picomatch:manifest.packages.map(p=>p.upstream.version)}),signal:AbortSignal.timeout(20000)
-  });
-  assert.ok(response.ok,`Upstream advisory request failed: ${response.status}`);
-  validateAdvisories(await response.json());
+  const withdrawnAt=await verifyUpstreamAdvisories(manifest.packages.map(pkg=>pkg.upstream.version),{token:advisoryToken});
+  if(withdrawnAt) console.log(`Official advisory withdrawal verified: ${withdrawnAt}.`);
   console.log(`Verified ${count} installed picomatch copies, exact backport sources, ReDoS regressions and upstream advisory coverage.`);
 }
 if(process.argv[1] && resolve(process.argv[1])===fileURLToPath(import.meta.url)) main().catch(error=>{console.error(error);process.exitCode=1;});

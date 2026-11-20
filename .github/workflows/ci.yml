@@ -81,6 +81,8 @@ jobs:
       - run: npm ci --ignore-scripts
       # Private backports require exact-source, regression and upstream-advisory checks.
       - run: npm run audit:picomatch
+        env:
+          INBOXAI_ADVISORY_TOKEN: ${{ github.token }}
       # Keep the reviewed dependency baseline from regressing.
       - run: npm audit --audit-level=moderate
 
@@ -130,6 +132,7 @@ jobs:
       - run: npm run test:purchase-release
       - run: npm run test:design -- --isolated
       - run: npm run test:platform -- --isolated
+      - run: npm run test:purchase-study
       - name: Upload synthetic Chrome evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -139,6 +142,8 @@ jobs:
             test-results/purchase-release/report.json
             test-results/purchase-release/browser.json
             test-results/purchase-release/*.png
+            test-results/local-pilot/study/report.json
+            test-results/local-pilot/study/*.png
             test-results/m6d/design-run.json
             test-results/m6d/design/
             test-results/commitment-attention/platform/

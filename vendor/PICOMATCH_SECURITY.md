@@ -73,3 +73,24 @@ Once an official maintained fixed release exists, inspect its fix, rerun these
 regressions and full application/Chrome gates, and replace these forks with it.
 Remove private packages and supplemental exception together. Reverting to vulnerable
 published versions reopens the blocker; never bypass either audit gate to roll back.
+
+## Official withdrawal verified, 2026-11-20
+
+GitHub [withdrew this advisory](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)
+on 2026-11-18T15:38:56Z, with metadata updated on November 19. The npm bulk
+endpoint now returns `{}` for these original versions. That changes advisory
+classification; it does not make the independently reproduced regex behavior or
+our local regression results disappear.
+
+The supplemental gate now accepts an empty npm result **only after** an independent
+public GitHub API request verifies the exact GHSA, CVE, withdrawal timestamp,
+original npm package and affected version range. Missing/active/mismatched metadata,
+API failure and unknown npm advisories still fail closed. Source/archive/installed
+integrity, bounded exploit tests and the original npm audit remain mandatory.
+Backport archives and dependency URLs are unchanged in the UI milestone; retirement
+is a separate dependency review, not an implicit removal during UI work.
+
+The CI audit uses its read-only workflow token for the exact public GitHub
+advisory endpoint. This avoids reliance on the runner IP's unauthenticated
+quota. The token is scoped to that step and that HTTPS request, with redirects
+disabled. Local runs can set `INBOXAI_ADVISORY_TOKEN` for the same lookup.
